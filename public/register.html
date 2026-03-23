@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>PrepHQ — Register</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F0F2F8;--surf:#fff;--surf2:#F5F6FA;
+  --brand:#0A5CF5;--brand-lt:rgba(10,92,245,.10);--brand-glow:rgba(10,92,245,.22);
+  --ok:#00C96B;--ok-lt:rgba(0,201,107,.10);--ok-bd:rgba(0,201,107,.28);
+  --no:#F5340A;--no-lt:rgba(245,52,10,.10);--no-bd:rgba(245,52,10,.28);
+  --purple:#7B2CF5;
+  --t1:#0D0F1A;--t2:#2E3247;--t3:#6B7089;--t4:#A8ADCA;
+  --bd:rgba(13,15,26,.09);--bd2:rgba(13,15,26,.14);
+  --r12:12px;--r16:16px;--r20:20px;--rpill:999px;
+  --sh:0 2px 16px rgba(0,0,0,.07);--sh-lg:0 14px 48px rgba(0,0,0,.13);
+  --ff-h:'Bricolage Grotesque',system-ui,sans-serif;
+  --ff-b:'DM Sans',system-ui,sans-serif;
+}
+[data-theme=dark]{
+  --bg:#0D0F1A;--surf:#1A1E35;--surf2:#222640;
+  --t1:#EEF0FF;--t2:#C5CAE8;--t3:#7E86B0;--t4:#4A5070;
+  --bd:rgba(238,240,255,.08);--bd2:rgba(238,240,255,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:var(--ff-b);background:var(--bg);color:var(--t1);min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+.blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:.12;pointer-events:none;}
+.b1{width:340px;height:340px;background:var(--brand);top:-80px;right:-80px;}
+.b2{width:280px;height:280px;background:var(--purple);bottom:-60px;left:-60px;}
+.card{width:100%;max-width:440px;background:var(--surf);border-radius:28px;padding:36px 26px 30px;box-shadow:var(--sh-lg);position:relative;z-index:1;border:1px solid var(--bd);}
+.logo{width:64px;height:64px;border-radius:20px;background:linear-gradient(140deg,var(--brand),var(--purple));display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 8px 24px var(--brand-glow);}
+.logo svg{width:28px;height:28px;fill:white;}
+.title{font-family:var(--ff-h);font-size:24px;font-weight:800;text-align:center;letter-spacing:-.5px;}
+.sub{font-size:13px;color:var(--t3);text-align:center;margin:5px 0 24px;}
+.divider{height:1px;background:var(--bd);margin:0 0 22px;}
+.code-box{background:linear-gradient(135deg,var(--brand-lt),rgba(123,44,245,.08));border:1.5px dashed var(--brand);border-radius:var(--r16);padding:14px 16px;margin-bottom:22px;display:flex;align-items:center;gap:12px;}
+.cb-icon{width:40px;height:40px;border-radius:12px;background:var(--brand);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.cb-icon svg{width:20px;height:20px;fill:white;}
+.cb-txt{font-size:13px;font-weight:600;color:var(--t2);line-height:1.45;}
+.cb-txt strong{color:var(--brand);}
+.err{background:var(--no-lt);border:1px solid var(--no-bd);border-radius:var(--r12);padding:10px 14px;font-size:13px;font-weight:600;color:var(--no);display:none;align-items:center;gap:7px;margin-bottom:14px;}
+.err.on{display:flex;}
+.fg{margin-bottom:14px;}
+.fg label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:6px;}
+.fg input{width:100%;padding:13px 14px;border-radius:var(--r12);border:1.5px solid var(--bd2);background:var(--surf2);font-size:15px;font-weight:600;color:var(--t1);outline:none;transition:all .18s;letter-spacing:.2px;}
+.fg input:focus{border-color:var(--brand);background:var(--brand-lt);box-shadow:0 0 0 3px var(--brand-glow);}
+.fg input.err-inp{border-color:var(--no);}
+.fg .hint{font-size:11px;color:var(--t4);margin-top:4px;}
+.code-inp{font-family:var(--ff-h)!important;font-size:18px!important;letter-spacing:.15em!important;text-align:center;text-transform:uppercase;}
+.btn{width:100%;padding:15px;border-radius:var(--r12);background:linear-gradient(140deg,var(--brand),var(--purple));color:white;font-size:16px;font-weight:800;border:none;cursor:pointer;font-family:var(--ff-h);box-shadow:0 6px 22px var(--brand-glow);transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:-.2px;margin-top:6px;}
+.btn:active{transform:scale(.97);}
+.btn:disabled{background:var(--surf2);box-shadow:none;color:var(--t4);cursor:default;transform:none;}
+.login-link{text-align:center;margin-top:16px;font-size:13px;color:var(--t3);}
+.login-link a{color:var(--brand);font-weight:700;text-decoration:none;}
+
+/* Success screen */
+#success{display:none;}
+.success-card{text-align:center;}
+.s-icon{width:72px;height:72px;border-radius:50%;background:var(--ok-lt);border:3px solid var(--ok);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
+.s-icon svg{width:36px;height:36px;fill:var(--ok);}
+.s-title{font-family:var(--ff-h);font-size:24px;font-weight:800;color:var(--t1);margin-bottom:6px;}
+.s-sub{font-size:14px;color:var(--t3);margin-bottom:22px;}
+.login-details{background:var(--ok-lt);border:1.5px solid var(--ok-bd);border-radius:var(--r16);padding:18px;}
+.ld-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--ok);margin-bottom:12px;}
+.ld-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(0,201,107,.15);}
+.ld-row:last-child{border-bottom:none;}
+.ld-label{font-size:12px;color:var(--t3);}
+.ld-val{font-family:var(--ff-h);font-size:16px;font-weight:800;color:var(--t1);}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.fade-up{animation:fadeUp .4s cubic-bezier(.34,1.56,.64,1) both;}
+</style>
+</head>
+<body>
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+
+<div class="card fade-up">
+
+  <!-- REGISTER FORM -->
+  <div id="reg-form">
+    <div class="logo"><svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg></div>
+    <div class="title">Create Account</div>
+    <div class="sub">PrepHQ — Exam Prep Platform</div>
+    <div class="divider"></div>
+
+    <div class="code-box">
+      <div class="cb-icon"><svg viewBox="0 0 24 24"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg></div>
+      <div class="cb-txt">You need an <strong>activation code</strong> to register. Purchase one from your admin or contact them on WhatsApp.</div>
+    </div>
+
+    <div class="err" id="reg-err">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+      <span id="reg-err-msg">Error</span>
+    </div>
+
+    <div class="fg">
+      <label>Full Name *</label>
+      <input id="r-name" type="text" placeholder="e.g. Goodnews Financial" autocomplete="off">
+    </div>
+    <div class="fg">
+      <label>Matric Number *</label>
+      <input id="r-matric" type="text" placeholder="e.g. PSC25CHM102" autocapitalize="characters" autocomplete="off">
+      <div class="hint">This will be your login username</div>
+    </div>
+    <div class="fg">
+      <label>Phone Number *</label>
+      <input id="r-phone" type="tel" placeholder="e.g. 08012345678">
+    </div>
+    <div class="fg">
+      <label>WhatsApp Number *</label>
+      <input id="r-whatsapp" type="tel" placeholder="e.g. 08012345678">
+      <div class="hint">Must be reachable on WhatsApp</div>
+    </div>
+    <div class="fg">
+      <label>Activation Code *</label>
+      <input id="r-code" class="code-inp" type="text" placeholder="XXXX-XXXX-XXXX" autocomplete="off" autocapitalize="characters" maxlength="14" oninput="fmtCode(this)">
+      <div class="hint">The code you received after payment</div>
+    </div>
+
+    <button class="btn" id="reg-btn" onclick="doRegister()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+      Activate Account
+    </button>
+
+    <div class="login-link">Already registered? <a href="/">Sign in here</a></div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div id="success" class="success-card fade-up">
+    <div class="s-icon"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
+    <div class="s-title">Account Created! 🎉</div>
+    <div class="s-sub">Save your login details below. Your password is your matric number.</div>
+    <div class="login-details">
+      <div class="ld-title">Your Login Details</div>
+      <div class="ld-row"><span class="ld-label">Matric</span><span class="ld-val" id="s-matric">—</span></div>
+      <div class="ld-row"><span class="ld-label">Password</span><span class="ld-val" id="s-pass">—</span></div>
+      <div class="ld-row"><span class="ld-label">Login URL</span><span class="ld-val" style="font-size:13px" id="s-url">—</span></div>
+    </div>
+    <button class="btn" style="margin-top:18px;" onclick="goLogin()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M11 7L9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5-5-5zm9 12h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z"/></svg>
+      Go to Login
+    </button>
+  </div>
+
+</div>
+
+<script>
+// Auto-format code as XXXX-XXXX-XXXX
+function fmtCode(inp) {
+  let v = inp.value.replace(/[^A-Z0-9]/gi,'').toUpperCase().slice(0,12);
+  let out = '';
+  for (let i = 0; i < v.length; i++) {
+    if (i === 4 || i === 8) out += '-';
+    out += v[i];
+  }
+  inp.value = out;
+}
+
+async function doRegister() {
+  const name     = document.getElementById('r-name').value.trim();
+  const matric   = document.getElementById('r-matric').value.trim().toUpperCase();
+  const phone    = document.getElementById('r-phone').value.trim();
+  const whatsapp = document.getElementById('r-whatsapp').value.trim();
+  const code     = document.getElementById('r-code').value.trim().toUpperCase();
+  const errEl    = document.getElementById('reg-err');
+  const errMsg   = document.getElementById('reg-err-msg');
+  const btn      = document.getElementById('reg-btn');
+
+  errEl.classList.remove('on');
+
+  if (!name || !matric || !phone || !whatsapp || !code) {
+    errMsg.textContent = 'All fields are required.';
+    errEl.classList.add('on'); return;
+  }
+  if (code.replace(/-/g,'').length !== 12) {
+    errMsg.textContent = 'Invalid code format. Should be XXXX-XXXX-XXXX.';
+    errEl.classList.add('on'); return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg> Activating...';
+
+  try {
+    const r = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, matric, phone, whatsapp, code, password: matric }),
+    });
+    const d = await r.json();
+
+    if (!r.ok) {
+      errMsg.textContent = d.error || 'Registration failed.';
+      errEl.classList.add('on');
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Activate Account';
+      return;
+    }
+
+    // Show success
+    document.getElementById('s-matric').textContent = d.matric;
+    document.getElementById('s-pass').textContent   = d.password;
+    document.getElementById('s-url').textContent    = window.location.origin;
+    document.getElementById('reg-form').style.display = 'none';
+    document.getElementById('success').style.display  = 'block';
+
+  } catch(e) {
+    errMsg.textContent = 'Cannot connect to server.';
+    errEl.classList.add('on');
+    btn.disabled = false;
+    btn.innerHTML = 'Activate Account';
+  }
+}
+
+function goLogin() { window.location.href = '/'; }
+
+document.getElementById('r-code').addEventListener('keydown', e => {
+  if(e.key === 'Enter') doRegister();
+});
+</script>
+</body>
+</html>

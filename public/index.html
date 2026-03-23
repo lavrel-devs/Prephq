@@ -1,0 +1,1703 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0A5CF5">
+<link rel="manifest" href="/manifest.json">
+<title>PrepHQ — Exam Prep</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ───────────────────────────────────────────── */
+:root{
+  --bg:#F0F2F8;--surf:#fff;--surf2:#F5F6FA;--surf3:#EBECF2;
+  --brand:#0A5CF5;--brand-dk:#0847C4;--brand-lt:rgba(10,92,245,.10);--brand-glow:rgba(10,92,245,.22);
+  --ok:#00C96B;--ok-lt:rgba(0,201,107,.10);--ok-bd:rgba(0,201,107,.28);
+  --no:#F5340A;--no-lt:rgba(245,52,10,.10);--no-bd:rgba(245,52,10,.28);
+  --warn:#F5930A;--warn-lt:rgba(245,147,10,.10);
+  --purple:#7B2CF5;--purple-lt:rgba(123,44,245,.10);
+  --teal:#0ABCF5;--teal-lt:rgba(10,188,245,.10);
+  --t1:#0D0F1A;--t2:#2E3247;--t3:#6B7089;--t4:#A8ADCA;
+  --bd:rgba(13,15,26,.09);--bd2:rgba(13,15,26,.14);
+  --r8:8px;--r12:12px;--r16:16px;--r20:20px;--r24:24px;--rpill:999px;
+  --sh:0 2px 16px rgba(0,0,0,.07);--sh-md:0 6px 28px rgba(0,0,0,.10);--sh-lg:0 14px 48px rgba(0,0,0,.13);
+  --ff-h:'Bricolage Grotesque',system-ui,sans-serif;
+  --ff-b:'DM Sans',system-ui,sans-serif;
+  --ease-s:cubic-bezier(.34,1.56,.64,1);--ease-o:cubic-bezier(.22,1,.36,1);
+  --qfont:16px;
+}
+[data-theme=dark]{
+  --bg:#0D0F1A;--surf:#1A1E35;--surf2:#222640;--surf3:#2A2F50;
+  --t1:#EEF0FF;--t2:#C5CAE8;--t3:#7E86B0;--t4:#4A5070;
+  --bd:rgba(238,240,255,.08);--bd2:rgba(238,240,255,.14);
+  --sh:0 2px 16px rgba(0,0,0,.35);--sh-md:0 6px 28px rgba(0,0,0,.45);
+}
+
+/* ── RESET ────────────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{height:100%;-webkit-text-size-adjust:100%;}
+body{font-family:var(--ff-b);background:var(--bg);color:var(--t1);min-height:100dvh;-webkit-font-smoothing:antialiased;overflow-x:hidden;transition:background .3s,color .3s;}
+button,input,select,textarea{font-family:var(--ff-b);}
+*::-webkit-scrollbar{display:none;}
+*{scrollbar-width:none;}
+
+/* ── SCREENS ──────────────────────────────────────────── */
+.scr{display:none;flex-direction:column;min-height:100dvh;}
+.scr.on{display:flex;}
+
+/* ── TOAST ────────────────────────────────────────────── */
+#toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%) translateY(16px);
+  background:var(--t1);color:var(--surf);padding:10px 20px;border-radius:var(--rpill);
+  font-size:13px;font-weight:600;opacity:0;transition:all .3s var(--ease-o);
+  z-index:999;pointer-events:none;white-space:nowrap;box-shadow:var(--sh-md);}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ═══════════════════════════════════════
+   LOGIN
+═══════════════════════════════════════ */
+#login{background:var(--bg);align-items:center;justify-content:center;padding:24px;position:relative;overflow:hidden;}
+.blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:.15;pointer-events:none;}
+.b1{width:340px;height:340px;background:var(--brand);top:-80px;right:-80px;}
+.b2{width:280px;height:280px;background:var(--purple);bottom:-60px;left:-60px;}
+.login-card{width:100%;max-width:400px;background:var(--surf);border-radius:28px;padding:36px 26px 30px;box-shadow:var(--sh-lg);position:relative;z-index:1;border:1px solid var(--bd);}
+.lc-logo{width:68px;height:68px;border-radius:22px;background:linear-gradient(140deg,var(--brand),var(--purple));display:flex;align-items:center;justify-content:center;margin:0 auto 18px;box-shadow:0 8px 24px var(--brand-glow);}
+.lc-logo svg{width:30px;height:30px;fill:white;}
+.lc-title{font-size:24px;font-weight:800;text-align:center;font-family:var(--ff-h);letter-spacing:-.5px;}
+.lc-sub{font-size:13px;color:var(--t3);text-align:center;margin-top:5px;margin-bottom:24px;}
+.divider{height:1px;background:var(--bd);margin:0 0 22px;}
+.f-group{margin-bottom:14px;}
+.f-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);display:flex;align-items:center;gap:5px;margin-bottom:7px;}
+.f-label svg{width:14px;height:14px;}
+.f-input-wrap{position:relative;}
+.f-input-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--t4);pointer-events:none;width:18px;height:18px;}
+.f-input{width:100%;padding:13px 14px 13px 42px;border-radius:var(--r12);border:1.5px solid var(--bd2);background:var(--surf2);font-size:15px;font-weight:600;color:var(--t1);outline:none;transition:all .18s;letter-spacing:.3px;}
+.f-input:focus{border-color:var(--brand);background:var(--brand-lt);box-shadow:0 0 0 3px var(--brand-glow);}
+.f-input.err{border-color:var(--no);background:var(--no-lt);}
+.f-hint{font-size:11px;color:var(--t4);margin-top:5px;display:flex;align-items:center;gap:3px;}
+.err-banner{background:var(--no-lt);border:1px solid var(--no-bd);border-radius:var(--r8);padding:10px 14px;font-size:13px;font-weight:600;color:var(--no);display:none;align-items:center;gap:7px;margin-bottom:14px;}
+.err-banner.on{display:flex;}
+.btn-grad{width:100%;padding:15px;border-radius:var(--r12);background:linear-gradient(140deg,var(--brand),var(--purple));color:white;font-size:16px;font-weight:800;border:none;cursor:pointer;box-shadow:0 6px 22px var(--brand-glow);transition:all .15s;font-family:var(--ff-h);display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:-.2px;}
+.btn-grad:active{transform:scale(.97);box-shadow:0 2px 8px var(--brand-glow);}
+.btn-grad:disabled{background:var(--surf3);box-shadow:none;color:var(--t4);cursor:default;transform:none;}
+.btn-surf{background:var(--surf2);border:1.5px solid var(--bd2);color:var(--t2);font-size:15px;font-weight:700;width:100%;padding:13px;border-radius:var(--r12);cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:7px;}
+.btn-surf:active{transform:scale(.97);}
+
+/* Logo tap counter */
+.logo-tap{cursor:pointer;user-select:none;}
+.admin-hint{font-size:11px;color:var(--t4);text-align:center;margin-top:14px;min-height:16px;}
+
+/* ═══════════════════════════════════════
+   HOME
+═══════════════════════════════════════ */
+#home{background:var(--bg);overflow-y:auto;}
+
+/* Topbar */
+.topbar{position:sticky;top:0;z-index:40;
+  background:rgba(240,242,248,.88);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--bd);
+  padding:calc(env(safe-area-inset-top,0px)+10px) 16px 10px;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;}
+[data-theme=dark] .topbar{background:rgba(13,15,26,.88);}
+.tb-left{display:flex;align-items:center;gap:10px;flex:1;min-width:0;overflow:hidden;}
+.tb-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(140deg,var(--brand),var(--purple));display:flex;align-items:center;justify-content:center;font-family:var(--ff-h);font-size:13px;font-weight:800;color:white;flex-shrink:0;}
+.tb-info{min-width:0;overflow:hidden;}
+.tb-name{font-size:13px;font-weight:800;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;}
+.tb-streak{font-size:11px;color:var(--t3);display:flex;align-items:center;gap:3px;margin-top:1px;}
+.tb-streak svg{width:13px;height:13px;fill:var(--warn);}
+.tb-right{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.ib{width:36px;height:36px;border-radius:50%;background:var(--surf);border:1px solid var(--bd2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;box-shadow:var(--sh);color:var(--t3);}
+.ib:active{transform:scale(.92);}
+.ib svg{width:18px;height:18px;}
+
+/* Hero */
+.home-hero{padding:20px 18px 6px;}
+.hero-tag{display:inline-flex;align-items:center;gap:6px;background:var(--brand-lt);color:var(--brand);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;padding:5px 12px;border-radius:var(--rpill);margin-bottom:10px;}
+.hero-tag svg{width:14px;height:14px;}
+.hero-title{font-size:clamp(22px,5.5vw,28px);font-weight:800;color:var(--t1);letter-spacing:-.6px;line-height:1.2;font-family:var(--ff-h);}
+.hero-sub{font-size:14px;color:var(--t3);margin-top:6px;}
+
+/* Stats strip */
+.stats-row{display:flex;gap:10px;padding:14px 18px;overflow-x:auto;}
+.stat-pill{background:var(--surf);border-radius:var(--r16);padding:14px 16px;flex-shrink:0;min-width:100px;box-shadow:var(--sh);border:1px solid var(--bd);position:relative;overflow:hidden;}
+.sp-dot{width:8px;height:8px;border-radius:50%;margin-bottom:8px;}
+.sp-val{font-size:22px;font-weight:800;font-family:var(--ff-h);letter-spacing:-.5px;line-height:1;}
+.sp-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t4);margin-top:3px;}
+.sp-val.blue{color:var(--brand);}
+.sp-val.green{color:var(--ok);}
+.sp-val.orange{color:var(--warn);}
+.sp-val.purple{color:var(--purple);}
+
+/* Section */
+.sec-h{display:flex;align-items:center;justify-content:space-between;padding:18px 18px 10px;}
+.sec-title{font-size:16px;font-weight:800;color:var(--t1);font-family:var(--ff-h);letter-spacing:-.3px;}
+.sec-badge{font-size:11px;font-weight:700;background:var(--brand-lt);color:var(--brand);padding:4px 10px;border-radius:var(--rpill);}
+
+/* Course grid */
+.cg{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:0 18px;}
+.cc{background:var(--surf);border-radius:var(--r16);padding:16px 14px 14px;border:1.5px solid transparent;box-shadow:var(--sh);cursor:pointer;transition:all .18s var(--ease-o);position:relative;overflow:hidden;border:1px solid var(--bd);}
+.cc:active{transform:scale(.96);}
+.cc.on{border-color:var(--brand);background:var(--brand-lt);}
+[data-theme=dark] .cc.on{background:rgba(10,92,245,.12);}
+.cc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;}
+.cc-ico{width:36px;height:36px;border-radius:var(--r12);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.cc-ico svg{width:18px;height:18px;fill:white;}
+.cc-check{width:20px;height:20px;border-radius:50%;background:var(--surf3);display:flex;align-items:center;justify-content:center;transition:all .18s;}
+.cc-check svg{width:12px;height:12px;fill:transparent;transition:fill .18s;}
+.cc.on .cc-check{background:var(--brand);}
+.cc.on .cc-check svg{fill:white;}
+.cc-code{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--t4);margin-bottom:2px;}
+.cc-name{font-size:12px;font-weight:700;color:var(--t1);line-height:1.3;}
+.cc-n{font-size:11px;color:var(--t3);margin-top:3px;display:flex;align-items:center;gap:3px;}
+.cc-n svg{width:12px;height:12px;}
+.cc-bar{position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 var(--r16) var(--r16);}
+
+/* Mode + Qty */
+.mode-row{display:flex;gap:10px;padding:0 18px;}
+.mode-btn{flex:1;background:var(--surf);border-radius:var(--r16);padding:13px 10px;border:1.5px solid var(--bd);box-shadow:var(--sh);cursor:pointer;transition:all .18s;text-align:center;}
+.mode-btn:active{transform:scale(.96);}
+.mode-btn.on{border-color:var(--brand);background:var(--brand-lt);}
+[data-theme=dark] .mode-btn.on{background:rgba(10,92,245,.12);}
+.mode-btn svg{width:20px;height:20px;margin-bottom:5px;color:var(--t4);transition:color .18s;}
+.mode-btn.on svg{color:var(--brand);}
+.mode-lbl{font-size:12px;font-weight:800;color:var(--t2);font-family:var(--ff-h);}
+.mode-sub{font-size:10px;color:var(--t4);margin-top:1px;}
+
+.qty-wrap{padding:0 18px;}
+.qty-row{display:flex;gap:8px;flex-wrap:wrap;}
+.qp{padding:9px 18px;border-radius:var(--rpill);background:var(--surf);border:1.5px solid var(--bd);font-size:14px;font-weight:800;color:var(--t2);cursor:pointer;box-shadow:var(--sh);transition:all .15s;font-family:var(--ff-h);}
+.qp:active{transform:scale(.95);}
+.qp.on{background:var(--brand);border-color:var(--brand);color:white;box-shadow:0 4px 14px var(--brand-glow);}
+
+/* Options card */
+.opt-card{background:var(--surf);border-radius:var(--r16);padding:14px 16px;margin:0 18px;box-shadow:var(--sh);border:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;}
+.oc-left{display:flex;align-items:center;gap:12px;}
+.oc-icon{width:36px;height:36px;border-radius:var(--r12);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.oc-icon svg{width:18px;height:18px;}
+.oc-title{font-size:14px;font-weight:700;color:var(--t1);}
+.oc-sub{font-size:11px;color:var(--t3);}
+.toggle{width:44px;height:24px;border-radius:var(--rpill);background:var(--surf3);border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
+.toggle.on{background:var(--brand);}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:white;box-shadow:var(--sh);transition:transform .2s var(--ease-s);}
+.toggle.on::after{transform:translateX(20px);}
+.font-btns{display:flex;gap:6px;}
+.fb{width:32px;height:32px;border-radius:var(--r8);background:var(--surf3);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:var(--ff-h);font-weight:800;color:var(--t2);transition:all .15s;font-size:13px;}
+.fb:active{transform:scale(.9);}
+.fb.on{background:var(--brand);color:white;border-color:var(--brand);}
+
+/* Exam date banner */
+.exam-banner{margin:0 18px;background:linear-gradient(135deg,var(--brand),var(--purple));border-radius:var(--r16);padding:16px;display:flex;align-items:center;gap:14px;box-shadow:0 6px 24px var(--brand-glow);}
+.eb-icon{width:42px;height:42px;background:rgba(255,255,255,.15);border-radius:var(--r12);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.eb-icon svg{width:22px;height:22px;fill:white;}
+.eb-txt{flex:1;}
+.eb-title{font-size:14px;font-weight:800;color:white;font-family:var(--ff-h);}
+.eb-sub{font-size:12px;color:rgba(255,255,255,.70);margin-top:2px;}
+.eb-days{font-size:28px;font-weight:800;color:white;font-family:var(--ff-h);letter-spacing:-1px;text-align:right;}
+.eb-days-lbl{font-size:10px;color:rgba(255,255,255,.65);text-align:right;text-transform:uppercase;letter-spacing:.06em;}
+
+/* Daily goal bar */
+.goal-card{margin:0 18px;background:var(--surf);border-radius:var(--r16);padding:14px 16px;box-shadow:var(--sh);border:1px solid var(--bd);}
+.gc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.gc-title{font-size:13px;font-weight:700;color:var(--t1);}
+.gc-count{font-size:13px;font-weight:800;color:var(--brand);font-family:var(--ff-h);}
+.gc-bar{height:7px;background:var(--surf3);border-radius:var(--rpill);overflow:hidden;}
+.gc-fill{height:100%;background:linear-gradient(90deg,var(--brand),var(--purple));border-radius:var(--rpill);transition:width .5s var(--ease-s);}
+.gc-sub{font-size:11px;color:var(--t4);margin-top:5px;}
+
+.start-wrap{padding:18px 18px calc(18px + env(safe-area-inset-bottom));}
+
+/* ═══════════════════════════════════════
+   BOTTOM SHEET MODALS
+═══════════════════════════════════════ */
+.sheet-bg{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .25s;}
+.sheet-bg.on{opacity:1;pointer-events:all;}
+.sheet{position:absolute;bottom:0;left:0;right:0;background:var(--surf);border-radius:28px 28px 0 0;padding:8px 0 calc(20px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .35s var(--ease-s);max-height:90dvh;overflow-y:auto;}
+.sheet-bg.on .sheet{transform:translateY(0);}
+.sheet-handle{width:36px;height:4px;border-radius:var(--rpill);background:var(--bd2);margin:0 auto 18px;}
+.sheet-title{font-size:18px;font-weight:800;color:var(--t1);font-family:var(--ff-h);letter-spacing:-.4px;padding:0 20px;margin-bottom:4px;}
+.sheet-sub{font-size:13px;color:var(--t3);padding:0 20px;margin-bottom:16px;}
+
+/* Menu sheet items */
+.menu-item{display:flex;align-items:center;gap:14px;padding:12px 20px;cursor:pointer;transition:background .12s;}
+.menu-item:active{background:var(--surf2);}
+.mi-icon{width:40px;height:40px;border-radius:var(--r12);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mi-icon svg{width:20px;height:20px;}
+.mi-body{flex:1;}
+.mi-title{font-size:15px;font-weight:700;color:var(--t1);}
+.mi-sub{font-size:12px;color:var(--t3);margin-top:1px;}
+.mi-chev svg{width:18px;height:18px;fill:var(--t4);}
+.menu-sep{height:1px;background:var(--bd);margin:8px 20px;}
+
+/* ═══════════════════════════════════════
+   HISTORY SCREEN
+═══════════════════════════════════════ */
+#history{background:var(--bg);overflow-y:auto;}
+.sub-topbar{position:sticky;top:0;z-index:40;background:rgba(240,242,248,.88);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--bd);padding:calc(env(safe-area-inset-top,0px)+10px) 16px 10px;display:flex;align-items:center;gap:12px;}
+[data-theme=dark] .sub-topbar{background:rgba(13,15,26,.88);}
+.back-btn{width:36px;height:36px;border-radius:50%;background:var(--surf);border:1px solid var(--bd2);display:flex;align-items:center;justify-content:center;color:var(--brand);cursor:pointer;box-shadow:var(--sh);flex-shrink:0;transition:all .15s;}
+.back-btn:active{transform:scale(.9);}
+.back-btn svg{width:22px;height:22px;}
+.scr-title{font-size:18px;font-weight:800;color:var(--t1);font-family:var(--ff-h);letter-spacing:-.4px;}
+
+.hist-empty,.bmark-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:40px;text-align:center;}
+.hist-empty svg,.bmark-empty svg{width:52px;height:52px;fill:var(--t4);opacity:.35;}
+.empty-title{font-size:17px;font-weight:700;color:var(--t2);}
+.empty-sub{font-size:13px;color:var(--t4);}
+.hist-list{padding:14px 16px calc(14px + env(safe-area-inset-bottom));}
+.hcard{background:var(--surf);border-radius:var(--r16);margin-bottom:10px;padding:14px;box-shadow:var(--sh);border:1px solid var(--bd);display:flex;align-items:center;gap:14px;animation:fadeUp .3s var(--ease-s) both;}
+.hc-badge{width:50px;height:50px;border-radius:var(--r12);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;}
+.hc-score{font-size:17px;font-weight:800;font-family:var(--ff-h);color:white;line-height:1;}
+.hc-pct{font-size:9px;font-weight:700;color:rgba(255,255,255,.75);text-transform:uppercase;}
+.hc-info{flex:1;min-width:0;}
+.hc-course{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--t4);}
+.hc-mode{font-size:13px;font-weight:700;color:var(--t1);margin-top:2px;}
+.hc-date{font-size:11px;color:var(--t4);margin-top:2px;display:flex;align-items:center;gap:4px;}
+.hc-date svg{width:12px;height:12px;}
+.hc-right{text-align:right;}
+.hc-cor{font-size:20px;font-weight:800;font-family:var(--ff-h);color:var(--ok);}
+.hc-tot{font-size:11px;color:var(--t4);}
+
+/* ═══════════════════════════════════════
+   BOOKMARKS SCREEN
+═══════════════════════════════════════ */
+#bookmarks{background:var(--bg);overflow-y:auto;}
+.bmark-list{padding:14px 16px 80px;}
+.bcard{background:var(--surf);border-radius:var(--r16);margin-bottom:10px;overflow:hidden;box-shadow:var(--sh);border:1px solid var(--bd);animation:fadeUp .3s var(--ease-s) both;}
+.bcard-head{padding:14px 16px;border-bottom:1px solid var(--bd);display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.bcard-q{font-size:14px;font-weight:700;color:var(--t1);line-height:1.4;flex:1;}
+.bcard-rm{background:none;border:none;color:var(--t4);cursor:pointer;padding:2px;transition:color .15s;}
+.bcard-rm:active{color:var(--no);}
+.bcard-rm svg{width:18px;height:18px;}
+.bcard-ans{padding:10px 16px;font-size:13px;font-weight:600;color:var(--ok);display:flex;align-items:center;gap:6px;}
+.bcard-ans svg{width:16px;height:16px;fill:var(--ok);}
+.bcard-exp{padding:0 16px 12px;font-size:12px;color:var(--t3);}
+.bmark-actions{padding:0 16px 20px;}
+
+/* ═══════════════════════════════════════
+   PERFORMANCE SCREEN
+═══════════════════════════════════════ */
+#performance{background:var(--bg);overflow-y:auto;}
+.perf-list{padding:14px 16px calc(14px + env(safe-area-inset-bottom));}
+.pcard{background:var(--surf);border-radius:var(--r16);margin-bottom:10px;padding:16px;box-shadow:var(--sh);border:1px solid var(--bd);animation:fadeUp .3s var(--ease-s) both;}
+.pc-top{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.pc-icon{width:38px;height:38px;border-radius:var(--r12);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pc-icon svg{width:18px;height:18px;fill:white;}
+.pc-code{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--t4);}
+.pc-name{font-size:13px;font-weight:700;color:var(--t1);}
+.pc-pct{font-size:22px;font-weight:800;font-family:var(--ff-h);letter-spacing:-.5px;margin-left:auto;}
+.bar-track{height:7px;background:var(--surf3);border-radius:var(--rpill);overflow:hidden;}
+.bar-fill{height:100%;border-radius:var(--rpill);transition:width 1s var(--ease-o);}
+.pc-meta{display:flex;justify-content:space-between;margin-top:6px;}
+.pc-meta-i{font-size:11px;color:var(--t4);}
+.pc-meta-i span{font-weight:700;color:var(--t2);}
+
+/* ═══════════════════════════════════════
+   QUIZ SCREEN
+═══════════════════════════════════════ */
+#quiz{background:var(--bg);}
+.quiz-topbar{position:sticky;top:0;z-index:50;background:rgba(240,242,248,.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--bd);padding:calc(env(safe-area-inset-top,0px)+8px) 16px 10px;}
+[data-theme=dark] .quiz-topbar{background:rgba(13,15,26,.92);}
+.qt-r1{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.qt-left{display:flex;align-items:center;gap:10px;}
+.qt-title{font-size:14px;font-weight:800;color:var(--t1);font-family:var(--ff-h);}
+.qt-right{display:flex;align-items:center;gap:7px;}
+.qt-badge{background:var(--brand);color:white;font-size:12px;font-weight:800;padding:5px 12px;border-radius:var(--rpill);box-shadow:0 2px 10px var(--brand-glow);font-family:var(--ff-h);}
+.timer-pill{display:flex;align-items:center;gap:4px;background:var(--surf);border:1px solid var(--bd2);padding:5px 11px;border-radius:var(--rpill);font-size:13px;font-weight:800;color:var(--t2);font-family:var(--ff-h);box-shadow:var(--sh);}
+.timer-pill svg{width:15px;height:15px;}
+.timer-pill.warn{background:var(--warn-lt);border-color:var(--warn);color:var(--warn);}
+.timer-pill.danger{background:var(--no-lt);border-color:var(--no);color:var(--no);}
+.prog-track{height:4px;background:var(--surf3);border-radius:var(--rpill);overflow:hidden;}
+.prog-fill{height:100%;border-radius:var(--rpill);background:linear-gradient(90deg,var(--brand),var(--purple));transition:width .5s var(--ease-s);}
+
+.quiz-body{flex:1;overflow-y:auto;padding:14px 16px 210px;-webkit-overflow-scrolling:touch;}
+
+/* Question card */
+.qcard{background:var(--surf);border-radius:var(--r20);box-shadow:var(--sh-md);overflow:hidden;border:1px solid var(--bd);}
+.qcard-accent{height:4px;background:linear-gradient(90deg,var(--brand),var(--purple));}
+.qcard-head{padding:18px 18px 16px;}
+.qmeta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:10px;}
+.qnum{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--brand);}
+.qtag{font-size:10px;font-weight:700;padding:3px 8px;border-radius:var(--rpill);background:var(--brand-lt);color:var(--brand);text-transform:uppercase;letter-spacing:.05em;}
+.qcourse{font-size:10px;font-weight:700;padding:3px 8px;border-radius:var(--rpill);text-transform:uppercase;letter-spacing:.05em;}
+.bmark-btn{margin-left:auto;background:none;border:none;color:var(--t4);cursor:pointer;padding:2px;transition:all .15s;}
+.bmark-btn:active{transform:scale(.85);}
+.bmark-btn svg{width:20px;height:20px;}
+.bmark-btn.on svg{fill:var(--warn);stroke:none;}
+.qtext{font-size:var(--qfont);font-weight:700;line-height:1.55;color:var(--t1);letter-spacing:-.2px;font-family:var(--ff-h);}
+
+/* Options */
+.opts{padding:4px 14px 16px;display:flex;flex-direction:column;gap:9px;}
+.opt{display:flex;align-items:flex-start;gap:12px;padding:13px 14px;border-radius:var(--r12);background:var(--surf2);border:1.5px solid var(--bd);cursor:pointer;transition:all .15s;text-align:left;width:100%;position:relative;overflow:hidden;}
+.opt:active:not(.locked){transform:scale(.99);}
+.opt:hover:not(.locked){background:var(--brand-lt);border-color:rgba(10,92,245,.25);}
+.oletter{width:28px;height:28px;border-radius:50%;background:rgba(60,60,67,.10);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--t2);font-family:var(--ff-h);flex-shrink:0;transition:all .18s;}
+.otext{font-size:calc(var(--qfont) - 2px);font-weight:600;color:var(--t1);line-height:1.4;flex:1;padding-top:4px;}
+.omark{flex-shrink:0;padding-top:5px;opacity:0;transition:opacity .2s;}
+.omark svg{width:18px;height:18px;}
+/* States */
+.opt.sel{background:var(--brand-lt);border-color:var(--brand);}
+.opt.sel .oletter{background:var(--brand);color:white;}
+.opt.correct{background:var(--ok-lt);border-color:var(--ok-bd);}
+.opt.correct .oletter{background:var(--ok);color:white;}
+.opt.correct .omark{opacity:1;color:var(--ok);}
+.opt.wrong{background:var(--no-lt);border-color:var(--no-bd);}
+.opt.wrong .oletter{background:var(--no);color:white;}
+.opt.wrong .omark{opacity:1;color:var(--no);}
+.opt.dim{opacity:.35;}
+.opt.locked{cursor:default;}
+
+/* Feedback strip */
+.fb-strip{margin:0 14px 14px;padding:11px 14px;border-radius:var(--r12);display:none;align-items:flex-start;gap:10px;}
+.fb-strip.on{display:flex;}
+.fb-strip.ok{background:var(--ok-lt);border:1px solid var(--ok-bd);}
+.fb-strip.no{background:var(--no-lt);border:1px solid var(--no-bd);}
+.fb-icon svg{width:20px;height:20px;}
+.fb-strip.ok .fb-icon svg{fill:var(--ok);}
+.fb-strip.no .fb-icon svg{fill:var(--no);}
+.fb-title{font-size:13px;font-weight:800;color:var(--t1);font-family:var(--ff-h);}
+.fb-exp{font-size:12px;color:var(--t3);margin-top:3px;line-height:1.4;}
+
+/* Notes panel */
+.note-panel{margin:0 14px 14px;padding:10px 14px;border-radius:var(--r12);background:var(--surf2);border:1px solid var(--bd);}
+.note-panel textarea{width:100%;border:none;background:transparent;font-family:var(--ff-b);font-size:13px;color:var(--t2);resize:none;outline:none;min-height:52px;line-height:1.5;}
+.note-panel textarea::placeholder{color:var(--t4);}
+
+/* Action bar */
+.quiz-actions{position:fixed;bottom:0;left:0;right:0;z-index:60;background:rgba(255,255,255,.93);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--bd);padding:9px 16px calc(9px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;}
+[data-theme=dark] .quiz-actions{background:rgba(26,30,53,.93);}
+.dots-bar{display:flex;gap:6px;overflow-x:auto;padding:1px 0;}
+.dot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;font-family:var(--ff-h);flex-shrink:0;cursor:pointer;transition:all .18s;}
+.dot.unans{background:var(--no-lt);color:var(--no);}
+.dot.curr{background:var(--brand);color:white;box-shadow:0 3px 12px var(--brand-glow);transform:scale(1.12);}
+.dot.done{background:var(--ok-lt);color:var(--ok);}
+.quiz-btns{display:flex;gap:8px;}
+.qbtn{flex:1;padding:14px;border-radius:var(--r12);font-size:15px;font-weight:800;border:none;cursor:pointer;transition:all .15s;font-family:var(--ff-h);display:flex;align-items:center;justify-content:center;gap:6px;letter-spacing:-.2px;}
+.qbtn:active{transform:scale(.97);}
+.qbtn.main{background:linear-gradient(140deg,var(--brand),var(--purple));color:white;box-shadow:0 4px 18px var(--brand-glow);}
+.qbtn.main:disabled{background:var(--surf3);box-shadow:none;color:var(--t4);cursor:default;transform:none;}
+.qbtn.skip{background:var(--surf2);color:var(--t3);border:1.5px solid var(--bd2);flex:0 0 auto;padding:14px 16px;}
+.qbtn svg{width:18px;height:18px;}
+
+/* ═══════════════════════════════════════
+   RESULTS SCREEN
+═══════════════════════════════════════ */
+#results{background:var(--bg);overflow-y:auto;}
+.res-topbar{position:sticky;top:0;z-index:40;background:rgba(240,242,248,.90);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--bd);padding:calc(env(safe-area-inset-top,0px)+10px) 18px 10px;display:flex;align-items:center;justify-content:space-between;}
+[data-theme=dark] .res-topbar{background:rgba(13,15,26,.90);}
+
+.score-hero{margin:16px 16px 0;background:linear-gradient(140deg,var(--brand) 0%,var(--purple) 100%);border-radius:var(--r20);padding:28px 22px;box-shadow:var(--sh-lg);text-align:center;position:relative;overflow:hidden;}
+.score-hero::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.06);}
+.sh-lbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.65);margin-bottom:6px;}
+.sh-big{font-size:clamp(52px,14vw,68px);font-weight:800;color:white;letter-spacing:-3px;line-height:1;font-family:var(--ff-h);}
+.sh-denom{font-size:20px;font-weight:600;color:rgba(255,255,255,.60);}
+.sh-pct{font-size:16px;font-weight:700;color:rgba(255,255,255,.80);margin-top:7px;font-family:var(--ff-h);}
+.sh-msg{font-size:13px;color:rgba(255,255,255,.60);margin-top:4px;}
+
+.sbox-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px 16px 0;}
+.sbox{background:var(--surf);border-radius:var(--r12);padding:13px 10px;text-align:center;box-shadow:var(--sh);border:1px solid var(--bd);}
+.sbox-val{font-size:24px;font-weight:800;font-family:var(--ff-h);letter-spacing:-.5px;}
+.sbox-val.g{color:var(--ok);}
+.sbox-val.r{color:var(--no);}
+.sbox-val.o{color:var(--warn);}
+.sbox-lbl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--t4);margin-top:3px;}
+
+/* Share btn */
+.share-btn{margin:12px 16px 0;width:calc(100% - 32px);padding:14px;border-radius:var(--r12);background:var(--surf);border:1.5px solid var(--bd2);color:var(--t2);font-size:15px;font-weight:800;font-family:var(--ff-h);display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;box-shadow:var(--sh);transition:all .15s;}
+.share-btn:active{transform:scale(.97);}
+.share-btn svg{width:20px;height:20px;fill:var(--brand);}
+
+/* Review */
+.rev-title{font-size:16px;font-weight:800;color:var(--t1);font-family:var(--ff-h);letter-spacing:-.3px;padding:16px 16px 8px;}
+.rcard{background:var(--surf);border-radius:var(--r16);margin:0 16px 10px;overflow:hidden;box-shadow:var(--sh);border:1px solid var(--bd);}
+.rcard-head{padding:13px 15px;display:flex;align-items:flex-start;gap:10px;border-bottom:1px solid var(--bd);}
+.rcard-badge{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.rcard-badge svg{width:13px;height:13px;}
+.rcard-badge.p{background:var(--ok-lt);}
+.rcard-badge.p svg{fill:var(--ok);}
+.rcard-badge.f{background:var(--no-lt);}
+.rcard-badge.f svg{fill:var(--no);}
+.rcard-badge.s{background:var(--surf3);}
+.rcard-badge.s svg{fill:var(--t4);}
+.rcard-q{font-size:13px;font-weight:700;color:var(--t1);line-height:1.4;flex:1;}
+.rcard-body{padding:11px 15px;display:flex;flex-direction:column;gap:7px;}
+.rrow{display:flex;align-items:flex-start;gap:7px;font-size:13px;line-height:1.4;}
+.rtag{font-size:9px;font-weight:800;padding:3px 7px;border-radius:5px;text-transform:uppercase;letter-spacing:.06em;flex-shrink:0;margin-top:1px;}
+.rtag.y{background:var(--no-lt);color:var(--no);}
+.rtag.c{background:var(--ok-lt);color:var(--ok);}
+.rtag.sk{background:var(--surf3);color:var(--t4);}
+.rexp{font-size:12px;color:var(--t3);font-weight:500;padding-top:6px;border-top:1px solid var(--bd);line-height:1.5;}
+
+/* Note on review */
+.rnote{padding:7px 15px 11px;}
+.rnote textarea{width:100%;border:1px solid var(--bd);background:var(--surf2);border-radius:var(--r8);padding:8px 10px;font-family:var(--ff-b);font-size:12px;color:var(--t2);resize:none;outline:none;min-height:48px;transition:border-color .18s;}
+.rnote textarea:focus{border-color:var(--brand);}
+
+.res-actions{padding:8px 16px calc(20px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px;}
+
+/* ═══════════════════════════════════════
+   NOTES SCREEN
+═══════════════════════════════════════ */
+#notes-screen{background:var(--bg);overflow-y:auto;}
+.notes-list{padding:14px 16px calc(14px + env(safe-area-inset-bottom));}
+.note-card{background:var(--surf);border-radius:var(--r16);margin-bottom:10px;padding:14px 16px;box-shadow:var(--sh);border:1px solid var(--bd);}
+.nc-q{font-size:13px;font-weight:700;color:var(--t1);margin-bottom:8px;line-height:1.35;}
+.nc-note{font-size:13px;color:var(--t2);line-height:1.5;background:var(--surf2);border-radius:var(--r8);padding:8px 10px;border-left:3px solid var(--brand);}
+.nc-del{float:right;background:none;border:none;color:var(--t4);cursor:pointer;padding:0;margin-left:8px;transition:color .15s;}
+.nc-del:active{color:var(--no);}
+
+/* ═══════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════ */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+@keyframes popIn{0%{opacity:0;transform:scale(.82);}70%{transform:scale(1.04);}100%{opacity:1;transform:scale(1);}}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+@keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-6px);}40%{transform:translateX(6px);}60%{transform:translateX(-4px);}80%{transform:translateX(4px);}}
+.fade-up{animation:fadeUp .38s var(--ease-s) both;}
+.pop-in{animation:popIn .42s var(--ease-s) both;}
+
+.fs-sm{--qfont:14px;} .fs-md{--qfont:16px;} .fs-lg{--qfont:19px;}
+</style>
+</head>
+<body class="fs-md">
+
+<div id="toast"></div>
+
+<!-- ═══ LOGIN ═══════════════════════════════════════════════ -->
+<div id="login" class="scr on">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="login-card fade-up">
+    <div class="lc-logo logo-tap" id="logo-tap" onclick="logoTap()">
+      <svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg>
+    </div>
+    <div class="lc-title">PrepHQ Portal</div>
+    <div class="lc-sub">Exam Prep Platform</div>
+    <div class="divider"></div>
+    <div class="err-banner" id="login-err">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+      <span id="login-err-msg">Invalid matric number or password</span>
+    </div>
+    <div class="f-group">
+      <div class="f-label">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        Matric Number
+      </div>
+      <div class="f-input-wrap">
+        <svg class="f-input-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 2.75c1.24 0 2.25 1.01 2.25 2.25S13.24 11.25 12 11.25 9.75 10.24 9.75 9 10.76 6.75 12 6.75zM17 17H7v-1.5c0-1.67 3.33-2.5 5-2.5s5 .83 5 2.5V17z"/></svg>
+        <input class="f-input" id="inp-matric" type="text" placeholder="e.g. PSC25CHM102" autocomplete="off" autocapitalize="characters" spellcheck="false">
+      </div>
+      <div class="f-hint">Format: PSC00XXX000</div>
+    </div>
+    <div class="f-group">
+      <div class="f-label">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+        Password
+      </div>
+      <div class="f-input-wrap">
+        <svg class="f-input-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>
+        <input class="f-input" id="inp-pass" type="password" placeholder="Your password">
+      </div>
+      <div class="f-hint">Your password is your matric number</div>
+    </div>
+    <div style="height:6px"></div>
+    <button class="btn-grad" id="login-btn" onclick="doLogin()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M11 7L9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5-5-5zm9 12h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z"/></svg>
+      Sign In
+    </button>
+    <div class="admin-hint" id="admin-hint"></div>
+    <div style="text-align:center;margin-top:14px;font-size:13px;color:var(--t3);">
+      New student? <a href="/register.html" style="color:var(--brand);font-weight:700;text-decoration:none;">Register with activation code</a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ HOME ════════════════════════════════════════════════ -->
+<div id="home" class="scr">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="tb-avatar" id="tb-avatar">FU</div>
+      <div class="tb-info">
+        <div class="tb-name" id="tb-name">Student</div>
+        <div class="tb-streak">
+          <svg viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg>
+          <span id="streak-txt">0 day streak</span>
+        </div>
+      </div>
+    </div>
+    <div class="tb-right">
+      <div class="ib" id="theme-ib" onclick="toggleTheme()">
+        <svg id="theme-ico" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
+      </div>
+      <div class="ib" onclick="openMenu()">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="home-hero fade-up">
+    <div class="hero-tag">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+      Study Portal
+    </div>
+    <div class="hero-title" id="home-greeting">Good morning,<br>let's study.</div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-pill"><div class="sp-dot" style="background:var(--brand)"></div><div class="sp-val blue" id="s-total">—</div><div class="sp-lbl">Questions</div></div>
+    <div class="stat-pill"><div class="sp-dot" style="background:var(--ok)"></div><div class="sp-val green" id="s-best">—</div><div class="sp-lbl">Best Score</div></div>
+    <div class="stat-pill"><div class="sp-dot" style="background:var(--warn)"></div><div class="sp-val orange" id="s-quizzes">0</div><div class="sp-lbl">Quizzes</div></div>
+    <div class="stat-pill"><div class="sp-dot" style="background:var(--purple)"></div><div class="sp-val purple" id="s-bmarks">0</div><div class="sp-lbl">Bookmarks</div></div>
+  </div>
+
+  <!-- Exam countdown -->
+  <div id="exam-banner-wrap" style="padding:0 18px;display:none;margin-bottom:2px;">
+    <div class="exam-banner">
+      <div class="eb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+      <div class="eb-txt"><div class="eb-title">Exam Countdown</div><div class="eb-sub" id="exam-date-label">Date not set</div></div>
+      <div><div class="eb-days" id="exam-days">—</div><div class="eb-days-lbl">days left</div></div>
+    </div>
+  </div>
+
+  <!-- Daily goal -->
+  <div id="goal-card-wrap" style="padding:12px 18px 0;">
+    <div class="goal-card">
+      <div class="gc-top"><div class="gc-title">Daily Goal</div><div class="gc-count" id="goal-count">0 / 20</div></div>
+      <div class="gc-bar"><div class="gc-fill" id="goal-fill" style="width:0%"></div></div>
+      <div class="gc-sub" id="goal-sub">Complete 20 questions today</div>
+    </div>
+  </div>
+
+  <div class="sec-h"><div class="sec-title">Select Course</div><div class="sec-badge" id="sel-badge">1 selected</div></div>
+  <div class="cg" id="course-grid"></div>
+
+  <div class="sec-h" style="padding-top:20px;"><div class="sec-title">Quiz Mode</div></div>
+  <div class="mode-row">
+    <div class="mode-btn on" data-mode="practice" onclick="selMode(this)">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z"/></svg>
+      <div class="mode-lbl">Practice</div><div class="mode-sub">Instant feedback</div>
+    </div>
+    <div class="mode-btn" data-mode="exam" onclick="selMode(this)">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.98 2.63 3.61 2.96V19H7v2h10v-2h-4v-3.1c1.63-.33 2.98-1.46 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg>
+      <div class="mode-lbl">Exam</div><div class="mode-sub">Score at end</div>
+    </div>
+    <div class="mode-btn" data-mode="wrong" onclick="selMode(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+      <div class="mode-lbl">Retry</div><div class="mode-sub">Wrong answers</div>
+    </div>
+  </div>
+
+  <div class="sec-h" style="padding-top:18px;"><div class="sec-title">Questions</div></div>
+  <div class="qty-wrap"><div class="qty-row">
+    <div class="qp" data-qty="10" onclick="selQty(this)">10</div>
+    <div class="qp on" data-qty="20" onclick="selQty(this)">20</div>
+    <div class="qp" data-qty="40" onclick="selQty(this)">40</div>
+    <div class="qp" data-qty="60" onclick="selQty(this)">60</div>
+    <div class="qp" data-qty="all" onclick="selQty(this)">All</div>
+  </div></div>
+
+  <div class="sec-h" style="padding-top:18px;"><div class="sec-title">Options</div></div>
+  <div style="display:flex;flex-direction:column;gap:10px;padding-bottom:4px;">
+    <div class="opt-card">
+      <div class="oc-left">
+        <div class="oc-icon" style="background:var(--teal-lt);color:var(--teal)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg></div>
+        <div><div class="oc-title">Question Timer</div><div class="oc-sub" id="timer-sub-lbl">30 seconds per question</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:12px;font-weight:700;color:var(--brand);background:var(--brand-lt);padding:4px 10px;border-radius:var(--rpill);cursor:pointer;display:none;" id="timer-sec-btn" onclick="cycleTimer()">30s</span>
+        <button class="toggle" id="timer-toggle" onclick="toggleTimer()"></button>
+      </div>
+    </div>
+    <div class="opt-card">
+      <div class="oc-left">
+        <div class="oc-icon" style="background:var(--purple-lt);color:var(--purple)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 17v2h14v-2H5zm4.5-4.2h5l.9 2.2h2.1L12.75 4h-1.5L6.5 15h2.1l.9-2.2zM12 5.98L13.87 11h-3.74L12 5.98z"/></svg></div>
+        <div><div class="oc-title">Font Size</div><div class="oc-sub">Adjust question text size</div></div>
+      </div>
+      <div class="font-btns">
+        <div class="fb" data-sz="sm" onclick="setFontSize('sm')">A</div>
+        <div class="fb on" data-sz="md" onclick="setFontSize('md')">A</div>
+        <div class="fb" data-sz="lg" onclick="setFontSize('lg')" style="font-size:17px">A</div>
+      </div>
+    </div>
+    <div class="opt-card" style="cursor:pointer;" onclick="showScr('settings')">
+      <div class="oc-left">
+        <div class="oc-icon" style="background:var(--warn-lt);color:var(--warn)"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"/><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"/><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div><div class="oc-title">Exam Date & Notifications</div><div class="oc-sub" id="notif-sub">Set countdown & reminders</div></div>
+      </div>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+    </div>
+  </div>
+
+  <div class="start-wrap">
+    <button class="btn-grad" id="start-btn" onclick="startQuiz()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+      Start Quiz
+    </button>
+  </div>
+</div>
+
+<!-- ═══ HISTORY ══════════════════════════════════════════════ -->
+<div id="history" class="scr">
+  <div class="sub-topbar">
+    <button class="back-btn" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+    <div class="scr-title">Quiz History</div>
+  </div>
+  <div id="hist-body" style="flex:1;display:flex;flex-direction:column;"></div>
+</div>
+
+<!-- ═══ BOOKMARKS ════════════════════════════════════════════ -->
+<div id="bookmarks" class="scr">
+  <div class="sub-topbar">
+    <button class="back-btn" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+    <div class="scr-title">Bookmarks</div>
+  </div>
+  <div id="bmarks-body" style="flex:1;display:flex;flex-direction:column;overflow-y:auto;"></div>
+</div>
+
+<!-- ═══ NOTES ════════════════════════════════════════════════ -->
+<div id="notes-screen" class="scr">
+  <div class="sub-topbar">
+    <button class="back-btn" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+    <div class="scr-title">Study Notes</div>
+  </div>
+  <div id="notes-body" style="flex:1;display:flex;flex-direction:column;overflow-y:auto;"></div>
+</div>
+
+<!-- ═══ PERFORMANCE ══════════════════════════════════════════ -->
+<div id="performance" class="scr">
+  <div class="sub-topbar">
+    <button class="back-btn" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+    <div class="scr-title">Performance</div>
+  </div>
+  <div id="perf-body" style="flex:1;overflow-y:auto;"></div>
+</div>
+
+<!-- ═══ SETTINGS ═════════════════════════════════════════════ -->
+<div id="settings" class="scr">
+  <div class="sub-topbar">
+    <button class="back-btn" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+    <div class="scr-title">Settings</div>
+  </div>
+  <div style="padding:16px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;">
+    <!-- Exam Date -->
+    <div style="background:var(--surf);border-radius:var(--r16);padding:18px;box-shadow:var(--sh);border:1px solid var(--bd);">
+      <div style="font-size:15px;font-weight:800;color:var(--t1);font-family:var(--ff-h);margin-bottom:4px;">Exam Date Countdown</div>
+      <div style="font-size:13px;color:var(--t3);margin-bottom:14px;">Set your exam date to see a countdown on the home screen.</div>
+      <div class="f-group" style="margin-bottom:12px;">
+        <div class="f-label">Exam Date</div>
+        <input type="date" class="f-input" id="exam-date-input" style="padding-left:14px;" onchange="saveExamDate()">
+      </div>
+      <div class="f-group" style="margin-bottom:0;">
+        <div class="f-label">Exam Name (optional)</div>
+        <input type="text" class="f-input" id="exam-name-input" placeholder="e.g. GST 101 Final Exam" style="padding-left:14px;" oninput="saveExamDate()">
+      </div>
+    </div>
+    <!-- Daily Goal -->
+    <div style="background:var(--surf);border-radius:var(--r16);padding:18px;box-shadow:var(--sh);border:1px solid var(--bd);">
+      <div style="font-size:15px;font-weight:800;color:var(--t1);font-family:var(--ff-h);margin-bottom:4px;">Daily Question Goal</div>
+      <div style="font-size:13px;color:var(--t3);margin-bottom:14px;">How many questions do you want to answer each day?</div>
+      <div class="qty-row">
+        <div class="qp" data-goal="10" onclick="setGoal(this)">10</div>
+        <div class="qp" data-goal="20" onclick="setGoal(this)">20</div>
+        <div class="qp" data-goal="30" onclick="setGoal(this)">30</div>
+        <div class="qp" data-goal="50" onclick="setGoal(this)">50</div>
+      </div>
+    </div>
+    <!-- Notifications -->
+    <div style="background:var(--surf);border-radius:var(--r16);padding:18px;box-shadow:var(--sh);border:1px solid var(--bd);">
+      <div style="font-size:15px;font-weight:800;color:var(--t1);font-family:var(--ff-h);margin-bottom:4px;">Study Reminders</div>
+      <div style="font-size:13px;color:var(--t3);margin-bottom:14px;">Get a notification to remind you to study each day.</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div style="font-size:14px;font-weight:600;color:var(--t1);">Enable reminders</div>
+        <button class="toggle" id="notif-toggle" onclick="toggleNotif()"></button>
+      </div>
+      <div class="f-group" style="margin-bottom:0;" id="notif-time-wrap" style="display:none;">
+        <div class="f-label">Reminder Time</div>
+        <input type="time" class="f-input" id="notif-time" value="20:00" style="padding-left:14px;" onchange="saveNotifTime()">
+      </div>
+    </div>
+    <!-- Install PWA -->
+    <div style="background:var(--surf);border-radius:var(--r16);padding:18px;box-shadow:var(--sh);border:1px solid var(--bd);" id="pwa-install-wrap">
+      <div style="font-size:15px;font-weight:800;color:var(--t1);font-family:var(--ff-h);margin-bottom:4px;">Install App</div>
+      <div style="font-size:13px;color:var(--t3);margin-bottom:14px;">Add PrepHQ to your home screen for offline access.</div>
+      <button class="btn-grad" id="pwa-btn" onclick="installPWA()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+        Install on Home Screen
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ QUIZ ══════════════════════════════════════════════════ -->
+<div id="quiz" class="scr">
+  <div class="quiz-topbar">
+    <div class="qt-r1">
+      <div class="qt-left">
+        <button class="back-btn" onclick="confirmBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+        <span class="qt-title" id="qt-title">Quiz</span>
+      </div>
+      <div class="qt-right">
+        <div class="timer-pill" id="timer-pill" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+          <span id="timer-disp">30</span>
+        </div>
+        <div class="qt-badge" id="qt-badge">1/20</div>
+      </div>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+  <div class="quiz-body" id="quiz-body"></div>
+  <div class="quiz-actions">
+    <div class="dots-bar" id="dots-bar"></div>
+    <div class="quiz-btns">
+      <button class="qbtn skip" id="qbtn-skip" onclick="skipQ()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zm8.5-6L23 18V6z"/></svg>
+      </button>
+      <button class="qbtn main" id="qbtn-main" disabled onclick="mainAct()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="white" id="qbtn-ico"><path d="M4 0l16 12.279-6.951 1.17 4.325 8.817-2.073.934-4.325-8.817-6.976 4.887z"/></svg>
+        <span id="qbtn-txt">Select an Answer</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ RESULTS ══════════════════════════════════════════════ -->
+<div id="results" class="scr">
+  <div class="res-topbar">
+    <div>
+      <div class="scr-title">Results</div>
+      <div style="font-size:12px;color:var(--t3);" id="res-sub">—</div>
+    </div>
+    <button class="back-btn" onclick="goHome()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></button>
+  </div>
+  <div class="score-hero pop-in">
+    <div class="sh-lbl">Your Score</div>
+    <div><span class="sh-big" id="r-score">0</span><span class="sh-denom" id="r-denom">/ 20</span></div>
+    <div class="sh-pct" id="r-pct">0%</div>
+    <div class="sh-msg" id="r-msg">Keep studying!</div>
+  </div>
+  <div class="sbox-row">
+    <div class="sbox"><div class="sbox-val g" id="r-cor">0</div><div class="sbox-lbl">Correct</div></div>
+    <div class="sbox"><div class="sbox-val r" id="r-wrg">0</div><div class="sbox-lbl">Wrong</div></div>
+    <div class="sbox"><div class="sbox-val o" id="r-skp">0</div><div class="sbox-lbl">Skipped</div></div>
+  </div>
+  <button class="share-btn" onclick="shareResult()">
+    <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92S19.61 16.08 18 16.08z"/></svg>
+    Share Result
+  </button>
+  <div class="rev-title">Review Answers</div>
+  <div id="rev-list"></div>
+  <div class="res-actions">
+    <button class="btn-grad" onclick="retryQuiz()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+      Try Again
+    </button>
+    <button class="btn-surf" onclick="goHome()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17v2h6v-2H3zm0-6v2h12v-2H3zm12 8v-2h6v-2h-6v-2h-2v6h2zm-4-14v2H3v2h8v2h2V5h-2zm6 2v2h2V7h-2zm-2-2h-2v6h2V5z"/></svg>
+      Change Settings
+    </button>
+  </div>
+</div>
+
+<!-- ═══ MENU SHEET ════════════════════════════════════════════ -->
+<div class="sheet-bg" id="menu-sheet" onclick="closeSheet('menu-sheet')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Menu</div>
+    <div class="sheet-sub" id="menu-matric">—</div>
+    <div class="menu-item" onclick="closeSheet('menu-sheet');showScr('performance')">
+      <div class="mi-icon" style="background:var(--brand-lt);color:var(--brand)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+      <div class="mi-body"><div class="mi-title">Performance</div><div class="mi-sub">Track scores per course</div></div>
+      <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </div>
+    <div class="menu-item" onclick="closeSheet('menu-sheet');showScr('history')">
+      <div class="mi-icon" style="background:var(--purple-lt);color:var(--purple)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg></div>
+      <div class="mi-body"><div class="mi-title">Quiz History</div><div class="mi-sub" id="menu-hist-count">0 quizzes</div></div>
+      <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </div>
+    <div class="menu-item" onclick="closeSheet('menu-sheet');showScr('bookmarks')">
+      <div class="mi-icon" style="background:var(--warn-lt);color:var(--warn)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg></div>
+      <div class="mi-body"><div class="mi-title">Bookmarks</div><div class="mi-sub" id="menu-bmark-count">0 saved</div></div>
+      <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </div>
+    <div class="menu-item" onclick="closeSheet('menu-sheet');showScr('notes-screen')">
+      <div class="mi-icon" style="background:var(--ok-lt);color:var(--ok)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></div>
+      <div class="mi-body"><div class="mi-title">Study Notes</div><div class="mi-sub" id="menu-notes-count">0 notes</div></div>
+      <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </div>
+    <div class="menu-item" onclick="closeSheet('menu-sheet');showScr('settings')">
+      <div class="mi-icon" style="background:var(--teal-lt);color:var(--teal)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg></div>
+      <div class="mi-body"><div class="mi-title">Settings</div><div class="mi-sub">Notifications, exam date, PWA</div></div>
+      <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </div>
+    <div class="menu-sep"></div>
+    <div class="menu-item" onclick="closeSheet('menu-sheet');doLogout()">
+      <div class="mi-icon" style="background:var(--no-lt);color:var(--no)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg></div>
+      <div class="mi-body"><div class="mi-title" style="color:var(--no)">Sign Out</div><div class="mi-sub" id="menu-user-lbl">—</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Question bank -->
+<script src="/questions.js"></script>
+<script>
+// ══════════════════════════════════════════════════════════════
+//  CONFIG
+// ══════════════════════════════════════════════════════════════
+const API_BASE = ''; // same origin
+
+const COURSES = {
+  gst101:{name:"Use of English",      color:"#0A5CF5",code:"GST 101",icon:"translate"},
+  gst102:{name:"Communication",       color:"#00C96B",code:"GST 102",icon:"edit"},
+  gst103:{name:"Peoples & Culture",   color:"#F5930A",code:"GST 103",icon:"globe"},
+  sta111:{name:"Statistics",          color:"#7B2CF5",code:"STA 111",icon:"bar"},
+  phy101:{name:"Mechanics",           color:"#0ABCF5",code:"PHY 101",icon:"lightning"},
+  phy107:{name:"Lab Measurements",    color:"#00C96B",code:"PHY 107",icon:"flask"},
+  mth101:{name:"Mathematics I",       color:"#F5340A",code:"MTH 101",icon:"calc"},
+  mth103:{name:"Mathematics III",     color:"#F5930A",code:"MTH 103",icon:"math"},
+  chm141:{name:"Chemistry",           color:"#00C96B",code:"CHM 141",icon:"atom"},
+  bio101:{name:"Biology",             color:"#0A5CF5",code:"BIO 101",icon:"dna"},
+  csc101:{name:"Computer Science",    color:"#0ABCF5",code:"CSC 101",icon:"code"},
+  cos101:{name:"Computer Systems",    color:"#6B7089",code:"COS 101",icon:"laptop"},
+  extra: {name:"Grammar & Study",     color:"#F5930A",code:"Bonus",  icon:"star"},
+};
+
+// Inline SVG icons map (small set needed for course cards)
+const CICO = {
+  translate:'<svg viewBox="0 0 24 24" fill="white" width="18" height="18"><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>',
+  edit:'<svg viewBox="0 0 24 24" fill="white" width="18" height="18"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>',
+  globe:'<svg viewBox="0 0 24 24" fill="white" width="18" height="18"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>',
+  bar:'<svg viewBox="0 0 24 24" fill="white" width="18" height="18"><path d="M5 9.2h3V19H5V9.2zM10.6 5h2.8v14h-2.8V5zm5.6 8H19v6h-2.8v-6z"/></svg>',
+  lightning:'<svg viewBox="0 0 24 24" fill="white" width="18" height="18"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>',
+  flask:'<svg viewBox="0 0 24 24" fill="white" width="18" height="18"><path d="M9 3v10.55C7.21 14.25 6 16 6 18c0 2.76 2.24 5 5 5s5-2.24 5-5c0-2-1.21-3.75-3-4.45V3H9zm-1 1h8v1H8V4zm0 2h8v1H8V6zm4 13c-1.66 0-3-1.34-3-3 0-1.3.84-2.4 2-2.82V7h2v6.18c1.16.42 2 1.52 2 2.82 0 1.66-1.34 3-3 3z"/></svg>',
+  calc:'<svg viewBox="0 0 24 24" fill="white" width="18" height="18"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5.25 14.5H8.5v-1.5h5.25v1.5zm1.5-3H8.5v-1.5h6.75V14.5zm0-3H8.5v-1.5h6.75V11.5zM17 9H7V6h10v3z"/></svg>',
+  math:'<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" width="18" height="18"><path d="M19 5L5 19M5 5l14 14M3 12h3.5M17.5 12H21M12 3v3.5M12 17.5V21"/></svg>',
+  atom:'<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="1.5" fill="white"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-60 12 12)"/></svg>',
+  dna:'<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" width="18" height="18"><path d="M2 15c6.667-6 13.333 0 20-6M2 9c6.667 6 13.333 0 20 6"/></svg>',
+  code:'<svg viewBox="0 0 24 24" fill="white" width="18" height="18"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h16v12zM6 8l4 4-4 4 1.4 1.4 5.4-5.4L7.4 6.6 6 8zm5 8h6v-2h-6v2z"/></svg>',
+  laptop:'<svg viewBox="0 0 24 24" fill="white" width="18" height="18"><path d="M20 18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/></svg>',
+  star:'<svg viewBox="0 0 24 24" fill="white" width="18" height="18"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>',
+};
+
+// ══════════════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════════════
+let curUser = null;
+let selCourses = ['gst101'];
+let quizMode = 'practice';
+let selQtyVal = 20;
+let timerOn = false, timerSecs = 30;
+let timerInterval = null, timeLeft = 0;
+let quizQ = [], cur = 0, answers = [], confirmed = [];
+let lastWrong = [];
+let logoTapCount = 0, logoTapTimer = null;
+let deferredPrompt = null;
+
+// ══════════════════════════════════════════════════════════════
+//  STORAGE helpers (localStorage, keyed per matric)
+// ══════════════════════════════════════════════════════════════
+const lk = k => `phq_${curUser?.matric}_${k}`;
+const load = (k,d) => { try{const v=localStorage.getItem(lk(k));return v!=null?JSON.parse(v):d;}catch{return d;} };
+const save = (k,v) => { try{localStorage.setItem(lk(k),JSON.stringify(v));}catch{} };
+
+const getBmarks  = () => load('bmarks',[]);
+const saveBmarks = b => save('bmarks',b);
+const getNotes   = () => load('notes',{});
+const saveNotes  = n => save('notes',n);
+const getPerf    = () => load('perf',{});
+const savePerf   = p => save('perf',p);
+const getStreak  = () => load('streak',{count:0,last:''});
+const saveStreak = s => save('streak',s);
+const getGoal    = () => load('goal',{target:20,today:new Date().toDateString(),done:0});
+const saveGoal   = g => save('goal',g);
+const getSettings= () => load('settings',{examDate:'',examName:'',notif:false,notifTime:'20:00',goalTarget:20});
+const saveSettings=s => save('settings',s);
+
+// ── Backend score sync ────────────────────────────────────────
+async function pushScore(entry){
+  try{
+    await fetch(`${API_BASE}/api/scores/${curUser.matric}`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(entry)
+    });
+  }catch(e){ /* offline - ok */ }
+}
+
+async function pullHistory(){
+  try{
+    const r = await fetch(`${API_BASE}/api/scores/${curUser.matric}`);
+    return await r.json();
+  }catch{return [];}
+}
+
+// ══════════════════════════════════════════════════════════════
+//  LOGIN
+// ══════════════════════════════════════════════════════════════
+function logoTap(){
+  logoTapCount++;
+  clearTimeout(logoTapTimer);
+  const hint = document.getElementById('admin-hint');
+  if(logoTapCount>=5){
+    logoTapCount=0;
+    hint.textContent='';
+    window.location.href='/admin.html';
+    return;
+  }
+  hint.textContent=`${5-logoTapCount} more taps for admin`;
+  logoTapTimer=setTimeout(()=>{logoTapCount=0;hint.textContent='';},2000);
+}
+
+async function doLogin(){
+  const matric=document.getElementById('inp-matric').value.trim().toUpperCase();
+  const pass=document.getElementById('inp-pass').value.trim();
+  const err=document.getElementById('login-err');
+  const errMsg=document.getElementById('login-err-msg');
+  const btn=document.getElementById('login-btn');
+  err.classList.remove('on');
+  document.getElementById('inp-matric').classList.remove('err');
+  document.getElementById('inp-pass').classList.remove('err');
+  if(!matric||!pass){errMsg.textContent='Please enter matric and password.';err.classList.add('on');return;}
+  btn.disabled=true; btn.querySelector('span')&&(btn.lastChild.textContent='Signing in...');
+  try{
+    const res=await fetch(`${API_BASE}/api/auth/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({matric,password:pass})});
+    const data=await res.json();
+    if(!res.ok){
+      errMsg.textContent=data.error||'Invalid credentials';
+      err.classList.add('on');
+      document.getElementById('inp-matric').classList.add('err');
+      document.getElementById('inp-pass').classList.add('err');
+    } else {
+      curUser=data;
+      initHome();
+      showScr('home');
+    }
+  }catch(e){
+    errMsg.textContent='Cannot connect to server. Check server is running.';
+    err.classList.add('on');
+  }
+  btn.disabled=false;
+}
+
+function doLogout(){
+  curUser=null; quizQ=[];
+  document.getElementById('inp-matric').value='';
+  document.getElementById('inp-pass').value='';
+  document.getElementById('login-err').classList.remove('on');
+  showScr('login');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  HOME INIT
+// ══════════════════════════════════════════════════════════════
+function initHome(){
+  const init=curUser.matric.replace(/[^A-Z]/g,'').slice(0,2)||'FU';
+  document.getElementById('tb-avatar').textContent=init;
+  document.getElementById('tb-name').textContent=curUser.matric;
+  document.getElementById('menu-user-lbl').textContent=curUser.matric;
+  document.getElementById('menu-matric').textContent=curUser.name||curUser.matric;
+
+  const hr=new Date().getHours();
+  const g=hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';
+  document.getElementById('home-greeting').textContent=g+',\nlet\'s study.';
+
+  // Streak
+  const st=getStreak();
+  const today=new Date().toDateString();
+  if(st.last!==today){
+    const yesterday=new Date(Date.now()-86400000).toDateString();
+    st.count=st.last===yesterday?st.count+1:1;
+    st.last=today;
+    saveStreak(st);
+  }
+  document.getElementById('streak-txt').textContent=st.count+' day streak';
+
+  // Total Q count
+  let tot=0;Object.values(BANK).forEach(b=>tot+=b.length);
+  document.getElementById('s-total').textContent=tot+'+';
+
+  buildCourseGrid();
+  refreshStats();
+  renderExamBanner();
+  renderDailyGoal();
+  loadSettings();
+}
+
+function refreshStats(){
+  const bmarks=getBmarks();
+  document.getElementById('s-bmarks').textContent=bmarks.length;
+  document.getElementById('menu-bmark-count').textContent=bmarks.length+' saved';
+  const notes=getNotes();
+  document.getElementById('menu-notes-count').textContent=Object.keys(notes).length+' notes';
+
+  // Pull history from backend (async, update when ready)
+  pullHistory().then(hist=>{
+    document.getElementById('s-quizzes').textContent=hist.length;
+    document.getElementById('menu-hist-count').textContent=hist.length+' quizzes';
+    if(hist.length){
+      const best=Math.max(...hist.map(h=>h.pct));
+      document.getElementById('s-best').textContent=best+'%';
+    }
+  });
+}
+
+// ── Course grid ───────────────────────────────────────────────
+function buildCourseGrid(){
+  const grid=document.getElementById('course-grid');
+  grid.innerHTML='';
+  Object.entries(COURSES).forEach(([key,m])=>{
+    const cnt=BANK[key]?BANK[key].length:0;
+    const sel=selCourses.includes(key);
+    const d=document.createElement('div');
+    d.className='cc'+(sel?' on':'');
+    d.dataset.course=key;
+    d.innerHTML=`
+      <div class="cc-top">
+        <div class="cc-ico" style="background:${m.color}">${CICO[m.icon]||''}</div>
+        <div class="cc-check"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
+      </div>
+      <div class="cc-code">${m.code}</div>
+      <div class="cc-name">${m.name}</div>
+      <div class="cc-n"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>${cnt}</div>
+      <div class="cc-bar" style="background:${m.color}"></div>`;
+    d.onclick=()=>toggleCourse(d,key);
+    grid.appendChild(d);
+  });
+}
+
+function toggleCourse(el,key){
+  if(el.classList.contains('on')){
+    if(selCourses.length===1){toast('Select at least one course');return;}
+    el.classList.remove('on');selCourses=selCourses.filter(c=>c!==key);
+  } else {el.classList.add('on');selCourses.push(key);}
+  document.getElementById('sel-badge').textContent=selCourses.length+' selected';
+}
+
+function selMode(el){
+  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');quizMode=el.dataset.mode;
+}
+
+function selQty(el){
+  document.querySelectorAll('.qp').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');selQtyVal=el.dataset.qty==='all'?9999:parseInt(el.dataset.qty);
+}
+
+// ── Settings / Exam / Goal ────────────────────────────────────
+function loadSettings(){
+  const s=getSettings();
+  document.getElementById('exam-date-input').value=s.examDate||'';
+  document.getElementById('exam-name-input').value=s.examName||'';
+  document.getElementById('notif-time').value=s.notifTime||'20:00';
+  const nt=document.getElementById('notif-toggle');
+  if(s.notif)nt.classList.add('on');
+  document.getElementById('notif-time-wrap').style.display=s.notif?'block':'none';
+  // Goal pills
+  document.querySelectorAll('[data-goal]').forEach(p=>{
+    p.classList.toggle('on',parseInt(p.dataset.goal)===(s.goalTarget||20));
+  });
+}
+
+function saveExamDate(){
+  const s=getSettings();
+  s.examDate=document.getElementById('exam-date-input').value;
+  s.examName=document.getElementById('exam-name-input').value;
+  saveSettings(s);renderExamBanner();
+}
+
+function renderExamBanner(){
+  const s=getSettings();
+  const wrap=document.getElementById('exam-banner-wrap');
+  if(!s.examDate){wrap.style.display='none';return;}
+  const examD=new Date(s.examDate);
+  const now=new Date();
+  const diff=Math.ceil((examD-now)/(1000*60*60*24));
+  if(diff<0){wrap.style.display='none';return;}
+  wrap.style.display='block';
+  document.getElementById('exam-days').textContent=diff;
+  document.getElementById('exam-date-label').textContent=s.examName||'Upcoming Exam';
+}
+
+function setGoal(el){
+  document.querySelectorAll('[data-goal]').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  const s=getSettings();s.goalTarget=parseInt(el.dataset.goal);saveSettings(s);
+  renderDailyGoal();
+}
+
+function renderDailyGoal(){
+  const s=getSettings();
+  const g=getGoal();
+  const today=new Date().toDateString();
+  if(g.today!==today){g.today=today;g.done=0;saveGoal(g);}
+  const target=s.goalTarget||20;
+  const pct=Math.min(100,Math.round((g.done/target)*100));
+  document.getElementById('goal-count').textContent=`${g.done} / ${target}`;
+  document.getElementById('goal-fill').style.width=pct+'%';
+  document.getElementById('goal-sub').textContent=
+    pct>=100?'Daily goal complete! Great work!':
+    `Answer ${target-g.done} more question${target-g.done!==1?'s':''} to hit your goal`;
+}
+
+function toggleNotif(){
+  const s=getSettings();
+  s.notif=!s.notif;saveSettings(s);
+  const tog=document.getElementById('notif-toggle');
+  tog.classList.toggle('on',s.notif);
+  document.getElementById('notif-time-wrap').style.display=s.notif?'block':'none';
+  if(s.notif) requestNotifPermission();
+}
+
+function saveNotifTime(){
+  const s=getSettings();
+  s.notifTime=document.getElementById('notif-time').value;
+  saveSettings(s);
+  scheduleNotification();
+  toast('Reminder set for '+s.notifTime);
+}
+
+async function requestNotifPermission(){
+  if(!('Notification' in window)){toast('Notifications not supported in this browser');return;}
+  const perm=await Notification.requestPermission();
+  if(perm==='granted'){toast('Notifications enabled!');scheduleNotification();}
+  else{toast('Notification permission denied');const s=getSettings();s.notif=false;saveSettings(s);document.getElementById('notif-toggle').classList.remove('on');}
+}
+
+function scheduleNotification(){
+  const s=getSettings();
+  if(!s.notif||Notification.permission!=='granted') return;
+  const [hh,mm]=s.notifTime.split(':').map(Number);
+  const now=new Date();
+  const target=new Date();
+  target.setHours(hh,mm,0,0);
+  if(target<=now) target.setDate(target.getDate()+1);
+  const delay=target-now;
+  setTimeout(()=>{
+    new Notification('PrepHQ — Study Reminder',{
+      body:'Time to study! Open PrepHQ and hit your daily goal.',
+      icon:'/icons/icon-192.png',
+    });
+    scheduleNotification(); // reschedule for next day
+  },delay);
+}
+
+// ── Timer options ─────────────────────────────────────────────
+const TIMER_OPTS=[15,20,30,45,60];let timerOptIdx=2;
+function toggleTimer(){
+  timerOn=!timerOn;
+  document.getElementById('timer-toggle').classList.toggle('on',timerOn);
+  const btn=document.getElementById('timer-sec-btn');
+  btn.style.display=timerOn?'block':'none';
+  document.getElementById('timer-sub-lbl').textContent=timerOn?timerSecs+'s per question':'Off';
+}
+function cycleTimer(){
+  timerOptIdx=(timerOptIdx+1)%TIMER_OPTS.length;
+  timerSecs=TIMER_OPTS[timerOptIdx];
+  document.getElementById('timer-sec-btn').textContent=timerSecs+'s';
+  document.getElementById('timer-sub-lbl').textContent=timerSecs+'s per question';
+}
+
+// ── Font size ─────────────────────────────────────────────────
+function setFontSize(sz){
+  document.body.className=document.body.className.replace(/fs-\w+/g,'').trim()+' fs-'+sz;
+  document.querySelectorAll('.fb').forEach(b=>b.classList.toggle('on',b.dataset.sz===sz));
+}
+
+// ── Theme ─────────────────────────────────────────────────────
+function toggleTheme(){
+  const dark=document.documentElement.dataset.theme==='dark';
+  document.documentElement.dataset.theme=dark?'light':'dark';
+  const ico=document.getElementById('theme-ico');
+  ico.innerHTML=dark
+    ?'<path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/>'
+    :'<path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2v-2H2v2zm18 0h2v-2h-2v2zM11 2v2h2V2h-2zm0 18v2h2v-2h-2zM5.99 4.58l-1.42 1.42 1.42 1.41 1.41-1.41L5.99 4.58zm12.03 12.03l-1.42 1.42 1.42 1.41 1.41-1.41-1.41-1.42zm1.41-12.44l-1.41-1.41-1.42 1.41 1.42 1.42 1.41-1.42zM5.99 19.42l1.41 1.41 1.42-1.42-1.42-1.41-1.41 1.42z"/>';
+}
+
+// ══════════════════════════════════════════════════════════════
+//  QUIZ ENGINE
+// ══════════════════════════════════════════════════════════════
+function startQuiz(){
+  if(quizMode==='wrong'){
+    if(!lastWrong.length){toast('No wrong answers from last quiz');return;}
+    quizQ=[...lastWrong];
+  } else {
+    let pool=[];
+    // STRICT: only questions from selected courses
+    selCourses.forEach(c=>{if(BANK[c])pool.push(...BANK[c].map(q=>({...q,course:c})));});
+    for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+    quizQ=pool.slice(0,Math.min(selQtyVal,pool.length));
+  }
+  answers=new Array(quizQ.length).fill(null);
+  confirmed=new Array(quizQ.length).fill(false);
+  cur=0;
+  const names=selCourses.map(c=>COURSES[c]?.code||c);
+  document.getElementById('qt-title').textContent=names.length<=2?names.join('+'):'Mixed';
+  showScr('quiz');
+  renderQ();
+}
+
+function renderQ(){
+  stopTimer();
+  const q=quizQ[cur];
+  const total=quizQ.length;
+  const locked=confirmed[cur];
+  document.getElementById('qt-badge').textContent=`${cur+1}/${total}`;
+  document.getElementById('prog-fill').style.width=`${Math.round((cur/total)*100)}%`;
+
+  const bmarks=getBmarks();
+  const qid=`${q.course}_${q.q||q.question||''}`;
+  const isBmarked=bmarks.some(b=>b.id===qid);
+  const notes=getNotes();
+  const qnote=notes[qid]||'';
+  const cm=COURSES[q.course]||{};
+
+  const optsHtml=q.opts.map((o,i)=>{
+    let cls='opt';
+    const showFb=locked&&quizMode!=='exam';
+    if(locked)cls+=' locked';
+    if(showFb){
+      if(i===q.ans)cls+=' correct';
+      else if(i===answers[cur]&&i!==q.ans)cls+=' wrong';
+      else if(answers[cur]!==null&&i!==q.ans&&i!==answers[cur])cls+=' dim';
+    } else if(answers[cur]===i&&!locked)cls+=' sel';
+    else if(locked&&quizMode==='exam'&&i===answers[cur])cls+=' sel';
+
+    const icon=i===q.ans
+      ?'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>'
+      :'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg>';
+    const showMark=showFb&&(i===q.ans||(i===answers[cur]&&i!==q.ans));
+    return `<button class="${cls}" onclick="pickOpt(${i})">
+      <div class="oletter">${String.fromCharCode(65+i)}</div>
+      <div class="otext">${o}</div>
+      <span class="omark" style="opacity:${showMark?1:0}">${icon}</span>
+    </button>`;
+  }).join('');
+
+  let fbHtml='';
+  if(locked&&quizMode==='practice'&&answers[cur]!==null){
+    const ok=answers[cur]===q.ans;
+    fbHtml=`<div class="fb-strip ${ok?'ok':'no'} on">
+      <div class="fb-icon">${ok?'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>':'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg>'}</div>
+      <div><div class="fb-title">${ok?'Correct!':'Incorrect!'}</div>${q.exp?`<div class="fb-exp">${q.exp}</div>`:''}</div>
+    </div>`;
+  }
+
+  document.getElementById('quiz-body').innerHTML=`
+    <div class="qcard fade-up">
+      <div class="qcard-accent"></div>
+      <div class="qcard-head">
+        <div class="qmeta">
+          <span class="qnum">Q${cur+1}</span>
+          ${q.tag?`<span class="qtag">${q.tag}</span>`:''}
+          <span class="qcourse" style="background:${cm.color}22;color:${cm.color}">${cm.code||''}</span>
+          <button class="bmark-btn${isBmarked?' on':''}" onclick="toggleBmark(event,'${qid}')" data-qid="${qid}">
+            ${isBmarked
+              ?'<svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>'
+              :'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>'}
+          </button>
+        </div>
+        <div class="qtext">${q.q||q.question||''}</div>
+      </div>
+      <div class="opts">${optsHtml}</div>
+      ${fbHtml}
+      <div class="note-panel">
+        <textarea placeholder="Add a study note for this question..." oninput="saveNote('${qid}',this.value)">${qnote}</textarea>
+      </div>
+    </div>`;
+
+  updateMainBtn();renderDots();
+  document.getElementById('quiz-body').scrollTo({top:0,behavior:'smooth'});
+  if(!locked)startTimerFn();
+}
+
+function pickOpt(i){
+  if(confirmed[cur])return;
+  stopTimer();
+  answers[cur]=i;
+  if(quizMode==='practice'){confirmed[cur]=true;renderQ();return;}
+  document.querySelectorAll('.opt').forEach((b,idx)=>{
+    b.classList.remove('sel');
+    if(idx===i)b.classList.add('sel');
+  });
+  updateMainBtn();
+}
+
+function updateMainBtn(){
+  const btn=document.getElementById('qbtn-main');
+  const ico=document.getElementById('qbtn-ico');
+  const txt=document.getElementById('qbtn-txt');
+  const skip=document.getElementById('qbtn-skip');
+  const isLast=cur===quizQ.length-1;
+  const locked=confirmed[cur];
+  const hasSel=answers[cur]!==null;
+  const FWD='<path d="M5 12h14M12 5l7 7-7 7" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
+  const CHECK='<path d="M20 6L9 17l-5-5" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
+  const HAND='<path d="M4 0l16 12.279-6.951 1.17 4.325 8.817-2.073.934-4.325-8.817-6.976 4.887z" fill="white"/>';
+
+  if(locked){
+    ico.innerHTML=FWD;ico.setAttribute('viewBox','0 0 24 24');ico.setAttribute('fill','none');
+    txt.textContent=isLast?'See Results':'Next';
+    btn.disabled=false;skip.style.display='none';
+  } else {
+    skip.style.display='';
+    if(quizMode==='exam'){
+      if(hasSel){ico.innerHTML=CHECK;txt.textContent='Confirm';btn.disabled=false;}
+      else{ico.innerHTML=HAND;txt.textContent='Select';btn.disabled=true;}
+    } else {
+      ico.innerHTML=HAND;txt.textContent='Select an Answer';btn.disabled=true;
+    }
+  }
+}
+
+function mainAct(){
+  if(confirmed[cur]){
+    if(cur<quizQ.length-1){cur++;renderQ();}else showResults();
+    return;
+  }
+  if(quizMode==='exam'&&answers[cur]!==null){confirmed[cur]=true;renderQ();}
+}
+
+function skipQ(){
+  if(confirmed[cur])return;
+  stopTimer();answers[cur]=null;
+  if(cur<quizQ.length-1){cur++;renderQ();}else showResults();
+}
+
+function renderDots(){
+  const bar=document.getElementById('dots-bar');
+  bar.innerHTML=quizQ.map((_,i)=>{
+    let cls='dot ';
+    if(i===cur)cls+='curr';
+    else if(confirmed[i])cls+='done';
+    else cls+='unans';
+    return `<div class="${cls}" onclick="jumpTo(${i})">${i+1}</div>`;
+  }).join('');
+  const d=bar.children[cur];
+  if(d)d.scrollIntoView({inline:'center',behavior:'smooth'});
+}
+
+function jumpTo(i){cur=i;renderQ();}
+function confirmBack(){if(confirm('Exit quiz? Progress will be lost.'))goHome();}
+
+// Timer
+function startTimerFn(){
+  if(!timerOn)return;
+  stopTimer();timeLeft=timerSecs;
+  const pill=document.getElementById('timer-pill');
+  const disp=document.getElementById('timer-disp');
+  pill.style.display='flex';pill.className='timer-pill';disp.textContent=timeLeft;
+  timerInterval=setInterval(()=>{
+    timeLeft--;disp.textContent=timeLeft;
+    pill.className='timer-pill'+(timeLeft<=10?' warn':'')+(timeLeft<=5?' danger':'');
+    if(timeLeft<=0){stopTimer();if(!confirmed[cur]){answers[cur]=null;if(cur<quizQ.length-1){cur++;renderQ();}else showResults();}}
+  },1000);
+}
+function stopTimer(){clearInterval(timerInterval);document.getElementById('timer-pill').style.display='none';}
+
+// Bookmarks
+function toggleBmark(e,qid){
+  e.stopPropagation();
+  const q=quizQ[cur];
+  let bmarks=getBmarks();
+  const idx=bmarks.findIndex(b=>b.id===qid);
+  if(idx>=0){bmarks.splice(idx,1);toast('Bookmark removed');}
+  else{bmarks.push({id:qid,q:q.q||q.question||'',ans:q.ans,opts:q.opts,course:q.course,tag:q.tag,exp:q.exp||''});toast('Bookmarked!');}
+  saveBmarks(bmarks);
+  renderQ(); // re-render to update bookmark icon
+  document.getElementById('s-bmarks').textContent=bmarks.length;
+}
+
+// Notes
+function saveNote(qid,val){
+  const notes=getNotes();
+  if(val.trim())notes[qid]=val;else delete notes[qid];
+  saveNotes(notes);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  RESULTS
+// ══════════════════════════════════════════════════════════════
+function showResults(){
+  stopTimer();
+  const total=quizQ.length;
+  let correct=0,wrong=0,skip=0;
+  lastWrong=[];
+  answers.forEach((a,i)=>{
+    if(a===null)skip++;
+    else if(a===quizQ[i].ans)correct++;
+    else{wrong++;lastWrong.push({...quizQ[i]});}
+  });
+  const pct=total>0?Math.round((correct/total)*100):0;
+
+  // Update daily goal
+  const g=getGoal();
+  const today=new Date().toDateString();
+  if(g.today!==today){g.today=today;g.done=0;}
+  g.done+=answers.filter(a=>a!==null).length;
+  saveGoal(g);
+
+  // Personal best notification
+  const s=getSettings();
+  pullHistory().then(hist=>{
+    if(hist.length>0){
+      const prev=Math.max(...hist.map(h=>h.pct));
+      if(pct>prev&&Notification.permission==='granted'){
+        new Notification('New Personal Best!',{body:`You scored ${pct}% — beating your previous best of ${prev}%!`});
+      }
+    }
+  });
+
+  // Push to backend
+  const entry={correct,total,pct,wrong,skip,courses:selCourses.map(c=>COURSES[c]?.code||c).join(', '),mode:quizMode};
+  pushScore(entry);
+
+  // Update perf tracker
+  const perf=getPerf();
+  selCourses.forEach(c=>{
+    const cq=quizQ.filter(q=>q.course===c);
+    if(!cq.length)return;
+    if(!perf[c])perf[c]={correct:0,total:0,quizzes:0};
+    cq.forEach((_,i)=>{const gi=quizQ.indexOf(_);if(answers[gi]!==null){perf[c].total++;if(answers[gi]===_.ans)perf[c].correct++;}});
+    perf[c].quizzes++;
+  });
+  savePerf(perf);
+
+  // Fill UI
+  document.getElementById('r-score').textContent=correct;
+  document.getElementById('r-denom').textContent=`/ ${total}`;
+  document.getElementById('r-pct').textContent=`${pct}%`;
+  document.getElementById('r-cor').textContent=correct;
+  document.getElementById('r-wrg').textContent=wrong;
+  document.getElementById('r-skp').textContent=skip;
+  document.getElementById('res-sub').textContent=selCourses.map(c=>COURSES[c]?.code||c).join(', ');
+  const msgs=[[100,'Perfect! Outstanding!'],[80,'Excellent work!'],[60,'Good effort!'],[40,'Keep studying!'],[0,'More practice needed']];
+  const m=msgs.find(([t])=>pct>=t);
+  document.getElementById('r-msg').textContent=m[1];
+
+  // Review
+  const notes=getNotes();
+  document.getElementById('rev-list').innerHTML=quizQ.map((q,i)=>{
+    const ua=answers[i];
+    const isC=ua===q.ans,isSk=ua===null;
+    const bc=isSk?'s':isC?'p':'f';
+    const cm=COURSES[q.course]||{};
+    const qid=`${q.course}_${q.q||q.question||''}`;
+    const qnote=notes[qid]||'';
+    let body='';
+    if(!isSk&&!isC)body+=`<div class="rrow"><span class="rtag y">Your Answer</span><span style="color:var(--no)">${String.fromCharCode(65+ua)}. ${q.opts[ua]}</span></div>`;
+    if(!isSk)body+=`<div class="rrow"><span class="rtag c">Correct</span><span style="color:var(--ok)">${String.fromCharCode(65+q.ans)}. ${q.opts[q.ans]}</span></div>`;
+    else{body+=`<div class="rrow"><span class="rtag sk">Skipped</span><span style="color:var(--t4)">No answer</span></div>`;body+=`<div class="rrow"><span class="rtag c">Correct</span><span style="color:var(--ok)">${String.fromCharCode(65+q.ans)}. ${q.opts[q.ans]}</span></div>`;}
+    if(q.exp)body+=`<div class="rexp">${q.exp}</div>`;
+    return `<div class="rcard">
+      <div class="rcard-head">
+        <div class="rcard-badge ${bc}">${isC?'<svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>':isSk?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>'}</div>
+        <div class="rcard-q"><span style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:${cm.color};margin-right:5px;">${cm.code||''}</span>Q${i+1}. ${q.q||q.question||''}</div>
+      </div>
+      <div class="rcard-body">${body}</div>
+      <div class="rnote"><textarea placeholder="Add a note..." oninput="saveNote('${qid}',this.value)">${qnote}</textarea></div>
+    </div>`;
+  }).join('');
+
+  showScr('results');
+  document.getElementById('results').scrollTo({top:0});
+  refreshStats();
+  renderDailyGoal();
+}
+
+function shareResult(){
+  const score=document.getElementById('r-score').textContent;
+  const denom=document.getElementById('r-denom').textContent;
+  const pct=document.getElementById('r-pct').textContent;
+  const msg=document.getElementById('r-msg').textContent;
+  const courses=document.getElementById('res-sub').textContent;
+  const text=`PrepHQ Result\n${score}${denom} — ${pct}\n${msg}\nCourses: ${courses}\nDate: ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}`;
+  if(navigator.share)navigator.share({title:'PrepHQ Result',text}).catch(()=>{});
+  else navigator.clipboard.writeText(text).then(()=>toast('Result copied!')).catch(()=>toast('Could not share'));
+}
+
+function retryQuiz(){startQuiz();}
+function goHome(){showScr('home');refreshStats();renderDailyGoal();}
+
+// ══════════════════════════════════════════════════════════════
+//  HISTORY
+// ══════════════════════════════════════════════════════════════
+async function renderHistory(){
+  const body=document.getElementById('hist-body');
+  body.innerHTML='<div style="padding:40px;text-align:center;color:var(--t4)">Loading...</div>';
+  const hist=await pullHistory();
+  if(!hist.length){
+    body.innerHTML=`<div class="hist-empty"><svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg><div class="empty-title">No history yet</div><div class="empty-sub">Complete your first quiz to see results here.</div></div>`;
+    return;
+  }
+  const items=[...hist].reverse().map((h,i)=>{
+    const bg=h.pct>=70?'var(--ok)':h.pct>=50?'var(--warn)':'var(--no)';
+    const d=new Date(h.ts);
+    return `<div class="hcard" style="animation-delay:${i*.04}s">
+      <div class="hc-badge" style="background:${bg}"><div class="hc-score">${h.correct}</div><div class="hc-pct">${h.pct}%</div></div>
+      <div class="hc-info">
+        <div class="hc-course">${h.courses||'—'}</div>
+        <div class="hc-mode">${(h.mode||'practice').charAt(0).toUpperCase()+(h.mode||'practice').slice(1)} Mode</div>
+        <div class="hc-date"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>${d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</div>
+      </div>
+      <div class="hc-right"><div class="hc-cor">${h.correct}</div><div class="hc-tot">/ ${h.total}</div></div>
+    </div>`;
+  }).join('');
+  body.innerHTML=`<div class="hist-list">${items}</div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  BOOKMARKS
+// ══════════════════════════════════════════════════════════════
+function renderBookmarks(){
+  const bmarks=getBmarks();
+  const body=document.getElementById('bmarks-body');
+  if(!bmarks.length){
+    body.innerHTML=`<div class="bmark-empty"><svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><div class="empty-title">No bookmarks yet</div><div class="empty-sub">Tap the bookmark icon on any question to save it here.</div></div>`;
+    return;
+  }
+  const cm_code=(course)=>COURSES[course]?.code||'';
+  const cm_col=(course)=>COURSES[course]?.color||'var(--brand)';
+  body.innerHTML=`<div class="bmark-list" id="bmark-inner">${bmarks.map((b,i)=>`
+    <div class="bcard" style="animation-delay:${i*.04}s">
+      <div class="bcard-head">
+        <div class="bcard-q"><span style="font-size:10px;font-weight:800;text-transform:uppercase;color:${cm_col(b.course)};margin-right:5px;">${cm_code(b.course)}</span>${b.q}</div>
+        <button class="bcard-rm" onclick="removeBmark(${i})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="18" height="18"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="bcard-ans"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>${String.fromCharCode(65+b.ans)}. ${b.opts[b.ans]}</div>
+      ${b.exp?`<div class="bcard-exp">${b.exp}</div>`:''}
+    </div>`).join('')}
+  </div>
+  <div class="bmark-actions">
+    <button class="btn-grad" onclick="startBookmarkQuiz()"><svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>Quiz Bookmarks</button>
+  </div>`;
+}
+
+function removeBmark(i){
+  let bmarks=getBmarks();bmarks.splice(i,1);saveBmarks(bmarks);
+  toast('Removed');renderBookmarks();
+  document.getElementById('s-bmarks').textContent=bmarks.length;
+}
+
+function startBookmarkQuiz(){
+  const bmarks=getBmarks();
+  if(!bmarks.length){toast('No bookmarks');return;}
+  quizQ=bmarks.map(b=>({...b,q:b.q,question:b.q,course:b.course||'extra'}));
+  for(let i=quizQ.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[quizQ[i],quizQ[j]]=[quizQ[j],quizQ[i]];}
+  answers=new Array(quizQ.length).fill(null);confirmed=new Array(quizQ.length).fill(false);cur=0;
+  document.getElementById('qt-title').textContent='Bookmarks';
+  showScr('quiz');renderQ();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  NOTES SCREEN
+// ══════════════════════════════════════════════════════════════
+function renderNotes(){
+  const notes=getNotes();
+  const body=document.getElementById('notes-body');
+  const entries=Object.entries(notes);
+  if(!entries.length){
+    body.innerHTML=`<div class="hist-empty"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/></svg><div class="empty-title">No notes yet</div><div class="empty-sub">Add notes while answering questions.</div></div>`;
+    return;
+  }
+  body.innerHTML=`<div class="notes-list">${entries.map(([id,note],i)=>`
+    <div class="note-card" style="animation-delay:${i*.04}s">
+      <div class="nc-q"><button class="nc-del" onclick="deleteNote('${id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="16" height="16"><path d="M18 6L6 18M6 6l12 12"/></svg></button>${id.split('_').slice(1).join('_').slice(0,80)}...</div>
+      <div class="nc-note">${note}</div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function deleteNote(id){
+  const notes=getNotes();delete notes[id];saveNotes(notes);renderNotes();toast('Note deleted');
+  document.getElementById('menu-notes-count').textContent=Object.keys(notes).length+' notes';
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PERFORMANCE
+// ══════════════════════════════════════════════════════════════
+function renderPerf(){
+  const perf=getPerf();
+  const body=document.getElementById('perf-body');
+  const entries=Object.entries(COURSES).filter(([k])=>perf[k]&&perf[k].total>0);
+  if(!entries.length){
+    body.innerHTML=`<div class="hist-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><div class="empty-title">No data yet</div><div class="empty-sub">Complete quizzes to track performance per course.</div></div>`;
+    return;
+  }
+  const cards=entries.map(([k,m],i)=>{
+    const p=perf[k];
+    const avg=Math.round((p.correct/p.total)*100);
+    const clr=avg>=70?'var(--ok)':avg>=50?'var(--warn)':'var(--no)';
+    return `<div class="pcard" style="animation-delay:${i*.04}s">
+      <div class="pc-top">
+        <div class="pc-icon" style="background:${m.color}">${CICO[m.icon]||''}</div>
+        <div><div class="pc-code">${m.code}</div><div class="pc-name">${m.name}</div></div>
+        <div class="pc-pct" style="color:${clr}">${avg}%</div>
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width:${avg}%;background:${clr}"></div></div>
+      <div class="pc-meta">
+        <div class="pc-meta-i"><span>${p.correct}</span> correct</div>
+        <div class="pc-meta-i"><span>${p.total}</span> attempted</div>
+        <div class="pc-meta-i"><span>${p.quizzes}</span> quizzes</div>
+      </div>
+    </div>`;
+  }).join('');
+  body.innerHTML=`<div class="perf-list">${cards}</div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SHEETS & NAVIGATION
+// ══════════════════════════════════════════════════════════════
+function openMenu(){
+  refreshStats();
+  document.getElementById('menu-sheet').classList.add('on');
+}
+function closeSheet(id,e){
+  if(!e||e.target===document.getElementById(id))
+    document.getElementById(id).classList.remove('on');
+}
+document.getElementById('menu-sheet').addEventListener('click',e=>{
+  if(e.target===document.getElementById('menu-sheet'))
+    document.getElementById('menu-sheet').classList.remove('on');
+});
+
+function showScr(id){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  window.scrollTo(0,0);
+  if(id==='history')renderHistory();
+  if(id==='bookmarks')renderBookmarks();
+  if(id==='notes-screen')renderNotes();
+  if(id==='performance')renderPerf();
+  if(id==='home')refreshStats();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PWA
+// ══════════════════════════════════════════════════════════════
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();deferredPrompt=e;
+  document.getElementById('pwa-install-wrap').style.display='block';
+});
+async function installPWA(){
+  if(!deferredPrompt){toast('Use browser menu to install');return;}
+  deferredPrompt.prompt();
+  const {outcome}=await deferredPrompt.userChoice;
+  if(outcome==='accepted')toast('App installed!');
+  deferredPrompt=null;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════════════════════════
+let tTimer;
+function toast(msg){
+  const el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');
+  clearTimeout(tTimer);tTimer=setTimeout(()=>el.classList.remove('on'),2400);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════════
+document.getElementById('inp-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+document.getElementById('inp-matric').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('inp-pass').focus();});
+</script>
+</body>
+</html>

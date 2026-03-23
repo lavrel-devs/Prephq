@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>PrepHQ Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F0F2F8;--surf:#fff;--surf2:#F5F6FA;--surf3:#EBECF2;
+  --brand:#0A5CF5;--brand-lt:rgba(10,92,245,.10);--brand-glow:rgba(10,92,245,.20);
+  --ok:#00C96B;--ok-lt:rgba(0,201,107,.10);--ok-bd:rgba(0,201,107,.30);
+  --no:#F5340A;--no-lt:rgba(245,52,10,.10);--no-bd:rgba(245,52,10,.28);
+  --warn:#F5930A;--warn-lt:rgba(245,147,10,.10);
+  --purple:#7B2CF5;--purple-lt:rgba(123,44,245,.10);
+  --teal:#0ABCF5;--teal-lt:rgba(10,188,245,.10);
+  --t1:#0D0F1A;--t2:#2E3247;--t3:#6B7089;--t4:#A8ADCA;
+  --bd:rgba(13,15,26,.09);--bd2:rgba(13,15,26,.14);
+  --r8:8px;--r12:12px;--r16:16px;--r20:20px;--rpill:999px;
+  --sh:0 2px 16px rgba(0,0,0,.06);--sh-md:0 6px 28px rgba(0,0,0,.09);
+  --ff-h:'Bricolage Grotesque',system-ui,sans-serif;
+  --ff-b:'DM Sans',system-ui,sans-serif;
+}
+[data-theme=dark]{
+  --bg:#0D0F1A;--surf:#1A1E35;--surf2:#222640;--surf3:#2A2F50;
+  --t1:#EEF0FF;--t2:#C5CAE8;--t3:#7E86B0;--t4:#4A5070;
+  --bd:rgba(238,240,255,.08);--bd2:rgba(238,240,255,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:var(--ff-b);background:var(--bg);color:var(--t1);min-height:100dvh;-webkit-font-smoothing:antialiased;}
+button,input,select,textarea{font-family:var(--ff-b);}
+*::-webkit-scrollbar{width:5px;height:5px;}
+*::-webkit-scrollbar-track{background:transparent;}
+*::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:99px;}
+
+/* ── LOGIN ─────────────────────────────────────────────── */
+#login-screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:200;padding:20px;}
+.lc{width:100%;max-width:400px;background:var(--surf);border-radius:24px;padding:36px 28px;box-shadow:var(--sh-md);border:1px solid var(--bd);}
+.lc-logo{width:58px;height:58px;border-radius:18px;background:linear-gradient(140deg,var(--brand),var(--purple));display:flex;align-items:center;justify-content:center;margin:0 auto 18px;box-shadow:0 6px 20px var(--brand-glow);}
+.lc-logo svg{width:26px;height:26px;fill:white;}
+.lc-title{font-family:var(--ff-h);font-size:22px;font-weight:800;text-align:center;letter-spacing:-.4px;}
+.lc-sub{font-size:13px;color:var(--t3);text-align:center;margin:5px 0 24px;}
+.err{background:var(--no-lt);border:1px solid var(--no-bd);border-radius:var(--r8);padding:10px 14px;font-size:13px;font-weight:600;color:var(--no);display:none;margin-bottom:14px;}
+.err.on{display:block;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:6px;}
+.field input,.field select,.field textarea{width:100%;padding:12px 14px;border-radius:var(--r12);border:1.5px solid var(--bd2);background:var(--surf2);font-size:14px;font-weight:600;color:var(--t1);outline:none;transition:all .18s;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--brand);background:var(--brand-lt);box-shadow:0 0 0 3px var(--brand-glow);}
+.field textarea{resize:vertical;min-height:80px;font-weight:500;}
+.field select{cursor:pointer;}
+.btn-main{width:100%;padding:14px;border-radius:var(--r12);background:linear-gradient(140deg,var(--brand),var(--purple));color:white;font-size:15px;font-weight:800;border:none;cursor:pointer;font-family:var(--ff-h);box-shadow:0 4px 16px var(--brand-glow);transition:all .15s;display:flex;align-items:center;justify-content:center;gap:7px;}
+.btn-main:active{transform:scale(.97);}
+.btn-main:disabled{background:var(--surf3);box-shadow:none;color:var(--t4);cursor:default;transform:none;}
+
+/* ── APP SHELL ──────────────────────────────────────────── */
+#app{display:none;min-height:100dvh;}
+#app.on{display:flex;flex-direction:column;}
+
+/* ── TOPBAR ─────────────────────────────────────────────── */
+.topbar{height:58px;background:var(--surf);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:50;box-shadow:var(--sh);}
+.tb-brand{display:flex;align-items:center;gap:10px;}
+.tb-dot{width:32px;height:32px;border-radius:10px;background:linear-gradient(140deg,var(--brand),var(--purple));display:flex;align-items:center;justify-content:center;}
+.tb-dot svg{width:17px;height:17px;fill:white;}
+.tb-name{font-family:var(--ff-h);font-size:16px;font-weight:800;letter-spacing:-.3px;}
+.tb-badge{font-size:10px;font-weight:700;background:var(--brand-lt);color:var(--brand);padding:3px 8px;border-radius:var(--rpill);text-transform:uppercase;letter-spacing:.06em;}
+.tb-right{display:flex;align-items:center;gap:8px;}
+.ib{width:34px;height:34px;border-radius:50%;background:var(--surf2);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);transition:all .15s;}
+.ib:hover{background:var(--surf3);}
+.ib svg{width:17px;height:17px;}
+.logout-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--rpill);background:var(--no-lt);border:1px solid var(--no-bd);color:var(--no);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;}
+.logout-btn:hover{background:rgba(245,52,10,.18);}
+
+/* ── LAYOUT ─────────────────────────────────────────────── */
+.body{flex:1;display:flex;}
+.sidebar{width:210px;background:var(--surf);border-right:1px solid var(--bd);padding:16px 10px;display:flex;flex-direction:column;gap:2px;position:sticky;top:58px;height:calc(100dvh - 58px);overflow-y:auto;flex-shrink:0;}
+@media(max-width:680px){.sidebar{display:none;}}
+.nav-sec{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--t4);padding:12px 12px 5px;margin-top:6px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:var(--r12);cursor:pointer;color:var(--t3);font-size:13px;font-weight:600;transition:all .15s;}
+.nav-item:hover{background:var(--surf2);color:var(--t1);}
+.nav-item.on{background:var(--brand-lt);color:var(--brand);}
+.nav-item svg{width:17px;height:17px;flex-shrink:0;}
+.content{flex:1;padding:24px;overflow-y:auto;min-width:0;}
+@media(max-width:680px){.content{padding:14px;}}
+
+/* ── VIEWS ──────────────────────────────────────────────── */
+.view{display:none;}
+.view.on{display:block;}
+
+/* ── PAGE HEADER ────────────────────────────────────────── */
+.ph{margin-bottom:20px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.ph-title{font-family:var(--ff-h);font-size:24px;font-weight:800;letter-spacing:-.5px;}
+.ph-sub{font-size:13px;color:var(--t3);margin-top:3px;}
+
+/* ── STAT CARDS ─────────────────────────────────────────── */
+.sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:24px;}
+.sc{background:var(--surf);border-radius:var(--r16);padding:16px;border:1px solid var(--bd);box-shadow:var(--sh);}
+.sc-ico{width:36px;height:36px;border-radius:var(--r12);display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+.sc-ico svg{width:18px;height:18px;}
+.sc-val{font-size:26px;font-weight:800;font-family:var(--ff-h);letter-spacing:-.8px;line-height:1;}
+.sc-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t4);margin-top:3px;}
+
+/* ── TABLE ──────────────────────────────────────────────── */
+.tw{background:var(--surf);border-radius:var(--r16);border:1px solid var(--bd);overflow:hidden;box-shadow:var(--sh);margin-bottom:20px;}
+.th{padding:14px 18px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.th-title{font-family:var(--ff-h);font-size:15px;font-weight:800;}
+.th-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.search{position:relative;}
+.search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--t4);}
+.search input{padding:8px 12px 8px 32px;border-radius:var(--rpill);border:1.5px solid var(--bd2);background:var(--surf2);font-size:12px;font-weight:600;color:var(--t1);outline:none;width:180px;transition:all .18s;}
+.search input:focus{border-color:var(--brand);}
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead th{padding:10px 16px;text-align:left;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--t4);border-bottom:1px solid var(--bd);}
+tbody tr{border-bottom:1px solid var(--bd);transition:background .1s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:var(--surf2);}
+tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:var(--rpill);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+.b-brand{background:var(--brand-lt);color:var(--brand);}
+.b-ok{background:var(--ok-lt);color:var(--ok);}
+.b-warn{background:var(--warn-lt);color:var(--warn);}
+.b-no{background:var(--no-lt);color:var(--no);}
+.b-purple{background:var(--purple-lt);color:var(--purple);}
+.b-teal{background:var(--teal-lt);color:var(--teal);}
+.b-gray{background:var(--surf3);color:var(--t3);}
+.act-row{display:flex;gap:5px;flex-wrap:wrap;}
+.ab{padding:5px 10px;border-radius:var(--r8);font-size:11px;font-weight:700;border:none;cursor:pointer;transition:all .12s;display:inline-flex;align-items:center;gap:4px;}
+.ab:active{transform:scale(.95);}
+.ab-edit{background:var(--brand-lt);color:var(--brand);}
+.ab-del{background:var(--no-lt);color:var(--no);}
+.ab-warn{background:var(--warn-lt);color:var(--warn);}
+.ab-ok{background:var(--ok-lt);color:var(--ok);}
+.ab-gray{background:var(--surf3);color:var(--t3);}
+.ab-copy{background:var(--purple-lt);color:var(--purple);}
+.empty-row td{text-align:center;color:var(--t4);padding:32px;font-style:italic;}
+
+/* ── MODAL ──────────────────────────────────────────────── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:16px;z-index:300;opacity:0;pointer-events:none;transition:opacity .25s;}
+.modal-bg.on{opacity:1;pointer-events:all;}
+.modal{background:var(--surf);border-radius:20px;padding:26px 22px;width:100%;max-width:500px;max-height:90dvh;overflow-y:auto;box-shadow:var(--sh-md);transform:scale(.92) translateY(20px);transition:transform .3s cubic-bezier(.34,1.56,.64,1);}
+.modal-bg.on .modal{transform:scale(1) translateY(0);}
+.modal-title{font-family:var(--ff-h);font-size:19px;font-weight:800;letter-spacing:-.4px;margin-bottom:3px;}
+.modal-sub{font-size:12px;color:var(--t3);margin-bottom:20px;}
+.mfooter{display:flex;gap:10px;margin-top:18px;}
+.btn-cancel{flex:1;padding:12px;border-radius:var(--r12);background:var(--surf2);border:1.5px solid var(--bd2);color:var(--t2);font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;}
+.btn-cancel:active{transform:scale(.97);}
+.btn-confirm{flex:1;padding:12px;border-radius:var(--r12);background:linear-gradient(140deg,var(--brand),var(--purple));color:white;font-size:14px;font-weight:800;border:none;cursor:pointer;font-family:var(--ff-h);transition:all .15s;}
+.btn-confirm:active{transform:scale(.97);}
+.btn-confirm.red{background:var(--no);}
+.btn-confirm.green{background:var(--ok);}
+
+/* ── CODE GRID ──────────────────────────────────────────── */
+.code-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;padding:16px;}
+.code-card{background:var(--surf2);border-radius:var(--r12);padding:12px 14px;border:1.5px solid var(--bd);position:relative;}
+.code-card.used{opacity:.55;border-color:var(--ok-bd);}
+.code-card.expired{opacity:.45;}
+.code-val{font-family:var(--ff-h);font-size:15px;font-weight:800;letter-spacing:.04em;color:var(--t1);margin-bottom:4px;}
+.code-meta{font-size:11px;color:var(--t4);}
+.code-badge{position:absolute;top:10px;right:10px;}
+
+/* ── TOAST ──────────────────────────────────────────────── */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--t1);color:var(--surf);padding:10px 20px;border-radius:var(--rpill);font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:999;pointer-events:none;white-space:nowrap;box-shadow:var(--sh-md);}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── MOBILE NAV ─────────────────────────────────────────── */
+.mnav{display:none;background:var(--surf);border-top:1px solid var(--bd);position:fixed;bottom:0;left:0;right:0;z-index:40;}
+@media(max-width:680px){.mnav{display:flex;}}
+.mn-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;cursor:pointer;color:var(--t4);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;transition:color .15s;}
+.mn-item.on{color:var(--brand);}
+.mn-item svg{width:22px;height:22px;}
+@media(max-width:680px){.content{padding-bottom:80px;}}
+
+/* ── CODE DISPLAY CARD ──────────────────────────────────── */
+.login-reveal{background:var(--ok-lt);border:1.5px solid var(--ok-bd);border-radius:var(--r12);padding:14px;margin-top:14px;}
+.lr-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--ok);margin-bottom:8px;}
+.lr-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.lr-label{font-size:12px;color:var(--t3);}
+.lr-val{font-size:14px;font-weight:800;font-family:var(--ff-h);color:var(--t1);}
+.copy-btn{font-size:11px;font-weight:700;padding:3px 8px;border-radius:var(--r8);background:var(--ok-lt);border:1px solid var(--ok-bd);color:var(--ok);cursor:pointer;}
+
+/* ── ANIMATIONS ─────────────────────────────────────────── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.fade-up{animation:fadeUp .35s cubic-bezier(.34,1.56,.64,1) both;}
+
+/* section divider */
+.sdiv{height:1px;background:var(--bd);margin:8px 0 14px;}
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="lc fade-up">
+    <div class="lc-logo"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg></div>
+    <div class="lc-title">PrepHQ Admin</div>
+    <div class="lc-sub">Enter your admin key to continue</div>
+    <div class="err" id="login-err">Invalid admin key. Try again.</div>
+    <div class="field">
+      <label>Admin Key</label>
+      <input type="password" id="key-inp" placeholder="Paste your admin key" autocomplete="off">
+    </div>
+    <button class="btn-main" onclick="adminLogin()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+      Access Dashboard
+    </button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="tb-brand">
+      <div class="tb-dot"><svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg></div>
+      <span class="tb-name">PrepHQ</span>
+      <span class="tb-badge">Admin</span>
+    </div>
+    <div class="tb-right">
+      <div class="ib" onclick="toggleTheme()">
+        <svg id="theme-ico" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
+      </div>
+      <div class="logout-btn" onclick="doLogout()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+        Sign Out
+      </div>
+    </div>
+  </div>
+
+  <div class="body">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="nav-sec">Overview</div>
+      <div class="nav-item on" data-v="dashboard" onclick="go('dashboard',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>Dashboard
+      </div>
+      <div class="nav-sec">Students</div>
+      <div class="nav-item" data-v="students" onclick="go('students',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>Students
+      </div>
+      <div class="nav-item" data-v="codes" onclick="go('codes',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>Activation Codes
+      </div>
+      <div class="nav-item" data-v="payments" onclick="go('payments',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>Payments
+      </div>
+      <div class="nav-sec">Content</div>
+      <div class="nav-item" data-v="questions" onclick="go('questions',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>Questions
+      </div>
+    </div>
+
+    <!-- Main content -->
+    <div class="content">
+
+      <!-- ═══ DASHBOARD ════════════════════════════════════ -->
+      <div id="v-dashboard" class="view on">
+        <div class="ph"><div><div class="ph-title">Dashboard</div><div class="ph-sub">PrepHQ overview</div></div></div>
+        <div class="sg" id="dash-sg">
+          <div class="sc"><div class="sc-ico" style="background:var(--brand-lt);color:var(--brand)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div><div class="sc-val" id="ds-students">—</div><div class="sc-lbl">Students</div></div>
+          <div class="sc"><div class="sc-ico" style="background:var(--ok-lt);color:var(--ok)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg></div><div class="sc-val" id="ds-revenue">—</div><div class="sc-lbl">Revenue (₦)</div></div>
+          <div class="sc"><div class="sc-ico" style="background:var(--purple-lt);color:var(--purple)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg></div><div class="sc-val" id="ds-unused">—</div><div class="sc-lbl">Unused Codes</div></div>
+          <div class="sc"><div class="sc-ico" style="background:var(--warn-lt);color:var(--warn)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="sc-val" id="ds-avg">—</div><div class="sc-lbl">Avg Score</div></div>
+        </div>
+
+        <div class="tw">
+          <div class="th"><div class="th-title">🏆 Top Students</div></div>
+          <table><thead><tr><th>#</th><th>Name</th><th>Matric</th><th>Avg</th><th>Quizzes</th></tr></thead>
+          <tbody id="dash-top"></tbody></table>
+        </div>
+
+        <div class="tw">
+          <div class="th"><div class="th-title">🆕 Recent Registrations</div></div>
+          <table><thead><tr><th>Name</th><th>Matric</th><th>Phone</th><th>Registered</th></tr></thead>
+          <tbody id="dash-recent"></tbody></table>
+        </div>
+      </div>
+
+      <!-- ═══ STUDENTS ══════════════════════════════════════ -->
+      <div id="v-students" class="view">
+        <div class="ph">
+          <div><div class="ph-title">Students</div><div class="ph-sub" id="st-count">—</div></div>
+          <button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;" onclick="openAddStudent()">+ Add Student</button>
+        </div>
+        <div class="tw">
+          <div class="th">
+            <div class="th-title">All Students</div>
+            <div class="th-right">
+              <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input placeholder="Search..." oninput="filterSt(this.value)"></div>
+            </div>
+          </div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Name</th><th>Matric</th><th>Phone</th><th>WhatsApp</th><th>Quizzes</th><th>Best</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="st-body"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ═══ CODES ══════════════════════════════════════════ -->
+      <div id="v-codes" class="view">
+        <div class="ph">
+          <div><div class="ph-title">Activation Codes</div><div class="ph-sub">Scratch card vouchers for student registration</div></div>
+          <button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;" onclick="openGenCodes()">⚡ Generate Codes</button>
+        </div>
+
+        <!-- Filter tabs -->
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+          <button class="badge b-brand" style="cursor:pointer;padding:7px 16px;font-size:12px;" onclick="loadCodes('all',this)" id="ct-all">All</button>
+          <button class="badge b-gray" style="cursor:pointer;padding:7px 16px;font-size:12px;" onclick="loadCodes('unused',this)" id="ct-unused">Unused</button>
+          <button class="badge b-ok" style="cursor:pointer;padding:7px 16px;font-size:12px;" onclick="loadCodes('used',this)" id="ct-used">Used</button>
+          <button class="badge b-no" style="cursor:pointer;padding:7px 16px;font-size:12px;" onclick="loadCodes('expired',this)" id="ct-expired">Expired</button>
+        </div>
+
+        <div class="tw">
+          <div class="th">
+            <div class="th-title" id="codes-count">Codes</div>
+            <div class="th-right">
+              <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input placeholder="Search code..." oninput="filterCodes(this.value)"></div>
+            </div>
+          </div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Code</th><th>Batch</th><th>Status</th><th>Used By</th><th>Used At</th><th>Actions</th></tr></thead>
+            <tbody id="codes-body"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ═══ PAYMENTS ═════════════════════════════════════ -->
+      <div id="v-payments" class="view">
+        <div class="ph">
+          <div><div class="ph-title">Payments</div><div class="ph-sub" id="pay-total-lbl">—</div></div>
+          <button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;" onclick="openAddPayment()">+ Record Payment</button>
+        </div>
+        <div class="tw">
+          <div class="th">
+            <div class="th-title" id="pay-count">Payments</div>
+            <div class="th-right">
+              <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input placeholder="Search..." oninput="filterPay(this.value)"></div>
+            </div>
+          </div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Name</th><th>Matric</th><th>Amount</th><th>Method</th><th>Reference</th><th>Note</th><th>Date</th><th>Actions</th></tr></thead>
+            <tbody id="pay-body"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ═══ QUESTIONS ════════════════════════════════════ -->
+      <div id="v-questions" class="view">
+        <div class="ph">
+          <div><div class="ph-title">Question Bank</div><div class="ph-sub">Add custom questions per course</div></div>
+          <button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;" onclick="openAddQ()">+ Add Question</button>
+        </div>
+
+        <!-- Course filter -->
+        <div class="field" style="max-width:240px;margin-bottom:16px;">
+          <label>Filter by Course</label>
+          <select id="q-course-filter" onchange="loadQuestions()">
+            <option value="">All Courses</option>
+            <option value="gst101">GST 101 – Use of English</option>
+            <option value="gst102">GST 102 – Communication</option>
+            <option value="gst103">GST 103 – Peoples & Culture</option>
+            <option value="sta111">STA 111 – Statistics</option>
+            <option value="phy101">PHY 101 – Mechanics</option>
+            <option value="phy107">PHY 107 – Lab</option>
+            <option value="mth101">MTH 101 – Mathematics I</option>
+            <option value="mth103">MTH 103 – Mathematics III</option>
+            <option value="chm141">CHM 141 – Chemistry</option>
+            <option value="bio101">BIO 101 – Biology</option>
+            <option value="csc101">CSC 101 – Computer Science</option>
+            <option value="cos101">COS 101 – Computer Systems</option>
+          </select>
+        </div>
+
+        <div class="tw">
+          <div class="th"><div class="th-title" id="q-count">Questions</div></div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Course</th><th>Question</th><th>Options</th><th>Answer</th><th>Tag</th><th>Actions</th></tr></thead>
+            <tbody id="q-body"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /body -->
+
+  <!-- Mobile nav -->
+  <div class="mnav">
+    <div class="mn-item on" data-v="dashboard" onclick="go('dashboard',this)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>Home</div>
+    <div class="mn-item" data-v="students" onclick="go('students',this)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>Students</div>
+    <div class="mn-item" data-v="codes" onclick="go('codes',this)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>Codes</div>
+    <div class="mn-item" data-v="payments" onclick="go('payments',this)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>Pay</div>
+    <div class="mn-item" data-v="questions" onclick="go('questions',this)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>Questions</div>
+  </div>
+</div>
+
+<!-- ═══ MODALS ═════════════════════════════════════════════════ -->
+
+<!-- ADD STUDENT -->
+<div class="modal-bg" id="m-add-student" onclick="closeMBg(event,'m-add-student')">
+  <div class="modal">
+    <div class="modal-title" id="m-st-title">Add Student</div>
+    <div class="modal-sub">Fill in details. Password defaults to matric number.</div>
+    <div class="err" id="m-st-err"></div>
+    <div class="field"><label>Full Name *</label><input id="st-name" placeholder="e.g. Goodnews Financial" autocomplete="off"></div>
+    <div class="field"><label>Matric Number *</label><input id="st-matric" placeholder="e.g. PSC25CHM102" autocapitalize="characters" id="st-matric-inp"></div>
+    <div class="field"><label>Phone Number</label><input id="st-phone" type="tel" placeholder="e.g. 08012345678"></div>
+    <div class="field"><label>WhatsApp Number</label><input id="st-whatsapp" type="tel" placeholder="e.g. 08012345678"></div>
+    <div class="field"><label>Password <span style="color:var(--t4);font-weight:400">(leave blank = matric number)</span></label><input id="st-pass" placeholder="Custom password"></div>
+    <div class="sdiv"></div>
+    <div style="font-size:12px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">Payment (optional)</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="field"><label>Amount (₦)</label><input id="st-amount" type="number" placeholder="e.g. 2000"></div>
+      <div class="field"><label>Method</label><select id="st-method"><option value="cash">Cash</option><option value="bank_transfer">Bank Transfer</option><option value="opay">OPay</option><option value="palmpay">PalmPay</option><option value="other">Other</option></select></div>
+    </div>
+    <div class="field"><label>Payment Reference</label><input id="st-ref" placeholder="e.g. transfer ref, receipt no."></div>
+    <div class="field"><label>Note</label><textarea id="st-note" rows="2" placeholder="Any notes about this student..."></textarea></div>
+    <div class="mfooter">
+      <button class="btn-cancel" onclick="closeM('m-add-student')">Cancel</button>
+      <button class="btn-confirm" id="m-st-btn" onclick="saveStudent()">Add Student</button>
+    </div>
+    <!-- Login reveal after adding -->
+    <div class="login-reveal" id="st-reveal" style="display:none;">
+      <div class="lr-title">✅ Student Created — Share These Login Details</div>
+      <div class="lr-row"><span class="lr-label">Matric</span><span class="lr-val" id="rv-matric">—</span></div>
+      <div class="lr-row"><span class="lr-label">Password</span><span class="lr-val" id="rv-pass">—</span></div>
+      <div class="lr-row"><span class="lr-label">URL</span><span class="lr-val" id="rv-url" style="font-size:12px">—</span></div>
+      <button class="copy-btn" onclick="copyLogin()" style="margin-top:8px;width:100%;padding:8px;">📋 Copy Login Details for WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<!-- GENERATE CODES -->
+<div class="modal-bg" id="m-gen-codes" onclick="closeMBg(event,'m-gen-codes')">
+  <div class="modal">
+    <div class="modal-title">Generate Activation Codes</div>
+    <div class="modal-sub">Codes will be in format: XXXX-XXXX-XXXX</div>
+    <div class="err" id="m-gc-err"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="field"><label>Number of Codes *</label><input id="gc-count" type="number" value="10" min="1" max="200" placeholder="e.g. 20"></div>
+      <div class="field"><label>Price per Code (₦)</label><input id="gc-price" type="number" placeholder="e.g. 2000"></div>
+    </div>
+    <div class="field"><label>Batch Label</label><input id="gc-batch" placeholder="e.g. Batch 1 - March 2026"></div>
+    <div class="field"><label>Expiry Date <span style="color:var(--t4);font-weight:400">(optional)</span></label><input id="gc-expiry" type="date"></div>
+    <div class="field"><label>Note</label><input id="gc-note" placeholder="e.g. Sold at 100L orientation"></div>
+    <div class="mfooter">
+      <button class="btn-cancel" onclick="closeM('m-gen-codes')">Cancel</button>
+      <button class="btn-confirm green" onclick="genCodes()">⚡ Generate</button>
+    </div>
+    <!-- Generated codes display -->
+    <div id="gc-result" style="display:none;margin-top:16px;">
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--ok);margin-bottom:10px;">✅ Codes Generated</div>
+      <div class="code-grid" id="gc-codes-grid"></div>
+      <button class="btn-main" style="margin-top:12px;" onclick="copyAllCodes()">📋 Copy All Codes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD PAYMENT -->
+<div class="modal-bg" id="m-add-payment" onclick="closeMBg(event,'m-add-payment')">
+  <div class="modal">
+    <div class="modal-title">Record Payment</div>
+    <div class="modal-sub">Record a manual payment without creating an account</div>
+    <div class="err" id="m-pay-err"></div>
+    <div class="field"><label>Student Name</label><input id="pay-name" placeholder="e.g. John Doe"></div>
+    <div class="field"><label>Matric (if registered)</label><input id="pay-matric" placeholder="e.g. PSC25CHM102" autocapitalize="characters"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="field"><label>Amount (₦) *</label><input id="pay-amount" type="number" placeholder="e.g. 2000"></div>
+      <div class="field"><label>Method</label><select id="pay-method"><option value="cash">Cash</option><option value="bank_transfer">Bank Transfer</option><option value="opay">OPay</option><option value="palmpay">PalmPay</option><option value="other">Other</option></select></div>
+    </div>
+    <div class="field"><label>Reference / Receipt No.</label><input id="pay-ref" placeholder="Transfer ref, receipt..."></div>
+    <div class="field"><label>Note</label><textarea id="pay-note" rows="2" placeholder="Any notes..."></textarea></div>
+    <div class="mfooter">
+      <button class="btn-cancel" onclick="closeM('m-add-payment')">Cancel</button>
+      <button class="btn-confirm" onclick="savePayment()">Record Payment</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD QUESTION -->
+<div class="modal-bg" id="m-add-q" onclick="closeMBg(event,'m-add-q')">
+  <div class="modal">
+    <div class="modal-title" id="m-q-title">Add Question</div>
+    <div class="modal-sub">Added questions appear in the quiz for that course</div>
+    <div class="err" id="m-q-err"></div>
+    <div class="field"><label>Course *</label>
+      <select id="q-course">
+        <option value="">Select course...</option>
+        <option value="gst101">GST 101 – Use of English</option>
+        <option value="gst102">GST 102 – Communication</option>
+        <option value="gst103">GST 103 – Peoples & Culture</option>
+        <option value="sta111">STA 111 – Statistics</option>
+        <option value="phy101">PHY 101 – Mechanics</option>
+        <option value="phy107">PHY 107 – Lab</option>
+        <option value="mth101">MTH 101 – Mathematics I</option>
+        <option value="mth103">MTH 103 – Mathematics III</option>
+        <option value="chm141">CHM 141 – Chemistry</option>
+        <option value="bio101">BIO 101 – Biology</option>
+        <option value="csc101">CSC 101 – Computer Science</option>
+        <option value="cos101">COS 101 – Computer Systems</option>
+      </select>
+    </div>
+    <div class="field"><label>Question Text *</label><textarea id="q-text" rows="3" placeholder="Type the question here..."></textarea></div>
+    <div class="field"><label>Option A *</label><input id="q-a" placeholder="Option A"></div>
+    <div class="field"><label>Option B *</label><input id="q-b" placeholder="Option B"></div>
+    <div class="field"><label>Option C</label><input id="q-c" placeholder="Option C (optional)"></div>
+    <div class="field"><label>Option D</label><input id="q-d" placeholder="Option D (optional)"></div>
+    <div class="field"><label>Correct Answer *</label>
+      <select id="q-ans">
+        <option value="0">A</option>
+        <option value="1">B</option>
+        <option value="2">C</option>
+        <option value="3">D</option>
+      </select>
+    </div>
+    <div class="field"><label>Topic Tag</label><input id="q-tag" placeholder="e.g. Grammar, Probability"></div>
+    <div class="field"><label>Explanation <span style="color:var(--t4);font-weight:400">(optional)</span></label><textarea id="q-exp" rows="2" placeholder="Why is this the correct answer?"></textarea></div>
+    <div class="mfooter">
+      <button class="btn-cancel" onclick="closeM('m-add-q')">Cancel</button>
+      <button class="btn-confirm" id="m-q-btn" onclick="saveQuestion()">Add Question</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM -->
+<div class="modal-bg" id="m-del" onclick="closeMBg(event,'m-del')">
+  <div class="modal">
+    <div class="modal-title">Confirm Delete</div>
+    <div class="modal-sub" id="m-del-sub">This cannot be undone.</div>
+    <div class="mfooter">
+      <button class="btn-cancel" onclick="closeM('m-del')">Cancel</button>
+      <button class="btn-confirm red" onclick="confirmDel()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '';
+let adminKey = '';
+let allStudents = [], allCodes = [], allPayments = [], allQuestions = [];
+let editingQ = null, editingSt = null, delFn = null;
+let generatedCodes = [];
+
+// ── AUTH ──────────────────────────────────────────────────────
+async function adminLogin() {
+  const key = document.getElementById('key-inp').value.trim();
+  const err = document.getElementById('login-err');
+  err.classList.remove('on');
+  try {
+    const r = await fetch('/api/auth/admin', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ key })
+    });
+    if (!r.ok) { err.classList.add('on'); return; }
+    adminKey = key;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').classList.add('on');
+    loadDashboard();
+  } catch(e) {
+    err.textContent = 'Cannot connect to server.';
+    err.classList.add('on');
+  }
+}
+function doLogout() {
+  adminKey = '';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').classList.remove('on');
+  document.getElementById('key-inp').value = '';
+}
+document.getElementById('key-inp').addEventListener('keydown', e => { if(e.key==='Enter') adminLogin(); });
+
+// ── NAVIGATION ────────────────────────────────────────────────
+function go(v, el) {
+  document.querySelectorAll('.view').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('.nav-item,.mn-item').forEach(x => x.classList.remove('on'));
+  document.getElementById('v-'+v).classList.add('on');
+  document.querySelectorAll(`[data-v="${v}"]`).forEach(x => x.classList.add('on'));
+  if(v==='dashboard') loadDashboard();
+  if(v==='students')  loadStudents();
+  if(v==='codes')     loadCodes('all');
+  if(v==='payments')  loadPayments();
+  if(v==='questions') loadQuestions();
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────
+async function loadDashboard() {
+  try {
+    const r = await fetch('/api/admin/stats', { headers: {'x-admin-key': adminKey} });
+    const d = await r.json();
+    document.getElementById('ds-students').textContent = d.totalStudents;
+    document.getElementById('ds-revenue').textContent = '₦' + (d.totalRevenue||0).toLocaleString();
+    document.getElementById('ds-unused').textContent = d.unusedCodes;
+    document.getElementById('ds-avg').textContent = (d.avgScore||0) + '%';
+
+    document.getElementById('dash-top').innerHTML = d.topStudents?.length
+      ? d.topStudents.map((s,i) => `<tr>
+          <td><span class="badge ${i===0?'b-warn':'b-brand'}">#${i+1}</span></td>
+          <td style="font-weight:700">${s.name}</td>
+          <td style="color:var(--t3)">${s.matric}</td>
+          <td><span class="badge ${s.avg>=70?'b-ok':s.avg>=50?'b-warn':'b-no'}">${s.avg}%</span></td>
+          <td>${s.quizzes}</td>
+        </tr>`).join('')
+      : '<tr class="empty-row"><td colspan="5">No quiz data yet</td></tr>';
+
+    document.getElementById('dash-recent').innerHTML = d.recentStudents?.length
+      ? d.recentStudents.map(s => `<tr>
+          <td style="font-weight:700">${s.name}</td>
+          <td style="color:var(--t3)">${s.matric}</td>
+          <td>${s.phone||'—'}</td>
+          <td style="color:var(--t4);font-size:12px">${fmtDate(s.createdAt)}</td>
+        </tr>`).join('')
+      : '<tr class="empty-row"><td colspan="4">No students yet</td></tr>';
+  } catch(e) { toast('Dashboard load failed'); }
+}
+
+// ── STUDENTS ──────────────────────────────────────────────────
+async function loadStudents() {
+  try {
+    const r = await fetch('/api/admin/students', { headers: {'x-admin-key': adminKey} });
+    allStudents = await r.json();
+    renderStudents(allStudents);
+  } catch(e) { toast('Failed to load students'); }
+}
+
+function renderStudents(list) {
+  document.getElementById('st-count').textContent = list.length + ' student' + (list.length!==1?'s':'') + ' registered';
+  document.getElementById('st-body').innerHTML = list.length ? list.map(s => `
+    <tr>
+      <td style="font-weight:700">${s.name}</td>
+      <td style="font-family:var(--ff-h);font-size:12px">${s.matric}</td>
+      <td>${s.phone||'—'}</td>
+      <td>${s.whatsapp||'—'}</td>
+      <td>${s.quizCount}</td>
+      <td><span class="badge ${s.best>=70?'b-ok':s.best>=50?'b-warn':'b-no'}">${s.best}%</span></td>
+      <td><span class="badge ${s.active?'b-ok':'b-no'}">${s.active?'Active':'Suspended'}</span></td>
+      <td><div class="act-row">
+        <button class="ab ab-copy" onclick="revealLogin('${s.matric}','${s.password||s.matric}')">Login</button>
+        <button class="ab ab-edit" onclick="editStudent('${s.matric}')">Edit</button>
+        <button class="ab ${s.active?'ab-warn':'ab-ok'}" onclick="toggleActive('${s.matric}',${!s.active})">${s.active?'Suspend':'Activate'}</button>
+        <button class="ab ab-del" onclick="delStudent('${s.matric}')">Del</button>
+      </div></td>
+    </tr>`).join('')
+  : '<tr class="empty-row"><td colspan="8">No students yet</td></tr>';
+}
+
+function filterSt(q) {
+  renderStudents(allStudents.filter(s =>
+    s.name.toLowerCase().includes(q.toLowerCase()) ||
+    s.matric.toLowerCase().includes(q.toLowerCase()) ||
+    (s.phone||'').includes(q)
+  ));
+}
+
+function openAddStudent() {
+  editingSt = null;
+  document.getElementById('m-st-title').textContent = 'Add Student';
+  document.getElementById('m-st-btn').textContent = 'Add Student';
+  document.getElementById('m-st-err').classList.remove('on');
+  document.getElementById('st-reveal').style.display = 'none';
+  ['st-name','st-matric','st-phone','st-whatsapp','st-pass','st-amount','st-ref','st-note'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+  document.getElementById('st-method').value = 'cash';
+  document.getElementById('m-add-student').classList.add('on');
+  setTimeout(() => document.getElementById('st-name').focus(), 100);
+}
+
+function editStudent(matric) {
+  const s = allStudents.find(x => x.matric === matric);
+  if (!s) return;
+  editingSt = matric;
+  document.getElementById('m-st-title').textContent = 'Edit Student';
+  document.getElementById('m-st-btn').textContent = 'Save Changes';
+  document.getElementById('st-name').value = s.name;
+  document.getElementById('st-matric').value = s.matric;
+  document.getElementById('st-matric').disabled = true;
+  document.getElementById('st-phone').value = s.phone||'';
+  document.getElementById('st-whatsapp').value = s.whatsapp||'';
+  document.getElementById('st-pass').value = '';
+  document.getElementById('st-amount').value = '';
+  document.getElementById('st-reveal').style.display = 'none';
+  document.getElementById('m-st-err').classList.remove('on');
+  document.getElementById('m-add-student').classList.add('on');
+}
+
+async function saveStudent() {
+  const name     = document.getElementById('st-name').value.trim();
+  const matric   = document.getElementById('st-matric').value.trim().toUpperCase();
+  const phone    = document.getElementById('st-phone').value.trim();
+  const whatsapp = document.getElementById('st-whatsapp').value.trim();
+  const pass     = document.getElementById('st-pass').value.trim();
+  const amount   = document.getElementById('st-amount').value;
+  const method   = document.getElementById('st-method').value;
+  const ref      = document.getElementById('st-ref').value.trim();
+  const note     = document.getElementById('st-note').value.trim();
+  const errEl    = document.getElementById('m-st-err');
+  errEl.classList.remove('on');
+
+  if (!name || !matric) { errEl.textContent = 'Name and matric are required.'; errEl.classList.add('on'); return; }
+
+  try {
+    let r, data;
+    if (editingSt) {
+      r = await fetch(`/api/admin/students/${editingSt}`, {
+        method: 'PUT', headers: {'Content-Type':'application/json','x-admin-key': adminKey},
+        body: JSON.stringify({ name, phone, whatsapp, password: pass||undefined })
+      });
+    } else {
+      r = await fetch('/api/admin/students', {
+        method: 'POST', headers: {'Content-Type':'application/json','x-admin-key': adminKey},
+        body: JSON.stringify({ matric, name, phone, whatsapp, password: pass||matric, amount: amount||'', method, reference: ref, note })
+      });
+    }
+    data = await r.json();
+    if (!r.ok) { errEl.textContent = data.error || 'Error.'; errEl.classList.add('on'); return; }
+
+    if (!editingSt) {
+      // Show login reveal
+      const pw = data.password || pass || matric;
+      document.getElementById('rv-matric').textContent = data.matric;
+      document.getElementById('rv-pass').textContent   = pw;
+      document.getElementById('rv-url').textContent    = window.location.origin;
+      document.getElementById('st-reveal').style.display = 'block';
+      document.getElementById('m-st-btn').textContent = 'Add Another';
+      // Reset form for next student
+      ['st-name','st-matric','st-phone','st-whatsapp','st-pass','st-amount','st-ref','st-note'].forEach(id => {
+        const el = document.getElementById(id); if(el) el.value = '';
+      });
+      document.getElementById('st-matric').disabled = false;
+    } else {
+      closeM('m-add-student');
+      toast('Student updated');
+    }
+    loadStudents();
+  } catch(e) { errEl.textContent = 'Network error.'; errEl.classList.add('on'); }
+}
+
+async function toggleActive(matric, active) {
+  await fetch(`/api/admin/students/${matric}`, {
+    method: 'PUT', headers: {'Content-Type':'application/json','x-admin-key': adminKey},
+    body: JSON.stringify({ active })
+  });
+  toast(active ? 'Student activated' : 'Student suspended');
+  loadStudents();
+}
+
+function delStudent(matric) {
+  document.getElementById('m-del-sub').textContent = `Delete student ${matric} and all their scores? This cannot be undone.`;
+  delFn = async () => {
+    await fetch(`/api/admin/students/${matric}`, { method:'DELETE', headers:{'x-admin-key': adminKey} });
+    toast('Student deleted');
+    loadStudents();
+    closeM('m-del');
+  };
+  document.getElementById('m-del').classList.add('on');
+}
+
+function revealLogin(matric, pass) {
+  document.getElementById('rv-matric').textContent = matric;
+  document.getElementById('rv-pass').textContent   = pass;
+  document.getElementById('rv-url').textContent    = window.location.origin;
+  document.getElementById('st-reveal').style.display = 'block';
+  // Open modal just to show
+  openAddStudent();
+  editingSt = 'view_only'; // prevent saving
+  document.getElementById('m-st-title').textContent = 'Login Details';
+  document.getElementById('m-st-btn').textContent = 'Close';
+  document.getElementById('m-st-btn').onclick = () => closeM('m-add-student');
+  document.getElementById('st-reveal').style.display = 'block';
+}
+
+function copyLogin() {
+  const matric = document.getElementById('rv-matric').textContent;
+  const pass   = document.getElementById('rv-pass').textContent;
+  const url    = document.getElementById('rv-url').textContent;
+  const text = `🎓 *PrepHQ Login Details*\n\nMatric: *${matric}*\nPassword: *${pass}*\nLink: ${url}\n\nLogin with your matric and password. Your password is your matric number unless changed.`;
+  navigator.clipboard.writeText(text).then(() => toast('Copied! Paste on WhatsApp'));
+}
+
+// ── CODES ─────────────────────────────────────────────────────
+let codesFilter = 'all';
+async function loadCodes(filter, el) {
+  codesFilter = filter || 'all';
+  document.querySelectorAll('[id^="ct-"]').forEach(b => {
+    b.className = b.className.replace(/b-\w+/, 'b-gray');
+  });
+  const map = {all:'b-brand', unused:'b-gray', used:'b-ok', expired:'b-no'};
+  document.getElementById('ct-'+codesFilter).className =
+    document.getElementById('ct-'+codesFilter).className.replace(/b-\w+/, map[codesFilter]);
+  try {
+    const q = codesFilter === 'all' ? '' : `?status=${codesFilter}`;
+    const r = await fetch(`/api/admin/codes${q}`, { headers: {'x-admin-key': adminKey} });
+    allCodes = await r.json();
+    renderCodes(allCodes);
+  } catch(e) { toast('Failed to load codes'); }
+}
+
+function renderCodes(list) {
+  document.getElementById('codes-count').textContent = list.length + ' code' + (list.length!==1?'s':'');
+  document.getElementById('codes-body').innerHTML = list.length ? list.map(c => {
+    const badge = c.status==='unused'?'b-purple':c.status==='used'?'b-ok':'b-no';
+    return `<tr>
+      <td><span style="font-family:var(--ff-h);font-size:14px;font-weight:800;letter-spacing:.05em">${c.code}</span></td>
+      <td style="color:var(--t3);font-size:12px">${c.batch||'—'}</td>
+      <td><span class="badge ${badge}">${c.status}</span></td>
+      <td>${c.usedBy||'—'}</td>
+      <td style="color:var(--t4);font-size:12px">${c.usedAt?fmtDate(c.usedAt):'—'}</td>
+      <td><div class="act-row">
+        ${c.status==='unused'?`<button class="ab ab-warn" onclick="expireCode('${c._id}')">Expire</button>`:''}
+        <button class="ab ab-del" onclick="delCode('${c._id}','${c.code}')">Del</button>
+      </div></td>
+    </tr>`;
+  }).join('') : '<tr class="empty-row"><td colspan="6">No codes found</td></tr>';
+}
+
+function filterCodes(q) {
+  renderCodes(allCodes.filter(c => c.code.includes(q.toUpperCase()) || (c.batch||'').toLowerCase().includes(q.toLowerCase())));
+}
+
+function openGenCodes() {
+  document.getElementById('gc-result').style.display = 'none';
+  document.getElementById('m-gc-err').classList.remove('on');
+  document.getElementById('gc-count').value = '10';
+  document.getElementById('gc-price').value = '';
+  document.getElementById('gc-batch').value = '';
+  document.getElementById('gc-expiry').value = '';
+  document.getElementById('gc-note').value = '';
+  document.getElementById('m-gen-codes').classList.add('on');
+}
+
+async function genCodes() {
+  const count   = parseInt(document.getElementById('gc-count').value) || 10;
+  const batch   = document.getElementById('gc-batch').value || `Batch ${new Date().toLocaleDateString('en-GB')}`;
+  const expiry  = document.getElementById('gc-expiry').value;
+  const note    = document.getElementById('gc-note').value;
+  const errEl   = document.getElementById('m-gc-err');
+  errEl.classList.remove('on');
+  try {
+    const r = await fetch('/api/admin/codes/generate', {
+      method: 'POST', headers: {'Content-Type':'application/json','x-admin-key': adminKey},
+      body: JSON.stringify({ count, batch, expiresAt: expiry||null, note })
+    });
+    const d = await r.json();
+    if (!r.ok) { errEl.textContent = d.error||'Error'; errEl.classList.add('on'); return; }
+    generatedCodes = d.codes;
+    document.getElementById('gc-codes-grid').innerHTML = d.codes.map(c =>
+      `<div class="code-card"><div class="code-val">${c}</div><div class="code-meta">${batch}</div></div>`
+    ).join('');
+    document.getElementById('gc-result').style.display = 'block';
+    toast(`${d.generated} codes generated`);
+    loadCodes('all');
+  } catch(e) { errEl.textContent = 'Network error.'; errEl.classList.add('on'); }
+}
+
+function copyAllCodes() {
+  const text = generatedCodes.join('\n');
+  navigator.clipboard.writeText(text).then(() => toast('All codes copied!'));
+}
+
+async function expireCode(id) {
+  await fetch(`/api/admin/codes/${id}`, {
+    method:'PUT', headers:{'Content-Type':'application/json','x-admin-key': adminKey},
+    body: JSON.stringify({ status:'expired' })
+  });
+  toast('Code expired'); loadCodes(codesFilter);
+}
+
+function delCode(id, code) {
+  document.getElementById('m-del-sub').textContent = `Delete code ${code}? This cannot be undone.`;
+  delFn = async () => {
+    await fetch(`/api/admin/codes/${id}`, { method:'DELETE', headers:{'x-admin-key': adminKey} });
+    toast('Code deleted'); loadCodes(codesFilter); closeM('m-del');
+  };
+  document.getElementById('m-del').classList.add('on');
+}
+
+// ── PAYMENTS ──────────────────────────────────────────────────
+async function loadPayments() {
+  try {
+    const r = await fetch('/api/admin/payments', { headers: {'x-admin-key': adminKey} });
+    allPayments = await r.json();
+    renderPayments(allPayments);
+  } catch(e) { toast('Failed to load payments'); }
+}
+
+function renderPayments(list) {
+  const total = list.reduce((a,b) => a+(b.amount||0), 0);
+  document.getElementById('pay-count').textContent = list.length + ' record' + (list.length!==1?'s':'');
+  document.getElementById('pay-total-lbl').textContent = 'Total: ₦' + total.toLocaleString();
+  document.getElementById('pay-body').innerHTML = list.length ? list.map(p => `
+    <tr>
+      <td style="font-weight:700">${p.name||'—'}</td>
+      <td style="color:var(--t3)">${p.matric||'—'}</td>
+      <td style="font-weight:800;color:var(--ok)">₦${(p.amount||0).toLocaleString()}</td>
+      <td><span class="badge b-brand" style="text-transform:capitalize">${(p.method||'').replace('_',' ')}</span></td>
+      <td style="font-size:12px;color:var(--t3)">${p.reference||'—'}</td>
+      <td style="font-size:12px;color:var(--t3)">${p.note||'—'}</td>
+      <td style="font-size:12px;color:var(--t4)">${fmtDate(p.createdAt)}</td>
+      <td><button class="ab ab-del" onclick="delPayment('${p._id}')">Del</button></td>
+    </tr>`).join('')
+  : '<tr class="empty-row"><td colspan="8">No payments recorded</td></tr>';
+}
+
+function filterPay(q) {
+  renderPayments(allPayments.filter(p =>
+    (p.name||'').toLowerCase().includes(q.toLowerCase()) ||
+    (p.matric||'').toLowerCase().includes(q.toLowerCase())
+  ));
+}
+
+function openAddPayment() {
+  document.getElementById('m-pay-err').classList.remove('on');
+  ['pay-name','pay-matric','pay-amount','pay-ref','pay-note'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('pay-method').value = 'cash';
+  document.getElementById('m-add-payment').classList.add('on');
+}
+
+async function savePayment() {
+  const amount = document.getElementById('pay-amount').value;
+  const errEl  = document.getElementById('m-pay-err');
+  errEl.classList.remove('on');
+  if (!amount) { errEl.textContent = 'Amount is required.'; errEl.classList.add('on'); return; }
+  try {
+    const r = await fetch('/api/admin/payments', {
+      method:'POST', headers:{'Content-Type':'application/json','x-admin-key': adminKey},
+      body: JSON.stringify({
+        name:      document.getElementById('pay-name').value,
+        matric:    document.getElementById('pay-matric').value,
+        amount:    parseFloat(amount),
+        method:    document.getElementById('pay-method').value,
+        reference: document.getElementById('pay-ref').value,
+        note:      document.getElementById('pay-note').value,
+      })
+    });
+    if (!r.ok) { const d=await r.json(); errEl.textContent=d.error; errEl.classList.add('on'); return; }
+    closeM('m-add-payment');
+    toast('Payment recorded');
+    loadPayments();
+  } catch(e) { errEl.textContent='Network error.'; errEl.classList.add('on'); }
+}
+
+function delPayment(id) {
+  document.getElementById('m-del-sub').textContent = 'Delete this payment record?';
+  delFn = async () => {
+    await fetch(`/api/admin/payments/${id}`, { method:'DELETE', headers:{'x-admin-key': adminKey} });
+    toast('Payment deleted'); loadPayments(); closeM('m-del');
+  };
+  document.getElementById('m-del').classList.add('on');
+}
+
+// ── QUESTIONS ─────────────────────────────────────────────────
+const COURSE_NAMES = {
+  gst101:'GST 101',gst102:'GST 102',gst103:'GST 103',sta111:'STA 111',
+  phy101:'PHY 101',phy107:'PHY 107',mth101:'MTH 101',mth103:'MTH 103',
+  chm141:'CHM 141',bio101:'BIO 101',csc101:'CSC 101',cos101:'COS 101'
+};
+
+async function loadQuestions() {
+  try {
+    const course = document.getElementById('q-course-filter').value;
+    const q = course ? `?course=${course}` : '';
+    const r = await fetch(`/api/admin/questions${q}`, { headers: {'x-admin-key': adminKey} });
+    allQuestions = await r.json();
+    renderQuestions(allQuestions);
+  } catch(e) { toast('Failed to load questions'); }
+}
+
+function renderQuestions(list) {
+  document.getElementById('q-count').textContent = list.length + ' question' + (list.length!==1?'s':'') + ' (admin-added)';
+  document.getElementById('q-body').innerHTML = list.length ? list.map(q => `
+    <tr>
+      <td><span class="badge b-brand">${COURSE_NAMES[q.course]||q.course}</span></td>
+      <td style="max-width:220px;font-size:13px">${q.q.slice(0,80)}${q.q.length>80?'…':''}</td>
+      <td style="font-size:11px;color:var(--t3)">${q.opts.map((o,i)=>`${String.fromCharCode(65+i)}.${o.slice(0,15)}`).join(' | ')}</td>
+      <td style="font-weight:800;color:var(--ok)">${String.fromCharCode(65+q.ans)}</td>
+      <td>${q.tag?`<span class="badge b-teal">${q.tag}</span>`:'—'}</td>
+      <td><div class="act-row">
+        <button class="ab ab-edit" onclick="editQ('${q._id}')">Edit</button>
+        <button class="ab ab-del" onclick="delQ('${q._id}')">Del</button>
+      </div></td>
+    </tr>`).join('')
+  : '<tr class="empty-row"><td colspan="6">No custom questions yet. Add some above!</td></tr>';
+}
+
+function openAddQ() {
+  editingQ = null;
+  document.getElementById('m-q-title').textContent = 'Add Question';
+  document.getElementById('m-q-btn').textContent   = 'Add Question';
+  document.getElementById('m-q-err').classList.remove('on');
+  ['q-course','q-text','q-a','q-b','q-c','q-d','q-tag','q-exp'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('q-ans').value = '0';
+  document.getElementById('m-add-q').classList.add('on');
+}
+
+function editQ(id) {
+  const q = allQuestions.find(x => x._id === id);
+  if (!q) return;
+  editingQ = id;
+  document.getElementById('m-q-title').textContent = 'Edit Question';
+  document.getElementById('m-q-btn').textContent   = 'Save Changes';
+  document.getElementById('q-course').value = q.course;
+  document.getElementById('q-text').value   = q.q;
+  document.getElementById('q-a').value = q.opts[0]||'';
+  document.getElementById('q-b').value = q.opts[1]||'';
+  document.getElementById('q-c').value = q.opts[2]||'';
+  document.getElementById('q-d').value = q.opts[3]||'';
+  document.getElementById('q-ans').value = q.ans;
+  document.getElementById('q-tag').value = q.tag||'';
+  document.getElementById('q-exp').value = q.exp||'';
+  document.getElementById('m-q-err').classList.remove('on');
+  document.getElementById('m-add-q').classList.add('on');
+}
+
+async function saveQuestion() {
+  const course = document.getElementById('q-course').value;
+  const q      = document.getElementById('q-text').value.trim();
+  const a      = document.getElementById('q-a').value.trim();
+  const b      = document.getElementById('q-b').value.trim();
+  const c      = document.getElementById('q-c').value.trim();
+  const d      = document.getElementById('q-d').value.trim();
+  const ans    = parseInt(document.getElementById('q-ans').value);
+  const tag    = document.getElementById('q-tag').value.trim();
+  const exp    = document.getElementById('q-exp').value.trim();
+  const errEl  = document.getElementById('m-q-err');
+  errEl.classList.remove('on');
+
+  if (!course || !q || !a || !b) { errEl.textContent='Course, question, option A and B are required.'; errEl.classList.add('on'); return; }
+  const opts = [a, b, ...(c?[c]:[]), ...(d?[d]:[])];
+
+  try {
+    const url    = editingQ ? `/api/admin/questions/${editingQ}` : '/api/admin/questions';
+    const method = editingQ ? 'PUT' : 'POST';
+    const r = await fetch(url, {
+      method, headers: {'Content-Type':'application/json','x-admin-key': adminKey},
+      body: JSON.stringify({ course, q, opts, ans, tag, exp })
+    });
+    if (!r.ok) { const d=await r.json(); errEl.textContent=d.error; errEl.classList.add('on'); return; }
+    closeM('m-add-q');
+    toast(editingQ ? 'Question updated' : 'Question added');
+    loadQuestions();
+  } catch(e) { errEl.textContent='Network error.'; errEl.classList.add('on'); }
+}
+
+function delQ(id) {
+  document.getElementById('m-del-sub').textContent = 'Delete this question permanently?';
+  delFn = async () => {
+    await fetch(`/api/admin/questions/${id}`, { method:'DELETE', headers:{'x-admin-key': adminKey} });
+    toast('Question deleted'); loadQuestions(); closeM('m-del');
+  };
+  document.getElementById('m-del').classList.add('on');
+}
+
+// ── MODAL UTILS ───────────────────────────────────────────────
+function closeM(id) { document.getElementById(id).classList.remove('on'); }
+function closeMBg(e, id) { if(e.target===document.getElementById(id)) closeM(id); }
+function confirmDel() { if(delFn) delFn(); }
+
+// ── THEME ─────────────────────────────────────────────────────
+function toggleTheme() {
+  const dark = document.documentElement.dataset.theme === 'dark';
+  document.documentElement.dataset.theme = dark ? 'light' : 'dark';
+  document.getElementById('theme-ico').innerHTML = dark
+    ? '<path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/>'
+    : '<path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2v-2H2v2zm18 0h2v-2h-2v2zM11 2v2h2V2h-2zm0 18v2h2v-2h-2zM5.99 4.58l-1.42 1.42 1.42 1.41 1.41-1.41L5.99 4.58zm12.03 12.03l-1.42 1.42 1.42 1.41 1.41-1.41-1.41-1.42zm1.41-12.44l-1.41-1.41-1.42 1.41 1.42 1.42 1.41-1.42zM5.99 19.42l1.41 1.41 1.42-1.42-1.42-1.41-1.41 1.42z"/>';
+}
+
+// ── UTILS ─────────────────────────────────────────────────────
+let tTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('on');
+  clearTimeout(tTimer); tTimer = setTimeout(() => el.classList.remove('on'), 2500);
+}
+function fmtDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+}
+</script>
+</body>
+</html>

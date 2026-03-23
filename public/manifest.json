@@ -1,0 +1,14 @@
+{
+  "name": "PrepHQ",
+  "short_name": "PrepHQ",
+  "description": "Exam Prep Platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F0F2F8",
+  "theme_color": "#0A5CF5",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
