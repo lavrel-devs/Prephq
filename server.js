@@ -36,12 +36,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ══════════════════════════════════════════════════════════════
 //  MONGODB CONNECTION
 // ══════════════════════════════════════════════════════════════
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/prephq')
-  .then(() => console.log('✅  MongoDB connected'))
-  .catch(e => {
-    console.error('❌  MongoDB connection failed:', e.message);
-    console.error('    Check your MONGODB_URI in .env');
-  });
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => console.log("MongoDB connected"))
+.catch(err => console.error("MongoDB connection error:", err));
 
 // ══════════════════════════════════════════════════════════════
 //  SCHEMAS & MODELS
