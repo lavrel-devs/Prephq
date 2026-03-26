@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PrepHQ · Question Uploader</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:       #0a0b0f;
+    --surface:  #111318;
+    --border:   #1e2230;
+    --gold:     #c9a84c;
+    --gold2:    #f0d080;
+    --muted:    #4a5068;
+    --text:     #d8dbe8;
+    --green:    #2ecc71;
+    --red:      #e74c3c;
+    --blue:     #5b9cf6;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── noise grain ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: .5;
+  }
+
+  /* ── layout ── */
+  .wrap { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 40px 20px 80px; }
+
+  /* ── header ── */
+  header { margin-bottom: 48px; }
+  .eyebrow { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .2em; color: var(--gold); text-transform: uppercase; margin-bottom: 10px; }
+  h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(38px, 6vw, 60px); letter-spacing: .04em; line-height: 1; color: #fff; }
+  h1 span { color: var(--gold); }
+  .subtitle { margin-top: 12px; color: var(--muted); font-size: 13px; line-height: 1.7; max-width: 540px; }
+
+  /* ── cards ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+  }
+  .card-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* ── config row ── */
+  .cfg-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media(max-width:560px){ .cfg-row { grid-template-columns: 1fr; } }
+
+  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; letter-spacing: .04em; }
+
+  input[type=text], input[type=password], input[type=url], select {
+    width: 100%; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px; color: var(--text);
+    font-family: 'DM Mono', monospace; font-size: 13px; outline: none;
+    transition: border-color .2s;
+  }
+  input:focus, select:focus { border-color: var(--gold); }
+
+  /* ── textarea ── */
+  .paste-area {
+    width: 100%; min-height: 280px; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px; color: var(--text); font-family: 'DM Mono', monospace;
+    font-size: 12.5px; line-height: 1.7; resize: vertical; outline: none;
+    transition: border-color .2s;
+  }
+  .paste-area:focus { border-color: var(--gold); }
+  .paste-area::placeholder { color: var(--muted); font-style: italic; }
+
+  /* ── action row ── */
+  .action-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-top: 4px; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 22px; border-radius: 8px; font-size: 13px;
+    font-weight: 600; cursor: pointer; border: none; transition: all .2s; letter-spacing: .03em;
+  }
+  .btn-gold {
+    background: var(--gold); color: #0a0b0f;
+  }
+  .btn-gold:hover { background: var(--gold2); transform: translateY(-1px); }
+  .btn-gold:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+
+  .btn-ghost {
+    background: transparent; border: 1px solid var(--border); color: var(--muted);
+  }
+  .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+
+  .btn-danger {
+    background: transparent; border: 1px solid var(--red); color: var(--red);
+  }
+  .btn-danger:hover { background: var(--red); color: #fff; }
+
+  /* ── preview stats ── */
+  .stat-bar { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0; }
+  .stat-chip {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: 6px 12px;
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .stat-chip .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gold); }
+
+  /* ── question list ── */
+  .q-list { display: flex; flex-direction: column; gap: 10px; max-height: 480px; overflow-y: auto; padding-right: 6px; }
+  .q-list::-webkit-scrollbar { width: 4px; }
+  .q-list::-webkit-scrollbar-track { background: transparent; }
+  .q-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+  .q-item {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 16px;
+    transition: border-color .15s;
+  }
+  .q-item:hover { border-color: var(--muted); }
+  .q-item.uploaded { border-color: var(--green); }
+  .q-item.failed   { border-color: var(--red); }
+
+  .q-meta { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+  .q-course {
+    font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .12em;
+    background: rgba(201,168,76,.12); color: var(--gold); border-radius: 4px;
+    padding: 2px 8px; text-transform: uppercase;
+  }
+  .q-idx { color: var(--muted); font-size: 11px; font-family: 'DM Mono', monospace; }
+  .q-status { margin-left: auto; font-size: 11px; font-family: 'DM Mono', monospace; }
+  .status-ok   { color: var(--green); }
+  .status-fail { color: var(--red); }
+  .status-wait { color: var(--muted); }
+
+  .q-text { font-size: 13px; line-height: 1.5; color: var(--text); margin-bottom: 8px; }
+  .q-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  .q-opt  { font-size: 11.5px; color: var(--muted); padding: 3px 0; font-family: 'DM Mono', monospace; }
+  .q-opt.correct { color: var(--green); }
+
+  /* ── log ── */
+  .log-box {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px; max-height: 200px; overflow-y: auto;
+    font-family: 'DM Mono', monospace; font-size: 12px; line-height: 1.8;
+  }
+  .log-box::-webkit-scrollbar { width: 4px; }
+  .log-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+  .log-info  { color: var(--blue); }
+  .log-ok    { color: var(--green); }
+  .log-err   { color: var(--red); }
+  .log-warn  { color: var(--gold); }
+
+  /* ── progress bar ── */
+  .prog-wrap { background: var(--border); border-radius: 99px; height: 4px; overflow: hidden; margin: 12px 0; }
+  .prog-fill  { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold2)); border-radius: 99px; width: 0; transition: width .3s ease; }
+
+  /* ── empty state ── */
+  .empty { text-align: center; padding: 48px; color: var(--muted); }
+  .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: .4; }
+  .empty p { font-size: 13px; }
+
+  /* ── gold line decorator ── */
+  .gold-line { width: 40px; height: 2px; background: var(--gold); margin: 16px 0; }
+
+  /* ── toast ── */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 20px;
+    font-size: 13px; color: var(--text);
+    box-shadow: 0 8px 32px rgba(0,0,0,.5);
+    transform: translateY(80px); opacity: 0;
+    transition: all .3s ease; z-index: 999; max-width: 320px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: var(--green); }
+  .toast.error   { border-color: var(--red); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <header>
+    <div class="eyebrow">⬡ Luminor Creative Studio</div>
+    <h1>PrepHQ <span>Uploader</span></h1>
+    <div class="gold-line"></div>
+    <p class="subtitle">Paste your Gemini question dump, preview every question parsed, then blast them all to the database in one click.</p>
+  </header>
+
+  <!-- Step 1: Config -->
+  <div class="card">
+    <div class="card-title">01 · Server Config</div>
+    <div class="cfg-row">
+      <div>
+        <label>Server URL</label>
+        <input type="url" id="serverUrl" placeholder="http://localhost:3000" value="http://localhost:3000"/>
+      </div>
+      <div>
+        <label>Admin Key</label>
+        <input type="password" id="adminKey" placeholder="Your ADMIN_KEY from .env"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: Paste -->
+  <div class="card">
+    <div class="card-title">02 · Paste Questions</div>
+    <textarea class="paste-area" id="rawText" placeholder="Paste the full Gemini question text here...
+
+Example format it understands:
+ * Which quantum number defines the main energy level?
+   * A) Magnetic
+   * B) Principal
+   * C) Spin
+   * D) Azimuthal
+   * Correct: B
+
+It will auto-detect course headers like 'CHM 141', 'MTH 101', 'PHY 101', 'GST 111', 'STA 111', 'BIO 101', 'COS 101', 'CSC 103'."></textarea>
+
+    <div class="action-row" style="margin-top:14px;">
+      <select id="defaultCourse" style="max-width:200px;">
+        <option value="">Auto-detect course</option>
+        <option value="CHM141">CHM 141 – Chemistry</option>
+        <option value="MTH101">MTH 101 – Mathematics</option>
+        <option value="PHY101">PHY 101 – Physics</option>
+        <option value="GST111">GST 111 – English</option>
+        <option value="STA111">STA 111 – Statistics</option>
+        <option value="BIO101">BIO 101 – Biology</option>
+        <option value="COS101">COS 101 – Computer Science</option>
+        <option value="CSC103">CSC 103 – Social Media</option>
+      </select>
+      <button class="btn btn-ghost" onclick="parseQuestions()">⟳ Parse &amp; Preview</button>
+      <button class="btn btn-ghost" onclick="clearAll()">✕ Clear</button>
+    </div>
+  </div>
+
+  <!-- Step 3: Preview -->
+  <div class="card" id="previewCard" style="display:none;">
+    <div class="card-title">03 · Preview</div>
+
+    <div class="stat-bar" id="statBar"></div>
+
+    <div class="action-row" style="margin-bottom:16px;">
+      <button class="btn btn-gold" id="uploadBtn" onclick="uploadAll()">
+        ↑ Upload All to Database
+      </button>
+      <span id="uploadCount" style="color:var(--muted);font-size:12px;font-family:'DM Mono',monospace;"></span>
+    </div>
+
+    <div class="prog-wrap" id="progWrap" style="display:none;">
+      <div class="prog-fill" id="progFill"></div>
+    </div>
+
+    <div class="q-list" id="qList"></div>
+  </div>
+
+  <!-- Log -->
+  <div class="card" id="logCard" style="display:none;">
+    <div class="card-title">04 · Upload Log</div>
+    <div class="log-box" id="logBox"></div>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  COURSE MAP
+// ═══════════════════════════════════════════════════════
+const COURSE_MAP = {
+  'CHM 141': 'CHM141', 'CHM141': 'CHM141', 'CHEMISTRY': 'CHM141',
+  'MTH 101': 'MTH101', 'MTH101': 'MTH101', 'MAT 101': 'MTH101', 'MATHEMATICS': 'MTH101', 'ELEMENTARY MATHEMATICS': 'MTH101',
+  'PHY 101': 'PHY101', 'PHY101': 'PHY101', 'PHYSICS': 'PHY101', 'GENERAL PHYSICS': 'PHY101',
+  'GST 111': 'GST111', 'GST111': 'GST111', 'ENGLISH': 'GST111', 'USE OF ENGLISH': 'GST111',
+  'STA 111': 'STA111', 'STA111': 'STA111', 'STATISTICS': 'STA111', 'DESCRIPTIVE STATISTICS': 'STA111',
+  'BIO 101': 'BIO101', 'BIO101': 'BIO101', 'BIOLOGY': 'BIO101', 'GENERAL BIOLOGY': 'BIO101',
+  'COS 101': 'COS101', 'COS101': 'COS101', 'COMPUTER SCIENCE': 'COS101', 'INTRODUCTION TO COMPUTER': 'COS101',
+  'CSC 103': 'CSC103', 'CSC103': 'CSC103', 'SOCIAL MEDIA': 'CSC103',
+};
+
+function normaliseCourse(raw) {
+  const up = raw.toUpperCase().trim();
+  for (const [k, v] of Object.entries(COURSE_MAP)) {
+    if (up.includes(k.toUpperCase())) return v;
+  }
+  return raw.replace(/\s+/g,'').toUpperCase();
+}
+
+// ═══════════════════════════════════════════════════════
+//  LATEX / NOTATION CLEANER
+// ═══════════════════════════════════════════════════════
+function cleanLatex(s) {
+  if (!s) return s;
+
+  // ── Arrows & logical symbols ──
+  s = s.replace(/\\rightarrow/g, '→');
+  s = s.replace(/\\leftarrow/g, '←');
+  s = s.replace(/\\Rightarrow/g, '⇒');
+  s = s.replace(/\\leftrightarrow/g, '↔');
+  s = s.replace(/\\to\b/g, '→');
+  s = s.replace(/\\times/g, '×');
+  s = s.replace(/\\cdot/g, '·');
+  s = s.replace(/\\div/g, '÷');
+  s = s.replace(/\\pm/g, '±');
+  s = s.replace(/\\mp/g, '∓');
+  s = s.replace(/\\leq/g, '≤');
+  s = s.replace(/\\geq/g, '≥');
+  s = s.replace(/\\neq/g, '≠');
+  s = s.replace(/\\approx/g, '≈');
+  s = s.replace(/\\equiv/g, '≡');
+  s = s.replace(/\\infty/g, '∞');
+  s = s.replace(/\\partial/g, '∂');
+  s = s.replace(/\\Delta/g, 'Δ');
+  s = s.replace(/\\delta/g, 'δ');
+  s = s.replace(/\\alpha/g, 'α');
+  s = s.replace(/\\beta/g, 'β');
+  s = s.replace(/\\gamma/g, 'γ');
+  s = s.replace(/\\lambda/g, 'λ');
+  s = s.replace(/\\mu/g, 'μ');
+  s = s.replace(/\\pi\b/g, 'π');
+  s = s.replace(/\\sigma/g, 'σ');
+  s = s.replace(/\\tau/g, 'τ');
+  s = s.replace(/\\omega/g, 'ω');
+  s = s.replace(/\\Omega/g, 'Ω');
+  s = s.replace(/\\theta/g, 'θ');
+  s = s.replace(/\\phi/g, 'φ');
+  s = s.replace(/\\psi/g, 'ψ');
+  s = s.replace(/\\rho/g, 'ρ');
+  s = s.replace(/\\eta/g, 'η');
+  s = s.replace(/\\chi/g, 'χ');
+  s = s.replace(/\\nu/g, 'ν');
+  s = s.replace(/\\xi/g, 'ξ');
+  s = s.replace(/\\epsilon/g, 'ε');
+  s = s.replace(/\\kappa/g, 'κ');
+
+  // ── Set theory symbols ──
+  s = s.replace(/\\cup/g, '∪');
+  s = s.replace(/\\cap/g, '∩');
+  s = s.replace(/\\subset/g, '⊂');
+  s = s.replace(/\\subseteq/g, '⊆');
+  s = s.replace(/\\in\b/g, '∈');
+  s = s.replace(/\\notin/g, '∉');
+  s = s.replace(/\\emptyset/g, '∅');
+  s = s.replace(/\\mathbb\{Z\}/g, 'ℤ');
+  s = s.replace(/\\mathbb\{Q\}/g, 'ℚ');
+  s = s.replace(/\\mathbb\{R\}/g, 'ℝ');
+  s = s.replace(/\\mathbb\{N\}/g, 'ℕ');
+  s = s.replace(/\\mathbb\{C\}/g, 'ℂ');
+  s = s.replace(/\\Delta\s*/g, 'Δ');
+
+  // ── Degree symbol — handle BEFORE superscript rules ──
+  // Covers: 180^\circ  180^{\circ}  180\circ
+  s = s.replace(/(\d+)\s*\^\{?\\circ\}?/g, '$1°');
+  s = s.replace(/(\d+)\s*\\circ/g, '$1°');
+  s = s.replace(/\\circ/g, '°'); // standalone \circ
+
+  // ── Fractions: \frac{a}{b} → a/b ──
+  s = s.replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '($1)/($2)');
+
+  // ── Square root: \sqrt{x} → √(x), \sqrt{ab} → √(ab) ──
+  s = s.replace(/\\sqrt\{([^}]+)\}/g, '√($1)');
+  s = s.replace(/\\sqrt\s+(\w+)/g, '√$1');
+
+  // ── Scientific notation: \times 10^{n} → × 10ⁿ ──
+  const supMap = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻','+':`⁺`};
+  const toSup = str => str.split('').map(c => supMap[c]||c).join('');
+  const subMap = {'0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉','-':'₋','+':`₊`};
+  const toSub = str => str.split('').map(c => subMap[c]||c).join('');
+
+  // ── Superscripts: ^{...} and ^n ──
+  // Handle ^{-11} ^{23} ^{2+} etc.
+  s = s.replace(/\^\{([^}]+)\}/g, (_, p) => toSup(p));
+  // Handle simple ^2 ^3 ^n (single char) — but not after \mathbf etc
+  s = s.replace(/\^(-?\d+)/g, (_, p) => toSup(p));
+  s = s.replace(/\^([A-Za-z])\b/g, (_, p) => toSup(p));
+
+  // ── Subscripts: _{...} and _n ──
+  s = s.replace(/\_\{([^}]+)\}/g, (_, p) => toSub(p));
+  s = s.replace(/\_(-?\d+)/g, (_, p) => toSub(p));
+  s = s.replace(/\_([A-Za-z\d])\b/g, (_, p) => toSub(p));
+
+  // ── Chemical formulas written with _ ──
+  // e.g. H_2O → H₂O  (already handled above, but let's do explicit common ones)
+  // These are now handled generically by the subscript rules above.
+
+  // ── Bold vectors \mathbf{A} → A ──
+  s = s.replace(/\\mathbf\{([^}]+)\}/g, '$1');
+  s = s.replace(/\\vec\{([^}]+)\}/g, '$1');
+  s = s.replace(/\\hat\{([^}]+)\}/g, '$1');
+  s = s.replace(/\\bar\{([^}]+)\}/g, '$1̄');
+
+  // ── nCr notation: ^nC_r → nCr ──
+  s = s.replace(/\^([a-zA-Z\d]+)C_\{?([a-zA-Z\d-]+)\}?/g, '$1C$2');
+  s = s.replace(/\^([a-zA-Z\d]+)C([a-zA-Z\d]+)/g, '$1C$2');
+
+  // ── Absolute value |r| ──
+  // already fine as-is
+
+  // ── \cos \sin \tan \log \ln → plain ──
+  s = s.replace(/\\(cos|sin|tan|cot|sec|csc|log|ln|exp|lim|max|min|det|mod)\b/g, '$1');
+
+  // ── Remove remaining braces used for grouping ──
+  s = s.replace(/\{([^{}]+)\}/g, '$1');
+  s = s.replace(/\{([^{}]+)\}/g, '$1'); // second pass for nested
+  s = s.replace(/[{}]/g, '');
+
+  // ── Remove leftover backslashes ──
+  s = s.replace(/\\\\/g, '');
+  s = s.replace(/\\(\s)/g, '$1');
+  s = s.replace(/\\([a-zA-Z]+)/g, '$1'); // catch-all for unknown \commands
+
+  // ── Fix spacing around operators ──
+  s = s.replace(/\s{2,}/g, ' ');
+  s = s.replace(/\(\s+/g, '(');
+  s = s.replace(/\s+\)/g, ')');
+
+  return s.trim();
+}
+
+// ═══════════════════════════════════════════════════════
+//  PARSER
+// ═══════════════════════════════════════════════════════
+let parsed = [];
+
+function parseQuestions() {
+  const raw  = document.getElementById('rawText').value.trim();
+  const def  = document.getElementById('defaultCourse').value;
+
+  if (!raw) { showToast('Paste some questions first!', 'error'); return; }
+
+  const lines = raw.split('\n').map(l => l.replace(/^\s+/, '').replace(/\s+$/, '')).filter(Boolean);
+
+  const questions = [];
+  let course = def || 'UNKNOWN';
+
+  // Course detection regex
+  const courseRe = /(CHM\s*14[01]|MTH\s*101|MAT\s*101|PHY\s*101|GST\s*111|GST\s*102|STA\s*111|BIO\s*101|COS\s*101|CSC\s*103)/i;
+  // Option line: "* A) text" or "A) text" or "A. text"
+  const optRe = /^\*?\s*([A-D])[).]\s+(.+)$/;
+  // Correct answer
+  const correctRe = /^\*?\s*[Cc]orrect\s*:\s*([A-D])/;
+  // Question line (starts with * or number or just text before options)
+  const qStartRe = /^\*\s+(.+)$/;
+
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // ── Course header detection ──
+    const cm = line.match(courseRe);
+    if (cm) {
+      course = normaliseCourse(cm[1]);
+      i++;
+      continue;
+    }
+
+    // ── Skip module headers and notes ──
+    if (/^module\s+\d+/i.test(line) || /^note:/i.test(line) || /^batch\s+\d+/i.test(line)) {
+      i++; continue;
+    }
+
+    // ── Try to detect question start ──
+    let qText = null;
+    if (qStartRe.test(line)) {
+      qText = line.match(qStartRe)[1].replace(/^\d+[.)]\s*/, '').trim();
+    }
+
+    if (qText && i + 4 < lines.length) {
+      // Look ahead for A) B) C) D)
+      const optLines = [];
+      let j = i + 1;
+      while (j < lines.length && optLines.length < 4) {
+        const ol = optRe.exec(lines[j]);
+        if (ol) { optLines.push({ letter: ol[1].toUpperCase(), text: ol[2].trim() }); j++; }
+        else if (lines[j].trim() === '' || /^\*?\s*[Cc]orrect/.test(lines[j])) break;
+        else break;
+      }
+
+      if (optLines.length === 4) {
+        // Read correct
+        let ansIdx = 0;
+        let exp = '';
+        if (j < lines.length && correctRe.test(lines[j])) {
+          const letter = lines[j].match(correctRe)[1].toUpperCase();
+          ansIdx = ['A','B','C','D'].indexOf(letter);
+          if (ansIdx < 0) ansIdx = 0;
+          j++;
+        }
+        // Optional rationale
+        if (j < lines.length && /rationale/i.test(lines[j])) {
+          exp = cleanLatex(lines[j].replace(/\*?\s*Rationale:\s*/i,'').trim());
+          j++;
+        }
+
+        questions.push({
+          course: def || course,
+          q: cleanLatex(qText),
+          opts: optLines.map(o => cleanLatex(o.text)),
+          ans: ansIdx,
+          exp,
+          tag: '',
+          _status: 'pending',
+        });
+
+        i = j;
+        continue;
+      }
+    }
+    i++;
+  }
+
+  parsed = questions;
+  renderPreview();
+}
+
+// ═══════════════════════════════════════════════════════
+//  RENDER PREVIEW
+// ═══════════════════════════════════════════════════════
+function renderPreview() {
+  const card = document.getElementById('previewCard');
+  const list = document.getElementById('qList');
+  const stat = document.getElementById('statBar');
+  const cnt  = document.getElementById('uploadCount');
+
+  if (parsed.length === 0) {
+    showToast('No questions found. Check the format.', 'error');
+    return;
+  }
+
+  card.style.display = 'block';
+
+  // Stats by course
+  const counts = {};
+  parsed.forEach(q => counts[q.course] = (counts[q.course]||0)+1);
+  stat.innerHTML = Object.entries(counts).map(([c,n]) =>
+    `<div class="stat-chip"><span class="dot"></span>${c}: <strong>${n}</strong></div>`
+  ).join('') + `<div class="stat-chip" style="border-color:var(--gold);color:var(--gold)"><strong>Total: ${parsed.length}</strong></div>`;
+
+  cnt.textContent = `${parsed.length} questions ready`;
+
+  // Render question items
+  list.innerHTML = parsed.map((q,idx) => buildQItem(q,idx)).join('');
+
+  document.getElementById('logCard').style.display = 'none';
+  document.getElementById('logBox').innerHTML = '';
+
+  showToast(`Parsed ${parsed.length} questions successfully!`, 'success');
+
+  // Scroll to preview
+  setTimeout(()=> card.scrollIntoView({behavior:'smooth', block:'start'}), 100);
+}
+
+function buildQItem(q, idx) {
+  const letters = ['A','B','C','D'];
+  const statusHtml = q._status === 'ok'
+    ? '<span class="q-status status-ok">✓ UPLOADED</span>'
+    : q._status === 'fail'
+    ? '<span class="q-status status-fail">✗ FAILED</span>'
+    : '<span class="q-status status-wait">PENDING</span>';
+
+  const statusClass = q._status === 'ok' ? 'uploaded' : q._status === 'fail' ? 'failed' : '';
+
+  return `<div class="q-item ${statusClass}" id="qi-${idx}">
+    <div class="q-meta">
+      <span class="q-course">${q.course}</span>
+      <span class="q-idx">#${idx+1}</span>
+      ${statusHtml}
+    </div>
+    <div class="q-text">${escHtml(q.q)}</div>
+    <div class="q-opts">
+      ${q.opts.map((o,i)=>`<div class="q-opt${i===q.ans?' correct':''}"><strong>${letters[i]})</strong> ${escHtml(o)}</div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function escHtml(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ═══════════════════════════════════════════════════════
+//  UPLOAD
+// ═══════════════════════════════════════════════════════
+let uploading = false;
+
+async function uploadAll() {
+  if (uploading) return;
+  if (!parsed.length) { showToast('Parse questions first!', 'error'); return; }
+
+  const serverUrl = document.getElementById('serverUrl').value.trim().replace(/\/$/, '');
+  const adminKey  = document.getElementById('adminKey').value.trim();
+  if (!serverUrl) { showToast('Enter your server URL', 'error'); return; }
+  if (!adminKey)  { showToast('Enter your Admin Key', 'error'); return; }
+
+  uploading = true;
+  document.getElementById('uploadBtn').disabled = true;
+  document.getElementById('logCard').style.display = 'block';
+  document.getElementById('progWrap').style.display = 'block';
+
+  const logBox = document.getElementById('logBox');
+  const prog   = document.getElementById('progFill');
+  const cnt    = document.getElementById('uploadCount');
+
+  let success = 0, fail = 0;
+  logBox.innerHTML = '';
+  appendLog(`Starting upload of ${parsed.length} questions to ${serverUrl}...`, 'info');
+
+  for (let i = 0; i < parsed.length; i++) {
+    const q = parsed[i];
+    const pct = Math.round(((i+1)/parsed.length)*100);
+    prog.style.width = pct+'%';
+    cnt.textContent  = `${i+1}/${parsed.length} — ✓ ${success}  ✗ ${fail}`;
+
+    try {
+      const res = await fetch(`${serverUrl}/api/admin/questions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          'x-admin-key':   adminKey,
+        },
+        body: JSON.stringify({ course: q.course, q: q.q, opts: q.opts, ans: q.ans, tag: q.tag, exp: q.exp }),
+      });
+      if (res.ok || res.status === 201) {
+        parsed[i]._status = 'ok';
+        success++;
+        appendLog(`✓ [${i+1}] ${q.course} — ${q.q.slice(0,55)}...`, 'ok');
+      } else {
+        const body = await res.text();
+        parsed[i]._status = 'fail';
+        fail++;
+        appendLog(`✗ [${i+1}] ${res.status}: ${body.slice(0,80)}`, 'err');
+      }
+    } catch(e) {
+      parsed[i]._status = 'fail';
+      fail++;
+      appendLog(`✗ [${i+1}] Network error: ${e.message}`, 'err');
+    }
+
+    // Update item in DOM
+    const el = document.getElementById(`qi-${i}`);
+    if (el) {
+      el.outerHTML = buildQItem(parsed[i], i);
+    }
+
+    // Small delay to not hammer server
+    await sleep(25);
+  }
+
+  appendLog(`─────────────────────────────────────`, 'info');
+  appendLog(`Done! ✓ ${success} uploaded  ✗ ${fail} failed`, success===parsed.length ? 'ok' : 'warn');
+
+  uploading = false;
+  document.getElementById('uploadBtn').disabled = false;
+  cnt.textContent = `Complete — ✓ ${success}  ✗ ${fail}`;
+
+  showToast(fail === 0
+    ? `All ${success} questions uploaded! 🎉`
+    : `Done: ${success} ok, ${fail} failed`, fail === 0 ? 'success' : 'error');
+}
+
+function appendLog(msg, type='info') {
+  const box = document.getElementById('logBox');
+  const span = document.createElement('div');
+  span.className = `log-${type}`;
+  span.textContent = msg;
+  box.appendChild(span);
+  box.scrollTop = box.scrollHeight;
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function clearAll() {
+  document.getElementById('rawText').value = '';
+  parsed = [];
+  document.getElementById('previewCard').style.display = 'none';
+  document.getElementById('logCard').style.display = 'none';
+}
+
+// ═══════════════════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════════════════
+let toastTimer;
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> t.classList.remove('show'), 3500);
+}
+</script>
+</body>
+</html>
