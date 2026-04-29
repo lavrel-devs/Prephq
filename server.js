@@ -530,6 +530,16 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+
+const YOUR_URL = "https://prephq.onrender.com"; // <-- your actual URL
+
+function keepAlive() {
+  const randomMinutes = Math.floor(Math.random() * 5) + 10; // 10-14 min
+  setTimeout(() => {
+    fetch(YOUR_URL).catch(()=>{}).finally(keepAlive);
+  }, randomMinutes * 60 * 1000);
+}
+keepAlive();
 // ══════════════════════════════════════════════════════════════
 //  START
 // ══════════════════════════════════════════════════════════════
