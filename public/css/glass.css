@@ -1,0 +1,100 @@
+/* ══════════════════════════════════════════════════════════════
+   PrepHQ Glassmorphism Layer — v1.1.0
+   Additive on top of the existing --brand/--purple/--teal token
+   system in index.html/admin.html. No new colors introduced.
+   ══════════════════════════════════════════════════════════════ */
+
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+}
+
+/* Glass surfaces need something colorful behind them to actually read
+   as "frosted glass" rather than flat gray — this wash uses only the
+   existing brand/purple/teal tokens, positioned behind glass regions. */
+.glass-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(600px 400px at 15% 0%, var(--brand-glow), transparent 60%),
+    radial-gradient(500px 380px at 100% 20%, rgba(123, 44, 245, .18), transparent 60%),
+    radial-gradient(480px 360px at 50% 100%, rgba(10, 188, 245, .14), transparent 60%);
+}
+
+/* ── Pill nav ─────────────────────────────────────────────────── */
+.glass-nav {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 40px;
+  box-shadow: 0 8px 32px rgba(13, 15, 26, .18);
+  max-width: calc(100vw - 24px);
+}
+[data-theme=dark] .glass-nav { box-shadow: 0 8px 32px rgba(0, 0, 0, .45); }
+
+.glass-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 56px;
+  height: 52px;
+  border-radius: 32px;
+  color: var(--t3);
+  cursor: pointer;
+  transition: all .18s var(--ease-o, ease);
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+}
+.glass-nav-item i { font-size: 17px; line-height: 1; }
+.glass-nav-item span { font-size: 9px; font-weight: 700; letter-spacing: .02em; }
+.glass-nav-item.on {
+  color: var(--brand);
+  background: rgba(255, 255, 255, 0.10);
+}
+[data-theme=dark] .glass-nav-item.on { background: rgba(255, 255, 255, 0.08); }
+.glass-nav-item:active { transform: scale(.92); }
+.glass-nav-badge {
+  position: absolute;
+  top: 4px;
+  right: 10px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--no, #F5340A);
+  border: 1.5px solid var(--surf);
+}
+
+/* ── Glass cards for stat pills / course cards / quiz cards ─────── */
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  box-shadow: 0 4px 24px rgba(13, 15, 26, .06);
+}
+[data-theme=dark] .glass-card { box-shadow: 0 4px 24px rgba(0, 0, 0, .35); }
+
+/* Keeps content from sitting underneath the floating pill nav on every screen */
+.scr.on{padding-bottom:96px;}
+
+
+/* Font Awesome icon sizing helpers used across the redesigned UI */
+.fa-ico { width: 1em; text-align: center; }

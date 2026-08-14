@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0A5CF5">
+<link rel="manifest" href="/manifest.json">
+<title>PrepHQ — Sign In</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="/css/glass.css">
+<style>
+:root{
+  --bg:#F0F2F8;--surf:#fff;--surf2:#F5F6FA;--surf3:#EBECF2;
+  --brand:#0A5CF5;--brand-dk:#0847C4;--brand-lt:rgba(10,92,245,.10);--brand-glow:rgba(10,92,245,.22);
+  --ok:#00C96B;--ok-lt:rgba(0,201,107,.10);--ok-bd:rgba(0,201,107,.28);
+  --no:#F5340A;--no-lt:rgba(245,52,10,.10);--no-bd:rgba(245,52,10,.28);
+  --warn:#F5930A;--warn-lt:rgba(245,147,10,.10);
+  --purple:#7B2CF5;--purple-lt:rgba(123,44,245,.10);
+  --teal:#0ABCF5;--teal-lt:rgba(10,188,245,.10);
+  --t1:#0D0F1A;--t2:#2E3247;--t3:#6B7089;--t4:#A8ADCA;
+  --bd:rgba(13,15,26,.09);--bd2:rgba(13,15,26,.14);
+  --r8:8px;--r12:12px;--r16:16px;--r20:20px;--r24:24px;--rpill:999px;
+  --sh:0 2px 16px rgba(0,0,0,.07);--sh-md:0 6px 28px rgba(0,0,0,.10);--sh-lg:0 14px 48px rgba(0,0,0,.13);
+  --ff-h:'Bricolage Grotesque',system-ui,sans-serif;
+  --ff-b:'DM Sans',system-ui,sans-serif;
+  --ease-o:cubic-bezier(.22,1,.36,1);
+}
+[data-theme=dark]{
+  --bg:#0D0F1A;--surf:#1A1E35;--surf2:#222640;--surf3:#2A2F50;
+  --t1:#EEF0FF;--t2:#C5CAE8;--t3:#7E86B0;--t4:#4A5070;
+  --bd:rgba(238,240,255,.08);--bd2:rgba(238,240,255,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{height:100%;}
+body{font-family:var(--ff-b);background:var(--bg);color:var(--t1);min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px;position:relative;overflow:hidden;-webkit-font-smoothing:antialiased;}
+.blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:.20;pointer-events:none;}
+.b1{width:380px;height:380px;background:var(--brand);top:-100px;right:-100px;}
+.b2{width:320px;height:320px;background:var(--purple);bottom:-80px;left:-80px;}
+.b3{width:260px;height:260px;background:var(--teal);bottom:20%;right:-60px;}
+
+.card{width:100%;max-width:410px;position:relative;z-index:1;padding:38px 28px 30px;}
+.logo{width:64px;height:64px;border-radius:20px;background:linear-gradient(140deg,var(--brand),var(--purple));display:flex;align-items:center;justify-content:center;margin:0 auto 18px;box-shadow:0 8px 24px var(--brand-glow);}
+.logo i{font-size:26px;color:#fff;}
+.title{font-family:var(--ff-h);font-size:24px;font-weight:800;text-align:center;letter-spacing:-.5px;}
+.sub{font-size:13px;color:var(--t3);text-align:center;margin-top:5px;margin-bottom:22px;}
+
+.tabs{display:flex;background:rgba(255,255,255,.35);border:1px solid var(--bd);border-radius:var(--rpill);padding:4px;margin-bottom:22px;}
+[data-theme=dark] .tabs{background:rgba(255,255,255,.04);}
+.tab{flex:1;text-align:center;padding:9px 0;border-radius:var(--rpill);font-size:13px;font-weight:800;color:var(--t3);cursor:pointer;transition:all .18s;}
+.tab.on{background:var(--surf);color:var(--brand);box-shadow:var(--sh);}
+[data-theme=dark] .tab.on{background:var(--surf2);}
+
+.err-banner{background:var(--no-lt);border:1px solid var(--no-bd);border-radius:var(--r8);padding:10px 14px;font-size:13px;font-weight:600;color:var(--no);display:none;align-items:center;gap:7px;margin-bottom:14px;}
+.err-banner.on{display:flex;}
+.f-group{margin-bottom:14px;}
+.f-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);display:flex;align-items:center;gap:6px;margin-bottom:7px;}
+.f-input-wrap{position:relative;}
+.f-input-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--t4);pointer-events:none;font-size:15px;}
+.f-input{width:100%;padding:13px 14px 13px 42px;border-radius:var(--r12);border:1.5px solid var(--bd2);background:var(--surf2);font-size:15px;font-weight:600;color:var(--t1);outline:none;transition:all .18s;}
+.f-input:focus{border-color:var(--brand);background:var(--brand-lt);box-shadow:0 0 0 3px var(--brand-glow);}
+.f-input.err{border-color:var(--no);background:var(--no-lt);}
+.f-hint{font-size:11px;color:var(--t4);margin-top:5px;}
+
+.btn-grad{width:100%;padding:15px;border-radius:var(--r12);background:linear-gradient(140deg,var(--brand),var(--purple));color:white;font-size:16px;font-weight:800;border:none;cursor:pointer;box-shadow:0 6px 22px var(--brand-glow);transition:all .15s;font-family:var(--ff-h);display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-grad:active{transform:scale(.97);}
+.btn-grad:disabled{background:var(--surf3);box-shadow:none;color:var(--t4);cursor:default;transform:none;}
+
+.foot{text-align:center;margin-top:16px;font-size:13px;color:var(--t3);}
+.foot a{color:var(--brand);font-weight:700;text-decoration:none;}
+</style>
+</head>
+<body class="fs-md">
+<div class="glass-backdrop"></div>
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+<div class="blob b3"></div>
+
+<div id="toast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--t1);color:var(--surf);padding:10px 20px;border-radius:999px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:999;pointer-events:none;white-space:nowrap;"></div>
+
+<div class="card glass">
+  <div class="logo"><i class="fa-solid fa-graduation-cap"></i></div>
+  <div class="title">PrepHQ</div>
+  <div class="sub">Sign in to continue</div>
+
+  <div class="tabs">
+    <div class="tab on" id="tab-student" onclick="switchTab('student')">Student</div>
+    <div class="tab" id="tab-admin" onclick="switchTab('admin')">Admin</div>
+  </div>
+
+  <div class="err-banner" id="err"><i class="fa-solid fa-circle-exclamation"></i><span id="err-msg">Invalid credentials</span></div>
+
+  <!-- STUDENT FORM -->
+  <form id="form-student" onsubmit="return false;">
+    <div class="f-group">
+      <div class="f-label"><i class="fa-solid fa-id-card fa-ico"></i> Matric Number</div>
+      <div class="f-input-wrap">
+        <i class="fa-solid fa-user f-input-icon"></i>
+        <input class="f-input" id="s-matric" type="text" placeholder="e.g. PSC25CHM000" autocomplete="username" autocapitalize="characters" spellcheck="false">
+      </div>
+    </div>
+    <div class="f-group">
+      <div class="f-label"><i class="fa-solid fa-lock fa-ico"></i> Password</div>
+      <div class="f-input-wrap">
+        <i class="fa-solid fa-key f-input-icon"></i>
+        <input class="f-input" id="s-pass" type="password" placeholder="Your password" autocomplete="current-password">
+      </div>
+      <div class="f-hint">Your password is your matric number, unless you changed it.</div>
+    </div>
+    <button class="btn-grad" id="s-btn" onclick="studentLogin()"><i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In</button>
+    <div class="foot">New student? <a href="/register.html">Register with activation code</a></div>
+  </form>
+
+  <!-- ADMIN FORM -->
+  <form id="form-admin" style="display:none;" onsubmit="return false;">
+    <div class="f-group">
+      <div class="f-label"><i class="fa-solid fa-user-shield fa-ico"></i> Username</div>
+      <div class="f-input-wrap">
+        <i class="fa-solid fa-user f-input-icon"></i>
+        <input class="f-input" id="a-user" type="text" placeholder="admin" autocomplete="username">
+      </div>
+    </div>
+    <div class="f-group">
+      <div class="f-label"><i class="fa-solid fa-lock fa-ico"></i> Password</div>
+      <div class="f-input-wrap">
+        <i class="fa-solid fa-key f-input-icon"></i>
+        <input class="f-input" id="a-pass" type="password" placeholder="Admin password" autocomplete="current-password">
+      </div>
+      <div class="f-hint">First time? Username is "admin", password is your ADMIN_KEY.</div>
+    </div>
+    <button class="btn-grad" id="a-btn" onclick="adminLogin()"><i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In</button>
+  </form>
+</div>
+
+<script src="/js/auth-guard.js"></script>
+<script>
+if (new URLSearchParams(location.search).get('as') === 'admin') switchTab('admin');
+
+function switchTab(which){
+  document.getElementById('tab-student').classList.toggle('on', which==='student');
+  document.getElementById('tab-admin').classList.toggle('on', which==='admin');
+  document.getElementById('form-student').style.display = which==='student' ? 'block':'none';
+  document.getElementById('form-admin').style.display = which==='admin' ? 'block':'none';
+  clearErr();
+}
+function showErr(msg){
+  document.getElementById('err-msg').textContent = msg;
+  document.getElementById('err').classList.add('on');
+}
+function clearErr(){ document.getElementById('err').classList.remove('on'); }
+
+async function studentLogin(){
+  const matric = document.getElementById('s-matric').value.trim().toUpperCase();
+  const password = document.getElementById('s-pass').value.trim();
+  const btn = document.getElementById('s-btn');
+  clearErr();
+  if(!matric||!password){ showErr('Please enter matric and password.'); return; }
+  btn.disabled = true;
+  try{
+    const deviceFingerprint = await PhqAuth.getDeviceFingerprint();
+    const res = await fetch('/api/auth/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ matric, password, deviceFingerprint })
+    });
+    const data = await res.json();
+    if(!res.ok){ showErr(data.error || 'Invalid credentials'); btn.disabled=false; return; }
+    PhqAuth.setSession({
+      role:'student', matric:data.matric, name:data.name, credits:data.credits,
+      accessToken:data.accessToken, refreshToken:data.refreshToken,
+      expiresInMin:data.expiresInMin, issuedAt: Date.now(),
+    });
+    if(data.newDeviceFlagged){
+      // Informational only — login still succeeds; this just gets logged
+      // server-side for the account's security audit trail.
+      console.info('New device detected for this account.');
+    }
+    window.location.href = '/dashboard.html';
+  }catch(e){
+    showErr('Cannot connect to server.');
+    btn.disabled = false;
+  }
+}
+
+async function adminLogin(){
+  const username = document.getElementById('a-user').value.trim();
+  const password = document.getElementById('a-pass').value.trim();
+  const btn = document.getElementById('a-btn');
+  clearErr();
+  if(!username||!password){ showErr('Please enter username and password.'); return; }
+  btn.disabled = true;
+  try{
+    const deviceFingerprint = await PhqAuth.getDeviceFingerprint();
+    const res = await fetch('/api/auth/admin/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ username, password, deviceFingerprint })
+    });
+    const data = await res.json();
+    if(!res.ok){ showErr(data.error || 'Invalid credentials'); btn.disabled=false; return; }
+    PhqAuth.setSession({
+      role:'admin', username:data.username,
+      accessToken:data.accessToken, refreshToken:data.refreshToken,
+      expiresInMin:data.expiresInMin, issuedAt: Date.now(),
+    });
+    window.location.href = '/admin.html';
+  }catch(e){
+    showErr('Cannot connect to server.');
+    btn.disabled = false;
+  }
+}
+
+document.getElementById('s-pass').addEventListener('keydown', e=>{ if(e.key==='Enter') studentLogin(); });
+document.getElementById('a-pass').addEventListener('keydown', e=>{ if(e.key==='Enter') adminLogin(); });
+
+// If already logged in with a still-valid session, skip straight past login.
+(function(){
+  const s = PhqAuth.getSession();
+  if(s && s.accessToken){
+    window.location.href = s.role==='admin' ? '/admin.html' : '/dashboard.html';
+  }
+})();
+</script>
+</body>
+</html>
