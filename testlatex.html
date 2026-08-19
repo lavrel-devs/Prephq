@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <h3>Type a SMILES string:</h3>
+  <input type="text" id="smilesInput" value="c1ccccc1" style="width:300px;">
+  <button onclick="drawMolecule()">Draw</button>
+  <br><br>
+  <canvas id="canvas" width="400" height="300"></canvas>
+
+  <script src="https://unpkg.com/smiles-drawer@2.0.1/dist/smiles-drawer.min.js"></script>
+  <script>
+    function drawMolecule() {
+      // 1. Get the SMILES from the input box
+      const smiles = document.getElementById('smilesInput').value;
+      
+      // 2. Set up the drawer
+      let drawer = new SmilesDrawer.Drawer({ width: 400, height: 300 });
+      
+      // 3. Parse and draw
+      SmilesDrawer.parse(smiles, function(tree) {
+        drawer.draw(tree, "canvas", "light", false);
+      }, function(error) {
+        alert('Invalid SMILES! Error: ' + error);
+      });
+    }
+    
+    // Draw benzene on page load
+    window.onload = drawMolecule;
+  </script>
+</body>
+</html>

@@ -11,7 +11,7 @@ async function generateQuiz({ course, difficulty = 'medium', count = 10, studyMa
     throw err;
   }
 
-  const model = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+  const model = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
 
   const systemPrompt = `You are a quiz question generator for Nigerian university students preparing for exams. You output ONLY valid JSON — no markdown fences, no commentary, no preamble. The JSON must be an array of exactly ${count} objects, each with this exact shape:
 {"q": "question text", "opts": ["option A", "option B", "option C", "option D"], "ans": 0, "exp": "one-sentence explanation of the correct answer"}
