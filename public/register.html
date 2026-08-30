@@ -119,6 +119,11 @@ body{font-family:var(--ff-b);background:var(--bg);color:var(--t1);min-height:100
       <input id="r-code" class="code-inp" type="text" placeholder="XXXX-XXXX-XXXX" autocomplete="off" autocapitalize="characters" maxlength="14" oninput="fmtCode(this)">
       <div class="hint">The code you received after payment</div>
     </div>
+    <div class="fg">
+      <label>Referral Code (optional)</label>
+      <input id="r-referral" type="text" placeholder="e.g. AB12CD3" autocomplete="off" autocapitalize="characters">
+      <div class="hint">Have a friend's referral link or code? Enter it here — you'll both get bonus credits.</div>
+    </div>
 
     <button class="btn" id="reg-btn" onclick="doRegister()">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
@@ -159,12 +164,21 @@ function fmtCode(inp) {
   inp.value = out;
 }
 
+// Auto-fill the referral field when arriving via a shared link, e.g.
+// /register?ref=AB12CD3 — the field stays editable in case they'd
+// rather type a different code.
+(function prefillReferral(){
+  const ref = new URLSearchParams(window.location.search).get('ref');
+  if(ref) document.getElementById('r-referral').value = ref.toUpperCase();
+})();
+
 async function doRegister() {
   const name     = document.getElementById('r-name').value.trim();
   const matric   = document.getElementById('r-matric').value.trim().toUpperCase();
   const phone    = document.getElementById('r-phone').value.trim();
   const whatsapp = document.getElementById('r-whatsapp').value.trim();
   const code     = document.getElementById('r-code').value.trim().toUpperCase();
+  const referralCode = document.getElementById('r-referral').value.trim();
   const errEl    = document.getElementById('reg-err');
   const errMsg   = document.getElementById('reg-err-msg');
   const btn      = document.getElementById('reg-btn');
@@ -187,7 +201,7 @@ async function doRegister() {
     const r = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, matric, phone, whatsapp, code, password: matric }),
+      body: JSON.stringify({ name, matric, phone, whatsapp, code, password: matric, referralCode: referralCode || undefined }),
     });
     const d = await r.json();
 

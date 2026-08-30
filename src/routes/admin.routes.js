@@ -13,6 +13,7 @@ const Course = require('../models/Course');
 const { requireAdmin } = require('../middleware/auth');
 const { generateCode } = require('../utils/codeGen');
 const { applyCreditDelta } = require('../utils/credits');
+const { adminSetUsername } = require('../utils/username');
 
 const router = express.Router();
 router.use(requireAdmin);
@@ -200,6 +201,32 @@ router.get('/students/:matric/credits/history', async (req, res) => {
       .sort({ createdAt: -1 }).limit(100).lean();
     res.json(history);
   } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// PUT /api/admin/students/:matric/username — v1.2. Force-set or reset a
+// student's username. Bypasses the 30-day change cooldown (that's the
+// point of an admin override). Pass { username: null } or omit to just
+// clear it back to unset, forcing the student through the setup modal
+// again on next login.
+router.put('/students/:matric/username', async (req, res) => {
+  try {
+    const student = await Student.findOne({ matric: req.params.matric.toUpperCase() });
+    if (!student) return res.status(404).json({ error: 'Student not found' });
+
+    const { username } = req.body;
+    if (username === null || username === undefined || username === '') {
+      student.username = null;
+      student.usernameChangedAt = null;
+      await student.save();
+      return res.json({ success: true, username: null, cleared: true });
+    }
+
+    const finalUsername = await adminSetUsername(student, username);
+    res.json({ success: true, username: finalUsername });
+  } catch (e) {
+    const status = { INVALID_FORMAT: 400, TAKEN: 409 }[e.code] || 500;
+    res.status(status).json({ error: e.message, code: e.code || 'SERVER_ERROR' });
+  }
 });
 
 // ══════════════════════════════════════════════════════════════

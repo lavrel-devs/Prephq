@@ -25,7 +25,31 @@ const StudentSchema = new mongoose.Schema({
     lastSeenAt:  { type: Date, default: Date.now },
     label:       { type: String, default: '' },
   }],
+
+  // ── v1.2 additions ──────────────────────────────────────────
+  // username: set at signup (new users) or via the blocking dashboard
+  // modal on first login after this update (existing users). null
+  // until set — NOT unique-indexed as null, see sparse index below.
+  username:          { type: String, default: null, trim: true },
+  displayName:       { type: String, default: '', trim: true },
+  usernameChangedAt: { type: Date, default: null },
+
+  lastDailyRefresh:  { type: Date, default: null },   // last date the daily 5-credit refresh was applied
+
+  referralCode:      { type: String, default: null }, // this student's own shareable code
+  referredBy:         { type: mongoose.Schema.Types.ObjectId, ref: 'Student', default: null },
+
+  isActive:          { type: Boolean, default: true }, // admin deactivation/ban flag (separate from `active`)
+
+  lastActiveAt:      { type: Date, default: Date.now }, // updated on every authenticated request — feeds silent refresh
+
   createdAt: { type: Date, default: Date.now },
 });
+
+// Sparse unique indexes: many existing accounts will have username/referralCode
+// = null until migrated, and sparse means only non-null values are checked
+// for uniqueness (multiple nulls are allowed).
+StudentSchema.index({ username: 1 }, { unique: true, sparse: true });
+StudentSchema.index({ referralCode: 1 }, { unique: true, sparse: true });
 
 module.exports = mongoose.model('Student', StudentSchema);

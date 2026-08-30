@@ -51,6 +51,7 @@ app.set('trust proxy', 1); // needed so req.ip / x-forwarded-for resolve correct
 connectDB().then(async () => {
   await bootstrapAdmin();
   await bootstrapCourses();
+  require('./src/services/scheduler.service').startScheduler();
 });
 
 // Auto-creates the first admin account from ADMIN_KEY if none exist yet,
@@ -66,7 +67,7 @@ async function bootstrapAdmin() {
     console.log('║  First-run: admin account created                 ║');
     console.log(`║  username: ${username}`);
     console.log('║  password: your ADMIN_KEY value from .env         ║');
-    console.log('║  Log in at /login.html, then change your password ║');
+    console.log('║  Log in at /login, then change your password      ║');
     console.log('║  from the admin panel.                            ║');
     console.log('╚══════════════════════════════════════════════════╝\n');
   } catch (e) {
@@ -110,9 +111,34 @@ async function bootstrapCourses() {
 // ══════════════════════════════════════════════════════════════
 app.use('/api/auth', require('./src/routes/auth.routes'));
 app.use('/api/admin', require('./src/routes/admin.routes'));
+app.use('/api/admin', require('./src/routes/admin/admin.credits.routes'));
+app.use('/api/admin', require('./src/routes/admin/admin.contests.routes'));
+app.use('/api/admin', require('./src/routes/admin/admin.users.routes'));
+app.use('/api/admin', require('./src/routes/admin/admin.announcements.routes'));
 app.use('/api/quiz', require('./src/routes/quiz.routes'));
+app.use('/api', require('./src/routes/transfer.routes'));
+app.use('/api', require('./src/routes/contest.routes'));
 app.use('/api/scores', require('./src/routes/scores.routes'));
 app.use('/api', require('./src/routes/student.routes')); // /api/questions/:course, /api/me
+
+// ══════════════════════════════════════════════════════════════
+//  CLEAN ROUTES (v1.2)
+// ══════════════════════════════════════════════════════════════
+// The spec asks for clean paths (/dashboard instead of /dashboard.html,
+// etc). Old .html URLs are left working via the static middleware below
+// — nothing that already links to *.html breaks — these are additive
+// aliases, checked first.
+const PAGE_ROUTES = {
+  '/login':     'login.html',
+  '/register':  'register.html',
+  '/dashboard': 'dashboard.html',
+  '/admin':     'admin.html',
+  '/profile':   'profile.html',
+  '/contests':  'contests.html',
+};
+Object.entries(PAGE_ROUTES).forEach(([route, file]) => {
+  app.get(route, (req, res) => res.sendFile(path.join(__dirname, 'public', file)));
+});
 
 // ══════════════════════════════════════════════════════════════
 //  STATIC FILES
@@ -120,14 +146,14 @@ app.use('/api', require('./src/routes/student.routes')); // /api/questions/:cour
 // dashboard.html is served as a static file, but it can't render
 // anything meaningful without a valid token — auth-guard.js (loaded
 // first thing in <head>) checks localStorage for a token before the
-// page body ever renders, and hard-redirects to /login.html if it's
+// page body ever renders, and hard-redirects to /login if it's
 // missing/expired. True enforcement (a logged-out user can't fetch
 // so much as a name or a score) happens at the API layer above, since
 // every data-bearing route requires a verified JWT — the static HTML
 // shell itself has no secrets in it.
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/', (req, res) => res.redirect('/login.html'));
+app.get('/', (req, res) => res.redirect('/login'));
 
 app.get('*', (req, res) => {
   res.status(404).sendFile(path.join(__dirname, 'public', 'login.html'));
@@ -150,8 +176,8 @@ keepAlive();
 // ══════════════════════════════════════════════════════════════
 app.listen(PORT, () => {
   console.log('\n╔══════════════════════════════════════════════════╗');
-  console.log(`║  PrepHQ v1.1.0 running on http://localhost:${PORT}   ║`);
-  console.log(`║  Student login: http://localhost:${PORT}/login.html  ║`);
-  console.log(`║  Admin:         http://localhost:${PORT}/login.html  ║`);
+  console.log(`║  PrepHQ v1.2.0 running on http://localhost:${PORT}   ║`);
+  console.log(`║  Student login: http://localhost:${PORT}/login       ║`);
+  console.log(`║  Admin:         http://localhost:${PORT}/login       ║`);
   console.log('╚══════════════════════════════════════════════════╝\n');
 });

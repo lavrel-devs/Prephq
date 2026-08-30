@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0A5CF5">
+<link rel="manifest" href="/manifest.json">
+<title>PrepHQ — Contests</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="/css/glass.css">
+<script src="/js/auth-guard.js"></script>
+<script>
+(function(){
+  const s = PhqAuth.getSession();
+  if(!s || !s.accessToken || s.role !== 'student'){ window.location.replace('/login.html'); }
+})();
+</script>
+<style>
+:root{
+  --bg:#F0F2F8;--surf:#fff;--surf2:#F5F6FA;--surf3:#EBECF2;
+  --brand:#0A5CF5;--brand-dk:#0847C4;--brand-lt:rgba(10,92,245,.10);--brand-glow:rgba(10,92,245,.22);
+  --ok:#00C96B;--ok-lt:rgba(0,201,107,.10);--ok-bd:rgba(0,201,107,.28);
+  --no:#F5340A;--no-lt:rgba(245,52,10,.10);--no-bd:rgba(245,52,10,.28);
+  --warn:#F5930A;--warn-lt:rgba(245,147,10,.10);
+  --purple:#7B2CF5;--purple-lt:rgba(123,44,245,.10);
+  --teal:#0ABCF5;--teal-lt:rgba(10,188,245,.10);
+  --t1:#0D0F1A;--t2:#2E3247;--t3:#6B7089;--t4:#A8ADCA;
+  --bd:rgba(13,15,26,.09);--bd2:rgba(13,15,26,.14);
+  --r8:8px;--r12:12px;--r16:16px;--r20:20px;--r24:24px;--rpill:999px;
+  --sh:0 2px 16px rgba(0,0,0,.07);--sh-md:0 6px 28px rgba(0,0,0,.10);--sh-lg:0 14px 48px rgba(0,0,0,.13);
+  --ff-h:'Bricolage Grotesque',system-ui,sans-serif;
+  --ff-b:'DM Sans',system-ui,sans-serif;
+  --ease-o:cubic-bezier(.22,1,.36,1);
+}
+[data-theme=dark]{
+  --bg:#0D0F1A;--surf:#1A1E35;--surf2:#222640;--surf3:#2A2F50;
+  --t1:#EEF0FF;--t2:#C5CAE8;--t3:#7E86B0;--t4:#4A5070;
+  --bd:rgba(238,240,255,.08);--bd2:rgba(238,240,255,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{height:100%;}
+body{font-family:var(--ff-b);background:var(--bg);color:var(--t1);min-height:100dvh;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:560px;margin:0 auto;padding:18px 18px 120px;}
+.topbar{display:flex;align-items:center;gap:12px;padding:6px 0 16px;}
+.back-btn{width:38px;height:38px;border-radius:50%;background:var(--surf);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t1);flex-shrink:0;}
+.pg-title{font-family:var(--ff-h);font-size:20px;font-weight:800;}
+.tabs{display:flex;gap:6px;margin-bottom:16px;background:var(--surf2);border-radius:14px;padding:4px;}
+.tab{flex:1;text-align:center;padding:9px 0;border-radius:11px;font-size:12.5px;font-weight:700;color:var(--t3);cursor:pointer;}
+.tab.on{background:var(--surf);color:var(--brand);box-shadow:var(--sh);}
+.contest-card{background:var(--surf);border-radius:var(--r20);padding:18px;box-shadow:var(--sh);border:1px solid var(--bd);margin-bottom:12px;cursor:pointer;}
+.cc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.cc-title{font-family:var(--ff-h);font-weight:800;font-size:16px;}
+.cc-badge{font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:99px;text-transform:uppercase;letter-spacing:.03em;}
+.cc-badge.live{background:var(--no-lt);color:var(--no);}
+.cc-badge.upcoming{background:var(--brand-lt);color:var(--brand);}
+.cc-badge.paused{background:var(--warn-lt);color:var(--warn);}
+.cc-badge.ended{background:var(--surf3);color:var(--t3);}
+.cc-desc{font-size:12.5px;color:var(--t3);margin-bottom:10px;line-height:1.5;}
+.cc-meta{display:flex;gap:14px;font-size:11.5px;color:var(--t3);font-weight:600;}
+.empty{text-align:center;padding:50px 20px;color:var(--t3);font-size:13px;}
+.modal-bg{position:fixed;inset:0;z-index:200;background:rgba(13,15,26,.55);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-bg.on{display:flex;}
+.modal{background:var(--surf);border-radius:var(--r20);padding:22px;width:100%;max-width:440px;max-height:88dvh;overflow-y:auto;}
+.lb-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bd);}
+.lb-row:last-child{border-bottom:none;}
+.btn{border:none;border-radius:12px;padding:12px;font-weight:700;font-size:14px;cursor:pointer;width:100%;background:linear-gradient(135deg,var(--brand),var(--purple));color:#fff;}
+.btn.ghost{background:var(--surf3);color:var(--t1);}
+</style>
+</head>
+<body>
+<div class="glass-backdrop"></div>
+<div class="wrap">
+  <div class="topbar">
+    <div class="back-btn" onclick="window.location.href='/dashboard'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></div>
+    <div class="pg-title">Contests</div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab on" data-tab="active" onclick="switchTab('active')">Active</div>
+    <div class="tab" data-tab="past" onclick="switchTab('past')">Past</div>
+  </div>
+
+  <div id="contest-list"><div class="empty">Loading…</div></div>
+</div>
+
+<div class="modal-bg" id="m-detail" onclick="if(event.target===this)closeDetail()">
+  <div class="modal" id="detail-body"></div>
+</div>
+
+<div class="modal-bg" id="m-quiz">
+  <div class="modal" id="quiz-body"></div>
+</div>
+
+<script>
+let currentTab = 'active';
+let activeContests = [];
+let pastContests = [];
+
+async function switchTab(tab){
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.tab === tab));
+  render();
+  if(tab === 'past' && pastContests.length === 0) await loadPast();
+}
+
+function statusBadge(status){
+  return `<span class="cc-badge ${status}">${status}</span>`;
+}
+
+function render(){
+  const list = document.getElementById('contest-list');
+  const items = currentTab === 'active' ? activeContests : pastContests;
+  if(items.length === 0){
+    list.innerHTML = `<div class="empty">No ${currentTab === 'active' ? 'active' : 'past'} contests right now.</div>`;
+    return;
+  }
+  list.innerHTML = items.map(c => `
+    <div class="contest-card" onclick="openDetail('${c._id}')">
+      <div class="cc-top"><div class="cc-title">${escapeHtml(c.title)}</div>${statusBadge(c.status)}</div>
+      <div class="cc-desc">${escapeHtml(c.description || '')}</div>
+      <div class="cc-meta">
+        <span><i class="fa-solid fa-users"></i> ${c.participantCount || 0}${c.maxParticipants ? '/'+c.maxParticipants : ''}</span>
+        <span><i class="fa-solid fa-coins"></i> Entry: ${c.entryFee || 0}</span>
+        <span><i class="fa-solid fa-trophy"></i> Pool: ${c.prizePool || 0}</span>
+      </div>
+    </div>`).join('');
+}
+
+async function loadActive(){
+  try{
+    const r = await PhqAuth.authFetch('/api/contests', {}, 'student');
+    if(!r.ok) return;
+    activeContests = await r.json();
+    render();
+  }catch(e){}
+}
+async function loadPast(){
+  try{
+    const r = await PhqAuth.authFetch('/api/contests/past', {}, 'student');
+    if(!r.ok) return;
+    pastContests = await r.json();
+    render();
+  }catch(e){}
+}
+
+async function openDetail(id){
+  try{
+    const r = await PhqAuth.authFetch(`/api/contests/${id}`, {}, 'student');
+    if(!r.ok) return;
+    const c = await r.json();
+    let lb = [];
+    if(c.status === 'live' || c.status === 'ended'){
+      const lr = await PhqAuth.authFetch(`/api/contests/${id}/leaderboard`, {}, 'student');
+      if(lr.ok) lb = await lr.json();
+    }
+    document.getElementById('detail-body').innerHTML = `
+      <div style="font-family:var(--ff-h);font-weight:800;font-size:18px;margin-bottom:4px;">${escapeHtml(c.title)}</div>
+      <div style="font-size:12.5px;color:var(--t3);margin-bottom:14px;">${escapeHtml(c.description || '')}</div>
+      <div style="display:flex;gap:14px;font-size:12px;color:var(--t3);font-weight:600;margin-bottom:16px;">
+        <span>Entry: ${c.entryFee || 0} credits</span>
+        <span>Pool: ${c.prizePool || 0} credits</span>
+        <span>${c.participantCount || 0} joined</span>
+      </div>
+      ${c.myEntry ? renderJoinedState(c) : ((c.status === 'upcoming' || c.status === 'live') ? `<button class="btn" onclick="joinContest('${c._id}')" style="margin-bottom:14px;">Join Contest</button>` : '')}
+      ${lb.length > 0 ? `<div style="font-size:12.5px;font-weight:800;color:var(--t3);text-transform:uppercase;margin-bottom:8px;">Leaderboard</div>
+        ${lb.slice(0,15).map(row => `<div class="lb-row"><span style="font-weight:700;">#${row.rank} ${escapeHtml(row.username||row.matric)}</span><span style="font-weight:800;">${row.score}</span></div>`).join('')}` : ''}
+      <button class="btn ghost" style="margin-top:14px;" onclick="closeDetail()">Close</button>
+    `;
+    document.getElementById('m-detail').classList.add('on');
+  }catch(e){}
+}
+
+function renderJoinedState(c){
+  const alreadyScored = c.myEntry.score > 0;
+  let inner = `<div style="background:var(--ok-lt);color:var(--ok);padding:10px 14px;border-radius:10px;font-size:13px;font-weight:700;margin-bottom:10px;">You're in!${alreadyScored ? ' Score: '+c.myEntry.score : ''}${c.myEntry.prizeAwarded ? ' · Won '+c.myEntry.prizeAwarded+' credits' : ''}</div>`;
+  if(c.type === 'quiz' && c.status === 'live' && !alreadyScored){
+    inner += `<button class="btn" style="margin-bottom:14px;" onclick="startContestQuiz('${c._id}')"><i class="fa-solid fa-pen"></i> Start Quiz</button>`;
+  }
+  return inner;
+}
+
+async function startContestQuiz(id){
+  try{
+    const r = await PhqAuth.authFetch(`/api/contests/${id}/quiz-questions`, {}, 'student');
+    const d = await r.json();
+    if(!r.ok){ alert(d.error || 'Could not load quiz'); return; }
+    if(d.questions.length === 0){ alert('This contest has no questions set up yet.'); return; }
+    quizState = { contestId: id, questions: d.questions, answers: {}, idx: 0 };
+    closeDetail();
+    renderQuizStep();
+    document.getElementById('m-quiz').classList.add('on');
+  }catch(e){}
+}
+
+let quizState = null;
+function renderQuizStep(){
+  const { questions, idx, answers } = quizState;
+  const q = questions[idx];
+  document.getElementById('quiz-body').innerHTML = `
+    <div style="font-size:12px;color:var(--t3);font-weight:700;margin-bottom:6px;">Question ${idx+1} of ${questions.length}</div>
+    <div style="font-size:15px;font-weight:700;margin-bottom:14px;">${escapeHtml(q.q)}</div>
+    ${q.opts.map((opt,i) => `<div onclick="selectAnswer(${i})" style="padding:12px 14px;border-radius:12px;margin-bottom:8px;cursor:pointer;border:1.5px solid ${answers[q._id]===i?'var(--brand)':'var(--bd2)'};background:${answers[q._id]===i?'var(--brand-lt)':'var(--surf2)'};font-size:13.5px;font-weight:600;">${escapeHtml(opt)}</div>`).join('')}
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      ${idx>0 ? `<button class="btn ghost" style="flex:1;" onclick="quizNav(-1)">Back</button>` : ''}
+      ${idx<questions.length-1
+        ? `<button class="btn" style="flex:1;" onclick="quizNav(1)">Next</button>`
+        : `<button class="btn" style="flex:1;" onclick="submitContestQuiz()">Submit Quiz</button>`}
+    </div>
+  `;
+}
+function selectAnswer(i){
+  quizState.answers[quizState.questions[quizState.idx]._id] = i;
+  renderQuizStep();
+}
+function quizNav(dir){
+  quizState.idx = Math.max(0, Math.min(quizState.questions.length-1, quizState.idx+dir));
+  renderQuizStep();
+}
+async function submitContestQuiz(){
+  try{
+    const r = await PhqAuth.authFetch(`/api/contests/${quizState.contestId}/submit-quiz`, {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({answers: quizState.answers}),
+    }, 'student');
+    const d = await r.json();
+    document.getElementById('m-quiz').classList.remove('on');
+    if(!r.ok){ alert(d.error || 'Could not submit quiz'); return; }
+    alert(`Scored ${d.correct}/${d.total} (${d.score}%)`);
+    loadActive();
+  }catch(e){}
+}
+function closeDetail(){ document.getElementById('m-detail').classList.remove('on'); }
+
+async function joinContest(id){
+  try{
+    const r = await PhqAuth.authFetch(`/api/contests/${id}/join`, {method:'POST'}, 'student');
+    const d = await r.json();
+    if(!r.ok){ alert(d.error || 'Could not join contest'); return; }
+    closeDetail();
+    loadActive();
+  }catch(e){}
+}
+
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+loadActive();
+</script>
+</body>
+</html>

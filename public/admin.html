@@ -187,6 +187,14 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
 
 /* section divider */
 .sdiv{height:1px;background:var(--bd);margin:8px 0 14px;}
+/* ── v1.2: toggle switch + input (credit settings) ──────────── */
+.toggle{width:44px;height:24px;border-radius:999px;background:var(--surf3,#EBECF2);border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
+.toggle.on{background:var(--brand);}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:white;box-shadow:0 2px 6px rgba(0,0,0,.2);transition:transform .2s cubic-bezier(.34,1.56,.64,1);}
+.toggle.on::after{transform:translateX(20px);}
+.f-input{padding:9px 12px;border-radius:10px;border:1.5px solid var(--bd2,rgba(13,15,26,.14));background:var(--surf2,#F5F6FA);font-size:14px;font-weight:600;color:var(--t1);outline:none;}
+.f-group{margin-bottom:12px;}
+.f-label{font-size:12px;font-weight:700;color:var(--t3);margin-bottom:5px;}
 </style>
 </head>
 <body>
@@ -264,6 +272,19 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
       <div class="nav-item" data-v="bulk-upload" onclick="go('bulk-upload',this)">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>Bulk Upload
       </div>
+      <div class="nav-sec">v1.2</div>
+      <div class="nav-item" data-v="contests" onclick="go('contests',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 4v3h5.5v12h3V7H19V4z"/></svg>Contests
+      </div>
+      <div class="nav-item" data-v="transfers" onclick="go('transfers',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>Transfers
+      </div>
+      <div class="nav-item" data-v="announcements" onclick="go('announcements',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 11V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h9l4 4v-6h1a2 2 0 0 0 2-2z"/></svg>Announcements
+      </div>
+      <div class="nav-item" data-v="credit-settings" onclick="go('credit-settings',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>Credit Settings
+      </div>
     </div>
 
     <!-- Main content -->
@@ -277,6 +298,8 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
           <div class="sc"><div class="sc-ico" style="background:var(--ok-lt);color:var(--ok)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg></div><div class="sc-val" id="ds-revenue">—</div><div class="sc-lbl">Revenue (₦)</div></div>
           <div class="sc"><div class="sc-ico" style="background:var(--purple-lt);color:var(--purple)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg></div><div class="sc-val" id="ds-unused">—</div><div class="sc-lbl">Unused Codes</div></div>
           <div class="sc"><div class="sc-ico" style="background:var(--warn-lt);color:var(--warn)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="sc-val" id="ds-avg">—</div><div class="sc-lbl">Avg Score</div></div>
+          <div class="sc"><div class="sc-ico" style="background:var(--no-lt);color:var(--no)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 4v3h5.5v12h3V7H19V4z"/></svg></div><div class="sc-val" id="ds-live-contests">—</div><div class="sc-lbl">Live Contests</div></div>
+          <div class="sc"><div class="sc-ico" style="background:var(--teal-lt);color:var(--teal)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg></div><div class="sc-val" id="ds-transfers">—</div><div class="sc-lbl">Transfers</div></div>
         </div>
 
         <div class="tw">
@@ -453,6 +476,127 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
           <div class="tw" style="margin-bottom:0;">
             <div class="th"><div class="th-title" id="bulk-recent-title">Recently Added</div></div>
             <div id="bulk-recent-body" style="padding:6px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ v1.2: CONTESTS ═══════════════════════════════ -->
+      <div id="v-contests" class="view">
+        <div class="ph">
+          <div><div class="ph-title">Contests</div><div class="ph-sub" id="ct-count">—</div></div>
+          <button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;" onclick="openCreateContest()">+ Create Contest</button>
+        </div>
+        <div class="tw">
+          <div class="th"><div class="th-title">All Contests</div></div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Title</th><th>Type</th><th>Status</th><th>Entry Fee</th><th>Prize Pool</th><th>Participants</th><th>Starts</th><th>Ends</th><th>Actions</th></tr></thead>
+            <tbody id="ct-body"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- v1.2: CREATE/EDIT CONTEST MODAL -->
+      <div class="modal-bg" id="m-contest" onclick="closeMBg(event,'m-contest')">
+        <div class="modal" style="max-width:520px;">
+          <div class="modal-title">Create Contest</div>
+          <div class="modal-sub">Fill in the details below.</div>
+          <div class="f-group"><div class="f-label">Title</div><input class="f-input" id="cm-title" style="width:100%;"></div>
+          <div class="f-group"><div class="f-label">Description</div><textarea class="f-input" id="cm-desc" style="width:100%;min-height:60px;"></textarea></div>
+          <div style="display:flex;gap:10px;">
+            <div class="f-group" style="flex:1;"><div class="f-label">Type</div>
+              <select class="f-input" id="cm-type" style="width:100%;" onchange="onContestTypeChange()">
+                <option value="leaderboard">Leaderboard</option>
+                <option value="quiz">Quiz</option>
+                <option value="raffle">Raffle</option>
+                <option value="timed">Timed</option>
+              </select>
+            </div>
+            <div class="f-group" style="flex:1;"><div class="f-label">Max Participants</div><input type="number" class="f-input" id="cm-max" style="width:100%;" placeholder="Unlimited"></div>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <div class="f-group" style="flex:1;"><div class="f-label">Start Time</div><input type="datetime-local" class="f-input" id="cm-start" style="width:100%;"></div>
+            <div class="f-group" style="flex:1;"><div class="f-label">End Time</div><input type="datetime-local" class="f-input" id="cm-end" style="width:100%;"></div>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <div class="f-group" style="flex:1;"><div class="f-label">Entry Fee (credits)</div><input type="number" class="f-input" id="cm-entry" style="width:100%;" value="0"></div>
+            <div class="f-group" style="flex:1;"><div class="f-label">Prize Pool (credits)</div><input type="number" class="f-input" id="cm-pool" style="width:100%;" value="0"></div>
+          </div>
+          <div class="f-group">
+            <div class="f-label">Prize Distribution</div>
+            <div id="cm-prize-rows"></div>
+            <button type="button" onclick="addPrizeRow()" style="margin-top:4px;background:none;border:1px dashed var(--bd2);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;color:var(--brand);cursor:pointer;">+ Add prize tier</button>
+          </div>
+          <div class="f-group" id="cm-questions-wrap" style="display:none;">
+            <div class="f-label">Quiz Questions</div>
+            <div style="display:flex;gap:8px;margin-bottom:6px;">
+              <select class="f-input" id="cm-course-filter" style="flex:1;" onchange="loadQuestionBank()"><option value="">All courses</option></select>
+            </div>
+            <div id="cm-question-list" style="max-height:220px;overflow-y:auto;border:1px solid var(--bd2);border-radius:10px;padding:8px;"></div>
+            <div style="font-size:12px;color:var(--t3);margin-top:6px;"><span id="cm-selected-count">0</span> selected</div>
+          </div>
+          <div class="mfooter">
+            <button class="btn-cancel" onclick="closeM('m-contest')">Cancel</button>
+            <button class="btn-confirm" id="cm-save-btn" onclick="saveContest()">Create Contest</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ v1.2: TRANSFERS ══════════════════════════════ -->
+      <div id="v-transfers" class="view">
+        <div class="ph">
+          <div><div class="ph-title">Transfer Log</div><div class="ph-sub">In-app credit transfers between students</div></div>
+          <button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;" onclick="downloadCsv('/api/admin/export/transfers','prephq-transfers.csv')">Export CSV</button>
+        </div>
+        <div class="tw">
+          <div class="th">
+            <div class="th-title">All Transfers</div>
+            <div class="th-right"><div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input placeholder="Filter by matric..." oninput="loadTransfers(this.value)"></div></div>
+          </div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>From</th><th>To</th><th>Amount</th><th>Fee</th><th>Status</th><th>Date</th></tr></thead>
+            <tbody id="tr-body"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ═══ v1.2: ANNOUNCEMENTS ══════════════════════════ -->
+      <div id="v-announcements" class="view">
+        <div class="ph">
+          <div><div class="ph-title">Announcements</div><div class="ph-sub">Broadcast to students' notification feeds</div></div>
+          <button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;" onclick="openCreateAnnouncement()">+ New Announcement</button>
+        </div>
+        <div class="tw">
+          <div class="th"><div class="th-title">Sent Announcements</div></div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Title</th><th>Content</th><th>Audience</th><th>Sent</th><th>Actions</th></tr></thead>
+            <tbody id="an-body"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ═══ v1.2: CREDIT SETTINGS ════════════════════════ -->
+      <div id="v-credit-settings" class="view">
+        <div class="ph"><div><div class="ph-title">Credit Settings</div><div class="ph-sub">Daily refresh and referral program controls</div></div></div>
+        <div class="tw" style="padding:20px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div><b>Daily Credit Refresh</b><div style="font-size:12px;color:var(--t3);">Every user gets free credits daily</div></div>
+            <button class="toggle" id="cs-daily-toggle" onclick="toggleCreditSetting('daily')"></button>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;margin-bottom:24px;">
+            <label style="font-size:13px;font-weight:600;">Amount:</label>
+            <input type="number" id="cs-daily-amount" class="f-input" style="width:100px;" onchange="saveCreditSettings()">
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div><b>Referral System</b><div style="font-size:12px;color:var(--t3);">Reward users for referring friends</div></div>
+            <button class="toggle" id="cs-referral-toggle" onclick="toggleCreditSetting('referral')"></button>
+          </div>
+          <div style="display:flex;gap:20px;align-items:center;margin-bottom:24px;">
+            <div><label style="font-size:13px;font-weight:600;">Referrer reward:</label><input type="number" id="cs-referrer-amount" class="f-input" style="width:100px;" onchange="saveCreditSettings()"></div>
+            <div><label style="font-size:13px;font-weight:600;">Referee bonus:</label><input type="number" id="cs-referee-amount" class="f-input" style="width:100px;" onchange="saveCreditSettings()"></div>
+          </div>
+          <div>
+            <label style="font-size:13px;font-weight:600;">Welcome bonus (new signups):</label>
+            <input type="number" id="cs-welcome-amount" class="f-input" style="width:100px;" onchange="saveCreditSettings()">
           </div>
         </div>
       </div>
@@ -655,6 +799,23 @@ function adminFetch(url, opts = {}) {
   return PhqAuth.authFetch(url, opts, 'admin');
 }
 
+// window.open() can't attach an Authorization header, so CSV export
+// buttons (which hit auth-gated endpoints) need to fetch the file with
+// adminFetch and then trigger the download client-side instead.
+async function downloadCsv(url, filename){
+  try{
+    const r = await adminFetch(url, { headers: {} });
+    if(!r.ok){ toast('Export failed'); return; }
+    const blob = await r.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }catch(e){ toast('Export failed'); }
+}
+
 async function adminLogin() {
   const username = document.getElementById('admin-user-inp').value.trim();
   const password = document.getElementById('admin-pass-inp').value.trim();
@@ -713,6 +874,10 @@ function go(v, el) {
   if(v==='courses')   loadCourses();
   if(v==='questions') loadQuestions();
   if(v==='bulk-upload'){ if(!allCourses.length) loadCourses().then(initBulkUpload); else initBulkUpload(); }
+  if(v==='contests') loadContests();
+  if(v==='transfers') loadTransfers();
+  if(v==='announcements') loadAnnouncements();
+  if(v==='credit-settings') loadCreditSettings();
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────
@@ -743,6 +908,12 @@ async function loadDashboard() {
           <td style="color:var(--t4);font-size:12px">${fmtDate(s.createdAt)}</td>
         </tr>`).join('')
       : '<tr class="empty-row"><td colspan="4">No students yet</td></tr>';
+
+    // v1.2: contests + transfer stats, separate endpoint
+    const r2 = await adminFetch('/api/admin/dashboard/stats', { headers: {} });
+    const d2 = await r2.json();
+    document.getElementById('ds-live-contests').textContent = d2.contests?.live ?? 0;
+    document.getElementById('ds-transfers').textContent = d2.transfers?.count ?? 0;
   } catch(e) { toast('Dashboard load failed'); }
 }
 
@@ -1453,6 +1624,238 @@ function fmtDate(d) {
   if (!d) return '—';
   return new Date(d).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
 }
+
+// ══════════════════════════════════════════════════════════════
+//  v1.2: CONTESTS
+// ══════════════════════════════════════════════════════════════
+let allContests = [];
+
+async function loadContests(){
+  try{
+    const r = await adminFetch('/api/admin/contests', { headers: {} });
+    allContests = await r.json();
+    document.getElementById('ct-count').textContent = `${allContests.length} contests`;
+    document.getElementById('ct-body').innerHTML = allContests.map(c => `
+      <tr>
+        <td>${escHtml(c.title)}</td>
+        <td>${c.type}</td>
+        <td><span style="font-weight:700;">${c.status}</span></td>
+        <td>${c.entryFee||0}</td>
+        <td>${c.prizePool||0}</td>
+        <td>${c.participantCount||0}${c.maxParticipants?'/'+c.maxParticipants:''}</td>
+        <td>${new Date(c.startTime).toLocaleString()}</td>
+        <td>${new Date(c.endTime).toLocaleString()}</td>
+        <td>
+          ${c.status==='live'?`<button onclick="contestAction('${c._id}','pause')">Pause</button> <button onclick="contestAction('${c._id}','end')">End</button>`:''}
+          ${c.status==='paused'?`<button onclick="contestAction('${c._id}','resume')">Resume</button>`:''}
+          ${(c.status==='upcoming'||c.status==='draft')?`<button onclick="contestAction('${c._id}','start')">Start Now</button>`:''}
+          ${!['ended','cancelled'].includes(c.status)?`<button onclick="contestAction('${c._id}','cancel')">Cancel</button>`:''}
+          <button onclick="downloadCsv('/api/admin/contests/${c._id}/export','${escHtml(c.title).replace(/[^a-z0-9]/gi,'_')}-results.csv')">CSV</button>
+        </td>
+      </tr>`).join('');
+  }catch(e){}
+}
+
+async function contestAction(id, action){
+  if(action==='cancel' && !confirm('Cancel this contest? Entry fees already paid will be refunded.')) return;
+  try{
+    await adminFetch(`/api/admin/contests/${id}/${action}`, { method:'POST', headers:{'Content-Type':'application/json'}, body: '{}' });
+    loadContests();
+  }catch(e){}
+}
+
+function openCreateContest(){
+  document.getElementById('cm-title').value = '';
+  document.getElementById('cm-desc').value = '';
+  document.getElementById('cm-type').value = 'leaderboard';
+  document.getElementById('cm-max').value = '';
+  document.getElementById('cm-start').value = '';
+  document.getElementById('cm-end').value = '';
+  document.getElementById('cm-entry').value = '0';
+  document.getElementById('cm-pool').value = '0';
+  document.getElementById('cm-prize-rows').innerHTML = '';
+  document.getElementById('cm-questions-wrap').style.display = 'none';
+  selectedQuestionIds = new Set();
+  addPrizeRow(1, 0);
+
+  const populateCourseFilter = () => {
+    const sel = document.getElementById('cm-course-filter');
+    sel.innerHTML = '<option value="">All courses</option>' + (allCourses||[]).map(c => `<option value="${c.key}">${c.courseCode}</option>`).join('');
+  };
+  if(!allCourses.length) loadCourses().then(populateCourseFilter);
+  else populateCourseFilter();
+
+  document.getElementById('m-contest').classList.add('on');
+}
+
+function onContestTypeChange(){
+  const isQuiz = document.getElementById('cm-type').value === 'quiz';
+  document.getElementById('cm-questions-wrap').style.display = isQuiz ? 'block' : 'none';
+  if(isQuiz && document.getElementById('cm-question-list').children.length === 0) loadQuestionBank();
+}
+
+let selectedQuestionIds = new Set();
+async function loadQuestionBank(){
+  try{
+    const course = document.getElementById('cm-course-filter').value;
+    const q = course ? `?course=${encodeURIComponent(course)}` : '';
+    const r = await adminFetch(`/api/admin/contests-question-bank${q}`, { headers: {} });
+    const questions = await r.json();
+    document.getElementById('cm-question-list').innerHTML = questions.map(q => `
+      <label style="display:flex;align-items:flex-start;gap:8px;padding:6px 4px;font-size:12.5px;cursor:pointer;border-bottom:1px solid var(--bd);">
+        <input type="checkbox" value="${q._id}" onchange="toggleQuestion('${q._id}',this.checked)" ${selectedQuestionIds.has(q._id)?'checked':''} style="margin-top:2px;">
+        <span><b>${escHtml(q.course)}</b> — ${escHtml(q.q)}</span>
+      </label>`).join('') || '<div style="padding:10px;color:var(--t3);font-size:12px;">No questions found for this course.</div>';
+  }catch(e){}
+}
+function toggleQuestion(id, checked){
+  if(checked) selectedQuestionIds.add(id); else selectedQuestionIds.delete(id);
+  document.getElementById('cm-selected-count').textContent = selectedQuestionIds.size;
+}
+
+function addPrizeRow(rank, amount){
+  const wrap = document.getElementById('cm-prize-rows');
+  const n = rank || (wrap.children.length + 1);
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex;gap:8px;align-items:center;margin-bottom:6px;';
+  row.innerHTML = `
+    <span style="font-size:12px;color:var(--t3);width:44px;">Rank ${n}</span>
+    <input type="number" class="f-input prize-amount" style="flex:1;" placeholder="Amount" value="${amount??''}">
+    <button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--t4);cursor:pointer;font-size:16px;">&times;</button>
+  `;
+  wrap.appendChild(row);
+}
+
+async function saveContest(){
+  const title = document.getElementById('cm-title').value.trim();
+  const startTime = document.getElementById('cm-start').value;
+  const endTime = document.getElementById('cm-end').value;
+  const type = document.getElementById('cm-type').value;
+  if(!title || !startTime || !endTime){ toast('Title, start time, and end time are required'); return; }
+
+  const prizeDistribution = Array.from(document.querySelectorAll('#cm-prize-rows > div')).map((row, i) => ({
+    rank: i + 1,
+    amount: parseInt(row.querySelector('.prize-amount').value, 10) || 0,
+  })).filter(p => p.amount > 0);
+
+  const body = {
+    title,
+    description: document.getElementById('cm-desc').value.trim(),
+    type,
+    startTime, endTime,
+    entryFee: parseInt(document.getElementById('cm-entry').value, 10) || 0,
+    prizePool: parseInt(document.getElementById('cm-pool').value, 10) || 0,
+    maxParticipants: parseInt(document.getElementById('cm-max').value, 10) || null,
+    prizeDistribution,
+    questions: type === 'quiz' ? Array.from(selectedQuestionIds) : [],
+  };
+
+  try{
+    const btn = document.getElementById('cm-save-btn');
+    btn.disabled = true; btn.textContent = 'Saving...';
+    await adminFetch('/api/admin/contests', {
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body),
+    });
+    btn.disabled = false; btn.textContent = 'Create Contest';
+    closeM('m-contest');
+    loadContests();
+    toast('Contest created');
+  }catch(e){ toast('Could not create contest'); }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  v1.2: TRANSFERS
+// ══════════════════════════════════════════════════════════════
+async function loadTransfers(matricFilter){
+  try{
+    const q = matricFilter ? `?matric=${encodeURIComponent(matricFilter)}` : '';
+    const r = await adminFetch(`/api/admin/transfers${q}`, { headers: {} });
+    const transfers = await r.json();
+    document.getElementById('tr-body').innerHTML = transfers.map(t => `
+      <tr>
+        <td>${escHtml(t.fromMatric)}</td>
+        <td>${escHtml(t.toMatric)}</td>
+        <td>${t.amount}</td>
+        <td>${t.fee}</td>
+        <td>${t.status}</td>
+        <td>${new Date(t.createdAt).toLocaleString()}</td>
+      </tr>`).join('');
+  }catch(e){}
+}
+
+// ══════════════════════════════════════════════════════════════
+//  v1.2: ANNOUNCEMENTS
+// ══════════════════════════════════════════════════════════════
+async function loadAnnouncements(){
+  try{
+    const r = await adminFetch('/api/admin/announcements', { headers: {} });
+    const announcements = await r.json();
+    document.getElementById('an-body').innerHTML = announcements.map(a => `
+      <tr>
+        <td>${escHtml(a.title)}</td>
+        <td>${escHtml(a.content).slice(0,60)}${a.content.length>60?'…':''}</td>
+        <td>${a.targetAudience}</td>
+        <td>${new Date(a.createdAt).toLocaleString()}</td>
+        <td><button onclick="deleteAnnouncement('${a._id}')">Delete</button></td>
+      </tr>`).join('');
+  }catch(e){}
+}
+function openCreateAnnouncement(){
+  const title = prompt('Announcement title:'); if(!title) return;
+  const content = prompt('Message:'); if(!content) return;
+  const targetAudience = prompt('Audience (all/active_users/new_users):', 'all') || 'all';
+  adminFetch('/api/admin/announcements', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({title, content, targetAudience}),
+  }).then(loadAnnouncements);
+}
+async function deleteAnnouncement(id){
+  if(!confirm('Delete this announcement?')) return;
+  await adminFetch(`/api/admin/announcements/${id}`, { method:'DELETE', headers:{} });
+  loadAnnouncements();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  v1.2: CREDIT SETTINGS
+// ══════════════════════════════════════════════════════════════
+async function loadCreditSettings(){
+  try{
+    const r = await adminFetch('/api/admin/credit-settings', { headers: {} });
+    const s = await r.json();
+    document.getElementById('cs-daily-toggle').classList.toggle('on', s.dailyRefresh.enabled);
+    document.getElementById('cs-daily-amount').value = s.dailyRefresh.amount;
+    document.getElementById('cs-referral-toggle').classList.toggle('on', s.referral.enabled);
+    document.getElementById('cs-referrer-amount').value = s.referral.referrerReward;
+    document.getElementById('cs-referee-amount').value = s.referral.refereeBonus;
+    document.getElementById('cs-welcome-amount').value = s.welcomeBonus;
+  }catch(e){}
+}
+function toggleCreditSetting(which){
+  const el = document.getElementById(which==='daily' ? 'cs-daily-toggle' : 'cs-referral-toggle');
+  el.classList.toggle('on');
+  saveCreditSettings();
+}
+async function saveCreditSettings(){
+  const body = {
+    dailyRefresh: {
+      enabled: document.getElementById('cs-daily-toggle').classList.contains('on'),
+      amount: parseInt(document.getElementById('cs-daily-amount').value, 10) || 0,
+    },
+    referral: {
+      enabled: document.getElementById('cs-referral-toggle').classList.contains('on'),
+      referrerReward: parseInt(document.getElementById('cs-referrer-amount').value, 10) || 0,
+      refereeBonus: parseInt(document.getElementById('cs-referee-amount').value, 10) || 0,
+    },
+    welcomeBonus: parseInt(document.getElementById('cs-welcome-amount').value, 10) || 0,
+  };
+  try{
+    await adminFetch('/api/admin/credit-settings', {
+      method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body),
+    });
+  }catch(e){}
+}
+
+function escHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 </script>
 </body>
 </html>

@@ -452,6 +452,18 @@ button,input,select,textarea{font-family:var(--ff-b);}
 .pop-in{animation:popIn .42s var(--ease-s) both;}
 
 .fs-sm{--qfont:14px;} .fs-md{--qfont:16px;} .fs-lg{--qfont:19px;}
+/* ── v1.2: MODALS (username setup, transfer) ─────────────────── */
+.modal-bg{position:fixed;inset:0;z-index:200;background:rgba(13,15,26,.55);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s;}
+.modal-bg.on{opacity:1;pointer-events:auto;}
+.modal-bg .modal{background:var(--surf);border-radius:var(--r20);padding:24px 20px;width:100%;max-width:420px;max-height:90dvh;overflow-y:auto;box-shadow:var(--sh-lg);transform:scale(.94) translateY(14px);transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
+.modal-bg.on .modal{transform:scale(1) translateY(0);}
+.modal-title{font-family:var(--ff-h);font-size:18px;font-weight:800;color:var(--t1);margin-bottom:4px;}
+.modal-sub{font-size:12.5px;color:var(--t3);margin-bottom:16px;line-height:1.5;}
+.modal-input{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--bd2);background:var(--surf2);font-size:14px;font-weight:600;color:var(--t1);outline:none;margin-bottom:10px;}
+.modal-input:focus{border-color:var(--brand);}
+.modal-hint{font-size:11.5px;margin-top:-6px;margin-bottom:12px;min-height:14px;}
+.modal-hint.ok{color:var(--ok);}
+.modal-hint.err{color:var(--no);}
 </style>
 </head>
 <body class="fs-md">
@@ -475,7 +487,7 @@ button,input,select,textarea{font-family:var(--ff-b);}
   <div class="glass-nav-item" id="nav-settings" onclick="showScr('settings')">
     <i class="fa-solid fa-gear"></i><span>Settings</span>
   </div>
-  <div class="glass-nav-item" id="nav-notif" onclick="showScr('notifications')">
+  <div class="glass-nav-item" id="nav-notif" onclick="showScr('notifications');loadNotifications()">
     <i class="fa-solid fa-bell"></i><span>Alerts</span>
     <div class="glass-nav-badge" id="notif-badge" style="display:none;"></div>
   </div>
@@ -696,6 +708,25 @@ button,input,select,textarea{font-family:var(--ff-b);}
   </div>
   <div style="padding:16px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;">
     <div style="background:var(--surf);border-radius:var(--r16);padding:18px;box-shadow:var(--sh);border:1px solid var(--bd);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <div style="font-size:15px;font-weight:800;color:var(--t1);font-family:var(--ff-h);">Wallet</div>
+        <div style="font-size:20px;font-weight:800;color:var(--purple);"><i class="fa-solid fa-coins" style="font-size:15px;margin-right:5px;"></i><span id="wallet-credits">0</span></div>
+      </div>
+      <div style="font-size:13px;color:var(--t3);margin-bottom:14px;">@<span id="wallet-username">—</span></div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <button class="btn-grad" style="flex:1;" onclick="openTransferModal()"><i class="fa-solid fa-paper-plane" style="margin-right:6px;"></i>Send Credits</button>
+        <button class="btn-grad" style="flex:1;background:var(--surf3);color:var(--t1);box-shadow:none;" onclick="window.location.href='/profile'">View Profile</button>
+      </div>
+      <div style="background:var(--surf2);border-radius:12px;padding:12px;">
+        <div style="font-size:11.5px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;">Your Referral Link</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div id="referral-code-txt" style="flex:1;font-size:12.5px;font-weight:700;color:var(--t1);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</div>
+          <button style="border:none;background:var(--brand-lt);color:var(--brand);font-weight:700;font-size:12px;padding:7px 12px;border-radius:8px;cursor:pointer;flex-shrink:0;" onclick="copyReferralCode()">Copy Link</button>
+        </div>
+        <div style="font-size:11px;color:var(--t3);margin-top:6px;">Or share just the code: <b id="referral-code-only">—</b></div>
+      </div>
+    </div>
+    <div style="background:var(--surf);border-radius:var(--r16);padding:18px;box-shadow:var(--sh);border:1px solid var(--bd);">
       <div style="font-size:15px;font-weight:800;color:var(--t1);font-family:var(--ff-h);margin-bottom:4px;">Exam Date Countdown</div>
       <div style="font-size:13px;color:var(--t3);margin-bottom:14px;">Set your exam date to see a countdown on the home screen.</div>
       <div class="f-group" style="margin-bottom:12px;">
@@ -846,6 +877,16 @@ button,input,select,textarea{font-family:var(--ff-b);}
       <div class="mi-body"><div class="mi-title">Study Notes</div><div class="mi-sub" id="menu-notes-count">0 notes</div></div>
       <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
     </div>
+    <div class="menu-item" onclick="closeSheet('menu-sheet');window.location.href='/profile'">
+      <div class="mi-icon" style="background:var(--purple-lt);color:var(--purple)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z"/></svg></div>
+      <div class="mi-body"><div class="mi-title">Profile</div><div class="mi-sub">Username, referrals, transfer history</div></div>
+      <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </div>
+    <div class="menu-item" onclick="closeSheet('menu-sheet');window.location.href='/contests'">
+      <div class="mi-icon" style="background:var(--warn-lt);color:var(--warn)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M5 4v3h5.5v12h3V7H19V4z"/></svg></div>
+      <div class="mi-body"><div class="mi-title">Contests</div><div class="mi-sub">Compete and win credits</div></div>
+      <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </div>
     <div class="menu-item" onclick="closeSheet('menu-sheet');showScr('settings')">
       <div class="mi-icon" style="background:var(--teal-lt);color:var(--teal)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg></div>
       <div class="mi-body"><div class="mi-title">Settings</div><div class="mi-sub">Notifications, exam date, PWA</div></div>
@@ -856,6 +897,29 @@ button,input,select,textarea{font-family:var(--ff-b);}
       <div class="mi-icon" style="background:var(--no-lt);color:var(--no)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg></div>
       <div class="mi-body"><div class="mi-title" style="color:var(--no)">Sign Out</div><div class="mi-sub" id="menu-user-lbl">—</div></div>
     </div>
+  </div>
+</div>
+
+<!-- ═══ v1.2: USERNAME SETUP (blocking) ══════════════════════════ -->
+<div class="modal-bg" id="m-username" style="z-index:300;">
+  <div class="modal">
+    <div class="modal-title">Choose your username</div>
+    <div class="modal-sub">This is how other students will find you to send credits. 3–20 characters, letters/numbers/underscore only.</div>
+    <input class="modal-input" id="username-input" placeholder="@yourname" maxlength="20" autocapitalize="none" autocomplete="off" oninput="checkUsernameLive()">
+    <div class="modal-hint" id="username-hint"></div>
+    <button class="btn-grad" style="width:100%;" id="username-submit-btn" onclick="submitUsername()">Continue</button>
+  </div>
+</div>
+
+<!-- ═══ v1.2: SEND CREDITS ════════════════════════════════════════ -->
+<div class="modal-bg" id="m-transfer" onclick="if(event.target===this)closeTransferModal()">
+  <div class="modal">
+    <div class="modal-title">Send Credits</div>
+    <div class="modal-sub">1 credit fee applies. Minimum transfer is 2 credits.</div>
+    <input class="modal-input" id="transfer-username-input" placeholder="@recipient" autocapitalize="none" autocomplete="off">
+    <input class="modal-input" id="transfer-amount-input" type="number" min="2" placeholder="Amount">
+    <div class="modal-hint err" id="transfer-hint"></div>
+    <button class="btn-grad" style="width:100%;" id="transfer-submit-btn" onclick="submitTransfer()">Send</button>
   </div>
 </div>
 
@@ -963,10 +1027,122 @@ async function bootFromSession(){
     curUser = data;
     initHome();
     showScr('home');
+    populateWallet(data);
+    loadNotifications();
+    if(data.needsUsername) openUsernameModal();
   }catch(e){
     window.location.href='/login.html';
   }
 }
+
+// ══════════════════════════════════════════════════════════════
+//  v1.2: WALLET, USERNAME, TRANSFERS, NOTIFICATIONS
+// ══════════════════════════════════════════════════════════════
+function referralLink(code){ return `${window.location.origin}/register?ref=${code}`; }
+function populateWallet(data){
+  const cEl = document.getElementById('wallet-credits'); if(cEl) cEl.textContent = data.credits ?? 0;
+  const uEl = document.getElementById('wallet-username'); if(uEl) uEl.textContent = data.username || 'not set';
+  const rEl = document.getElementById('referral-code-txt'); if(rEl) rEl.textContent = data.referralCode ? referralLink(data.referralCode) : '—';
+  const rcEl = document.getElementById('referral-code-only'); if(rcEl) rcEl.textContent = data.referralCode || '—';
+}
+
+function openUsernameModal(){
+  document.getElementById('m-username').classList.add('on');
+}
+let usernameCheckTimer = null;
+async function checkUsernameLive(){
+  const val = document.getElementById('username-input').value.trim();
+  const hint = document.getElementById('username-hint');
+  clearTimeout(usernameCheckTimer);
+  if(!val){ hint.textContent=''; hint.className='modal-hint'; return; }
+  usernameCheckTimer = setTimeout(async ()=>{
+    try{
+      const r = await PhqAuth.authFetch(`/api/username/check/${encodeURIComponent(val)}`, {}, 'student');
+      const d = await r.json();
+      hint.textContent = d.ok ? 'Available!' : d.reason;
+      hint.className = 'modal-hint ' + (d.ok ? 'ok' : 'err');
+    }catch(e){}
+  }, 400);
+}
+async function submitUsername(){
+  const val = document.getElementById('username-input').value.trim();
+  const btn = document.getElementById('username-submit-btn');
+  const hint = document.getElementById('username-hint');
+  if(!val) return;
+  btn.disabled = true; btn.textContent = 'Saving...';
+  try{
+    const r = await PhqAuth.authFetch('/api/username', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username: val}),
+    }, 'student');
+    const d = await r.json();
+    if(!r.ok){ hint.textContent = d.error; hint.className = 'modal-hint err'; btn.disabled=false; btn.textContent='Continue'; return; }
+    document.getElementById('m-username').classList.remove('on');
+    curUser.username = d.username;
+    populateWallet(curUser);
+  }catch(e){
+    hint.textContent = 'Something went wrong, try again.'; hint.className='modal-hint err';
+  }
+  btn.disabled = false; btn.textContent = 'Continue';
+}
+
+function openTransferModal(){
+  document.getElementById('transfer-username-input').value='';
+  document.getElementById('transfer-amount-input').value='';
+  document.getElementById('transfer-hint').textContent='';
+  document.getElementById('m-transfer').classList.add('on');
+}
+function closeTransferModal(){ document.getElementById('m-transfer').classList.remove('on'); }
+async function submitTransfer(){
+  const username = document.getElementById('transfer-username-input').value.trim();
+  const amount = parseInt(document.getElementById('transfer-amount-input').value, 10);
+  const hint = document.getElementById('transfer-hint');
+  const btn = document.getElementById('transfer-submit-btn');
+  if(!username || !amount){ hint.textContent = 'Enter a username and amount'; return; }
+  btn.disabled = true; btn.textContent = 'Sending...';
+  try{
+    const r = await PhqAuth.authFetch('/api/transfer', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username, amount}),
+    }, 'student');
+    const d = await r.json();
+    if(!r.ok){ hint.textContent = d.error; btn.disabled=false; btn.textContent='Send'; return; }
+    closeTransferModal();
+    refreshCredits();
+    populateWallet({credits: d.newBalance});
+  }catch(e){
+    hint.textContent = 'Something went wrong, try again.';
+  }
+  btn.disabled = false; btn.textContent = 'Send';
+}
+
+function copyReferralCode(){
+  const link = document.getElementById('referral-code-txt').textContent;
+  if(!link || link === '—') return;
+  navigator.clipboard?.writeText(link);
+}
+
+async function loadNotifications(){
+  try{
+    const r = await PhqAuth.authFetch('/api/notifications', {}, 'student');
+    if(!r.ok) return;
+    const {notifications, unreadCount} = await r.json();
+    const badge = document.getElementById('notif-badge');
+    if(badge) badge.style.display = unreadCount > 0 ? 'block' : 'none';
+    const list = document.getElementById('notif-list');
+    if(!list) return;
+    if(notifications.length === 0){
+      list.innerHTML = '<div style="padding:40px 20px;text-align:center;color:var(--t3);font-size:13px;">No notifications yet.</div>';
+      return;
+    }
+    list.innerHTML = notifications.map(n => `
+      <div style="padding:14px 18px;border-bottom:1px solid var(--bd);${n.read?'':'background:var(--brand-lt);'}">
+        <div style="font-size:13.5px;font-weight:700;color:var(--t1);">${escapeHtml(n.title)}</div>
+        <div style="font-size:12.5px;color:var(--t3);margin-top:2px;">${escapeHtml(n.message||'')}</div>
+        <div style="font-size:11px;color:var(--t4);margin-top:4px;">${new Date(n.createdAt).toLocaleString()}</div>
+      </div>`).join('');
+    PhqAuth.authFetch('/api/notifications/read-all', {method:'POST'}, 'student').catch(()=>{});
+  }catch(e){}
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 function doLogout(){
   curUser=null;quizQ=[];

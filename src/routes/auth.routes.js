@@ -10,6 +10,8 @@ const Session = require('../models/Session');
 const { signAccessToken, signRefreshToken, verifyRefreshToken, hashToken } = require('../utils/jwt');
 const { getClientIp, isNewDevice } = require('../utils/fingerprint');
 const { applyCreditDelta } = require('../utils/credits');
+const { activateNewStudent } = require('../services/credit.service');
+const { setUsername } = require('../utils/username');
 
 const router = express.Router();
 
@@ -60,7 +62,7 @@ async function issueSession({ subjectId, role, req, deviceFingerprint, flaggedNe
 // POST /api/auth/register — student self-registration with activation code
 router.post('/register', async (req, res) => {
   try {
-    const { matric, name, phone, whatsapp, code, password } = req.body;
+    const { matric, name, phone, whatsapp, code, password, referralCode, username } = req.body;
 
     if (!matric || !name || !code)
       return res.status(400).json({ error: 'Matric, name and activation code are required' });
@@ -98,7 +100,23 @@ router.post('/register', async (req, res) => {
       usedAt: new Date(),
     });
 
-    // If this code was configured with a starting credit grant, apply it.
+    // v1.2: welcome bonus + referral payout. Assigns the student their
+    // own referralCode, credits the welcome bonus (stacked with the
+    // referee bonus if they signed up via a valid referral link), and
+    // pays the referrer's reward — all amounts driven by Settings.
+    await activateNewStudent(student, referralCode);
+
+    // Optional username at signup — if provided and valid/available, set
+    // it now; if not (bad format, already taken), registration still
+    // succeeds and the student gets the first-login modal instead of a
+    // failed signup over a username collision.
+    if (username) {
+      try { await setUsername(student, username); }
+      catch (e) { /* fall through to needsUsername flow */ }
+    }
+
+    // If this code was configured with a starting credit grant (separate
+    // from the welcome bonus, e.g. paid-batch codes), apply it too.
     if (codeDoc.creditsGranted > 0) {
       await applyCreditDelta({
         matric: student.matric,

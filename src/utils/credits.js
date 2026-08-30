@@ -5,8 +5,16 @@ const CreditTransaction = require('../models/CreditTransaction');
 // and writes an audit-trail CreditTransaction. Throws if the student
 // doesn't exist, or if the resulting balance would go negative and
 // `allowNegative` isn't set.
-async function applyCreditDelta({ matric, delta, reason, note = '', actor = 'system', allowNegative = false }) {
-  const student = await Student.findOne({ matric: matric.toUpperCase() });
+//
+// v1.2: accepts an already-loaded `studentDoc` (so callers doing a
+// multi-step operation, like transfers, don't refetch mid-flow), plus
+// `contestId` / `relatedTransferId` to link the ledger row to the
+// contest or transfer that caused it.
+async function applyCreditDelta({
+  matric, delta, reason, note = '', actor = 'system', allowNegative = false,
+  studentDoc = null, contestId = null, relatedTransferId = null,
+}) {
+  const student = studentDoc || await Student.findOne({ matric: matric.toUpperCase() });
   if (!student) throw new Error('Student not found');
 
   const newBalance = (student.credits || 0) + delta;
@@ -26,6 +34,8 @@ async function applyCreditDelta({ matric, delta, reason, note = '', actor = 'sys
     reason,
     note,
     actor,
+    contestId,
+    relatedTransferId,
   });
 
   return { balance: newBalance, transaction: tx };

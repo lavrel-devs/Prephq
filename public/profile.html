@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0A5CF5">
+<link rel="manifest" href="/manifest.json">
+<title>PrepHQ — Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="/css/glass.css">
+<script src="/js/auth-guard.js"></script>
+<script>
+(function(){
+  const s = PhqAuth.getSession();
+  if(!s || !s.accessToken || s.role !== 'student'){ window.location.replace('/login.html'); }
+})();
+</script>
+<style>
+:root{
+  --bg:#F0F2F8;--surf:#fff;--surf2:#F5F6FA;--surf3:#EBECF2;
+  --brand:#0A5CF5;--brand-dk:#0847C4;--brand-lt:rgba(10,92,245,.10);--brand-glow:rgba(10,92,245,.22);
+  --ok:#00C96B;--ok-lt:rgba(0,201,107,.10);--ok-bd:rgba(0,201,107,.28);
+  --no:#F5340A;--no-lt:rgba(245,52,10,.10);--no-bd:rgba(245,52,10,.28);
+  --warn:#F5930A;--warn-lt:rgba(245,147,10,.10);
+  --purple:#7B2CF5;--purple-lt:rgba(123,44,245,.10);
+  --teal:#0ABCF5;--teal-lt:rgba(10,188,245,.10);
+  --t1:#0D0F1A;--t2:#2E3247;--t3:#6B7089;--t4:#A8ADCA;
+  --bd:rgba(13,15,26,.09);--bd2:rgba(13,15,26,.14);
+  --r8:8px;--r12:12px;--r16:16px;--r20:20px;--r24:24px;--rpill:999px;
+  --sh:0 2px 16px rgba(0,0,0,.07);--sh-md:0 6px 28px rgba(0,0,0,.10);--sh-lg:0 14px 48px rgba(0,0,0,.13);
+  --ff-h:'Bricolage Grotesque',system-ui,sans-serif;
+  --ff-b:'DM Sans',system-ui,sans-serif;
+  --ease-o:cubic-bezier(.22,1,.36,1);
+}
+[data-theme=dark]{
+  --bg:#0D0F1A;--surf:#1A1E35;--surf2:#222640;--surf3:#2A2F50;
+  --t1:#EEF0FF;--t2:#C5CAE8;--t3:#7E86B0;--t4:#4A5070;
+  --bd:rgba(238,240,255,.08);--bd2:rgba(238,240,255,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{height:100%;}
+body{font-family:var(--ff-b);background:var(--bg);color:var(--t1);min-height:100dvh;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:520px;margin:0 auto;padding:18px 18px 120px;}
+.topbar{display:flex;align-items:center;gap:12px;padding:6px 0 18px;}
+.back-btn{width:38px;height:38px;border-radius:50%;background:var(--surf);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t1);flex-shrink:0;}
+.pg-title{font-family:var(--ff-h);font-size:20px;font-weight:800;}
+.card{background:var(--surf);border-radius:var(--r20);padding:20px;box-shadow:var(--sh);border:1px solid var(--bd);margin-bottom:14px;}
+.avatar-row{display:flex;align-items:center;gap:14px;margin-bottom:6px;}
+.avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--purple));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:20px;font-family:var(--ff-h);flex-shrink:0;}
+.uname{font-family:var(--ff-h);font-weight:800;font-size:17px;}
+.uhandle{font-size:13px;color:var(--t3);}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px;}
+.stat-box{background:var(--surf2);border-radius:14px;padding:12px 8px;text-align:center;}
+.stat-val{font-family:var(--ff-h);font-weight:800;font-size:18px;color:var(--t1);}
+.stat-lbl{font-size:10.5px;color:var(--t3);font-weight:700;margin-top:2px;text-transform:uppercase;letter-spacing:.03em;}
+.sec-title{font-size:12.5px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.03em;margin:18px 0 8px;}
+.txn-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--bd);}
+.txn-row:last-child{border-bottom:none;}
+.txn-desc{font-size:13.5px;font-weight:600;color:var(--t1);}
+.txn-date{font-size:11.5px;color:var(--t4);margin-top:2px;}
+.txn-amt{font-weight:800;font-size:14px;}
+.txn-amt.pos{color:var(--ok);}
+.txn-amt.neg{color:var(--no);}
+.empty{text-align:center;padding:24px;color:var(--t3);font-size:13px;}
+.btn{border:none;border-radius:12px;padding:10px 16px;font-weight:700;font-size:13px;cursor:pointer;background:var(--brand-lt);color:var(--brand);}
+.field-btn{display:flex;align-items:center;justify-content:space-between;background:var(--surf2);border-radius:12px;padding:12px 14px;margin-top:6px;}
+</style>
+</head>
+<body>
+<div class="glass-backdrop"></div>
+<div class="wrap">
+  <div class="topbar">
+    <div class="back-btn" onclick="window.location.href='/dashboard'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></div>
+    <div class="pg-title">Profile</div>
+  </div>
+
+  <div class="card">
+    <div class="avatar-row">
+      <div class="avatar" id="avatar">—</div>
+      <div>
+        <div class="uname" id="p-name">—</div>
+        <div class="uhandle">@<span id="p-username">—</span></div>
+      </div>
+    </div>
+    <div class="field-btn">
+      <div>
+        <div style="font-size:12px;color:var(--t3);font-weight:700;">Display Name</div>
+        <input id="display-name-input" placeholder="Add a display name" style="border:none;background:transparent;font-size:14px;font-weight:600;color:var(--t1);outline:none;width:100%;margin-top:2px;" onchange="saveDisplayName()">
+      </div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-box"><div class="stat-val" id="p-credits">0</div><div class="stat-lbl">Credits</div></div>
+      <div class="stat-box"><div class="stat-val" id="p-quizzes">0</div><div class="stat-lbl">Quizzes</div></div>
+      <div class="stat-box"><div class="stat-val" id="p-best">0%</div><div class="stat-lbl">Best Score</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-size:15px;font-weight:800;font-family:var(--ff-h);">Referral Link</div>
+        <div style="font-size:12.5px;color:var(--t3);margin-top:2px;">Earn credits when friends join with your code</div>
+      </div>
+      <button class="btn" onclick="copyReferral()">Copy Link</button>
+    </div>
+    <div style="background:var(--surf2);border-radius:10px;padding:10px 12px;margin-top:12px;font-family:monospace;font-weight:700;font-size:12.5px;word-break:break-all;" id="referral-code">—</div>
+    <div style="font-size:12px;color:var(--t3);margin-top:8px;">Or share just the code: <b id="referral-code-only">—</b> · <span id="referral-count">0</span> friends referred</div>
+  </div>
+
+  <div class="sec-title">Transfer History</div>
+  <div class="card" id="transfer-list" style="padding:6px 20px;">
+    <div class="empty">Loading…</div>
+  </div>
+</div>
+
+<script>
+const API_BASE = '';
+let profileData = null;
+
+async function loadProfile(){
+  try{
+    const r = await PhqAuth.authFetch('/api/profile', {}, 'student');
+    if(!r.ok){ PhqAuth.logout('student'); return; }
+    profileData = await r.json();
+    render();
+  }catch(e){ window.location.href='/login.html'; }
+}
+
+function render(){
+  const d = profileData;
+  document.getElementById('avatar').textContent = (d.displayName || d.name || d.username || '?').slice(0,2).toUpperCase();
+  document.getElementById('p-name').textContent = d.displayName || d.name;
+  document.getElementById('p-username').textContent = d.username || 'not set';
+  document.getElementById('display-name-input').value = d.displayName || '';
+  document.getElementById('p-credits').textContent = d.credits ?? 0;
+  document.getElementById('p-quizzes').textContent = d.quizStats?.totalQuizzes ?? 0;
+  document.getElementById('p-best').textContent = (d.quizStats?.bestScore ?? 0) + '%';
+  document.getElementById('referral-code').textContent = d.referral?.code ? `${window.location.origin}/register?ref=${d.referral.code}` : '—';
+  document.getElementById('referral-code-only').textContent = d.referral?.code || '—';
+  document.getElementById('referral-count').textContent = d.referral?.referredCount ?? 0;
+
+  const list = document.getElementById('transfer-list');
+  const history = d.transferHistory || [];
+  if(history.length === 0){
+    list.innerHTML = '<div class="empty">No transfers yet.</div>';
+    return;
+  }
+  list.innerHTML = history.map(t => {
+    const sent = t.fromMatric === d.matric;
+    const label = sent ? `Sent to @${t.toUsername || t.toMatric}` : `Received from @${t.fromUsername || t.fromMatric}`;
+    const amt = sent ? -(t.totalDebited) : t.amount;
+    return `<div class="txn-row">
+      <div><div class="txn-desc">${label}</div><div class="txn-date">${new Date(t.createdAt).toLocaleString()}</div></div>
+      <div class="txn-amt ${amt>0?'pos':'neg'}">${amt>0?'+':''}${amt}</div>
+    </div>`;
+  }).join('');
+}
+
+async function saveDisplayName(){
+  const val = document.getElementById('display-name-input').value.trim();
+  try{
+    await PhqAuth.authFetch('/api/profile/display-name', {
+      method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({displayName: val}),
+    }, 'student');
+  }catch(e){}
+}
+
+function copyReferral(){
+  const link = document.getElementById('referral-code').textContent;
+  if(!link || link === '—') return;
+  navigator.clipboard?.writeText(link);
+}
+
+loadProfile();
+</script>
+</body>
+</html>
