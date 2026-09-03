@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0A5CF5">
+<link rel="manifest" href="/manifest.json">
+<title>PrepHQ — Leaderboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="/css/glass.css">
+<script src="/js/auth-guard.js"></script>
+<script src="/js/shared-nav.js"></script>
+<script>
+(function(){
+  const s = PhqAuth.getSession();
+  if(!s || !s.accessToken || s.role !== 'student'){ window.location.replace('/login.html'); }
+})();
+</script>
+<style>
+:root{
+  --bg:#F0F2F8;--surf:rgba(255,255,255,.6);--surf2:rgba(245,246,250,.55);--surf3:rgba(235,236,242,.55);
+  --brand:#0A5CF5;--brand-dk:#0847C4;--brand-lt:rgba(10,92,245,.10);
+  --ok:#00C96B;--ok-lt:rgba(0,201,107,.10);
+  --no:#F5340A;--no-lt:rgba(245,52,10,.10);
+  --warn:#F5930A;--warn-lt:rgba(245,147,10,.10);
+  --purple:#7B2CF5;--purple-lt:rgba(123,44,245,.10);
+  --t1:#0D0F1A;--t2:#2E3247;--t3:#6B7089;--t4:#A8ADCA;
+  --bd:rgba(13,15,26,.09);--bd2:rgba(13,15,26,.14);
+  --r16:16px;--r20:20px;
+  --sh:0 2px 16px rgba(0,0,0,.07);
+  --ff-h:'Bricolage Grotesque',system-ui,sans-serif;
+  --ff-b:'DM Sans',system-ui,sans-serif;
+}
+[data-theme=dark]{
+  --bg:#0D0F1A;--surf:rgba(26,30,53,.55);--surf2:rgba(34,38,64,.5);--surf3:rgba(42,47,80,.5);
+  --t1:#EEF0FF;--t2:#C5CAE8;--t3:#7E86B0;--t4:#4A5070;
+  --bd:rgba(238,240,255,.08);--bd2:rgba(238,240,255,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:var(--ff-b);background:var(--bg);color:var(--t1);min-height:100dvh;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:520px;margin:0 auto;padding:18px 18px 120px;}
+.topbar{display:flex;align-items:center;gap:12px;padding:6px 0 16px;}
+.back-btn{width:38px;height:38px;border-radius:50%;background:var(--surf);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t1);flex-shrink:0;}
+.pg-title{font-family:var(--ff-h);font-size:20px;font-weight:800;}
+.optin-card{background:var(--surf);border-radius:var(--r16);padding:14px 16px;box-shadow:var(--sh);border:1px solid var(--bd);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.toggle{width:44px;height:24px;border-radius:999px;background:var(--surf3);border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
+.toggle.on{background:var(--brand);}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:white;box-shadow:0 2px 6px rgba(0,0,0,.2);transition:transform .2s cubic-bezier(.34,1.56,.64,1);}
+.toggle.on::after{transform:translateX(20px);}
+.lb-row{display:flex;align-items:center;gap:12px;background:var(--surf);border-radius:14px;padding:12px 14px;margin-bottom:8px;box-shadow:var(--sh);border:1px solid var(--bd);}
+.lb-row.me{border-color:var(--brand);background:var(--brand-lt);}
+.lb-rank{width:28px;text-align:center;font-family:var(--ff-h);font-weight:800;font-size:15px;color:var(--t3);flex-shrink:0;}
+.lb-rank.top1{color:#F5C518;} .lb-rank.top2{color:#B0B4C2;} .lb-rank.top3{color:#CD7F32;}
+.lb-name{flex:1;font-size:13.5px;font-weight:700;}
+.lb-stats{text-align:right;}
+.lb-score{font-weight:800;font-size:15px;color:var(--brand);}
+.lb-sub{font-size:10.5px;color:var(--t3);}
+.empty{text-align:center;padding:50px 20px;color:var(--t3);font-size:13px;}
+</style>
+</head>
+<body>
+<div class="glass-backdrop"></div>
+<div class="wrap">
+  <div class="topbar">
+    <div class="back-btn" onclick="window.location.href='/dashboard'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></div>
+    <div class="pg-title">Leaderboard</div>
+  </div>
+
+  <div class="optin-card">
+    <div>
+      <div style="font-size:13px;font-weight:700;">Show me on the leaderboard</div>
+      <div style="font-size:11.5px;color:var(--t3);margin-top:2px;">Your display name and average score become visible to other students</div>
+    </div>
+    <button class="toggle" id="optin-toggle" onclick="toggleOptIn()"></button>
+  </div>
+
+  <div id="lb-list"><div class="empty">Loading…</div></div>
+</div>
+
+<script>
+async function loadOptInState(){
+  try{
+    const r = await PhqAuth.authFetch('/api/profile', {}, 'student');
+    if(!r.ok) return;
+    const d = await r.json();
+    document.getElementById('optin-toggle').classList.toggle('on', !!d.leaderboardOptIn);
+  }catch(e){}
+}
+
+async function toggleOptIn(){
+  const el = document.getElementById('optin-toggle');
+  const next = !el.classList.contains('on');
+  el.classList.toggle('on', next);
+  try{
+    await PhqAuth.authFetch('/api/profile/leaderboard-optin', {
+      method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ optIn: next }),
+    }, 'student');
+    loadLeaderboard();
+  }catch(e){}
+}
+
+async function loadLeaderboard(){
+  try{
+    const r = await PhqAuth.authFetch('/api/leaderboard', {}, 'student');
+    if(!r.ok) return;
+    const rows = await r.json();
+    const list = document.getElementById('lb-list');
+    if(!rows.length){
+      list.innerHTML = '<div class="empty">No one qualifies yet — the leaderboard needs opted-in students with at least 3 quizzes each. Be the first!</div>';
+      return;
+    }
+    list.innerHTML = rows.map(row => `
+      <div class="lb-row ${row.isMe?'me':''}">
+        <div class="lb-rank ${row.rank===1?'top1':row.rank===2?'top2':row.rank===3?'top3':''}">${row.rank}</div>
+        <div class="lb-name">${row.badge?row.badge+' ':''}${escapeHtml(row.displayName)}${row.isMe?' (you)':''}</div>
+        <div class="lb-stats"><div class="lb-score">${row.avgScore}%</div><div class="lb-sub">${row.totalQuizzes} quizzes</div></div>
+      </div>`).join('');
+  }catch(e){}
+}
+
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+loadOptInState();
+loadLeaderboard();
+</script>
+</body>
+</html>

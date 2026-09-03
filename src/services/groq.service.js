@@ -98,4 +98,98 @@ function parseQuestionsFromModelOutput(raw) {
     }));
 }
 
-module.exports = { generateQuiz };
+// Explains why a specific answer was wrong (or why the correct answer
+// is correct), for questions that don't already have a static `exp`
+// field filled in by an admin. Kept deliberately short (2-3 sentences)
+// — this is a quick "why" nudge during results review, not a lecture.
+async function explainAnswer({ course, question, opts, correctIndex, chosenIndex }) {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey || apiKey === 'REPLACE_WITH_YOUR_GROQ_KEY') {
+    const err = new Error('GROQ_API_KEY is not configured on the server');
+    err.code = 'GROQ_NOT_CONFIGURED';
+    throw err;
+  }
+
+  const model = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
+  const lettered = opts.map((o, i) => `${String.fromCharCode(65 + i)}. ${o}`).join('\n');
+  const chosenLine = Number.isInteger(chosenIndex) && chosenIndex !== correctIndex
+    ? `The student chose "${String.fromCharCode(65 + chosenIndex)}. ${opts[chosenIndex]}", which is wrong.`
+    : 'The student skipped this question.';
+
+  const systemPrompt = `You are a patient tutor helping a Nigerian university student understand a quiz question they got wrong. Explain in 2-3 short sentences, plain language, no markdown headers or bullet lists — just prose. Explain why the correct answer is right, and briefly why the option they picked (if any) is a common misconception, without being condescending.`;
+  const userPrompt = `Course: ${course}\nQuestion: ${question}\nOptions:\n${lettered}\nCorrect answer: ${String.fromCharCode(65 + correctIndex)}. ${opts[correctIndex]}\n${chosenLine}\n\nExplain.`;
+
+  const res = await fetch(GROQ_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+      temperature: 0.4,
+      max_tokens: 220,
+    }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    const err = new Error(`Groq API error (${res.status}): ${text.slice(0, 300)}`);
+    err.code = 'GROQ_REQUEST_FAILED';
+    throw err;
+  }
+
+  const data = await res.json();
+  const explanation = data?.choices?.[0]?.message?.content?.trim();
+  if (!explanation) {
+    const err = new Error('Groq returned an empty response');
+    err.code = 'GROQ_EMPTY_RESPONSE';
+    throw err;
+  }
+  return explanation;
+}
+
+// Academic chatbot reply. `history` is the recent conversation
+// (oldest first) so the model has context; kept short (last ~12
+// messages) to control token spend per turn.
+async function chatReply(history) {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey || apiKey === 'REPLACE_WITH_YOUR_GROQ_KEY') {
+    const err = new Error('GROQ_API_KEY is not configured on the server');
+    err.code = 'GROQ_NOT_CONFIGURED';
+    throw err;
+  }
+
+  const model = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
+  const systemPrompt = `You are PrepHQ's academic study assistant, helping Nigerian university students. Answer academic/study questions clearly and concisely. Use plain prose, not markdown headers. Keep answers focused — a few sentences to a short paragraph unless the student clearly wants a longer worked explanation (e.g. a multi-step calculation or proof). If asked something entirely unrelated to academics/studying, politely redirect to study topics.`;
+
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    ...history.map(m => ({ role: m.role, content: m.content })),
+  ];
+
+  const res = await fetch(GROQ_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({ model, messages, temperature: 0.5, max_tokens: 500 }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    const err = new Error(`Groq API error (${res.status}): ${text.slice(0, 300)}`);
+    err.code = 'GROQ_REQUEST_FAILED';
+    throw err;
+  }
+
+  const data = await res.json();
+  const reply = data?.choices?.[0]?.message?.content?.trim();
+  if (!reply) {
+    const err = new Error('Groq returned an empty response');
+    err.code = 'GROQ_EMPTY_RESPONSE';
+    throw err;
+  }
+  return reply;
+}
+
+module.exports = { generateQuiz, explainAnswer, chatReply };

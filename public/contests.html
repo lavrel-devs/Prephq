@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <link rel="stylesheet" href="/css/glass.css">
 <script src="/js/auth-guard.js"></script>
+<script src="/js/shared-nav.js"></script>
 <script>
 (function(){
   const s = PhqAuth.getSession();
@@ -19,7 +20,7 @@
 </script>
 <style>
 :root{
-  --bg:#F0F2F8;--surf:#fff;--surf2:#F5F6FA;--surf3:#EBECF2;
+  --bg:#F0F2F8;--surf:rgba(255,255,255,.6);--surf2:rgba(245,246,250,.55);--surf3:rgba(235,236,242,.55);
   --brand:#0A5CF5;--brand-dk:#0847C4;--brand-lt:rgba(10,92,245,.10);--brand-glow:rgba(10,92,245,.22);
   --ok:#00C96B;--ok-lt:rgba(0,201,107,.10);--ok-bd:rgba(0,201,107,.28);
   --no:#F5340A;--no-lt:rgba(245,52,10,.10);--no-bd:rgba(245,52,10,.28);
@@ -35,7 +36,7 @@
   --ease-o:cubic-bezier(.22,1,.36,1);
 }
 [data-theme=dark]{
-  --bg:#0D0F1A;--surf:#1A1E35;--surf2:#222640;--surf3:#2A2F50;
+  --bg:#0D0F1A;--surf:rgba(26,30,53,.55);--surf2:rgba(34,38,64,.5);--surf3:rgba(42,47,80,.5);
   --t1:#EEF0FF;--t2:#C5CAE8;--t3:#7E86B0;--t4:#4A5070;
   --bd:rgba(238,240,255,.08);--bd2:rgba(238,240,255,.14);
 }
@@ -118,10 +119,10 @@ function render(){
   }
   list.innerHTML = items.map(c => `
     <div class="contest-card" onclick="openDetail('${c._id}')">
-      <div class="cc-top"><div class="cc-title">${escapeHtml(c.title)}</div>${statusBadge(c.status)}</div>
+      <div class="cc-top"><div class="cc-title">${escapeHtml(c.title)}${c.teamBased?' <span style="font-size:9.5px;background:var(--brand-lt);color:var(--brand);padding:2px 7px;border-radius:99px;vertical-align:middle;">TEAMS</span>':''}</div>${statusBadge(c.status)}</div>
       <div class="cc-desc">${escapeHtml(c.description || '')}</div>
       <div class="cc-meta">
-        <span><i class="fa-solid fa-users"></i> ${c.participantCount || 0}${c.maxParticipants ? '/'+c.maxParticipants : ''}</span>
+        <span><i class="fa-solid fa-users"></i> ${c.teamBased ? `${c.teamCount||0} teams` : `${c.participantCount || 0}${c.maxParticipants ? '/'+c.maxParticipants : ''}`}</span>
         <span><i class="fa-solid fa-coins"></i> Entry: ${c.entryFee || 0}</span>
         <span><i class="fa-solid fa-trophy"></i> Pool: ${c.prizePool || 0}</span>
       </div>
@@ -155,17 +156,22 @@ async function openDetail(id){
       const lr = await PhqAuth.authFetch(`/api/contests/${id}/leaderboard`, {}, 'student');
       if(lr.ok) lb = await lr.json();
     }
+    const joinedBlock = c.teamBased ? renderTeamState(c) : (c.myEntry ? renderJoinedState(c) : ((c.status === 'upcoming' || c.status === 'live') ? `<button class="btn" onclick="joinContest('${c._id}')" style="margin-bottom:14px;">Join Contest</button>` : ''));
+    const lbBlock = lb.length > 0 ? `<div style="font-size:12.5px;font-weight:800;color:var(--t3);text-transform:uppercase;margin-bottom:8px;">${c.teamBased?'Team ':''}Leaderboard</div>
+        ${lb.slice(0,15).map(row => c.teamBased
+          ? `<div class="lb-row"><span style="font-weight:700;">#${row.rank} ${escapeHtml(row.teamName)} <span style="color:var(--t4);font-weight:500;">(${row.memberCount})</span></span><span style="font-weight:800;">${row.score}</span></div>`
+          : `<div class="lb-row"><span style="font-weight:700;">#${row.rank} ${escapeHtml(row.username||row.matric)}</span><span style="font-weight:800;">${row.score}</span></div>`
+        ).join('')}` : '';
     document.getElementById('detail-body').innerHTML = `
-      <div style="font-family:var(--ff-h);font-weight:800;font-size:18px;margin-bottom:4px;">${escapeHtml(c.title)}</div>
+      <div style="font-family:var(--ff-h);font-weight:800;font-size:18px;margin-bottom:4px;">${escapeHtml(c.title)}${c.teamBased?' <span style="font-size:10px;background:var(--brand-lt);color:var(--brand);padding:2px 8px;border-radius:99px;vertical-align:middle;">TEAMS</span>':''}</div>
       <div style="font-size:12.5px;color:var(--t3);margin-bottom:14px;">${escapeHtml(c.description || '')}</div>
       <div style="display:flex;gap:14px;font-size:12px;color:var(--t3);font-weight:600;margin-bottom:16px;">
         <span>Entry: ${c.entryFee || 0} credits</span>
         <span>Pool: ${c.prizePool || 0} credits</span>
-        <span>${c.participantCount || 0} joined</span>
+        <span>${c.teamBased ? `${c.teamCount||0} teams` : `${c.participantCount || 0} joined`}</span>
       </div>
-      ${c.myEntry ? renderJoinedState(c) : ((c.status === 'upcoming' || c.status === 'live') ? `<button class="btn" onclick="joinContest('${c._id}')" style="margin-bottom:14px;">Join Contest</button>` : '')}
-      ${lb.length > 0 ? `<div style="font-size:12.5px;font-weight:800;color:var(--t3);text-transform:uppercase;margin-bottom:8px;">Leaderboard</div>
-        ${lb.slice(0,15).map(row => `<div class="lb-row"><span style="font-weight:700;">#${row.rank} ${escapeHtml(row.username||row.matric)}</span><span style="font-weight:800;">${row.score}</span></div>`).join('')}` : ''}
+      ${joinedBlock}
+      ${lbBlock}
       <button class="btn ghost" style="margin-top:14px;" onclick="closeDetail()">Close</button>
     `;
     document.getElementById('m-detail').classList.add('on');
@@ -180,6 +186,69 @@ function renderJoinedState(c){
   }
   return inner;
 }
+
+function renderTeamState(c){
+  if(!c.myTeam){
+    if(!['upcoming','live'].includes(c.status)) return '';
+    return `
+      <div style="display:flex;gap:8px;margin-bottom:14px;">
+        <button class="btn" style="flex:1;" onclick="showCreateTeamForm('${c._id}')">Create Team</button>
+        <button class="btn ghost" style="flex:1;" onclick="showJoinTeamForm('${c._id}')">Join with Code</button>
+      </div>
+      <div id="team-form-area"></div>
+    `;
+  }
+  const alreadyScored = c.myTeam.score > 0;
+  let inner = `<div style="background:var(--ok-lt);color:var(--ok);padding:10px 14px;border-radius:10px;font-size:13px;font-weight:700;margin-bottom:6px;">
+    Team "${escapeHtml(c.myTeam.teamName)}" · ${c.myTeam.members.length} member${c.myTeam.members.length!==1?'s':''}${alreadyScored ? ' · Score: '+c.myTeam.score : ''}${c.myTeam.prizeAwarded ? ' · Won '+c.myTeam.prizeAwarded+' credits (split)' : ''}
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12px;color:var(--t3);">
+    <span>Invite code: <b style="font-family:monospace;color:var(--t1);">${c.myTeam.teamCode}</b></span>
+    <button style="border:none;background:var(--surf3);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;" onclick="navigator.clipboard?.writeText('${c.myTeam.teamCode}')">Copy</button>
+  </div>`;
+  if(c.type === 'quiz' && c.status === 'live' && !alreadyScored){
+    inner += `<button class="btn" style="margin-bottom:14px;" onclick="startContestQuiz('${c._id}')"><i class="fa-solid fa-pen"></i> Start Quiz (for your team)</button>`;
+  }
+  return inner;
+}
+
+function showCreateTeamForm(id){
+  document.getElementById('team-form-area').innerHTML = `
+    <input class="modal-input" id="team-name-input" placeholder="Team name" style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--bd2);margin-bottom:8px;">
+    <button class="btn" style="width:100%;" onclick="submitCreateTeam('${id}')">Create</button>
+  `;
+}
+function showJoinTeamForm(id){
+  document.getElementById('team-form-area').innerHTML = `
+    <input class="modal-input" id="team-code-input" placeholder="Team code" style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--bd2);margin-bottom:8px;text-transform:uppercase;">
+    <button class="btn" style="width:100%;" onclick="submitJoinTeam('${id}')">Join</button>
+  `;
+}
+async function submitCreateTeam(id){
+  const teamName = document.getElementById('team-name-input').value.trim();
+  if(!teamName){ alert('Enter a team name'); return; }
+  try{
+    const r = await PhqAuth.authFetch(`/api/contests/${id}/team/create`, {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ teamName }),
+    }, 'student');
+    const d = await r.json();
+    if(!r.ok){ alert(d.error || 'Could not create team'); return; }
+    openDetail(id);
+  }catch(e){}
+}
+async function submitJoinTeam(id){
+  const teamCode = document.getElementById('team-code-input').value.trim();
+  if(!teamCode){ alert('Enter a team code'); return; }
+  try{
+    const r = await PhqAuth.authFetch(`/api/contests/${id}/team/join`, {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ teamCode }),
+    }, 'student');
+    const d = await r.json();
+    if(!r.ok){ alert(d.error || 'Could not join team'); return; }
+    openDetail(id);
+  }catch(e){}
+}
+
 
 async function startContestQuiz(id){
   try{

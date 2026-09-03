@@ -12,6 +12,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <link rel="stylesheet" href="/css/glass.css">
 <script src="/js/auth-guard.js"></script>
+<script src="/js/shared-nav.js"></script>
 <script>
 // Gate: runs before the body paints. No session -> straight to login,
 // dashboard markup never renders for a logged-out visitor.
@@ -25,7 +26,7 @@
 <style>
 /* ── TOKENS ───────────────────────────────────────────── */
 :root{
-  --bg:#F0F2F8;--surf:#fff;--surf2:#F5F6FA;--surf3:#EBECF2;
+  --bg:#F0F2F8;--surf:rgba(255,255,255,.6);--surf2:rgba(245,246,250,.55);--surf3:rgba(235,236,242,.55);
   --brand:#0A5CF5;--brand-dk:#0847C4;--brand-lt:rgba(10,92,245,.10);--brand-glow:rgba(10,92,245,.22);
   --ok:#00C96B;--ok-lt:rgba(0,201,107,.10);--ok-bd:rgba(0,201,107,.28);
   --no:#F5340A;--no-lt:rgba(245,52,10,.10);--no-bd:rgba(245,52,10,.28);
@@ -42,7 +43,7 @@
   --qfont:16px;
 }
 [data-theme=dark]{
-  --bg:#0D0F1A;--surf:#1A1E35;--surf2:#222640;--surf3:#2A2F50;
+  --bg:#0D0F1A;--surf:rgba(26,30,53,.55);--surf2:rgba(34,38,64,.5);--surf3:rgba(42,47,80,.5);
   --t1:#EEF0FF;--t2:#C5CAE8;--t3:#7E86B0;--t4:#4A5070;
   --bd:rgba(238,240,255,.08);--bd2:rgba(238,240,255,.14);
   --sh:0 2px 16px rgba(0,0,0,.35);--sh-md:0 6px 28px rgba(0,0,0,.45);
@@ -423,6 +424,9 @@ button,input,select,textarea{font-family:var(--ff-b);}
 .rtag.c{background:var(--ok-lt);color:var(--ok);}
 .rtag.sk{background:var(--surf3);color:var(--t4);}
 .rexp{font-size:12px;color:var(--t3);font-weight:500;padding-top:6px;border-top:1px solid var(--bd);line-height:1.5;}
+.rexp-ai-wrap{padding-top:6px;border-top:1px solid var(--bd);}
+.rexp-ai-btn{border:none;background:var(--purple-lt);color:var(--purple);font-weight:700;font-size:11.5px;padding:6px 12px;border-radius:8px;cursor:pointer;}
+.rexp-ai-btn:disabled{opacity:.6;cursor:default;}
 
 .rnote{padding:7px 15px 11px;}
 .rnote textarea{width:100%;border:1px solid var(--bd);background:var(--surf2);border-radius:var(--r8);padding:8px 10px;font-family:var(--ff-b);font-size:12px;color:var(--t2);resize:none;outline:none;min-height:48px;transition:border-color .18s;}
@@ -470,28 +474,7 @@ button,input,select,textarea{font-family:var(--ff-b);}
 
 <div id="toast"></div>
 
-<!-- ═══ GLASS PILL NAV ═════════════════════════════════════════ -->
-<nav class="glass-nav" aria-label="Primary">
-  <div class="glass-nav-item on" id="nav-home" onclick="showScr('home')">
-    <i class="fa-solid fa-house"></i><span>Home</span>
-  </div>
-  <div class="glass-nav-item" id="nav-practice" onclick="showScr('home');document.getElementById('course-grid')?.scrollIntoView({behavior:'smooth'})">
-    <i class="fa-solid fa-pen-to-square"></i><span>Practice</span>
-  </div>
-  <div class="glass-nav-item" id="nav-stats" onclick="showScr('performance')">
-    <i class="fa-solid fa-chart-simple"></i><span>Stats</span>
-  </div>
-  <div class="glass-nav-item" id="nav-saved" onclick="showScr('bookmarks')">
-    <i class="fa-solid fa-bookmark"></i><span>Saved</span>
-  </div>
-  <div class="glass-nav-item" id="nav-settings" onclick="showScr('settings')">
-    <i class="fa-solid fa-gear"></i><span>Settings</span>
-  </div>
-  <div class="glass-nav-item" id="nav-notif" onclick="showScr('notifications');loadNotifications()">
-    <i class="fa-solid fa-bell"></i><span>Alerts</span>
-    <div class="glass-nav-badge" id="notif-badge" style="display:none;"></div>
-  </div>
-</nav>
+<!-- Bottom nav now rendered by /js/shared-nav.js — identical on every page -->
 
 <div class="glass-backdrop"></div>
 
@@ -582,6 +565,15 @@ button,input,select,textarea{font-family:var(--ff-b);}
     <button class="btn-grad" id="ai-quiz-btn" style="width:100%;padding:12px;border-radius:12px;background:linear-gradient(140deg,var(--purple),var(--brand));color:#fff;border:none;font-weight:800;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;" onclick="generateAIQuiz()">
       <i class="fa-solid fa-bolt"></i> Generate Quiz
     </button>
+  </div>
+
+  <div id="weak-topics-card" style="display:none;margin:0 18px 16px;background:linear-gradient(135deg,var(--no-lt),rgba(123,44,245,.06));border:1.5px solid var(--no-bd);border-radius:var(--r16);padding:16px;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <i class="fa-solid fa-crosshairs" style="color:var(--no);"></i>
+      <div style="font-weight:800;font-size:14px;font-family:var(--ff-h);">Practice Weak Topics</div>
+    </div>
+    <div id="weak-topics-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;"></div>
+    <button class="btn-grad" style="width:100%;padding:11px;border-radius:11px;background:var(--no);color:#fff;border:none;font-weight:700;font-size:13px;cursor:pointer;" onclick="startWeakTopicQuiz()">Start Focused Quiz</button>
   </div>
 
   <div class="sec-h"><div class="sec-title">Select Course</div><div class="sec-badge" id="sel-badge">1 selected</div></div>
@@ -857,6 +849,11 @@ button,input,select,textarea{font-family:var(--ff-b);}
     <div class="sheet-handle"></div>
     <div class="sheet-title">Menu</div>
     <div class="sheet-sub" id="menu-matric">—</div>
+    <div class="menu-item" onclick="closeSheet('menu-sheet');showScr('notifications');loadNotifications()">
+      <div class="mi-icon" style="background:var(--no-lt);color:var(--no)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg></div>
+      <div class="mi-body"><div class="mi-title">Notifications</div><div class="mi-sub">Credits, contests, announcements</div></div>
+      <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </div>
     <div class="menu-item" onclick="closeSheet('menu-sheet');showScr('performance')">
       <div class="mi-icon" style="background:var(--brand-lt);color:var(--brand)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
       <div class="mi-body"><div class="mi-title">Performance</div><div class="mi-sub">Track scores per course</div></div>
@@ -885,6 +882,16 @@ button,input,select,textarea{font-family:var(--ff-b);}
     <div class="menu-item" onclick="closeSheet('menu-sheet');window.location.href='/contests'">
       <div class="mi-icon" style="background:var(--warn-lt);color:var(--warn)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M5 4v3h5.5v12h3V7H19V4z"/></svg></div>
       <div class="mi-body"><div class="mi-title">Contests</div><div class="mi-sub">Compete and win credits</div></div>
+      <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </div>
+    <div class="menu-item" onclick="closeSheet('menu-sheet');window.location.href='/leaderboard'">
+      <div class="mi-icon" style="background:var(--purple-lt);color:var(--purple)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div>
+      <div class="mi-body"><div class="mi-title">Leaderboard</div><div class="mi-sub">See how you rank, opt-in only</div></div>
+      <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </div>
+    <div class="menu-item" onclick="closeSheet('menu-sheet');window.location.href='/study-rooms'">
+      <div class="mi-icon" style="background:var(--teal-lt);color:var(--teal)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div>
+      <div class="mi-body"><div class="mi-title">Study Rooms</div><div class="mi-sub">Live quiz with friends, free</div></div>
       <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
     </div>
     <div class="menu-item" onclick="closeSheet('menu-sheet');showScr('settings')">
@@ -971,7 +978,47 @@ let deferredPrompt = null;
 // ══════════════════════════════════════════════════════════════
 const lk = k => `phq_${curUser?.matric}_${k}`;
 const load = (k,d) => { try{const v=localStorage.getItem(lk(k));return v!=null?JSON.parse(v):d;}catch{return d;} };
-const save = (k,v) => { try{localStorage.setItem(lk(k),JSON.stringify(v));}catch{} };
+const save = (k,v) => { try{localStorage.setItem(lk(k),JSON.stringify(v));}catch{} syncToServer(k,v); };
+
+// ── Server-side backup sync (v1.3.1) ────────────────────────────
+// bookmarks/notes/goal/settings used to live in localStorage only —
+// a cleared browser or new device silently lost them. save() above
+// now mirrors these four keys to the server in the background,
+// debounced per-key so rapid edits (e.g. typing a note) don't fire a
+// request per keystroke. Every other localStorage key (perf, streak
+// — streak already has its own server-side source of truth) is left
+// purely local, unaffected.
+const BACKED_UP_KEYS = new Set(['bmarks','notes','goal','settings']);
+const syncTimers = {};
+function syncToServer(key, value){
+  if(!BACKED_UP_KEYS.has(key) || !curUser) return;
+  clearTimeout(syncTimers[key]);
+  syncTimers[key] = setTimeout(async () => {
+    const fieldMap = { bmarks:'bookmarks', notes:'notes', goal:'goal', settings:'settings' };
+    try{
+      await PhqAuth.authFetch('/api/student-data', {
+        method:'PUT', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ [fieldMap[key]]: value }),
+      }, 'student');
+    }catch(e){}
+  }, 800);
+}
+
+// Pulls the server backup once at boot and merges it into localStorage
+// — server wins when it has data (it's the durable copy), local stays
+// as-is on a brand-new device with nothing to merge yet.
+async function syncFromServer(){
+  try{
+    const r = await PhqAuth.authFetch('/api/student-data', {}, 'student');
+    if(!r.ok) return;
+    const d = await r.json();
+    if(!d.hasBackup) return; // nothing backed up yet — keep local as the seed
+    if(d.bookmarks) save('bmarks', d.bookmarks);
+    if(d.notes) save('notes', d.notes);
+    if(d.goal && Object.keys(d.goal).length) save('goal', d.goal);
+    if(d.settings && Object.keys(d.settings).length) save('settings', d.settings);
+  }catch(e){}
+}
 
 const getBmarks  = () => load('bmarks',[]);
 const saveBmarks = b => save('bmarks',b);
@@ -992,6 +1039,13 @@ async function pushScore(entry){
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify(entry)
     }, 'student');
+    // Refresh weak topics right after this quiz's per-question results
+    // are actually persisted — not on a timer, not only on next visit
+    // to Home. Without this, tapping "Home" immediately after finishing
+    // a quiz could re-fetch the weak-topics list before the POST above
+    // had landed, showing stale data and making it look like a topic
+    // you just aced never gets removed.
+    if(entry.perQuestion && entry.perQuestion.length) loadWeakTopics();
   }catch{}
 }
 
@@ -1025,6 +1079,7 @@ async function bootFromSession(){
     if(!res.ok){ PhqAuth.logout('student'); return; }
     const data = await res.json();
     curUser = data;
+    await syncFromServer(); // pull backed-up bookmarks/notes/goal/settings before first render
     initHome();
     showScr('home');
     populateWallet(data);
@@ -1144,6 +1199,78 @@ async function loadNotifications(){
 }
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
+// ══════════════════════════════════════════════════════════════
+//  v1.3: AI WRONG-ANSWER EXPLANATIONS
+// ══════════════════════════════════════════════════════════════
+async function explainAnswer(i){
+  const q = quizQ[i];
+  const chosenIndex = answers[i];
+  const btn = document.getElementById(`rexp-ai-btn-${i}`);
+  const out = document.getElementById(`rexp-ai-${i}`);
+  btn.disabled = true; btn.textContent = 'Thinking...';
+  try{
+    const r = await PhqAuth.authFetch('/api/quiz/explain', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        course: (COURSES[q.course]||{}).code || q.course,
+        question: q.q || q.question || '',
+        opts: q.opts,
+        correctIndex: q.ans,
+        chosenIndex: Number.isInteger(chosenIndex) ? chosenIndex : null,
+      }),
+    }, 'student');
+    const d = await r.json();
+    if(!r.ok){ out.textContent = d.error || 'Could not get an explanation right now.'; out.style.display='block'; btn.style.display='none'; return; }
+    out.textContent = d.explanation;
+    out.style.display = 'block';
+    btn.style.display = 'none';
+  }catch(e){
+    out.textContent = 'Could not get an explanation right now.';
+    out.style.display = 'block';
+    btn.style.display = 'none';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  v1.3: WEAK-TOPIC DRILLING
+// ══════════════════════════════════════════════════════════════
+let weakTopics = [];
+async function loadWeakTopics(){
+  try{
+    const r = await PhqAuth.authFetch(`/api/scores/${curUser.matric}/weak-topics`, {}, 'student');
+    if(!r.ok) return;
+    weakTopics = await r.json();
+    const card = document.getElementById('weak-topics-card');
+    if(!weakTopics.length){ card.style.display = 'none'; return; }
+    card.style.display = 'block';
+    document.getElementById('weak-topics-list').innerHTML = weakTopics.map(t => `
+      <div style="display:flex;align-items:center;justify-content:space-between;font-size:12.5px;">
+        <span style="color:var(--t2);font-weight:600;">${escapeHtml(COURSES[t.course]?.code || t.course)} — ${escapeHtml(t.tag)}</span>
+        <span style="font-weight:800;color:var(--no);">${t.accuracy}%</span>
+      </div>`).join('');
+  }catch(e){}
+}
+
+function startWeakTopicQuiz(){
+  if(!weakTopics.length){ toast('No weak topics identified yet — keep practicing!'); return; }
+  curAIQuizId = null;
+  let pool = [];
+  weakTopics.forEach(t => {
+    const coursePool = BANK[t.course] || [];
+    pool.push(...coursePool.filter(q => (q.tag||'') === t.tag).map(q => ({...q, course: t.course})));
+  });
+  if(!pool.length){ toast('No matching questions found in the bank for your weak topics yet'); return; }
+  for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+  quizQ = pool.slice(0, Math.min(15, pool.length));
+  selCourses = [...new Set(quizQ.map(q=>q.course))];
+  answers=new Array(quizQ.length).fill(null);
+  confirmed=new Array(quizQ.length).fill(false);
+  cur=0;
+  document.getElementById('qt-title').textContent = 'Weak Topics';
+  showScr('quiz');
+  renderQ();
+}
+
 function doLogout(){
   curUser=null;quizQ=[];
   PhqAuth.logout('student');
@@ -1206,13 +1333,18 @@ async function initHome(){
   const g=hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';
   document.getElementById('home-greeting').textContent=g+',\nlet\'s study.';
 
-  const st=getStreak();
-  const today=new Date().toDateString();
-  if(st.last!==today){
-    const yesterday=new Date(Date.now()-86400000).toDateString();
-    st.count=st.last===yesterday?st.count+1:1;
-    st.last=today;saveStreak(st);
+  // v1.3: streak is now server-tracked (see credit.service.js) — the
+  // client no longer computes or increments it, just displays what
+  // /api/me returned and caches it locally so the UI has something to
+  // show before that request resolves on the next load.
+  if(curUser.streak){
+    saveStreak({count: curUser.streak.count, last: new Date().toDateString()});
+    if(curUser.streak.milestoneHit){
+      toast(`🔥 ${curUser.streak.count}-day streak! +${curUser.streak.bonusAwarded} bonus credits`);
+      document.getElementById('tb-credits').textContent = curUser.credits ?? 0;
+    }
   }
+  const st=getStreak();
   document.getElementById('streak-txt').textContent=st.count+' day streak';
 
   // Show placeholder total while loading
@@ -1220,6 +1352,7 @@ async function initHome(){
 
   await loadCourses(); // must resolve before anything reads COURSES
   buildCourseGrid();   // async — fetches live per-course question counts
+  loadWeakTopics();
   refreshStats();
   renderExamBanner();
   renderDailyGoal();
@@ -1822,6 +1955,10 @@ function showResults(){
   });
 
   const entry={correct,total,pct,wrong,skip,courses:selCourses.map(c=>COURSES[c]?.code||c).join(', '),mode:quizMode};
+  // v1.3: per-question breakdown (course+tag+correct) feeds weak-topic
+  // drilling server-side. Only meaningful for bank/practice quizzes —
+  // quizQ entries carry .course/.tag from the local question bank.
+  entry.perQuestion = quizQ.map((q,i) => ({ course: q.course, tag: q.tag||'', correct: answers[i]===q.ans }));
   pushScore(entry);
 
   // If this was an AI-generated quiz, record the actual result against
@@ -1865,6 +2002,7 @@ function showResults(){
     if(!isSk)body+=`<div class="rrow"><span class="rtag c">Correct</span><span style="color:var(--ok)">${String.fromCharCode(65+q.ans)}. ${q.opts[q.ans]}</span></div>`;
     else{body+=`<div class="rrow"><span class="rtag sk">Skipped</span><span style="color:var(--t4)">No answer</span></div>`;body+=`<div class="rrow"><span class="rtag c">Correct</span><span style="color:var(--ok)">${String.fromCharCode(65+q.ans)}. ${q.opts[q.ans]}</span></div>`;}
     if(q.exp)body+=`<div class="rexp">${q.exp}</div>`;
+    else if(!isC)body+=`<div class="rexp-ai-wrap"><button class="rexp-ai-btn" onclick="explainAnswer(${i})" id="rexp-ai-btn-${i}">✨ Explain with AI</button><div class="rexp" id="rexp-ai-${i}" style="display:none;"></div></div>`;
     return `<div class="rcard">
       <div class="rcard-head">
         <div class="rcard-badge ${bc}">${isC?'<svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>':isSk?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>'}</div>
@@ -2119,20 +2257,7 @@ function showScr(id){
   if(id==='performance'){renderPerf();renderAIHistory();}
   if(id==='notifications')renderNotifications();
   // Refresh course grid counts when returning to home
-  if(id==='home'){refreshStats();buildCourseGrid();}
-  updateNavHighlight(id);
-}
-
-// Maps internal screens to the 6 pill-nav destinations and toggles
-// the ".on" state — pure CSS display toggling underneath, no routing.
-function updateNavHighlight(id){
-  const map = { home:'nav-home', quiz:'nav-home', results:'nav-home',
-    performance:'nav-stats', history:'nav-stats',
-    bookmarks:'nav-saved', 'notes-screen':'nav-saved',
-    settings:'nav-settings', notifications:'nav-notif' };
-  document.querySelectorAll('.glass-nav-item').forEach(n=>n.classList.remove('on'));
-  const target = document.getElementById(map[id] || 'nav-home');
-  if(target) target.classList.add('on');
+  if(id==='home'){refreshStats();buildCourseGrid();loadWeakTopics();}
 }
 
 // ══════════════════════════════════════════════════════════════

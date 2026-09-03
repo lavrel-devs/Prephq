@@ -111,7 +111,7 @@ async function runBulkDailyRefresh() {
   if (!settings.dailyRefresh.enabled) return { applied: 0, skipped: 'disabled' };
 
   const today = watDateString();
-  const students = await Student.find({ isActive: { $ne: false } });
+  const students = await Student.find({ active: { $ne: false } });
 
   let applied = 0;
   for (const student of students) {
@@ -140,9 +140,57 @@ async function runBulkDailyRefresh() {
   return { applied };
 }
 
+// ── Streak tracking + milestone bonus ────────────────────────────
+// Called from GET /api/me, same as the lazy daily refresh. Uses WAT
+// calendar days (consistent with the daily refresh) so "today" means
+// the same thing across every credit-economy feature. Idempotent per
+// day — calling this multiple times in one day is a no-op after the
+// first call.
+async function updateStreak(student) {
+  const settings = await Settings.getGlobal();
+  const today = watDateString();
+
+  if (student.streakLastDate === today) {
+    return { count: student.streakCount, milestoneHit: false, bonusAwarded: 0 };
+  }
+
+  const yesterday = watDateString(new Date(Date.now() - 24 * 60 * 60 * 1000));
+  student.streakCount = student.streakLastDate === yesterday ? student.streakCount + 1 : 1;
+  student.streakLastDate = today;
+  await student.save();
+
+  const milestoneDays = settings.streakBonus.milestoneDays || 7;
+  const milestoneHit = settings.streakBonus.enabled
+    && milestoneDays > 0
+    && student.streakCount > 0
+    && student.streakCount % milestoneDays === 0;
+
+  let bonusAwarded = 0;
+  if (milestoneHit) {
+    bonusAwarded = settings.streakBonus.amount;
+    await applyCreditDelta({
+      matric: student.matric,
+      delta: bonusAwarded,
+      reason: 'bonus',
+      note: `${student.streakCount}-day streak bonus`,
+      actor: 'system',
+      studentDoc: student,
+    });
+    await notify({
+      matric: student.matric,
+      type: 'daily_credit',
+      title: `${student.streakCount}-day streak! 🔥`,
+      message: `+${bonusAwarded} bonus credits for staying consistent`,
+    });
+  }
+
+  return { count: student.streakCount, milestoneHit, bonusAwarded };
+}
+
 module.exports = {
   activateNewStudent,
   maybeApplyDailyRefresh,
   runBulkDailyRefresh,
+  updateStreak,
   watDateString,
 };

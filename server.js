@@ -1,8 +1,7 @@
-const dns = require('node:dns');
-dns.setServers(['1.1.1.1', '8.8.8.8']);
-
 require('dotenv').config();
 const express  = require('express');
+const http     = require('http');
+const { Server: SocketIOServer } = require('socket.io');
 const cors     = require('cors');
 const helmet   = require('helmet');
 const bcrypt   = require('bcryptjs');
@@ -11,6 +10,7 @@ const path     = require('path');
 const { connectDB } = require('./src/config/db');
 const Admin = require('./src/models/Admin');
 const Course = require('./src/models/Course');
+const { initStudyRoomSockets } = require('./src/realtime/studyRoom.socket');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -115,9 +115,14 @@ app.use('/api/admin', require('./src/routes/admin/admin.credits.routes'));
 app.use('/api/admin', require('./src/routes/admin/admin.contests.routes'));
 app.use('/api/admin', require('./src/routes/admin/admin.users.routes'));
 app.use('/api/admin', require('./src/routes/admin/admin.announcements.routes'));
+app.use('/api/admin', require('./src/routes/admin/admin.contest-templates.routes'));
+app.use('/api/admin', require('./src/routes/admin/admin.analytics.routes'));
 app.use('/api/quiz', require('./src/routes/quiz.routes'));
 app.use('/api', require('./src/routes/transfer.routes'));
 app.use('/api', require('./src/routes/contest.routes'));
+app.use('/api', require('./src/routes/leaderboard.routes'));
+app.use('/api', require('./src/routes/studyRoom.routes'));
+app.use('/api', require('./src/routes/chat.routes'));
 app.use('/api/scores', require('./src/routes/scores.routes'));
 app.use('/api', require('./src/routes/student.routes')); // /api/questions/:course, /api/me
 
@@ -135,6 +140,9 @@ const PAGE_ROUTES = {
   '/admin':     'admin.html',
   '/profile':   'profile.html',
   '/contests':  'contests.html',
+  '/leaderboard': 'leaderboard.html',
+  '/study-rooms': 'study-rooms.html',
+  '/chat': 'chat.html',
 };
 Object.entries(PAGE_ROUTES).forEach(([route, file]) => {
   app.get(route, (req, res) => res.sendFile(path.join(__dirname, 'public', file)));
@@ -172,9 +180,22 @@ function keepAlive() {
 keepAlive();
 
 // ══════════════════════════════════════════════════════════════
+//  SOCKET.IO (v1.3 — real-time study rooms)
+// ══════════════════════════════════════════════════════════════
+// app.listen() (used pre-v1.3) doesn't give access to the underlying
+// HTTP server instance that Socket.io needs to attach to, so this is
+// now built explicitly and the socket layer piggybacks on the exact
+// same server/port — no separate process or port to manage.
+const httpServer = http.createServer(app);
+const io = new SocketIOServer(httpServer, {
+  cors: { origin: '*', methods: ['GET', 'POST'] },
+});
+initStudyRoomSockets(io);
+
+// ══════════════════════════════════════════════════════════════
 //  START
 // ══════════════════════════════════════════════════════════════
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log('\n╔══════════════════════════════════════════════════╗');
   console.log(`║  PrepHQ v1.2.0 running on http://localhost:${PORT}   ║`);
   console.log(`║  Student login: http://localhost:${PORT}/login       ║`);

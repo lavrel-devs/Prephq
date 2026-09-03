@@ -6,8 +6,9 @@ const Score = require('../models/Score');
 const Transfer = require('../models/Transfer');
 const CreditTransaction = require('../models/CreditTransaction');
 const Notification = require('../models/Notification');
+const StudentBackup = require('../models/StudentBackup');
 const { requireStudent } = require('../middleware/auth');
-const { maybeApplyDailyRefresh } = require('../services/credit.service');
+const { maybeApplyDailyRefresh, updateStreak } = require('../services/credit.service');
 const { checkAvailability, setUsername } = require('../utils/username');
 const { generateUniqueReferralCode } = require('../utils/referral');
 const { usernameCheckLimiter, usernameChangeLimiter } = require('../middleware/rateLimit');
@@ -62,6 +63,10 @@ router.get('/me', requireStudent, async (req, res) => {
     // seen today, without waiting on the midnight cron.
     await maybeApplyDailyRefresh(student);
 
+    // v1.3: server-side streak tracking + milestone bonus (see note in
+    // credit.service.js on why this can't be client-only).
+    const streak = await updateStreak(student);
+
     // v1.2 backfill: accounts created before v1.2 (or created without
     // going through activateNewStudent for any other reason) may not
     // have a referralCode yet. Generate one on first sight rather than
@@ -82,6 +87,7 @@ router.get('/me', requireStudent, async (req, res) => {
       displayName: student.displayName || '',
       referralCode: student.referralCode,
       needsUsername: !student.username, // drives the blocking dashboard modal
+      streak, // { count, milestoneHit, bonusAwarded }
     });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -138,6 +144,22 @@ router.put('/profile/display-name', requireStudent, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// PUT /api/profile/leaderboard-optin — v1.3. Toggle visibility on the
+// public/global leaderboard. Off by default (see Student model).
+router.put('/profile/leaderboard-optin', requireStudent, async (req, res) => {
+  try {
+    const { optIn } = req.body;
+    if (typeof optIn !== 'boolean') return res.status(400).json({ error: 'optIn must be a boolean' });
+    const student = await Student.findOneAndUpdate(
+      { matric: req.student.sub },
+      { publicLeaderboardOptIn: optIn },
+      { new: true },
+    ).lean();
+    if (!student) return res.status(404).json({ error: 'Student not found' });
+    res.json({ success: true, optedIn: student.publicLeaderboardOptIn });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // GET /api/profile — the full profile page payload: identity, credits,
 // quiz stats, transfer history, and referral link/code in one call.
 router.get('/profile', requireStudent, async (req, res) => {
@@ -179,6 +201,7 @@ router.get('/profile', requireStudent, async (req, res) => {
         code: student.referralCode,
         referredCount: referralCount,
       },
+      leaderboardOptIn: !!student.publicLeaderboardOptIn,
     });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -212,6 +235,47 @@ router.post('/notifications/:id/read', requireStudent, async (req, res) => {
 router.post('/notifications/read-all', requireStudent, async (req, res) => {
   try {
     await Notification.updateMany({ matric: req.student.sub, read: false }, { read: true });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ══════════════════════════════════════════════════════════════
+//  SERVER-SIDE BACKUP (v1.3.1)
+// ══════════════════════════════════════════════════════════════
+// Backs up data that used to live only in localStorage — bookmarks,
+// notes, daily goal, exam-date/notification settings. See
+// StudentBackup model for why this stays intentionally loose-shaped.
+
+// GET /api/student-data — returns whatever's backed up, or empty
+// defaults if this student has never synced before.
+router.get('/student-data', requireStudent, async (req, res) => {
+  try {
+    const backup = await StudentBackup.findOne({ matric: req.student.sub }).lean();
+    res.json({
+      bookmarks: backup?.bookmarks ?? [],
+      notes: backup?.notes ?? {},
+      goal: backup?.goal ?? {},
+      settings: backup?.settings ?? {},
+      hasBackup: !!backup,
+    });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// PUT /api/student-data — upsert any subset of { bookmarks, notes, goal, settings }.
+router.put('/student-data', requireStudent, async (req, res) => {
+  try {
+    const { bookmarks, notes, goal, settings } = req.body;
+    const update = {};
+    if (bookmarks !== undefined) update.bookmarks = bookmarks;
+    if (notes !== undefined) update.notes = notes;
+    if (goal !== undefined) update.goal = goal;
+    if (settings !== undefined) update.settings = settings;
+
+    await StudentBackup.findOneAndUpdate(
+      { matric: req.student.sub },
+      { $set: update },
+      { upsert: true, new: true },
+    );
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });

@@ -5,9 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>PrepHQ — Register</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/glass.css">
 <style>
 :root{
-  --bg:#F0F2F8;--surf:#fff;--surf2:#F5F6FA;
+  --bg:#F0F2F8;--surf:rgba(255,255,255,.6);--surf2:rgba(245,246,250,.55);
   --brand:#0A5CF5;--brand-lt:rgba(10,92,245,.10);--brand-glow:rgba(10,92,245,.22);
   --ok:#00C96B;--ok-lt:rgba(0,201,107,.10);--ok-bd:rgba(0,201,107,.28);
   --no:#F5340A;--no-lt:rgba(245,52,10,.10);--no-bd:rgba(245,52,10,.28);
@@ -20,7 +21,7 @@
   --ff-b:'DM Sans',system-ui,sans-serif;
 }
 [data-theme=dark]{
-  --bg:#0D0F1A;--surf:#1A1E35;--surf2:#222640;
+  --bg:#0D0F1A;--surf:rgba(26,30,53,.55);--surf2:rgba(34,38,64,.5);
   --t1:#EEF0FF;--t2:#C5CAE8;--t3:#7E86B0;--t4:#4A5070;
   --bd:rgba(238,240,255,.08);--bd2:rgba(238,240,255,.14);
 }
@@ -74,6 +75,7 @@ body{font-family:var(--ff-b);background:var(--bg);color:var(--t1);min-height:100
 </style>
 </head>
 <body>
+<div class="glass-backdrop"></div>
 <div class="blob b1"></div>
 <div class="blob b2"></div>
 

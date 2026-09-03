@@ -25,7 +25,7 @@ router.get('/credit-settings', async (req, res) => {
 router.put('/credit-settings', async (req, res) => {
   try {
     const settings = await Settings.getGlobal();
-    const { dailyRefresh, referral, welcomeBonus } = req.body;
+    const { dailyRefresh, referral, welcomeBonus, streakBonus, aiChatbot } = req.body;
 
     if (dailyRefresh) {
       if (typeof dailyRefresh.enabled === 'boolean') settings.dailyRefresh.enabled = dailyRefresh.enabled;
@@ -36,7 +36,17 @@ router.put('/credit-settings', async (req, res) => {
       if (Number.isFinite(referral.referrerReward) && referral.referrerReward >= 0) settings.referral.referrerReward = referral.referrerReward;
       if (Number.isFinite(referral.refereeBonus) && referral.refereeBonus >= 0) settings.referral.refereeBonus = referral.refereeBonus;
     }
+    if (streakBonus) {
+      if (typeof streakBonus.enabled === 'boolean') settings.streakBonus.enabled = streakBonus.enabled;
+      if (Number.isFinite(streakBonus.milestoneDays) && streakBonus.milestoneDays > 0) settings.streakBonus.milestoneDays = streakBonus.milestoneDays;
+      if (Number.isFinite(streakBonus.amount) && streakBonus.amount >= 0) settings.streakBonus.amount = streakBonus.amount;
+    }
     if (Number.isFinite(welcomeBonus) && welcomeBonus >= 0) settings.welcomeBonus = welcomeBonus;
+    if (aiChatbot) {
+      if (typeof aiChatbot.enabled === 'boolean') settings.aiChatbot.enabled = aiChatbot.enabled;
+      if (Number.isFinite(aiChatbot.dailyLimit) && aiChatbot.dailyLimit >= 0) settings.aiChatbot.dailyLimit = aiChatbot.dailyLimit;
+      if (Number.isFinite(aiChatbot.monthlyLimit) && aiChatbot.monthlyLimit >= 0) settings.aiChatbot.monthlyLimit = aiChatbot.monthlyLimit;
+    }
 
     settings.updatedBy = req.admin.sub;
     await settings.save();

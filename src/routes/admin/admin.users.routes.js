@@ -25,7 +25,7 @@ router.get('/dashboard/stats', async (req, res) => {
       transferCount, transferVolumeAgg, liveContests,
     ] = await Promise.all([
       Student.countDocuments(),
-      Student.countDocuments({ isActive: { $ne: false } }),
+      Student.countDocuments({ active: { $ne: false } }),
       Payment.aggregate([{ $match: { status: 'confirmed' } }, { $group: { _id: null, total: { $sum: '$amount' } } }]),
       Contest.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
       Transfer.countDocuments({ status: 'completed' }),
@@ -63,7 +63,7 @@ router.get('/users/search', async (req, res) => {
 
     res.json(students.map(s => ({
       matric: s.matric, name: s.name, username: s.username,
-      credits: s.credits || 0, isActive: s.isActive !== false,
+      credits: s.credits || 0, active: s.active !== false,
     })));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -100,25 +100,29 @@ router.get('/users/:matric', async (req, res) => {
 });
 
 // PUT /api/admin/users/:matric/status — activate/deactivate (ban) a student.
+// Uses the same `active` field as the v1.1 admin Students tab's
+// Suspend/Activate button — this endpoint is an alternate entry point
+// to the same flag, not a separate ban mechanism, so both stay in sync
+// and login is actually blocked (auth.routes.js checks `active`).
 router.put('/users/:matric/status', async (req, res) => {
   try {
-    const { isActive } = req.body;
-    if (typeof isActive !== 'boolean') return res.status(400).json({ error: 'isActive must be a boolean' });
+    const { active } = req.body;
+    if (typeof active !== 'boolean') return res.status(400).json({ error: 'active must be a boolean' });
 
     const student = await Student.findOneAndUpdate(
       { matric: req.params.matric.toUpperCase() },
-      { isActive },
+      { active },
       { new: true },
     ).lean();
     if (!student) return res.status(404).json({ error: 'Student not found' });
 
     // Deactivating also revokes any live sessions so the ban takes
     // effect immediately rather than waiting for their token to expire.
-    if (!isActive) {
+    if (!active) {
       await Session.updateMany({ subjectId: student.matric, role: 'student', revoked: { $ne: true } }, { revoked: true, revokedAt: new Date() });
     }
 
-    res.json({ success: true, matric: student.matric, isActive: student.isActive });
+    res.json({ success: true, matric: student.matric, active: student.active });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -168,9 +172,9 @@ router.get('/credits/leaderboard', async (req, res) => {
 router.get('/export/users', async (req, res) => {
   try {
     const students = await Student.find().sort({ createdAt: -1 }).lean();
-    const rows = ['matric,name,username,credits,isActive,createdAt'];
+    const rows = ['matric,name,username,credits,active,createdAt'];
     students.forEach(s => {
-      rows.push([s.matric, s.name, s.username || '', s.credits || 0, s.isActive !== false, s.createdAt?.toISOString?.() || ''].join(','));
+      rows.push([s.matric, s.name, s.username || '', s.credits || 0, s.active !== false, s.createdAt?.toISOString?.() || ''].join(','));
     });
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', 'attachment; filename="prephq-users.csv"');

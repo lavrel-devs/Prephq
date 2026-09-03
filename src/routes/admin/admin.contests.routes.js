@@ -32,7 +32,7 @@ router.get('/contests', async (req, res) => {
     const filter = {};
     if (req.query.status) filter.status = req.query.status;
     const contests = await Contest.find(filter).sort({ createdAt: -1 }).lean();
-    res.json(contests.map(c => ({ ...c, participantCount: c.participants.length })));
+    res.json(contests.map(c => ({ ...c, participantCount: c.participants.length, teamCount: (c.teams || []).length })));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -54,7 +54,7 @@ router.post('/contests', async (req, res) => {
     const {
       title, description, bannerImage, startTime, endTime,
       entryFee, maxParticipants, prizePool, prizeDistribution,
-      type, questions, status,
+      type, questions, status, teamBased, teamSize,
     } = req.body;
 
     if (!title || !startTime || !endTime || !type) {
@@ -76,6 +76,8 @@ router.post('/contests', async (req, res) => {
       prizePool: prizePool || 0,
       prizeDistribution: prizeDistribution || [],
       type, questions: questions || [],
+      teamBased: !!teamBased,
+      teamSize: teamBased ? (teamSize || null) : null,
       status: resolvedStatus,
       createdBy: req.admin.sub,
     });

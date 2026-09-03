@@ -6,7 +6,7 @@ const GeneratedQuestion = require('../models/GeneratedQuestion');
 
 const { requireStudent } = require('../middleware/auth');
 const { applyCreditDelta } = require('../utils/credits');
-const { generateQuiz } = require('../services/groq.service');
+const { generateQuiz, explainAnswer } = require('../services/groq.service');
 
 const router = express.Router();
 router.use(requireStudent);
@@ -19,6 +19,17 @@ const genLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many quiz generation requests. Slow down a little.' },
+});
+
+// v1.3: separate, more generous limiter for wrong-answer explanations —
+// this is a free learning aid (no credit cost), not content generation,
+// so it gets its own bucket rather than sharing genLimiter's tighter cap.
+const explainLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many explanation requests. Slow down a little.' },
 });
 
 // POST /api/quiz/generate  { course, difficulty, count?, studyMaterial? }
@@ -129,6 +140,27 @@ router.patch('/history/:id/submit', async (req, res) => {
 
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// POST /api/quiz/explain — v1.3. On-demand AI explanation for a wrong
+// (or skipped) answer during results review. Free (no credit cost) —
+// this is a learning aid, gated only by explainLimiter to control
+// Groq API spend, not by the quiz-generation credit economy.
+router.post('/explain', explainLimiter, async (req, res) => {
+  try {
+    const { course, question, opts, correctIndex, chosenIndex } = req.body;
+    if (!question || !Array.isArray(opts) || opts.length < 2 || !Number.isInteger(correctIndex)) {
+      return res.status(400).json({ error: 'question, opts[], and correctIndex are required' });
+    }
+    const explanation = await explainAnswer({
+      course: course || '', question, opts, correctIndex,
+      chosenIndex: Number.isInteger(chosenIndex) ? chosenIndex : null,
+    });
+    res.json({ explanation });
+  } catch (e) {
+    const status = e.code === 'GROQ_NOT_CONFIGURED' ? 503 : 500;
+    res.status(status).json({ error: e.message, code: e.code || 'SERVER_ERROR' });
+  }
 });
 
 module.exports = router;

@@ -17,6 +17,28 @@ const ParticipantSchema = new mongoose.Schema({
   entryFeePaid: { type: Number, default: 0 },
 }, { _id: false });
 
+// v1.3: team-based contests. A team is created by one student (who
+// picks a name and gets a shareable teamCode back), and others join
+// via that code. Each member pays the entry fee individually — there's
+// no shared "team wallet" — but score, rank, and leaderboard position
+// are all tracked at the team level. Prizes are split evenly across
+// members at settlement.
+const TeamMemberSchema = new mongoose.Schema({
+  studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
+  matric:    { type: String, required: true, uppercase: true },
+  username:  { type: String, default: '' },
+  joinedAt:  { type: Date, default: Date.now },
+}, { _id: false });
+
+const TeamSchema = new mongoose.Schema({
+  teamCode:     { type: String, required: true }, // short shareable code, unique within the contest
+  teamName:     { type: String, required: true, trim: true },
+  members:      { type: [TeamMemberSchema], default: [] },
+  score:        { type: Number, default: 0 },
+  rank:         { type: Number, default: null },
+  prizeAwarded: { type: Number, default: 0 }, // total prize for the team, before the even split at payout time
+}, { _id: false });
+
 const PrizeTierSchema = new mongoose.Schema({
   rank:   { type: Number, required: true },
   amount: { type: Number, required: true },
@@ -42,6 +64,13 @@ const ContestSchema = new mongoose.Schema({
   questions:    [{ type: mongoose.Schema.Types.ObjectId, ref: 'Question' }], // quiz-type contests only
 
   participants: { type: [ParticipantSchema], default: [] },
+
+  // v1.3: when teamBased is true, `participants` is unused for
+  // scoring/ranking purposes — everything happens on `teams` instead.
+  // teamSize caps members per team (null = unlimited).
+  teamBased: { type: Boolean, default: false },
+  teamSize:  { type: Number, default: null },
+  teams:     { type: [TeamSchema], default: [] },
 
   createdBy: { type: String, default: '' }, // admin username
   remindersSent: { type: Boolean, default: false },

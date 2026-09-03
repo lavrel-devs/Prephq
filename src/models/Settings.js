@@ -20,6 +20,21 @@ const SettingsSchema = new mongoose.Schema({
 
   welcomeBonus: { type: Number, default: 20 },
 
+  // v1.3: bonus credits every N consecutive days of activity.
+  streakBonus: {
+    enabled:      { type: Boolean, default: true },
+    milestoneDays:{ type: Number, default: 7 },  // award every N-day multiple (7, 14, 21, ...)
+    amount:       { type: Number, default: 15 },
+  },
+
+  // AI chatbot usage limits — admin-configurable so spend on the Groq
+  // API stays bounded without a redeploy.
+  aiChatbot: {
+    enabled:      { type: Boolean, default: true },
+    dailyLimit:   { type: Number, default: 20 },
+    monthlyLimit: { type: Number, default: 300 },
+  },
+
   updatedAt: { type: Date, default: Date.now },
   updatedBy: { type: String, default: '' },
 });

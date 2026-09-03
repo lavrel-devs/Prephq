@@ -1,6 +1,6 @@
 const cron = require('node-cron');
 const { runBulkDailyRefresh } = require('./credit.service');
-const { transitionContestStates } = require('./contest.service');
+const { transitionContestStates, spawnRecurringContests } = require('./contest.service');
 
 // ── Scheduler ─────────────────────────────────────────────────
 // New in v1.2. Two jobs:
@@ -11,7 +11,9 @@ const { transitionContestStates } = require('./contest.service');
 //      machine's local TZ differs.
 //   2. Contest state transitions — every minute, moves contests
 //      between upcoming -> live -> ended based on startTime/endTime
-//      and settles prizes when a contest ends.
+//      and settles prizes when a contest ends. v1.3: the same tick
+//      also checks recurring contest templates and spawns a fresh
+//      Contest the moment one's scheduled slot arrives.
 function startScheduler() {
   cron.schedule('0 0 * * *', async () => {
     try {
@@ -25,12 +27,13 @@ function startScheduler() {
   cron.schedule('* * * * *', async () => {
     try {
       await transitionContestStates();
+      await spawnRecurringContests();
     } catch (e) {
-      console.error('[scheduler] Contest state transition failed:', e.message);
+      console.error('[scheduler] Contest tick failed:', e.message);
     }
   });
 
-  console.log('[scheduler] Started: daily credit refresh (00:00 WAT), contest transitions (every minute)');
+  console.log('[scheduler] Started: daily credit refresh (00:00 WAT), contest transitions + recurring spawns (every minute)');
 }
 
 module.exports = { startScheduler };

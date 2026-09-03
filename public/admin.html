@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="/css/glass.css">
 <style>
 :root{
-  --bg:#F0F2F8;--surf:#fff;--surf2:#F5F6FA;--surf3:#EBECF2;
+  --bg:#F0F2F8;--surf:rgba(255,255,255,.6);--surf2:rgba(245,246,250,.55);--surf3:rgba(235,236,242,.55);
   --brand:#0A5CF5;--brand-lt:rgba(10,92,245,.10);--brand-glow:rgba(10,92,245,.20);
   --ok:#00C96B;--ok-lt:rgba(0,201,107,.10);--ok-bd:rgba(0,201,107,.30);
   --no:#F5340A;--no-lt:rgba(245,52,10,.10);--no-bd:rgba(245,52,10,.28);
@@ -24,7 +24,7 @@
   --ff-b:'DM Sans',system-ui,sans-serif;
 }
 [data-theme=dark]{
-  --bg:#0D0F1A;--surf:#1A1E35;--surf2:#222640;--surf3:#2A2F50;
+  --bg:#0D0F1A;--surf:rgba(26,30,53,.55);--surf2:rgba(34,38,64,.5);--surf3:rgba(42,47,80,.5);
   --t1:#EEF0FF;--t2:#C5CAE8;--t3:#7E86B0;--t4:#4A5070;
   --bd:rgba(238,240,255,.08);--bd2:rgba(238,240,255,.14);
 }
@@ -276,6 +276,9 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
       <div class="nav-item" data-v="contests" onclick="go('contests',this)">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 4v3h5.5v12h3V7H19V4z"/></svg>Contests
       </div>
+      <div class="nav-item" data-v="recurring" onclick="go('recurring',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0 0 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 0 0 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>Recurring
+      </div>
       <div class="nav-item" data-v="transfers" onclick="go('transfers',this)">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>Transfers
       </div>
@@ -284,6 +287,9 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
       </div>
       <div class="nav-item" data-v="credit-settings" onclick="go('credit-settings',this)">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>Credit Settings
+      </div>
+      <div class="nav-item" data-v="analytics" onclick="go('analytics',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>Analytics
       </div>
     </div>
 
@@ -319,7 +325,10 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
       <div id="v-students" class="view">
         <div class="ph">
           <div><div class="ph-title">Students</div><div class="ph-sub" id="st-count">—</div></div>
-          <button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;" onclick="openAddStudent()">+ Add Student</button>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;background:var(--surf3);color:var(--t1);" id="bulk-grant-btn" onclick="openBulkGrant()" disabled>Bulk Grant (<span id="bulk-sel-count">0</span>)</button>
+            <button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;" onclick="openAddStudent()">+ Add Student</button>
+          </div>
         </div>
         <div class="tw">
           <div class="th">
@@ -329,9 +338,32 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
             </div>
           </div>
           <div class="tbl-wrap"><table>
-            <thead><tr><th>Name</th><th>Matric</th><th>Phone</th><th>WhatsApp</th><th>Credits</th><th>Quizzes</th><th>Best</th><th>Status</th><th>Actions</th></tr></thead>
+            <thead><tr><th style="width:30px;"><input type="checkbox" onchange="toggleAllSt(this.checked)"></th><th>Name</th><th>Matric</th><th>Username</th><th>Phone</th><th>WhatsApp</th><th>Credits</th><th>Quizzes</th><th>Best</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody id="st-body"></tbody>
           </table></div>
+        </div>
+      </div>
+
+      <!-- v1.3: STUDENT DETAIL -->
+      <div class="modal-bg" id="m-student-detail" onclick="closeMBg(event,'m-student-detail')">
+        <div class="modal" style="max-width:600px;">
+          <div class="modal-title" id="sd-title">Student Detail</div>
+          <div id="sd-body" style="max-height:70vh;overflow-y:auto;"></div>
+          <div class="mfooter"><button class="btn-cancel" onclick="closeM('m-student-detail')">Close</button></div>
+        </div>
+      </div>
+
+      <!-- v1.3: BULK GRANT -->
+      <div class="modal-bg" id="m-bulk-grant" onclick="closeMBg(event,'m-bulk-grant')">
+        <div class="modal">
+          <div class="modal-title">Bulk Grant / Deduct Credits</div>
+          <div class="modal-sub"><span id="bg-count-txt">0</span> students selected. Use a negative amount to deduct.</div>
+          <div class="f-group"><div class="f-label">Amount</div><input type="number" class="f-input" id="bg-amount" style="width:100%;"></div>
+          <div class="f-group"><div class="f-label">Note (optional)</div><input class="f-input" id="bg-note" style="width:100%;"></div>
+          <div class="mfooter">
+            <button class="btn-cancel" onclick="closeM('m-bulk-grant')">Cancel</button>
+            <button class="btn-confirm" id="bg-submit-btn" onclick="submitBulkGrant()">Apply</button>
+          </div>
         </div>
       </div>
 
@@ -513,6 +545,14 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
             </div>
             <div class="f-group" style="flex:1;"><div class="f-label">Max Participants</div><input type="number" class="f-input" id="cm-max" style="width:100%;" placeholder="Unlimited"></div>
           </div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;cursor:pointer;">
+              <input type="checkbox" id="cm-team-based" onchange="onTeamBasedChange()"> Team-based contest
+            </label>
+            <div id="cm-team-size-wrap" style="display:none;flex:1;">
+              <input type="number" class="f-input" id="cm-team-size" placeholder="Max team size (blank = unlimited)" style="width:100%;">
+            </div>
+          </div>
           <div style="display:flex;gap:10px;">
             <div class="f-group" style="flex:1;"><div class="f-label">Start Time</div><input type="datetime-local" class="f-input" id="cm-start" style="width:100%;"></div>
             <div class="f-group" style="flex:1;"><div class="f-label">End Time</div><input type="datetime-local" class="f-input" id="cm-end" style="width:100%;"></div>
@@ -541,7 +581,78 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
         </div>
       </div>
 
-      <!-- ═══ v1.2: TRANSFERS ══════════════════════════════ -->
+      <!-- ═══ v1.3: RECURRING CONTESTS ═════════════════════ -->
+      <div id="v-recurring" class="view">
+        <div class="ph">
+          <div><div class="ph-title">Recurring Contests</div><div class="ph-sub">Templates that auto-spawn a fresh contest on schedule</div></div>
+          <button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;" onclick="openCreateTemplate()">+ New Template</button>
+        </div>
+        <div class="tw">
+          <div class="th"><div class="th-title">Templates</div></div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Title</th><th>Type</th><th>Schedule</th><th>Duration</th><th>Last Spawned</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="rc-body"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- v1.3: CREATE TEMPLATE MODAL -->
+      <div class="modal-bg" id="m-template" onclick="closeMBg(event,'m-template')">
+        <div class="modal" style="max-width:520px;">
+          <div class="modal-title">New Recurring Contest</div>
+          <div class="modal-sub">A fresh contest is created automatically on this schedule.</div>
+          <div class="f-group"><div class="f-label">Title</div><input class="f-input" id="rc-title" style="width:100%;" placeholder="Weekly GST 101 Leaderboard"></div>
+          <div class="f-group"><div class="f-label">Description</div><textarea class="f-input" id="rc-desc" style="width:100%;min-height:50px;"></textarea></div>
+          <div style="display:flex;gap:10px;">
+            <div class="f-group" style="flex:1;"><div class="f-label">Type</div>
+              <select class="f-input" id="rc-type" style="width:100%;" onchange="onTemplateTypeChange()">
+                <option value="leaderboard">Leaderboard</option>
+                <option value="quiz">Quiz</option>
+                <option value="raffle">Raffle</option>
+                <option value="timed">Timed</option>
+              </select>
+            </div>
+            <div class="f-group" style="flex:1;"><div class="f-label">Max Participants</div><input type="number" class="f-input" id="rc-max" style="width:100%;" placeholder="Unlimited"></div>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <div class="f-group" style="flex:1;"><div class="f-label">Frequency</div>
+              <select class="f-input" id="rc-frequency" style="width:100%;" onchange="onFrequencyChange()">
+                <option value="weekly">Weekly</option>
+                <option value="daily">Daily</option>
+              </select>
+            </div>
+            <div class="f-group" style="flex:1;" id="rc-day-wrap"><div class="f-label">Day of Week</div>
+              <select class="f-input" id="rc-day" style="width:100%;">
+                <option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option>
+                <option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <div class="f-group" style="flex:1;"><div class="f-label">Time (WAT, 24h)</div><input type="time" class="f-input" id="rc-time" style="width:100%;"></div>
+            <div class="f-group" style="flex:1;"><div class="f-label">Duration (minutes)</div><input type="number" class="f-input" id="rc-duration" style="width:100%;" value="60"></div>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <div class="f-group" style="flex:1;"><div class="f-label">Entry Fee</div><input type="number" class="f-input" id="rc-entry" style="width:100%;" value="0"></div>
+            <div class="f-group" style="flex:1;"><div class="f-label">Prize Pool</div><input type="number" class="f-input" id="rc-pool" style="width:100%;" value="0"></div>
+          </div>
+          <div class="f-group">
+            <div class="f-label">Prize Distribution</div>
+            <div id="rc-prize-rows"></div>
+            <button type="button" onclick="addRcPrizeRow()" style="margin-top:4px;background:none;border:1px dashed var(--bd2);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;color:var(--brand);cursor:pointer;">+ Add prize tier</button>
+          </div>
+          <div class="f-group" id="rc-quiz-wrap" style="display:none;">
+            <div class="f-label">Quiz Questions</div>
+            <div style="font-size:11.5px;color:var(--t3);margin-bottom:6px;">Auto-pick a fresh random set from a course each time it spawns — keeps it from being the same quiz every week.</div>
+            <select class="f-input" id="rc-auto-course" style="width:100%;margin-bottom:6px;"><option value="">— select course —</option></select>
+            <input type="number" class="f-input" id="rc-auto-count" style="width:100%;" placeholder="Number of questions" value="10">
+          </div>
+          <div class="mfooter">
+            <button class="btn-cancel" onclick="closeM('m-template')">Cancel</button>
+            <button class="btn-confirm" id="rc-save-btn" onclick="saveTemplate()">Create Template</button>
+          </div>
+        </div>
+      </div>
       <div id="v-transfers" class="view">
         <div class="ph">
           <div><div class="ph-title">Transfer Log</div><div class="ph-sub">In-app credit transfers between students</div></div>
@@ -594,10 +705,64 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
             <div><label style="font-size:13px;font-weight:600;">Referrer reward:</label><input type="number" id="cs-referrer-amount" class="f-input" style="width:100px;" onchange="saveCreditSettings()"></div>
             <div><label style="font-size:13px;font-weight:600;">Referee bonus:</label><input type="number" id="cs-referee-amount" class="f-input" style="width:100px;" onchange="saveCreditSettings()"></div>
           </div>
-          <div>
+          <div style="margin-bottom:24px;">
             <label style="font-size:13px;font-weight:600;">Welcome bonus (new signups):</label>
             <input type="number" id="cs-welcome-amount" class="f-input" style="width:100px;" onchange="saveCreditSettings()">
           </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div><b>Streak Bonus</b><div style="font-size:12px;color:var(--t3);">Bonus credits every N consecutive days of activity</div></div>
+            <button class="toggle" id="cs-streak-toggle" onclick="toggleCreditSetting('streak')"></button>
+          </div>
+          <div style="display:flex;gap:20px;align-items:center;margin-bottom:24px;">
+            <div><label style="font-size:13px;font-weight:600;">Every N days:</label><input type="number" id="cs-streak-days" class="f-input" style="width:100px;" onchange="saveCreditSettings()"></div>
+            <div><label style="font-size:13px;font-weight:600;">Bonus amount:</label><input type="number" id="cs-streak-amount" class="f-input" style="width:100px;" onchange="saveCreditSettings()"></div>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div><b>AI Study Assistant</b><div style="font-size:12px;color:var(--t3);">Academic chatbot usage limits (controls Groq API spend)</div></div>
+            <button class="toggle" id="cs-chatbot-toggle" onclick="toggleCreditSetting('chatbot')"></button>
+          </div>
+          <div style="display:flex;gap:20px;align-items:center;">
+            <div><label style="font-size:13px;font-weight:600;">Daily limit (msgs):</label><input type="number" id="cs-chatbot-daily" class="f-input" style="width:100px;" onchange="saveCreditSettings()"></div>
+            <div><label style="font-size:13px;font-weight:600;">Monthly limit (msgs):</label><input type="number" id="cs-chatbot-monthly" class="f-input" style="width:100px;" onchange="saveCreditSettings()"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ v1.3: ANALYTICS ══════════════════════════════ -->
+      <div id="v-analytics" class="view">
+        <div class="ph">
+          <div><div class="ph-title">Analytics</div><div class="ph-sub">Retention, credit flow, and contest engagement over time</div></div>
+          <select class="f-input" id="an-days" style="width:auto;" onchange="loadAnalytics()">
+            <option value="7">Last 7 days</option>
+            <option value="30" selected>Last 30 days</option>
+            <option value="90">Last 90 days</option>
+          </select>
+        </div>
+
+        <div class="tw" style="padding:20px;">
+          <div class="th-title" style="margin-bottom:12px;">New Signups</div>
+          <canvas id="chart-signups" height="80"></canvas>
+        </div>
+
+        <div class="tw" style="padding:20px;">
+          <div class="th-title" style="margin-bottom:12px;">Credit Velocity — Granted vs Spent</div>
+          <canvas id="chart-credits" height="80"></canvas>
+        </div>
+
+        <div class="tw" style="padding:20px;">
+          <div class="th-title" style="margin-bottom:4px;">Contest Participation</div>
+          <div id="an-participation-rate" style="font-size:12px;color:var(--t3);margin-bottom:12px;"></div>
+          <canvas id="chart-contests" height="80"></canvas>
+        </div>
+
+        <div class="tw">
+          <div class="th"><div class="th-title">Retention by Signup Cohort</div></div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Signup Day</th><th>Cohort Size</th><th>Day 1</th><th>Day 7</th><th>Day 30</th></tr></thead>
+            <tbody id="an-retention-body"></tbody>
+          </table></div>
         </div>
       </div>
 
@@ -785,6 +950,7 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
 </div>
 
 <script src="/js/auth-guard.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
 const API = '';
 let allStudents = [], allCodes = [], allPayments = [], allQuestions = [];
@@ -875,9 +1041,11 @@ function go(v, el) {
   if(v==='questions') loadQuestions();
   if(v==='bulk-upload'){ if(!allCourses.length) loadCourses().then(initBulkUpload); else initBulkUpload(); }
   if(v==='contests') loadContests();
+  if(v==='recurring') loadTemplates();
   if(v==='transfers') loadTransfers();
   if(v==='announcements') loadAnnouncements();
   if(v==='credit-settings') loadCreditSettings();
+  if(v==='analytics') loadAnalytics();
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────
@@ -926,12 +1094,16 @@ async function loadStudents() {
   } catch(e) { toast('Failed to load students'); }
 }
 
+let selectedStudents = new Set();
+
 function renderStudents(list) {
   document.getElementById('st-count').textContent = list.length + ' student' + (list.length!==1?'s':'') + ' registered';
   document.getElementById('st-body').innerHTML = list.length ? list.map(s => `
     <tr>
+      <td><input type="checkbox" class="st-check" value="${s.matric}" ${selectedStudents.has(s.matric)?'checked':''} onchange="toggleSt('${s.matric}',this.checked)"></td>
       <td style="font-weight:700">${s.name}</td>
       <td style="font-family:var(--ff-h);font-size:12px">${s.matric}</td>
+      <td style="font-size:12px;color:var(--t3);">${s.username ? '@'+s.username : '—'}</td>
       <td>${s.phone||'—'}</td>
       <td>${s.whatsapp||'—'}</td>
       <td><span class="badge b-brand"><i class="fa-solid fa-coins" style="margin-right:4px;"></i>${s.credits||0}</span></td>
@@ -939,6 +1111,7 @@ function renderStudents(list) {
       <td><span class="badge ${s.best>=70?'b-ok':s.best>=50?'b-warn':'b-no'}">${s.best}%</span></td>
       <td><span class="badge ${s.active?'b-ok':'b-no'}">${s.active?'Active':'Suspended'}</span></td>
       <td><div class="act-row">
+        <button class="ab" onclick="openStudentDetail('${s.matric}')">Detail</button>
         <button class="ab ab-copy" onclick="revealLogin('${s.matric}','${s.password||s.matric}')">Login</button>
         <button class="ab ab-edit" onclick="creditStudent('${s.matric}', ${s.credits||0})"><i class="fa-solid fa-coins"></i> Credit</button>
         <button class="ab ab-edit" onclick="editStudent('${s.matric}')">Edit</button>
@@ -946,7 +1119,109 @@ function renderStudents(list) {
         <button class="ab ab-del" onclick="delStudent('${s.matric}')">Del</button>
       </div></td>
     </tr>`).join('')
-  : '<tr class="empty-row"><td colspan="9">No students yet</td></tr>';
+  : '<tr class="empty-row"><td colspan="11">No students yet</td></tr>';
+}
+
+// ── v1.3: selection, detail, bulk grant ─────────────────────────
+function toggleSt(matric, checked){
+  if(checked) selectedStudents.add(matric); else selectedStudents.delete(matric);
+  updateBulkGrantBtn();
+}
+function toggleAllSt(checked){
+  document.querySelectorAll('.st-check').forEach(cb => {
+    cb.checked = checked;
+    if(checked) selectedStudents.add(cb.value); else selectedStudents.delete(cb.value);
+  });
+  updateBulkGrantBtn();
+}
+function updateBulkGrantBtn(){
+  const btn = document.getElementById('bulk-grant-btn');
+  document.getElementById('bulk-sel-count').textContent = selectedStudents.size;
+  btn.disabled = selectedStudents.size === 0;
+  btn.style.background = selectedStudents.size ? '' : 'var(--surf3)';
+  btn.style.color = selectedStudents.size ? '' : 'var(--t1)';
+}
+
+function openBulkGrant(){
+  document.getElementById('bg-count-txt').textContent = selectedStudents.size;
+  document.getElementById('bg-amount').value = '';
+  document.getElementById('bg-note').value = '';
+  document.getElementById('m-bulk-grant').classList.add('on');
+}
+async function submitBulkGrant(){
+  const amount = parseInt(document.getElementById('bg-amount').value, 10);
+  const note = document.getElementById('bg-note').value.trim();
+  if(!amount){ toast('Enter a non-zero amount'); return; }
+  const btn = document.getElementById('bg-submit-btn');
+  btn.disabled = true; btn.textContent = 'Applying...';
+  try{
+    const r = await adminFetch('/api/admin/users/bulk-grant', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ matrics: Array.from(selectedStudents), amount, note }),
+    });
+    const d = await r.json();
+    toast(`Applied to ${d.succeeded} students${d.failed ? `, ${d.failed} failed` : ''}`);
+    closeM('m-bulk-grant');
+    selectedStudents.clear();
+    updateBulkGrantBtn();
+    loadStudents();
+  }catch(e){ toast('Bulk grant failed'); }
+  btn.disabled = false; btn.textContent = 'Apply';
+}
+
+async function openStudentDetail(matric){
+  document.getElementById('sd-title').textContent = matric;
+  document.getElementById('sd-body').innerHTML = '<div style="padding:20px;color:var(--t3);">Loading...</div>';
+  document.getElementById('m-student-detail').classList.add('on');
+  try{
+    const r = await adminFetch(`/api/admin/users/${matric}`, { headers: {} });
+    const d = await r.json();
+    if(!r.ok){ document.getElementById('sd-body').innerHTML = `<div style="padding:20px;color:var(--no);">${d.error}</div>`; return; }
+
+    const p = d.profile;
+    document.getElementById('sd-title').textContent = `${p.name} — ${p.matric}`;
+    document.getElementById('sd-body').innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
+        <div style="background:var(--surf2);border-radius:12px;padding:12px;text-align:center;"><div style="font-weight:800;font-size:18px;">${p.credits||0}</div><div style="font-size:11px;color:var(--t3);">Credits</div></div>
+        <div style="background:var(--surf2);border-radius:12px;padding:12px;text-align:center;"><div style="font-weight:800;font-size:18px;">${d.quizzes.count}</div><div style="font-size:11px;color:var(--t3);">Quizzes</div></div>
+        <div style="background:var(--surf2);border-radius:12px;padding:12px;text-align:center;"><div style="font-weight:800;font-size:18px;">${d.contestsJoined.length}</div><div style="font-size:11px;color:var(--t3);">Contests</div></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div style="font-size:13px;">Username: <b>${p.username ? '@'+p.username : 'not set'}</b></div>
+        <button class="ab ab-edit" onclick="forceResetUsername('${p.matric}')">Reset Username</button>
+      </div>
+      <div style="font-weight:700;font-size:13px;margin-bottom:6px;">Recent Credit Transactions</div>
+      <div style="max-height:140px;overflow-y:auto;margin-bottom:14px;">
+        ${d.credits.recentTransactions.slice(0,10).map(t => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd);font-size:12.5px;"><span>${t.reason}${t.note?' — '+escHtml(t.note):''}</span><span style="font-weight:700;color:${t.delta>0?'var(--ok)':'var(--no)'};">${t.delta>0?'+':''}${t.delta}</span></div>`).join('') || '<div style="color:var(--t3);font-size:12px;">None yet</div>'}
+      </div>
+      <div style="font-weight:700;font-size:13px;margin-bottom:6px;">Transfers</div>
+      <div style="max-height:120px;overflow-y:auto;margin-bottom:14px;">
+        ${[...d.transfers.sent.map(t=>({...t,dir:'Sent to '+t.toMatric,amt:-t.totalDebited})), ...d.transfers.received.map(t=>({...t,dir:'From '+t.fromMatric,amt:t.amount}))]
+          .sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).slice(0,10)
+          .map(t => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd);font-size:12.5px;"><span>${t.dir}</span><span style="font-weight:700;">${t.amt>0?'+':''}${t.amt}</span></div>`).join('') || '<div style="color:var(--t3);font-size:12px;">None yet</div>'}
+      </div>
+      <div style="font-weight:700;font-size:13px;margin-bottom:6px;">Activity Log</div>
+      <div style="max-height:120px;overflow-y:auto;">
+        ${d.activityLog.slice(0,10).map(a => `<div style="padding:6px 0;border-bottom:1px solid var(--bd);font-size:12px;color:var(--t3);">Last active ${new Date(a.lastActiveAt).toLocaleString()}${a.revoked?' (revoked)':''}</div>`).join('') || '<div style="color:var(--t3);font-size:12px;">No sessions yet</div>'}
+      </div>
+    `;
+  }catch(e){ document.getElementById('sd-body').innerHTML = '<div style="padding:20px;color:var(--no);">Failed to load</div>'; }
+}
+
+async function forceResetUsername(matric){
+  const newUsername = prompt('New username for ' + matric + ' (leave blank to clear it):');
+  if(newUsername === null) return;
+  try{
+    const r = await adminFetch(`/api/admin/students/${matric}/username`, {
+      method: 'PUT', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ username: newUsername || null }),
+    });
+    const d = await r.json();
+    if(!r.ok){ toast(d.error || 'Could not update username'); return; }
+    toast('Username updated');
+    openStudentDetail(matric);
+    loadStudents();
+  }catch(e){ toast('Could not update username'); }
 }
 
 // ── CREDITS ──────────────────────────────────────────────────
@@ -1638,11 +1913,11 @@ async function loadContests(){
     document.getElementById('ct-body').innerHTML = allContests.map(c => `
       <tr>
         <td>${escHtml(c.title)}</td>
-        <td>${c.type}</td>
+        <td>${c.type}${c.teamBased?' <span class="badge b-brand" style="font-size:10px;">TEAMS</span>':''}</td>
         <td><span style="font-weight:700;">${c.status}</span></td>
         <td>${c.entryFee||0}</td>
         <td>${c.prizePool||0}</td>
-        <td>${c.participantCount||0}${c.maxParticipants?'/'+c.maxParticipants:''}</td>
+        <td>${c.teamBased ? `${c.teamCount||0} teams` : `${c.participantCount||0}${c.maxParticipants?'/'+c.maxParticipants:''}`}</td>
         <td>${new Date(c.startTime).toLocaleString()}</td>
         <td>${new Date(c.endTime).toLocaleString()}</td>
         <td>
@@ -1669,6 +1944,9 @@ function openCreateContest(){
   document.getElementById('cm-desc').value = '';
   document.getElementById('cm-type').value = 'leaderboard';
   document.getElementById('cm-max').value = '';
+  document.getElementById('cm-team-based').checked = false;
+  document.getElementById('cm-team-size').value = '';
+  document.getElementById('cm-team-size-wrap').style.display = 'none';
   document.getElementById('cm-start').value = '';
   document.getElementById('cm-end').value = '';
   document.getElementById('cm-entry').value = '0';
@@ -1686,6 +1964,10 @@ function openCreateContest(){
   else populateCourseFilter();
 
   document.getElementById('m-contest').classList.add('on');
+}
+
+function onTeamBasedChange(){
+  document.getElementById('cm-team-size-wrap').style.display = document.getElementById('cm-team-based').checked ? 'block' : 'none';
 }
 
 function onContestTypeChange(){
@@ -1746,6 +2028,8 @@ async function saveContest(){
     entryFee: parseInt(document.getElementById('cm-entry').value, 10) || 0,
     prizePool: parseInt(document.getElementById('cm-pool').value, 10) || 0,
     maxParticipants: parseInt(document.getElementById('cm-max').value, 10) || null,
+    teamBased: document.getElementById('cm-team-based').checked,
+    teamSize: document.getElementById('cm-team-based').checked ? (parseInt(document.getElementById('cm-team-size').value, 10) || null) : null,
     prizeDistribution,
     questions: type === 'quiz' ? Array.from(selectedQuestionIds) : [],
   };
@@ -1828,10 +2112,17 @@ async function loadCreditSettings(){
     document.getElementById('cs-referrer-amount').value = s.referral.referrerReward;
     document.getElementById('cs-referee-amount').value = s.referral.refereeBonus;
     document.getElementById('cs-welcome-amount').value = s.welcomeBonus;
+    document.getElementById('cs-streak-toggle').classList.toggle('on', s.streakBonus.enabled);
+    document.getElementById('cs-streak-days').value = s.streakBonus.milestoneDays;
+    document.getElementById('cs-streak-amount').value = s.streakBonus.amount;
+    document.getElementById('cs-chatbot-toggle').classList.toggle('on', s.aiChatbot.enabled);
+    document.getElementById('cs-chatbot-daily').value = s.aiChatbot.dailyLimit;
+    document.getElementById('cs-chatbot-monthly').value = s.aiChatbot.monthlyLimit;
   }catch(e){}
 }
 function toggleCreditSetting(which){
-  const el = document.getElementById(which==='daily' ? 'cs-daily-toggle' : 'cs-referral-toggle');
+  const ids = { daily: 'cs-daily-toggle', referral: 'cs-referral-toggle', streak: 'cs-streak-toggle', chatbot: 'cs-chatbot-toggle' };
+  const el = document.getElementById(ids[which]);
   el.classList.toggle('on');
   saveCreditSettings();
 }
@@ -1847,6 +2138,16 @@ async function saveCreditSettings(){
       refereeBonus: parseInt(document.getElementById('cs-referee-amount').value, 10) || 0,
     },
     welcomeBonus: parseInt(document.getElementById('cs-welcome-amount').value, 10) || 0,
+    streakBonus: {
+      enabled: document.getElementById('cs-streak-toggle').classList.contains('on'),
+      milestoneDays: parseInt(document.getElementById('cs-streak-days').value, 10) || 7,
+      amount: parseInt(document.getElementById('cs-streak-amount').value, 10) || 0,
+    },
+    aiChatbot: {
+      enabled: document.getElementById('cs-chatbot-toggle').classList.contains('on'),
+      dailyLimit: parseInt(document.getElementById('cs-chatbot-daily').value, 10) || 0,
+      monthlyLimit: parseInt(document.getElementById('cs-chatbot-monthly').value, 10) || 0,
+    },
   };
   try{
     await adminFetch('/api/admin/credit-settings', {
@@ -1855,7 +2156,207 @@ async function saveCreditSettings(){
   }catch(e){}
 }
 
+// ══════════════════════════════════════════════════════════════
+//  v1.3: RECURRING CONTESTS
+// ══════════════════════════════════════════════════════════════
+const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+async function loadTemplates(){
+  try{
+    const r = await adminFetch('/api/admin/contest-templates', { headers: {} });
+    const templates = await r.json();
+    document.getElementById('rc-body').innerHTML = templates.length ? templates.map(t => {
+      const sched = t.frequency==='weekly' ? `Weekly · ${DOW[t.dayOfWeek]} ${t.timeOfDay} WAT` : `Daily · ${t.timeOfDay} WAT`;
+      return `<tr>
+        <td style="font-weight:700;">${escHtml(t.title)}</td>
+        <td>${t.type}</td>
+        <td>${sched}</td>
+        <td>${t.durationMinutes}min</td>
+        <td style="font-size:12px;color:var(--t3);">${t.lastGeneratedAt ? new Date(t.lastGeneratedAt).toLocaleString() : 'Never'}</td>
+        <td><span class="badge ${t.active?'b-ok':'b-no'}">${t.active?'Active':'Paused'}</span></td>
+        <td>
+          <button onclick="toggleTemplateActive('${t._id}',${!t.active})">${t.active?'Pause':'Resume'}</button>
+          <button onclick="deleteTemplate('${t._id}')">Delete</button>
+        </td>
+      </tr>`;
+    }).join('') : '<tr class="empty-row"><td colspan="7">No recurring contests yet</td></tr>';
+  }catch(e){}
+}
+
+function openCreateTemplate(){
+  document.getElementById('rc-title').value = '';
+  document.getElementById('rc-desc').value = '';
+  document.getElementById('rc-type').value = 'leaderboard';
+  document.getElementById('rc-max').value = '';
+  document.getElementById('rc-frequency').value = 'weekly';
+  document.getElementById('rc-day').value = '1';
+  document.getElementById('rc-time').value = '18:00';
+  document.getElementById('rc-duration').value = '60';
+  document.getElementById('rc-entry').value = '0';
+  document.getElementById('rc-pool').value = '0';
+  document.getElementById('rc-prize-rows').innerHTML = '';
+  document.getElementById('rc-quiz-wrap').style.display = 'none';
+  addRcPrizeRow(1, 0);
+  onFrequencyChange();
+
+  const sel = document.getElementById('rc-auto-course');
+  sel.innerHTML = '<option value="">— select course —</option>' + (allCourses||[]).map(c => `<option value="${c.key}">${c.courseCode}</option>`).join('');
+
+  document.getElementById('m-template').classList.add('on');
+}
+
+function onFrequencyChange(){
+  document.getElementById('rc-day-wrap').style.display = document.getElementById('rc-frequency').value === 'weekly' ? 'block' : 'none';
+}
+function onTemplateTypeChange(){
+  document.getElementById('rc-quiz-wrap').style.display = document.getElementById('rc-type').value === 'quiz' ? 'block' : 'none';
+}
+function addRcPrizeRow(rank, amount){
+  const wrap = document.getElementById('rc-prize-rows');
+  const n = rank || (wrap.children.length + 1);
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex;gap:8px;align-items:center;margin-bottom:6px;';
+  row.innerHTML = `
+    <span style="font-size:12px;color:var(--t3);width:44px;">Rank ${n}</span>
+    <input type="number" class="f-input rc-prize-amount" style="flex:1;" placeholder="Amount" value="${amount??''}">
+    <button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--t4);cursor:pointer;font-size:16px;">&times;</button>
+  `;
+  wrap.appendChild(row);
+}
+
+async function saveTemplate(){
+  const title = document.getElementById('rc-title').value.trim();
+  const frequency = document.getElementById('rc-frequency').value;
+  const timeOfDay = document.getElementById('rc-time').value;
+  const durationMinutes = parseInt(document.getElementById('rc-duration').value, 10);
+  if(!title || !timeOfDay || !durationMinutes){ toast('Title, time, and duration are required'); return; }
+
+  const prizeDistribution = Array.from(document.querySelectorAll('#rc-prize-rows > div')).map((row, i) => ({
+    rank: i + 1,
+    amount: parseInt(row.querySelector('.rc-prize-amount').value, 10) || 0,
+  })).filter(p => p.amount > 0);
+
+  const type = document.getElementById('rc-type').value;
+  const body = {
+    title,
+    description: document.getElementById('rc-desc').value.trim(),
+    type,
+    maxParticipants: parseInt(document.getElementById('rc-max').value, 10) || null,
+    frequency,
+    dayOfWeek: frequency === 'weekly' ? parseInt(document.getElementById('rc-day').value, 10) : null,
+    timeOfDay, durationMinutes,
+    entryFee: parseInt(document.getElementById('rc-entry').value, 10) || 0,
+    prizePool: parseInt(document.getElementById('rc-pool').value, 10) || 0,
+    prizeDistribution,
+    autoPickCourse: type === 'quiz' ? (document.getElementById('rc-auto-course').value || null) : null,
+    autoPickCount: type === 'quiz' ? (parseInt(document.getElementById('rc-auto-count').value, 10) || 10) : 10,
+  };
+
+  try{
+    const btn = document.getElementById('rc-save-btn');
+    btn.disabled = true; btn.textContent = 'Saving...';
+    await adminFetch('/api/admin/contest-templates', {
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body),
+    });
+    btn.disabled = false; btn.textContent = 'Create Template';
+    closeM('m-template');
+    loadTemplates();
+    toast('Recurring contest created');
+  }catch(e){ toast('Could not create template'); }
+}
+
+async function toggleTemplateActive(id, active){
+  try{
+    await adminFetch(`/api/admin/contest-templates/${id}`, {
+      method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ active }),
+    });
+    loadTemplates();
+  }catch(e){}
+}
+async function deleteTemplate(id){
+  if(!confirm('Delete this recurring contest template? Already-spawned contests are unaffected.')) return;
+  try{
+    await adminFetch(`/api/admin/contest-templates/${id}`, { method:'DELETE', headers:{} });
+    loadTemplates();
+  }catch(e){}
+}
+
 function escHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// ══════════════════════════════════════════════════════════════
+//  v1.3: ANALYTICS
+// ══════════════════════════════════════════════════════════════
+let chartSignups = null, chartCredits = null, chartContests = null;
+
+async function loadAnalytics(){
+  const days = document.getElementById('an-days').value;
+  try{
+    const [signupsR, retentionR, creditsR, contestsR] = await Promise.all([
+      adminFetch(`/api/admin/analytics/signups?days=${days}`, { headers: {} }),
+      adminFetch(`/api/admin/analytics/retention?days=${days}`, { headers: {} }),
+      adminFetch(`/api/admin/analytics/credit-velocity?days=${days}`, { headers: {} }),
+      adminFetch(`/api/admin/analytics/contest-participation?days=${days}`, { headers: {} }),
+    ]);
+    const signups = await signupsR.json();
+    const retention = await retentionR.json();
+    const credits = await creditsR.json();
+    const contests = await contestsR.json();
+
+    renderSignupsChart(signups);
+    renderCreditsChart(credits);
+    renderContestsChart(contests.series);
+    document.getElementById('an-participation-rate').textContent =
+      `${contests.participationRate}% of active users (${contests.activeUserCount}) have joined a contest in this window`;
+    renderRetentionTable(retention);
+  }catch(e){ toast('Could not load analytics'); }
+}
+
+function renderSignupsChart(rows){
+  const ctx = document.getElementById('chart-signups').getContext('2d');
+  if(chartSignups) chartSignups.destroy();
+  chartSignups = new Chart(ctx, {
+    type: 'line',
+    data: { labels: rows.map(r=>r.date), datasets: [{ label: 'New signups', data: rows.map(r=>r.count), borderColor: '#0A5CF5', backgroundColor: 'rgba(10,92,245,.12)', fill: true, tension: 0.3 }] },
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } },
+  });
+}
+
+function renderCreditsChart(rows){
+  const ctx = document.getElementById('chart-credits').getContext('2d');
+  if(chartCredits) chartCredits.destroy();
+  chartCredits = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: rows.map(r=>r.date),
+      datasets: [
+        { label: 'Granted', data: rows.map(r=>r.granted), backgroundColor: '#00C96B' },
+        { label: 'Spent', data: rows.map(r=>r.spent), backgroundColor: '#F5340A' },
+      ],
+    },
+    options: { responsive: true, scales: { y: { beginAtZero: true } } },
+  });
+}
+
+function renderContestsChart(rows){
+  const ctx = document.getElementById('chart-contests').getContext('2d');
+  if(chartContests) chartContests.destroy();
+  chartContests = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: rows.map(r=>r.date), datasets: [{ label: 'Contest joins', data: rows.map(r=>r.count), backgroundColor: '#7B2CF5' }] },
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } },
+  });
+}
+
+function renderRetentionTable(rows){
+  const fmt = v => v === null ? '<span style="color:var(--t4);">pending</span>' : `${v}%`;
+  document.getElementById('an-retention-body').innerHTML = rows.length ? rows.map(r => `
+    <tr>
+      <td>${r.date}</td>
+      <td>${r.cohortSize}</td>
+      <td>${fmt(r.d1)}</td>
+      <td>${fmt(r.d7)}</td>
+      <td>${fmt(r.d30)}</td>
+    </tr>`).join('') : '<tr class="empty-row"><td colspan="5">No signups in this window</td></tr>';
+}
 </script>
 </body>
 </html>
