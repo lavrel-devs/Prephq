@@ -44,7 +44,10 @@ const StudentSchema = new mongoose.Schema({
   streakLastDate:   { type: String, default: null }, // WAT YYYY-MM-DD of the last day counted
 
   referralCode:      { type: String, default: null }, // this student's own shareable code
-  referredBy:         { type: mongoose.Schema.Types.ObjectId, ref: 'Student', default: null },
+  referredBy:         {
+    type: mongoose.Schema.Types.ObjectId, ref: 'Student', default: null,
+    set: v => (v === '' ? null : v), // an empty string here would otherwise fail ObjectId casting and crash the whole document's save()
+  },
 
   lastActiveAt:      { type: Date, default: Date.now }, // updated on every authenticated request — feeds silent refresh
 
