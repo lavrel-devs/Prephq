@@ -13,7 +13,7 @@ const Course = require('../models/Course');
 const { requireAdmin } = require('../middleware/auth');
 const { generateCode } = require('../utils/codeGen');
 const { applyCreditDelta } = require('../utils/credits');
-const { adminSetUsername } = require('../utils/username');
+const { checkAvailability, adminSetUsername } = require('../utils/username');
 
 const router = express.Router();
 router.use(requireAdmin);
@@ -101,9 +101,19 @@ router.get('/students', async (req, res) => {
 
 router.post('/students', async (req, res) => {
   try {
-    const { matric, name, phone, whatsapp, password, amount, method, reference, note, credits } = req.body;
+    const { matric, name, phone, whatsapp, password, amount, method, reference, note, credits, username } = req.body;
     if (!matric || !name)
       return res.status(400).json({ error: 'Matric and name required' });
+
+    // v1.3: username required here too, same rules as self-registration.
+    if (!username || !username.trim())
+      return res.status(400).json({ error: 'Please choose a username' });
+
+    const usernameCheck = await checkAvailability(username);
+    if (!usernameCheck.ok)
+      return res.status(409).json({ error: usernameCheck.reason === 'That username is already taken'
+        ? 'Username already taken'
+        : usernameCheck.reason });
 
     const exists = await Student.findOne({ matric: matric.toUpperCase() });
     if (exists) return res.status(409).json({ error: 'Matric already exists' });
@@ -111,13 +121,15 @@ router.post('/students', async (req, res) => {
     const pw = password || matric.toUpperCase();
     const passwordHash = await bcrypt.hash(pw, 10);
     const student = await Student.create({
-      matric:       matric.toUpperCase().trim(),
+      matric:            matric.toUpperCase().trim(),
       passwordHash,
-      name:         name.trim(),
-      phone:        phone?.trim() || '',
-      whatsapp:     whatsapp?.trim() || '',
-      codeUsed:     'ADMIN_ADDED',
-      credits:      0,
+      name:              name.trim(),
+      phone:             phone?.trim() || '',
+      whatsapp:          whatsapp?.trim() || '',
+      codeUsed:          'ADMIN_ADDED',
+      credits:           0,
+      username:          usernameCheck.username,
+      usernameChangedAt: new Date(),
     });
 
     if (amount && parseFloat(amount) > 0) {

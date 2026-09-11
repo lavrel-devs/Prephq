@@ -792,6 +792,11 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
     <div class="err" id="m-st-err"></div>
     <div class="field"><label>Full Name *</label><input id="st-name" placeholder="e.g. Goodnews Financial" autocomplete="off"></div>
     <div class="field"><label>Matric Number *</label><input id="st-matric" placeholder="e.g. PSC25CHM102" autocapitalize="characters" id="st-matric-inp"></div>
+    <div class="field">
+      <label>Username *</label>
+      <input id="st-username" placeholder="e.g. goodnews_23" autocapitalize="none" autocomplete="off" oninput="checkAddStudentUsername()">
+      <div style="font-size:11px;margin-top:4px;" id="st-username-hint">3–20 characters: letters, numbers, and underscores only</div>
+    </div>
     <div class="field"><label>Phone Number</label><input id="st-phone" type="tel" placeholder="e.g. 08012345678"></div>
     <div class="field"><label>WhatsApp Number</label><input id="st-whatsapp" type="tel" placeholder="e.g. 08012345678"></div>
     <div class="field"><label>Password <span style="color:var(--t4);font-weight:400">(leave blank = matric number)</span></label><input id="st-pass" placeholder="Custom password"></div>
@@ -1258,9 +1263,13 @@ function openAddStudent() {
   document.getElementById('m-st-btn').textContent = 'Add Student';
   document.getElementById('m-st-err').classList.remove('on');
   document.getElementById('st-reveal').style.display = 'none';
-  ['st-name','st-matric','st-phone','st-whatsapp','st-pass','st-amount','st-ref','st-note'].forEach(id => {
+  ['st-name','st-matric','st-username','st-phone','st-whatsapp','st-pass','st-amount','st-ref','st-note'].forEach(id => {
     const el = document.getElementById(id); if(el) el.value = '';
   });
+  document.getElementById('st-username').closest('.field').style.display = '';
+  document.getElementById('st-username-hint').textContent = '3–20 characters: letters, numbers, and underscores only';
+  document.getElementById('st-username-hint').style.color = 'var(--t4)';
+  addStudentUsernameOk = false;
   document.getElementById('st-method').value = 'cash';
   document.getElementById('m-add-student').classList.add('on');
   setTimeout(() => document.getElementById('st-name').focus(), 100);
@@ -1275,6 +1284,7 @@ function editStudent(matric) {
   document.getElementById('st-name').value = s.name;
   document.getElementById('st-matric').value = s.matric;
   document.getElementById('st-matric').disabled = true;
+  document.getElementById('st-username').closest('.field').style.display = 'none'; // username is set post-signup for existing students
   document.getElementById('st-phone').value = s.phone||'';
   document.getElementById('st-whatsapp').value = s.whatsapp||'';
   document.getElementById('st-pass').value = '';
@@ -1284,9 +1294,44 @@ function editStudent(matric) {
   document.getElementById('m-add-student').classList.add('on');
 }
 
+// Real-time username availability check for the Add Student form.
+let addStudentUsernameTimer = null;
+let addStudentUsernameOk = false;
+function checkAddStudentUsername() {
+  const val = document.getElementById('st-username').value.trim().toLowerCase();
+  const hint = document.getElementById('st-username-hint');
+  addStudentUsernameOk = false;
+  clearTimeout(addStudentUsernameTimer);
+
+  if (!val) {
+    hint.textContent = '3–20 characters: letters, numbers, and underscores only';
+    hint.style.color = 'var(--t4)';
+    return;
+  }
+
+  addStudentUsernameTimer = setTimeout(async () => {
+    try {
+      const r = await fetch(`/api/auth/username-check/${encodeURIComponent(val)}`);
+      const d = await r.json();
+      if (d.ok) {
+        addStudentUsernameOk = true;
+        hint.textContent = '✅ Available';
+        hint.style.color = 'var(--ok)';
+      } else {
+        hint.textContent = `❌ ${d.reason}`;
+        hint.style.color = 'var(--no)';
+      }
+    } catch (e) {
+      hint.textContent = 'Could not check availability — try again';
+      hint.style.color = 'var(--no)';
+    }
+  }, 400);
+}
+
 async function saveStudent() {
   const name     = document.getElementById('st-name').value.trim();
   const matric   = document.getElementById('st-matric').value.trim().toUpperCase();
+  const username = document.getElementById('st-username').value.trim().toLowerCase();
   const phone    = document.getElementById('st-phone').value.trim();
   const whatsapp = document.getElementById('st-whatsapp').value.trim();
   const pass     = document.getElementById('st-pass').value.trim();
@@ -1298,6 +1343,9 @@ async function saveStudent() {
   errEl.classList.remove('on');
 
   if (!name || !matric) { errEl.textContent = 'Name and matric are required.'; errEl.classList.add('on'); return; }
+  if (!editingSt && (!username || !addStudentUsernameOk)) {
+    errEl.textContent = 'Please choose an available username.'; errEl.classList.add('on'); return;
+  }
 
   try {
     let r, data;
@@ -1309,7 +1357,7 @@ async function saveStudent() {
     } else {
       r = await adminFetch('/api/admin/students', {
         method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ matric, name, phone, whatsapp, password: pass||matric, amount: amount||'', method, reference: ref, note })
+        body: JSON.stringify({ matric, name, username, phone, whatsapp, password: pass||matric, amount: amount||'', method, reference: ref, note })
       });
     }
     data = await r.json();
@@ -1324,9 +1372,12 @@ async function saveStudent() {
       document.getElementById('st-reveal').style.display = 'block';
       document.getElementById('m-st-btn').textContent = 'Add Another';
       // Reset form for next student
-      ['st-name','st-matric','st-phone','st-whatsapp','st-pass','st-amount','st-ref','st-note'].forEach(id => {
+      ['st-name','st-matric','st-username','st-phone','st-whatsapp','st-pass','st-amount','st-ref','st-note'].forEach(id => {
         const el = document.getElementById(id); if(el) el.value = '';
       });
+      document.getElementById('st-username-hint').textContent = '3–20 characters: letters, numbers, and underscores only';
+      document.getElementById('st-username-hint').style.color = 'var(--t4)';
+      addStudentUsernameOk = false;
       document.getElementById('st-matric').disabled = false;
     } else {
       closeM('m-add-student');

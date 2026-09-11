@@ -106,7 +106,12 @@ body{font-family:var(--ff-b);background:var(--bg);color:var(--t1);min-height:100
     <div class="fg">
       <label>Matric Number *</label>
       <input id="r-matric" type="text" placeholder="e.g. PSC25CHM000" autocapitalize="characters" autocomplete="off">
-      <div class="hint">This will be your login username</div>
+      <div class="hint">This will be your login ID (used with your password)</div>
+    </div>
+    <div class="fg">
+      <label>Username *</label>
+      <input id="r-username" type="text" placeholder="e.g. goodnews_23" autocapitalize="none" autocomplete="off" oninput="checkRegUsername()">
+      <div class="hint" id="r-username-hint">3–20 characters: letters, numbers, and underscores only</div>
     </div>
     <div class="fg">
       <label>Phone Number *</label>
@@ -175,9 +180,44 @@ function fmtCode(inp) {
   if(ref) document.getElementById('r-referral').value = ref.toUpperCase();
 })();
 
+// Real-time username availability check, debounced as the user types.
+let regUsernameTimer = null;
+let regUsernameOk = false;
+function checkRegUsername() {
+  const val = document.getElementById('r-username').value.trim().toLowerCase();
+  const hint = document.getElementById('r-username-hint');
+  regUsernameOk = false;
+  clearTimeout(regUsernameTimer);
+
+  if (!val) {
+    hint.textContent = '3–20 characters: letters, numbers, and underscores only';
+    hint.style.color = 'var(--t4)';
+    return;
+  }
+
+  regUsernameTimer = setTimeout(async () => {
+    try {
+      const r = await fetch(`/api/auth/username-check/${encodeURIComponent(val)}`);
+      const d = await r.json();
+      if (d.ok) {
+        regUsernameOk = true;
+        hint.textContent = '✅ Available';
+        hint.style.color = 'var(--ok)';
+      } else {
+        hint.textContent = `❌ ${d.reason}`;
+        hint.style.color = 'var(--no)';
+      }
+    } catch (e) {
+      hint.textContent = 'Could not check availability — try again';
+      hint.style.color = 'var(--no)';
+    }
+  }, 400);
+}
+
 async function doRegister() {
   const name     = document.getElementById('r-name').value.trim();
   const matric   = document.getElementById('r-matric').value.trim().toUpperCase();
+  const username = document.getElementById('r-username').value.trim().toLowerCase();
   const phone    = document.getElementById('r-phone').value.trim();
   const whatsapp = document.getElementById('r-whatsapp').value.trim();
   const code     = document.getElementById('r-code').value.trim().toUpperCase();
@@ -188,8 +228,12 @@ async function doRegister() {
 
   errEl.classList.remove('on');
 
-  if (!name || !matric || !phone || !whatsapp || !code) {
+  if (!name || !matric || !username || !phone || !whatsapp || !code) {
     errMsg.textContent = 'All fields are required.';
+    errEl.classList.add('on'); return;
+  }
+  if (!regUsernameOk) {
+    errMsg.textContent = 'Please choose an available username.';
     errEl.classList.add('on'); return;
   }
   if (code.replace(/-/g,'').length !== 12) {
@@ -204,7 +248,7 @@ async function doRegister() {
     const r = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, matric, phone, whatsapp, code, password: matric, referralCode: referralCode || undefined }),
+      body: JSON.stringify({ name, matric, username, phone, whatsapp, code, password: matric, referralCode: referralCode || undefined }),
     });
     const d = await r.json();
 

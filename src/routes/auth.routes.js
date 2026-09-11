@@ -11,7 +11,8 @@ const { signAccessToken, signRefreshToken, verifyRefreshToken, hashToken } = req
 const { getClientIp, isNewDevice } = require('../utils/fingerprint');
 const { applyCreditDelta } = require('../utils/credits');
 const { activateNewStudent } = require('../services/credit.service');
-const { setUsername } = require('../utils/username');
+const { checkAvailability } = require('../utils/username');
+const { usernameCheckLimiter } = require('../middleware/rateLimit');
 
 const router = express.Router();
 
@@ -67,6 +68,19 @@ router.post('/register', async (req, res) => {
     if (!matric || !name || !code)
       return res.status(400).json({ error: 'Matric, name and activation code are required' });
 
+    // v1.3: username is now required at signup. Validate format and
+    // availability BEFORE touching the activation code or creating the
+    // account, so a taken/invalid username fails fast with a clear
+    // message instead of a half-finished registration.
+    if (!username || !username.trim())
+      return res.status(400).json({ error: 'Please choose a username' });
+
+    const usernameCheck = await checkAvailability(username);
+    if (!usernameCheck.ok)
+      return res.status(409).json({ error: usernameCheck.reason === 'That username is already taken'
+        ? 'Username already taken'
+        : usernameCheck.reason });
+
     const exists = await Student.findOne({ matric: matric.toUpperCase() });
     if (exists)
       return res.status(409).json({ error: 'This matric number is already registered' });
@@ -85,13 +99,15 @@ router.post('/register', async (req, res) => {
     const passwordHash = await bcrypt.hash(pw, 10);
 
     const student = await Student.create({
-      matric:       matric.toUpperCase().trim(),
+      matric:            matric.toUpperCase().trim(),
       passwordHash,
-      name:         name.trim(),
-      phone:        phone?.trim() || '',
-      whatsapp:     whatsapp?.trim() || '',
-      codeUsed:     codeDoc.code,
-      credits:      0,
+      name:              name.trim(),
+      phone:             phone?.trim() || '',
+      whatsapp:          whatsapp?.trim() || '',
+      codeUsed:          codeDoc.code,
+      credits:           0,
+      username:          usernameCheck.username,
+      usernameChangedAt: new Date(),
     });
 
     await Code.updateOne({ _id: codeDoc._id }, {
@@ -105,15 +121,6 @@ router.post('/register', async (req, res) => {
     // referee bonus if they signed up via a valid referral link), and
     // pays the referrer's reward — all amounts driven by Settings.
     await activateNewStudent(student, referralCode);
-
-    // Optional username at signup — if provided and valid/available, set
-    // it now; if not (bad format, already taken), registration still
-    // succeeds and the student gets the first-login modal instead of a
-    // failed signup over a username collision.
-    if (username) {
-      try { await setUsername(student, username); }
-      catch (e) { /* fall through to needsUsername flow */ }
-    }
 
     // If this code was configured with a starting credit grant (separate
     // from the welcome bonus, e.g. paid-batch codes), apply it too.
@@ -134,6 +141,16 @@ router.post('/register', async (req, res) => {
       message:  'Account created successfully',
     });
   } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// GET /api/auth/username-check/:username — public availability check for
+// the signup form and the admin "Add Student" form, both of which run
+// before any login session exists. Read-only, rate-limited; same check
+// the logged-in dashboard modal uses (src/routes/student.routes.js),
+// just without requiring a session.
+router.get('/username-check/:username', usernameCheckLimiter, async (req, res) => {
+  const result = await checkAvailability(req.params.username);
+  res.json(result);
 });
 
 // POST /api/auth/login — student login, issues JWT access + refresh tokens

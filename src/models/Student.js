@@ -28,9 +28,20 @@ const StudentSchema = new mongoose.Schema({
 
   // ── v1.2 additions ──────────────────────────────────────────
   // username: set at signup (new users) or via the blocking dashboard
-  // modal on first login after this update (existing users). null
-  // until set — NOT unique-indexed as null, see sparse index below.
-  username:          { type: String, default: null, trim: true },
+  // modal on first login after this update (existing users).
+  //
+  // v1.3 FIX: this field must NOT have a `default`. Mongoose applies
+  // schema defaults at document-creation time, which means every
+  // student created while `default: null` was set got an *explicit*
+  // username: null written to Mongo. A sparse index only excludes
+  // documents where the field is truly absent — it still indexes an
+  // explicit null. So every 2nd+ student ever created collided on
+  // the unique sparse index and hit "E11000 duplicate key: username:
+  // null". Leaving no default here means the field is simply absent
+  // on documents that haven't set a username yet, which is what the
+  // sparse index actually needs. See scripts/fix-username-index.js
+  // for the one-time cleanup of documents already affected.
+  username:          { type: String, trim: true },
   displayName:       { type: String, default: '', trim: true },
   usernameChangedAt: { type: Date, default: null },
 
@@ -43,7 +54,9 @@ const StudentSchema = new mongoose.Schema({
   streakCount:      { type: Number, default: 0 },
   streakLastDate:   { type: String, default: null }, // WAT YYYY-MM-DD of the last day counted
 
-  referralCode:      { type: String, default: null }, // this student's own shareable code
+  // Same sparse-index/default bug as username above — no default here
+  // either, for the same reason (see comment on `username`).
+  referralCode:      { type: String }, // this student's own shareable code
   referredBy:         {
     type: mongoose.Schema.Types.ObjectId, ref: 'Student', default: null,
     set: v => (v === '' ? null : v), // an empty string here would otherwise fail ObjectId casting and crash the whole document's save()
