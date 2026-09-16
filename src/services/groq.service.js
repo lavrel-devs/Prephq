@@ -192,4 +192,87 @@ async function chatReply(history) {
   return reply;
 }
 
-module.exports = { generateQuiz, explainAnswer, chatReply };
+// v1.4. Generates a structured, actionable study plan for a student
+// working toward a target GPA, given their current GPA and the
+// courses they're offering this semester (plus, optionally, which of
+// those they're weakest on if we have weak-topic data for them).
+// Returns { weeks: [{ title, focus, tasks: [string] }], summary }.
+async function generateStudyGuide({ currentGPA, targetGPA, gpaScale = 5.0, department, courses, weakCourses = [] }) {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey || apiKey === 'REPLACE_WITH_YOUR_GROQ_KEY') {
+    const err = new Error('GROQ_API_KEY is not configured on the server');
+    err.code = 'GROQ_NOT_CONFIGURED';
+    throw err;
+  }
+
+  const model = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
+  const gpaGap = (Number(targetGPA) - Number(currentGPA)).toFixed(2);
+  const weakLine = weakCourses.length ? `\nThe student has been scoring weakest recently in: ${weakCourses.join(', ')}. Weight the plan toward these.` : '';
+
+  const systemPrompt = `You are an academic coach for a Nigerian university student. You output ONLY valid JSON — no markdown fences, no commentary. The JSON must have this exact shape:
+{"summary": "2-3 sentence encouraging overview of the plan and what it will take to close the GPA gap", "weeks": [{"title": "Week 1", "focus": "short phrase naming the focus", "tasks": ["specific, actionable task", "..."]}]}
+Produce exactly 4 weeks. Each week must have 3-5 concrete, specific tasks (not vague advice like "study more") — e.g. "Redo all past-question MCQs for [course] topic X and review every wrong answer", "Summarize chapters 3-4 of [course] into one page of notes". Ground tasks in the student's actual courses and department.`;
+
+  const userPrompt = `Department: ${department || 'not specified'}
+Courses this semester: ${courses.join(', ') || 'not specified'}
+GPA scale used by this student's school: 0–${gpaScale}
+Current GPA: ${currentGPA} · Target GPA: ${targetGPA} (gap: ${gpaGap} on a ${gpaScale}-point scale)${weakLine}
+
+Generate a 4-week study plan to help close this GPA gap. Return only the JSON object.`;
+
+  const res = await fetch(GROQ_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+      temperature: 0.6,
+      response_format: { type: 'json_object' },
+    }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    const err = new Error(`Groq API error (${res.status}): ${text.slice(0, 300)}`);
+    err.code = 'GROQ_REQUEST_FAILED';
+    throw err;
+  }
+
+  const data = await res.json();
+  const raw = data?.choices?.[0]?.message?.content;
+  if (!raw) {
+    const err = new Error('Groq returned an empty response');
+    err.code = 'GROQ_EMPTY_RESPONSE';
+    throw err;
+  }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(raw.trim().replace(/^```json\s*|^```\s*|```$/g, ''));
+  } catch (e) {
+    const err = new Error('Could not parse study guide JSON from AI response');
+    err.code = 'GROQ_PARSE_FAILED';
+    throw err;
+  }
+
+  if (!parsed.weeks || !Array.isArray(parsed.weeks) || !parsed.weeks.length) {
+    const err = new Error('AI response did not contain a study plan');
+    err.code = 'GROQ_PARSE_FAILED';
+    throw err;
+  }
+
+  return {
+    summary: String(parsed.summary || '').trim(),
+    weeks: parsed.weeks.map(w => ({
+      title: String(w.title || '').trim(),
+      focus: String(w.focus || '').trim(),
+      tasks: Array.isArray(w.tasks) ? w.tasks.map(String).slice(0, 8) : [],
+    })),
+    model,
+  };
+}
+
+module.exports = { generateQuiz, explainAnswer, chatReply, generateStudyGuide };

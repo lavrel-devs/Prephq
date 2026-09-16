@@ -7,6 +7,7 @@ const GeneratedQuestion = require('../models/GeneratedQuestion');
 const { requireStudent } = require('../middleware/auth');
 const { applyCreditDelta } = require('../utils/credits');
 const { generateQuiz, explainAnswer } = require('../services/groq.service');
+const { checkDailyLimit, incrementDailyUsage } = require('../services/tier.service');
 
 const router = express.Router();
 router.use(requireStudent);
@@ -47,6 +48,16 @@ router.post('/generate', genLimiter, async (req, res) => {
     const matric = req.student.sub;
     const student = await Student.findOne({ matric });
     if (!student) return res.status(404).json({ error: 'Student not found' });
+
+    try {
+      await checkDailyLimit(student, 'aiQuiz');
+    } catch (e) {
+      if (e.code === 'LIMIT_REACHED') {
+        return res.status(403).json({ error: e.message, code: 'LIMIT_REACHED', tier: e.tier, limit: e.limit, used: e.used });
+      }
+      throw e;
+    }
+
     if ((student.credits || 0) < QUIZ_COST) {
       return res.status(402).json({
         error: `Not enough credits. This costs ${QUIZ_COST} credits, you have ${student.credits || 0}.`,
@@ -86,6 +97,8 @@ router.post('/generate', genLimiter, async (req, res) => {
       creditCost: QUIZ_COST,
       questions: generated.questions,
     });
+
+    await incrementDailyUsage(student, 'aiQuiz');
 
     res.status(201).json({
       id: record._id,

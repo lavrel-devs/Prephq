@@ -1,8 +1,10 @@
 const express = require('express');
 const Score = require('../models/Score');
 const QuestionAttempt = require('../models/QuestionAttempt');
+const Student = require('../models/Student');
 const { requireStudent, requireAdmin } = require('../middleware/auth');
 const { getWeakTopics } = require('../services/weakTopics.service');
+const { checkDailyLimit, incrementDailyUsage } = require('../services/tier.service');
 
 const router = express.Router();
 
@@ -22,16 +24,41 @@ router.get('/:matric', requireStudent, async (req, res) => {
 // — one entry per question in the quiz just taken, powering weak-topic
 // drilling. Entirely optional and additive; omitting it behaves exactly
 // as before.
+// v1.4: `total` questions in this quiz count against the student's
+// daily practice-question tier limit (free: 20/day). Checked BEFORE
+// the quiz is recorded — a free student already at cap can't log a
+// new quiz until tomorrow (or upgrading). This is a soft spot in the
+// flow (a quiz already taken client-side could still hit this and be
+// rejected) — see GET /api/usage/limits, which the dashboard should
+// check before a quiz starts to avoid that in the common case.
 router.post('/:matric', requireStudent, async (req, res) => {
   try {
     if (req.student.sub !== req.params.matric.toUpperCase())
       return res.status(403).json({ error: 'Forbidden' });
     const { correct, total, pct, wrong, skip, courses, mode, perQuestion } = req.body;
     if (typeof pct !== 'number') return res.status(400).json({ error: 'Invalid' });
+
+    const student = await Student.findOne({ matric: req.params.matric.toUpperCase() });
+    if (!student) return res.status(404).json({ error: 'Student not found' });
+
+    const questionCount = Number.isFinite(total) ? total : 0;
+    if (questionCount > 0) {
+      try {
+        await checkDailyLimit(student, 'questions', questionCount);
+      } catch (e) {
+        if (e.code === 'LIMIT_REACHED') {
+          return res.status(403).json({ error: e.message, code: 'LIMIT_REACHED', tier: e.tier, limit: e.limit, used: e.used });
+        }
+        throw e;
+      }
+    }
+
     await Score.create({
       matric: req.params.matric.toUpperCase(),
       correct, total, pct, wrong, skip, courses, mode,
     });
+
+    if (questionCount > 0) await incrementDailyUsage(student, 'questions', questionCount);
 
     if (Array.isArray(perQuestion) && perQuestion.length) {
       const docs = perQuestion

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
@@ -5,7 +6,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#0A5CF5">
+<meta name="theme-color" content="#e0e5ec">
 <link rel="manifest" href="/manifest.json">
 <title>PrepHQ — Leaderboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -20,45 +21,207 @@
 })();
 </script>
 <style>
+/* ══════════════════════════════════════════════════════════
+   NEUMORPHISM / SOFT UI — Leaderboard
+   ══════════════════════════════════════════════════════════ */
 :root{
-  --bg:#F0F2F8;--surf:rgba(255,255,255,.6);--surf2:rgba(245,246,250,.55);--surf3:rgba(235,236,242,.55);
-  --brand:#0A5CF5;--brand-dk:#0847C4;--brand-lt:rgba(10,92,245,.10);
-  --ok:#00C96B;--ok-lt:rgba(0,201,107,.10);
-  --no:#F5340A;--no-lt:rgba(245,52,10,.10);
-  --warn:#F5930A;--warn-lt:rgba(245,147,10,.10);
-  --purple:#7B2CF5;--purple-lt:rgba(123,44,245,.10);
-  --t1:#0D0F1A;--t2:#2E3247;--t3:#6B7089;--t4:#A8ADCA;
-  --bd:rgba(13,15,26,.09);--bd2:rgba(13,15,26,.14);
-  --r16:16px;--r20:20px;
-  --sh:0 2px 16px rgba(0,0,0,.07);
+  --bg:#e0e5ec;
+  --sd:#b8c0cc;
+  --sl:#ffffff;
+
+  --sh:6px 6px 14px var(--sd), -6px -6px 14px var(--sl);
+  --sh-md:8px 8px 18px var(--sd), -8px -8px 18px var(--sl);
+  --sh-lg:12px 12px 26px var(--sd), -12px -12px 26px var(--sl);
+  --sh-sm:4px 4px 8px var(--sd), -4px -4px 8px var(--sl);
+  --sh-in:inset 4px 4px 10px var(--sd), inset -4px -4px 10px var(--sl);
+  --sh-in-sm:inset 3px 3px 6px var(--sd), inset -3px -3px 6px var(--sl);
+
+  --brand:#4a67d1;--brand-dk:#3a54b8;
+  --brand-lt:rgba(74,103,209,.10);--brand-glow:rgba(74,103,209,.20);
+  --ok:#2d9c6e;--ok-lt:rgba(45,156,110,.12);
+  --no:#d14545;--no-lt:rgba(209,69,69,.12);
+  --warn:#c67a1e;--warn-lt:rgba(198,122,30,.12);
+  --purple:#7b52d1;--purple-lt:rgba(123,82,209,.12);
+
+  /* Medal colors stay vivid — neumorphism shouldn't wash out rank cues */
+  --gold:#c79a1e;
+  --silver:#8a90a4;
+  --bronze:#a86a3a;
+
+  --t1:#2a3142;--t2:#4a5568;--t3:#7a8296;--t4:#a8b0c0;
+
+  --bd:transparent;--bd2:transparent;
+
+  --r16:18px;--r20:22px;
   --ff-h:'Bricolage Grotesque',system-ui,sans-serif;
   --ff-b:'DM Sans',system-ui,sans-serif;
 }
 [data-theme=dark]{
-  --bg:#0D0F1A;--surf:rgba(26,30,53,.55);--surf2:rgba(34,38,64,.5);--surf3:rgba(42,47,80,.5);
-  --t1:#EEF0FF;--t2:#C5CAE8;--t3:#7E86B0;--t4:#4A5070;
-  --bd:rgba(238,240,255,.08);--bd2:rgba(238,240,255,.14);
+  --bg:#252932;
+  --sd:#181b21;--sl:#323743;
+  --brand:#7c93ff;--brand-dk:#a5b5ff;
+  --brand-lt:rgba(124,147,255,.12);--brand-glow:rgba(124,147,255,.20);
+  --ok:#3dba86;--ok-lt:rgba(61,186,134,.14);
+  --no:#e56161;--no-lt:rgba(229,97,97,.14);
+  --warn:#e09437;--warn-lt:rgba(224,148,55,.14);
+  --purple:#9d7bea;--purple-lt:rgba(157,123,234,.14);
+  --gold:#e8b93a;
+  --silver:#a5abc2;
+  --bronze:#c47e42;
+  --t1:#e8ecf5;--t2:#b8c0d0;--t3:#7a8296;--t4:#4a5060;
 }
+
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-body{font-family:var(--ff-b);background:var(--bg);color:var(--t1);min-height:100dvh;-webkit-font-smoothing:antialiased;}
+body{
+  font-family:var(--ff-b);
+  background:var(--bg);
+  color:var(--t1);
+  min-height:100dvh;
+  -webkit-font-smoothing:antialiased;
+}
 .wrap{max-width:520px;margin:0 auto;padding:18px 18px 120px;}
-.topbar{display:flex;align-items:center;gap:12px;padding:6px 0 16px;}
-.back-btn{width:38px;height:38px;border-radius:50%;background:var(--surf);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t1);flex-shrink:0;}
-.pg-title{font-family:var(--ff-h);font-size:20px;font-weight:800;}
-.optin-card{background:var(--surf);border-radius:var(--r16);padding:14px 16px;box-shadow:var(--sh);border:1px solid var(--bd);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
-.toggle{width:44px;height:24px;border-radius:999px;background:var(--surf3);border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
-.toggle.on{background:var(--brand);}
-.toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:white;box-shadow:0 2px 6px rgba(0,0,0,.2);transition:transform .2s cubic-bezier(.34,1.56,.64,1);}
-.toggle.on::after{transform:translateX(20px);}
-.lb-row{display:flex;align-items:center;gap:12px;background:var(--surf);border-radius:14px;padding:12px 14px;margin-bottom:8px;box-shadow:var(--sh);border:1px solid var(--bd);}
-.lb-row.me{border-color:var(--brand);background:var(--brand-lt);}
-.lb-rank{width:28px;text-align:center;font-family:var(--ff-h);font-weight:800;font-size:15px;color:var(--t3);flex-shrink:0;}
-.lb-rank.top1{color:#F5C518;} .lb-rank.top2{color:#B0B4C2;} .lb-rank.top3{color:#CD7F32;}
-.lb-name{flex:1;font-size:13.5px;font-weight:700;}
-.lb-stats{text-align:right;}
-.lb-score{font-weight:800;font-size:15px;color:var(--brand);}
-.lb-sub{font-size:10.5px;color:var(--t3);}
-.empty{text-align:center;padding:50px 20px;color:var(--t3);font-size:13px;}
+
+/* ═══════════════════════════════════════
+   TOPBAR
+═══════════════════════════════════════ */
+.topbar{
+  display:flex;align-items:center;gap:12px;
+  padding:6px 0 20px;
+}
+.back-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--bg);border:none;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--brand);flex-shrink:0;
+  box-shadow:var(--sh);
+  transition:box-shadow .15s, transform .15s;
+}
+.back-btn:active{transform:scale(.93);box-shadow:var(--sh-in);}
+.pg-title{
+  font-family:var(--ff-h);font-size:20px;font-weight:800;
+  color:var(--t1);letter-spacing:-.4px;
+}
+
+/* ═══════════════════════════════════════
+   OPT-IN CARD
+═══════════════════════════════════════ */
+.optin-card{
+  background:var(--bg);
+  border-radius:var(--r16);
+  padding:16px 18px;
+  box-shadow:var(--sh);
+  border:none;
+  margin-bottom:16px;
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+}
+
+/* Neumorphic toggle — inset track, raised knob */
+.toggle{
+  width:48px;height:26px;
+  border-radius:var(--rpill, 999px);
+  background:var(--bg);
+  border:none;cursor:pointer;
+  position:relative;
+  transition:box-shadow .2s;
+  flex-shrink:0;
+  box-shadow:var(--sh-in);
+}
+.toggle::after{
+  content:'';
+  position:absolute;top:3px;left:3px;
+  width:20px;height:20px;border-radius:50%;
+  background:var(--bg);
+  box-shadow:var(--sh-sm);
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1);
+}
+.toggle.on{
+  box-shadow:var(--sh-in), 0 0 0 2px var(--brand-lt);
+}
+.toggle.on::after{
+  transform:translateX(22px);
+  box-shadow:var(--sh-sm), 0 0 0 2px var(--brand-lt);
+}
+
+/* ═══════════════════════════════════════
+   LEADERBOARD ROWS
+═══════════════════════════════════════ */
+.lb-row{
+  display:flex;align-items:center;gap:14px;
+  background:var(--bg);
+  border-radius:var(--r16);
+  padding:14px 16px;
+  margin-bottom:10px;
+  box-shadow:var(--sh);
+  border:none;
+  transition:box-shadow .18s, transform .18s;
+}
+.lb-row:active{transform:scale(.99);}
+
+/* "Me" row — inset with brand ring, so it stands out without a filled background */
+.lb-row.me{
+  box-shadow:var(--sh-in), 0 0 0 2px var(--brand-lt);
+}
+
+.lb-rank{
+  width:32px;
+  text-align:center;
+  font-family:var(--ff-h);
+  font-weight:800;
+  font-size:16px;
+  color:var(--t3);
+  flex-shrink:0;
+  letter-spacing:-.5px;
+}
+.lb-rank.top1{color:var(--gold);}
+.lb-rank.top2{color:var(--silver);}
+.lb-rank.top3{color:var(--bronze);}
+
+.lb-name{
+  flex:1;
+  font-size:13.5px;
+  font-weight:700;
+  color:var(--t1);
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.lb-row.me .lb-name{color:var(--brand);}
+
+.lb-stats{text-align:right;flex-shrink:0;}
+.lb-score{
+  font-weight:800;
+  font-size:15px;
+  color:var(--brand);
+  font-family:var(--ff-h);
+  letter-spacing:-.3px;
+}
+.lb-sub{
+  font-size:10.5px;
+  color:var(--t3);
+  margin-top:1px;
+  font-weight:600;
+}
+
+/* ═══════════════════════════════════════
+   EMPTY
+═══════════════════════════════════════ */
+.empty{
+  text-align:center;
+  padding:60px 20px;
+  color:var(--t3);
+  font-size:13px;
+  font-weight:500;
+  line-height:1.55;
+}
+
+/* Responsive */
+@media (max-width: 420px){
+  .wrap{padding:16px 16px 100px;}
+  .pg-title{font-size:18px;}
+  .lb-row{padding:12px 14px;gap:12px;}
+  .lb-rank{width:28px;font-size:15px;}
+}
 </style>
 </head>
 <body>
@@ -71,8 +234,8 @@ body{font-family:var(--ff-b);background:var(--bg);color:var(--t1);min-height:100
 
   <div class="optin-card">
     <div>
-      <div style="font-size:13px;font-weight:700;">Show me on the leaderboard</div>
-      <div style="font-size:11.5px;color:var(--t3);margin-top:2px;">Your display name and average score become visible to other students</div>
+      <div style="font-size:13px;font-weight:700;color:var(--t1);">Show me on the leaderboard</div>
+      <div style="font-size:11.5px;color:var(--t3);margin-top:3px;line-height:1.5;">Your display name and average score become visible to other students</div>
     </div>
     <button class="toggle" id="optin-toggle" onclick="toggleOptIn()"></button>
   </div>

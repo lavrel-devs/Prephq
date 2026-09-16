@@ -76,6 +76,82 @@ const StudentSchema = new mongoose.Schema({
   // the public/global leaderboard rather than being listed by default.
   publicLeaderboardOptIn: { type: Boolean, default: false },
 
+  // ── v1.4 additions: extended profile ────────────────────────
+  // Purely additive — existing accounts simply have these fields
+  // absent/undefined until the student (or the mandatory completion
+  // prompt) fills them in. No migration required.
+  university:  { type: String, default: '', trim: true },
+  department:  { type: String, default: '', trim: true },
+  currentGPA:  { type: Number, default: null },
+  targetGPA:   { type: Number, default: null },
+
+  // v1.4.1: multi-university support. Different schools use different
+  // GPA scales (4.0 vs 5.0 are the common ones in Nigeria, but this is
+  // a free number, not an enum, so any scale a school actually uses
+  // works) and different score-to-grade boundaries (70+ is an A at
+  // some schools, 80+ at others). Each student sets their own to match
+  // their school — there's no single shared standard across users.
+  // gradingScale is sorted descending by minScore when saved (see
+  // /api/profile/grading-system) so the highest matching band always
+  // wins when converting a score to a grade point.
+  gpaScale: { type: Number, default: 5.0 },
+  gradingScale: {
+    type: [{
+      grade:    { type: String, required: true },  // e.g. 'A', 'B', 'C'
+      minScore: { type: Number, required: true },   // lowest score (inclusive) that earns this grade
+      point:    { type: Number, required: true },   // grade point on this student's gpaScale
+    }],
+    // Sensible Nigerian 5.0-scale default — replaced entirely the
+    // first time a student saves their own grading system.
+    default: [
+      { grade: 'A', minScore: 70, point: 5 },
+      { grade: 'B', minScore: 60, point: 4 },
+      { grade: 'C', minScore: 50, point: 3 },
+      { grade: 'D', minScore: 45, point: 2 },
+      { grade: 'E', minScore: 40, point: 1 },
+      { grade: 'F', minScore: 0,  point: 0 },
+    ],
+  },
+
+  // Courses the student is offering this semester — replaces the
+  // "show every course" dashboard view once set. `[]` (empty/unset)
+  // is treated as "not yet selected", which is what triggers the
+  // profile-completion prompt below. No cap on how many can be picked.
+  selectedCourses: { type: [String], default: [] },
+
+  // Settings-level override: lets a student who already selected
+  // courses opt back into seeing the full course catalog on the
+  // dashboard without clearing their selection.
+  showAllCoursesOverride: { type: Boolean, default: false },
+
+  // Drives the blocking "complete your profile" modal on login.
+  // Set true once university/department/selectedCourses are all
+  // filled — checked server-side (see auth middleware) so it can't
+  // be bypassed by editing client state. Applies to existing accounts
+  // too: any account created before v1.4 starts with this at false.
+  profileCompleted: { type: Boolean, default: false },
+
+  // ── v1.4 additions: subscription tier & usage counters ──────
+  // Replaces the old activation-code-gated Premium/Pro split. Every
+  // account — new or pre-v1.4 — starts on 'free'. tierExpiresAt is
+  // null for free (never expires) and for lifetime grants; for paid
+  // tiers it's set on upgrade and checked to auto-revert to 'free'
+  // once passed (see tier.service.js).
+  tier:          { type: String, enum: ['free', 'basic', 'pro'], default: 'free' },
+  tierExpiresAt: { type: Date, default: null },
+
+  // Daily practice-question usage (free tier: 20/day). Mirrors the
+  // aiChatDailyCount/aiChatDailyDate pattern above — reset on WAT
+  // date change, checked+incremented server-side so it can't be
+  // bypassed client-side.
+  dailyQuestionCount: { type: Number, default: 0 },
+  dailyQuestionDate:  { type: String, default: null },
+
+  // Daily AI-quiz generations (free tier: 2/day) — separate from and
+  // in addition to the existing per-generation credit cost.
+  dailyAIQuizCount: { type: Number, default: 0 },
+  dailyAIQuizDate:  { type: String, default: null },
+
   createdAt: { type: Date, default: Date.now },
 });
 

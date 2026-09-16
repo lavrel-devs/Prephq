@@ -60,13 +60,17 @@ async function issueSession({ subjectId, role, req, deviceFingerprint, flaggedNe
 //  STUDENT AUTH
 // ══════════════════════════════════════════════════════════════
 
-// POST /api/auth/register — student self-registration with activation code
+// POST /api/auth/register — v1.4: free, open signup. The activation-
+// code gate is gone — anyone can register. `code` is still accepted
+// (and honored, including any creditsGranted bonus) purely for
+// backward compatibility with any codes already issued/in flight; it
+// is never required. Every new account starts on the free tier.
 router.post('/register', async (req, res) => {
   try {
     const { matric, name, phone, whatsapp, code, password, referralCode, username } = req.body;
 
-    if (!matric || !name || !code)
-      return res.status(400).json({ error: 'Matric, name and activation code are required' });
+    if (!matric || !name)
+      return res.status(400).json({ error: 'Matric number and name are required' });
 
     // v1.3: username is now required at signup. Validate format and
     // availability BEFORE touching the activation code or creating the
@@ -85,15 +89,19 @@ router.post('/register', async (req, res) => {
     if (exists)
       return res.status(409).json({ error: 'This matric number is already registered' });
 
-    const codeDoc = await Code.findOne({ code: code.trim().toUpperCase() });
-    if (!codeDoc)
-      return res.status(404).json({ error: 'Invalid activation code' });
-    if (codeDoc.status === 'used')
-      return res.status(409).json({ error: 'This code has already been used' });
-    if (codeDoc.status === 'expired')
-      return res.status(410).json({ error: 'This code has expired' });
-    if (codeDoc.expiresAt && new Date() > codeDoc.expiresAt)
-      return res.status(410).json({ error: 'This code has expired' });
+    // Optional legacy code path — only validated/consumed if provided.
+    let codeDoc = null;
+    if (code && code.trim()) {
+      codeDoc = await Code.findOne({ code: code.trim().toUpperCase() });
+      if (!codeDoc)
+        return res.status(404).json({ error: 'Invalid activation code' });
+      if (codeDoc.status === 'used')
+        return res.status(409).json({ error: 'This code has already been used' });
+      if (codeDoc.status === 'expired')
+        return res.status(410).json({ error: 'This code has expired' });
+      if (codeDoc.expiresAt && new Date() > codeDoc.expiresAt)
+        return res.status(410).json({ error: 'This code has expired' });
+    }
 
     const pw = password || matric.toUpperCase();
     const passwordHash = await bcrypt.hash(pw, 10);
@@ -104,17 +112,20 @@ router.post('/register', async (req, res) => {
       name:              name.trim(),
       phone:             phone?.trim() || '',
       whatsapp:          whatsapp?.trim() || '',
-      codeUsed:          codeDoc.code,
+      codeUsed:          codeDoc?.code || '',
       credits:           0,
+      tier:              'free',
       username:          usernameCheck.username,
       usernameChangedAt: new Date(),
     });
 
-    await Code.updateOne({ _id: codeDoc._id }, {
-      status: 'used',
-      usedBy: student.matric,
-      usedAt: new Date(),
-    });
+    if (codeDoc) {
+      await Code.updateOne({ _id: codeDoc._id }, {
+        status: 'used',
+        usedBy: student.matric,
+        usedAt: new Date(),
+      });
+    }
 
     // v1.2: welcome bonus + referral payout. Assigns the student their
     // own referralCode, credits the welcome bonus (stacked with the
@@ -124,7 +135,7 @@ router.post('/register', async (req, res) => {
 
     // If this code was configured with a starting credit grant (separate
     // from the welcome bonus, e.g. paid-batch codes), apply it too.
-    if (codeDoc.creditsGranted > 0) {
+    if (codeDoc?.creditsGranted > 0) {
       await applyCreditDelta({
         matric: student.matric,
         delta: codeDoc.creditsGranted,
@@ -205,6 +216,10 @@ router.post('/login', loginLimiter, async (req, res) => {
       refreshToken,
       expiresInMin: parseInt(process.env.JWT_ACCESS_TTL_MIN || '15', 10),
       newDeviceFlagged: flaggedNewDevice,
+      // v1.4: false for every pre-v1.4 account by default, and for new
+      // signups until they fill university/department/selectedCourses —
+      // dashboard.html reads this to show the blocking completion modal.
+      profileCompleted: student.profileCompleted,
     });
   } catch (e) { console.error('[auth]', e); res.status(500).json({ error: 'Server error' }); }
 });

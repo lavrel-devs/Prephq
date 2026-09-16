@@ -6,8 +6,10 @@ const Transfer = require('../../models/Transfer');
 const CreditTransaction = require('../../models/CreditTransaction');
 const Payment = require('../../models/Payment');
 const Session = require('../../models/Session');
+const QuestionAttempt = require('../../models/QuestionAttempt');
 const { requireAdmin } = require('../../middleware/auth');
 const { applyCreditDelta } = require('../../utils/credits');
+const { generatePerformanceReportPDF } = require('../../services/report.service');
 
 const router = express.Router();
 router.use(requireAdmin);
@@ -123,6 +125,120 @@ router.put('/users/:matric/status', async (req, res) => {
     }
 
     res.json({ success: true, matric: student.matric, active: student.active });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// GET /api/admin/users/by-course/:course — v1.4.1. Every student who
+// has this course in their selectedCourses (semester registration
+// from v1.4), each with their attempt count/accuracy for THIS course
+// specifically — not their overall stats — so the admin can see who's
+// actually active on a given course, not just who's registered.
+router.get('/users/by-course/:course', async (req, res) => {
+  try {
+    const course = req.params.course.trim();
+    const students = await Student.find({ selectedCourses: course }).select('matric name username tier').lean();
+    if (!students.length) return res.json({ course, students: [] });
+
+    const matrics = students.map(s => s.matric);
+    const agg = await QuestionAttempt.aggregate([
+      { $match: { matric: { $in: matrics }, course } },
+      { $group: { _id: '$matric', attempts: { $sum: 1 }, correct: { $sum: { $cond: ['$correct', 1, 0] } } } },
+    ]);
+    const statsByMatric = {};
+    agg.forEach(a => { statsByMatric[a._id] = { attempts: a.attempts, accuracy: Math.round((a.correct / a.attempts) * 100) }; });
+
+    res.json({
+      course,
+      students: students.map(s => ({
+        matric: s.matric,
+        name: s.name,
+        username: s.username,
+        tier: s.tier,
+        attempts: statsByMatric[s.matric]?.attempts || 0,
+        accuracy: statsByMatric[s.matric]?.accuracy ?? null,
+      })).sort((a, b) => b.attempts - a.attempts),
+    });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// GET /api/admin/users/course-list — every distinct course at least
+// one student has registered for, with a headcount — powers the
+// dropdown/filter for the endpoint above.
+router.get('/users/course-list', async (req, res) => {
+  try {
+    const rows = await Student.aggregate([
+      { $unwind: '$selectedCourses' },
+      { $group: { _id: '$selectedCourses', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+    ]);
+    res.json(rows.map(r => ({ course: r._id, students: r.count })));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// GET /api/admin/users/:matric/report.pdf — v1.4.1. Streams a
+// downloadable performance-summary PDF for one student (GPA, quiz
+// history, weak topics) — the reporting piece of the admin dashboard.
+router.get('/users/:matric/report.pdf', async (req, res) => {
+  try {
+    const student = await Student.findOne({ matric: req.params.matric.toUpperCase() }).lean();
+    if (!student) return res.status(404).json({ error: 'Student not found' });
+    await generatePerformanceReportPDF(student, res);
+  } catch (e) {
+    if (!res.headersSent) res.status(500).json({ error: e.message });
+  }
+});
+
+// PUT /api/admin/users/:matric/tier — v1.4. Manually grant/change a
+// student's subscription tier after confirming payment through any of
+// the existing manual channels (bank transfer, Opay, Palmpay, cash —
+// same Payment.method options already used elsewhere in this file).
+// There's no automated payment gateway wired up yet — this is the
+// admin's control point until one is. `durationDays` is optional;
+// omit it (or pass 0) for a tier that doesn't expire (e.g. a lifetime
+// grant or reverting to free).
+router.put('/users/:matric/tier', async (req, res) => {
+  try {
+    const { tier, durationDays, logPayment } = req.body;
+    if (!['free', 'basic', 'pro'].includes(tier))
+      return res.status(400).json({ error: 'tier must be free, basic, or pro' });
+
+    const tierExpiresAt = (tier !== 'free' && durationDays > 0)
+      ? new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000)
+      : null;
+
+    const student = await Student.findOneAndUpdate(
+      { matric: req.params.matric.toUpperCase() },
+      { tier, tierExpiresAt },
+      { new: true },
+    ).lean();
+    if (!student) return res.status(404).json({ error: 'Student not found' });
+
+    // Optional: log the payment that justified this grant, so it shows
+    // up alongside every other payment in the admin's records.
+    if (logPayment && logPayment.amount > 0) {
+      await Payment.create({
+        matric: student.matric,
+        name: student.name,
+        amount: logPayment.amount,
+        method: logPayment.method || 'bank_transfer',
+        reference: logPayment.reference || '',
+        note: logPayment.note || `${tier} tier${durationDays ? ` — ${durationDays} days` : ''}`,
+        status: 'confirmed',
+      });
+    }
+
+    res.json({ success: true, matric: student.matric, tier: student.tier, tierExpiresAt: student.tierExpiresAt });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// GET /api/admin/users/tier-distribution — counts per tier, for the
+// admin dashboard's monetization overview.
+router.get('/users/tier-distribution', async (req, res) => {
+  try {
+    const rows = await Student.aggregate([{ $group: { _id: '$tier', count: { $sum: 1 } } }]);
+    const dist = { free: 0, basic: 0, pro: 0 };
+    rows.forEach(r => { dist[r._id || 'free'] = r.count; });
+    res.json(dist);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 

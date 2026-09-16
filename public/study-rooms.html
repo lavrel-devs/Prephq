@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#0A5CF5">
+<meta name="theme-color" content="#e0e5ec">
 <link rel="manifest" href="/manifest.json">
 <title>PrepHQ — Study Rooms</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -21,47 +21,278 @@
 })();
 </script>
 <style>
+/* ══════════════════════════════════════════════════════════
+   NEUMORPHISM / SOFT UI — Study Rooms
+   ══════════════════════════════════════════════════════════ */
 :root{
-  --bg:#F0F2F8;--surf:rgba(255,255,255,.6);--surf2:rgba(245,246,250,.55);--surf3:rgba(235,236,242,.55);
-  --brand:#0A5CF5;--brand-dk:#0847C4;--brand-lt:rgba(10,92,245,.10);
-  --ok:#00C96B;--ok-lt:rgba(0,201,107,.10);
-  --no:#F5340A;--no-lt:rgba(245,52,10,.10);
-  --warn:#F5930A;--warn-lt:rgba(245,147,10,.10);
-  --purple:#7B2CF5;--purple-lt:rgba(123,44,245,.10);
-  --t1:#0D0F1A;--t2:#2E3247;--t3:#6B7089;--t4:#A8ADCA;
-  --bd:rgba(13,15,26,.09);--bd2:rgba(13,15,26,.14);
-  --r16:16px;--r20:20px;
-  --sh:0 2px 16px rgba(0,0,0,.07);
+  --bg:#e0e5ec;
+  --sd:#b8c0cc;
+  --sl:#ffffff;
+
+  --sh:6px 6px 14px var(--sd), -6px -6px 14px var(--sl);
+  --sh-md:8px 8px 18px var(--sd), -8px -8px 18px var(--sl);
+  --sh-lg:12px 12px 26px var(--sd), -12px -12px 26px var(--sl);
+  --sh-sm:4px 4px 8px var(--sd), -4px -4px 8px var(--sl);
+  --sh-in:inset 4px 4px 10px var(--sd), inset -4px -4px 10px var(--sl);
+  --sh-in-sm:inset 3px 3px 6px var(--sd), inset -3px -3px 6px var(--sl);
+
+  --brand:#4a67d1;--brand-dk:#3a54b8;
+  --brand-lt:rgba(74,103,209,.10);--brand-glow:rgba(74,103,209,.20);
+  --ok:#2d9c6e;--ok-lt:rgba(45,156,110,.12);--ok-bd:rgba(45,156,110,.30);
+  --no:#d14545;--no-lt:rgba(209,69,69,.12);--no-bd:rgba(209,69,69,.30);
+  --warn:#c67a1e;--warn-lt:rgba(198,122,30,.12);
+  --purple:#7b52d1;--purple-lt:rgba(123,82,209,.12);
+
+  --t1:#2a3142;--t2:#4a5568;--t3:#7a8296;--t4:#a8b0c0;
+
+  --bd:transparent;--bd2:transparent;
+
+  --r16:18px;--r20:22px;--rpill:999px;
   --ff-h:'Bricolage Grotesque',system-ui,sans-serif;
   --ff-b:'DM Sans',system-ui,sans-serif;
 }
 [data-theme=dark]{
-  --bg:#0D0F1A;--surf:rgba(26,30,53,.55);--surf2:rgba(34,38,64,.5);--surf3:rgba(42,47,80,.5);
-  --t1:#EEF0FF;--t2:#C5CAE8;--t3:#7E86B0;--t4:#4A5070;
-  --bd:rgba(238,240,255,.08);--bd2:rgba(238,240,255,.14);
+  --bg:#252932;
+  --sd:#181b21;--sl:#323743;
+  --brand:#7c93ff;--brand-dk:#a5b5ff;
+  --brand-lt:rgba(124,147,255,.12);--brand-glow:rgba(124,147,255,.20);
+  --ok:#3dba86;--ok-lt:rgba(61,186,134,.14);--ok-bd:rgba(61,186,134,.30);
+  --no:#e56161;--no-lt:rgba(229,97,97,.14);--no-bd:rgba(229,97,97,.30);
+  --warn:#e09437;--warn-lt:rgba(224,148,55,.14);
+  --purple:#9d7bea;--purple-lt:rgba(157,123,234,.14);
+  --t1:#e8ecf5;--t2:#b8c0d0;--t3:#7a8296;--t4:#4a5060;
 }
+
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-body{font-family:var(--ff-b);background:var(--bg);color:var(--t1);min-height:100dvh;-webkit-font-smoothing:antialiased;}
+body{
+  font-family:var(--ff-b);
+  background:var(--bg);
+  color:var(--t1);
+  min-height:100dvh;
+  -webkit-font-smoothing:antialiased;
+}
 .wrap{max-width:520px;margin:0 auto;padding:18px 18px 120px;}
-.topbar{display:flex;align-items:center;gap:12px;padding:6px 0 16px;}
-.back-btn{width:38px;height:38px;border-radius:50%;background:var(--surf);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t1);flex-shrink:0;}
-.pg-title{font-family:var(--ff-h);font-size:20px;font-weight:800;}
-.card{background:var(--surf);border-radius:var(--r20);padding:18px;box-shadow:var(--sh);border:1px solid var(--bd);margin-bottom:14px;}
-.f-input{width:100%;padding:11px 13px;border-radius:11px;border:1.5px solid var(--bd2);background:var(--surf2);font-size:14px;font-weight:600;color:var(--t1);outline:none;margin-bottom:10px;}
-.btn{border:none;border-radius:12px;padding:12px;font-weight:700;font-size:14px;cursor:pointer;width:100%;background:linear-gradient(135deg,var(--brand),var(--purple));color:#fff;}
-.btn.ghost{background:var(--surf3);color:var(--t1);}
-.sec-title{font-size:13px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.03em;margin-bottom:10px;}
-.lobby-code{font-family:monospace;font-size:32px;font-weight:800;letter-spacing:4px;text-align:center;color:var(--brand);margin:14px 0;}
-.p-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bd);font-size:13.5px;font-weight:600;}
-.p-row:last-child{border-bottom:none;}
-.q-timer{font-family:var(--ff-h);font-weight:800;font-size:28px;text-align:center;color:var(--brand);margin-bottom:10px;}
-.q-text{font-size:16px;font-weight:700;text-align:center;margin-bottom:18px;}
-.opt-btn{display:block;width:100%;text-align:left;padding:13px 16px;border-radius:12px;margin-bottom:8px;border:1.5px solid var(--bd2);background:var(--surf2);font-size:14px;font-weight:600;cursor:pointer;}
-.opt-btn.picked{border-color:var(--brand);background:var(--brand-lt);}
-.opt-btn.correct{border-color:var(--ok);background:var(--ok-lt);}
-.opt-btn.wrong{border-color:var(--no);background:var(--no-lt);}
+
+/* ═══════════════════════════════════════
+   TOPBAR
+═══════════════════════════════════════ */
+.topbar{display:flex;align-items:center;gap:12px;padding:6px 0 20px;}
+.back-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--bg);border:none;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--brand);flex-shrink:0;
+  box-shadow:var(--sh);
+  transition:box-shadow .15s, transform .15s;
+}
+.back-btn:active{transform:scale(.93);box-shadow:var(--sh-in);}
+.back-btn svg{stroke:currentColor;}
+.pg-title{
+  font-family:var(--ff-h);font-size:20px;font-weight:800;
+  color:var(--t1);letter-spacing:-.4px;
+}
+
+/* ═══════════════════════════════════════
+   CARDS
+═══════════════════════════════════════ */
+.card{
+  background:var(--bg);
+  border-radius:var(--r20);
+  padding:20px;
+  box-shadow:var(--sh);
+  border:none;
+  margin-bottom:16px;
+}
+
+/* ═══════════════════════════════════════
+   INPUTS — inset wells
+═══════════════════════════════════════ */
+.f-input{
+  width:100%;
+  padding:13px 16px;
+  border-radius:var(--r16);
+  border:none;
+  background:var(--bg);
+  font-size:14px;
+  font-weight:600;
+  color:var(--t1);
+  outline:none;
+  margin-bottom:12px;
+  box-shadow:var(--sh-in);
+  transition:box-shadow .18s;
+  font-family:var(--ff-b);
+}
+.f-input::placeholder{color:var(--t4);font-weight:500;}
+.f-input:focus{box-shadow:var(--sh-in), 0 0 0 2px var(--brand-lt);}
+
+/* Native select — styled to blend in but keep chevron */
+select.f-input{
+  appearance:none;
+  -webkit-appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='%237a8296'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat:no-repeat;
+  background-position:right 14px center;
+  padding-right:38px;
+  cursor:pointer;
+}
+
+/* ═══════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════ */
+.btn{
+  border:none;
+  border-radius:var(--r16);
+  padding:14px;
+  font-weight:800;
+  font-size:14px;
+  cursor:pointer;
+  width:100%;
+  background:var(--bg);
+  color:var(--brand);
+  box-shadow:var(--sh);
+  font-family:var(--ff-h);
+  transition:box-shadow .15s, transform .15s, color .15s;
+  letter-spacing:-.2px;
+}
+.btn:active{transform:scale(.98);box-shadow:var(--sh-in);}
+.btn.ghost{
+  background:var(--bg);
+  color:var(--t2);
+  box-shadow:var(--sh);
+}
+.btn.ghost:active{box-shadow:var(--sh-in);}
+
+/* ═══════════════════════════════════════
+   SECTION TITLES
+═══════════════════════════════════════ */
+.sec-title{
+  font-size:11.5px;
+  font-weight:800;
+  color:var(--t3);
+  text-transform:uppercase;
+  letter-spacing:.10em;
+  margin-bottom:12px;
+}
+
+/* ═══════════════════════════════════════
+   LOBBY CODE
+═══════════════════════════════════════ */
+.lobby-code{
+  font-family:var(--ff-h);
+  font-size:34px;
+  font-weight:800;
+  letter-spacing:6px;
+  text-align:center;
+  color:var(--brand);
+  margin:18px 0;
+  padding:16px 0;
+  border-radius:var(--r16);
+  background:var(--bg);
+  box-shadow:var(--sh-in), 0 0 0 2px var(--brand-lt);
+  letter-spacing:.10em;
+}
+
+/* ═══════════════════════════════════════
+   PARTICIPANT ROWS
+═══════════════════════════════════════ */
+.p-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 0;
+  box-shadow:0 -1px 0 var(--sd) inset;
+  font-size:13.5px;
+  font-weight:700;
+  color:var(--t1);
+}
+.p-row:first-child{box-shadow:none;}
+.p-row span:last-child{
+  font-family:var(--ff-h);
+  font-size:14.5px;
+  color:var(--brand);
+  letter-spacing:-.3px;
+}
+
+/* ═══════════════════════════════════════
+   QUESTION SCREEN
+═══════════════════════════════════════ */
+.q-timer{
+  font-family:var(--ff-h);
+  font-weight:800;
+  font-size:32px;
+  text-align:center;
+  color:var(--brand);
+  margin-bottom:14px;
+  letter-spacing:-1.5px;
+  padding:12px;
+  border-radius:var(--r16);
+  background:var(--bg);
+  box-shadow:var(--sh-in-sm), 0 0 0 2px var(--brand-lt);
+}
+.q-text{
+  font-size:16px;
+  font-weight:700;
+  text-align:center;
+  margin-bottom:20px;
+  color:var(--t1);
+  font-family:var(--ff-h);
+  line-height:1.5;
+  letter-spacing:-.2px;
+}
+
+/* ═══════════════════════════════════════
+   OPTION BUTTONS — raised → inset on state change
+═══════════════════════════════════════ */
+.opt-btn{
+  display:block;
+  width:100%;
+  text-align:left;
+  padding:14px 16px;
+  border-radius:var(--r16);
+  margin-bottom:10px;
+  border:none;
+  background:var(--bg);
+  color:var(--t1);
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  box-shadow:var(--sh);
+  transition:box-shadow .15s, transform .15s, color .15s;
+  font-family:var(--ff-b);
+  line-height:1.4;
+}
+.opt-btn:active:not(:disabled){
+  transform:scale(.99);
+  box-shadow:var(--sh-in);
+}
+
+/* Picked — inset with brand ring, brand text */
+.opt-btn.picked{
+  color:var(--brand);
+  box-shadow:var(--sh-in), 0 0 0 2px var(--brand-lt);
+}
+
+/* Correct — inset with green ring, green text */
+.opt-btn.correct{
+  color:var(--ok);
+  box-shadow:var(--sh-in), 0 0 0 2px var(--ok-lt);
+}
+
+/* Wrong — inset with red ring, red text */
+.opt-btn.wrong{
+  color:var(--no);
+  box-shadow:var(--sh-in), 0 0 0 2px var(--no-lt);
+}
+
 .opt-btn:disabled{cursor:default;}
+
 .hidden{display:none;}
+
+/* Responsive */
+@media (max-width: 420px){
+  .wrap{padding:16px 16px 100px;}
+  .pg-title{font-size:18px;}
+  .lobby-code{font-size:28px;letter-spacing:.08em;}
+  .q-timer{font-size:28px;}
+}
 </style>
 </head>
 <body>
@@ -77,7 +308,7 @@ body{font-family:var(--ff-b);background:var(--bg);color:var(--t1);min-height:100
     <div class="card">
       <div class="sec-title">Create a Room</div>
       <select class="f-input" id="create-course"><option value="">— select course —</option></select>
-      <div style="display:flex;gap:8px;">
+      <div style="display:flex;gap:10px;">
         <input type="number" class="f-input" id="create-count" placeholder="Questions" value="10" style="flex:1;">
         <input type="number" class="f-input" id="create-seconds" placeholder="Sec/question" value="20" style="flex:1;">
       </div>
@@ -95,17 +326,17 @@ body{font-family:var(--ff-b);background:var(--bg);color:var(--t1);min-height:100
     <div class="card">
       <div class="sec-title" style="text-align:center;">Room Code — share with friends</div>
       <div class="lobby-code" id="waiting-code">—</div>
-      <div id="waiting-course" style="text-align:center;font-size:12.5px;color:var(--t3);margin-bottom:14px;"></div>
+      <div id="waiting-course" style="text-align:center;font-size:12.5px;color:var(--t3);margin-bottom:16px;font-weight:600;"></div>
       <div id="waiting-participants"></div>
-      <button class="btn" id="start-room-btn" style="margin-top:14px;display:none;" onclick="startRoom()">Start Room</button>
-      <div id="waiting-hint" style="text-align:center;font-size:12px;color:var(--t3);margin-top:10px;">Waiting for the host to start…</div>
+      <button class="btn" id="start-room-btn" style="margin-top:16px;display:none;" onclick="startRoom()">Start Room</button>
+      <div id="waiting-hint" style="text-align:center;font-size:12px;color:var(--t3);margin-top:12px;font-weight:500;">Waiting for the host to start…</div>
     </div>
   </div>
 
   <!-- ═══ SCREEN: LIVE QUESTION ═══ -->
   <div id="screen-question" class="hidden">
     <div class="card">
-      <div style="font-size:11.5px;color:var(--t3);text-align:center;margin-bottom:4px;" id="q-progress">Question 1 of 10</div>
+      <div style="font-size:11.5px;color:var(--t3);text-align:center;margin-bottom:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;" id="q-progress">Question 1 of 10</div>
       <div class="q-timer" id="q-timer">20</div>
       <div class="q-text" id="q-text"></div>
       <div id="q-options"></div>
@@ -121,7 +352,7 @@ body{font-family:var(--ff-b);background:var(--bg);color:var(--t1);min-height:100
     <div class="card">
       <div class="sec-title" style="text-align:center;">Final Results</div>
       <div id="final-scores"></div>
-      <button class="btn" style="margin-top:14px;" onclick="window.location.href='/study-rooms'">Back to Lobby</button>
+      <button class="btn" style="margin-top:16px;" onclick="window.location.href='/study-rooms'">Back to Lobby</button>
     </div>
   </div>
 </div>

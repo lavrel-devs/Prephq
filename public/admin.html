@@ -339,7 +339,7 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
             </div>
           </div>
           <div class="tbl-wrap"><table>
-            <thead><tr><th style="width:30px;"><input type="checkbox" onchange="toggleAllSt(this.checked)"></th><th>Name</th><th>Matric</th><th>Username</th><th>Phone</th><th>WhatsApp</th><th>Credits</th><th>Quizzes</th><th>Best</th><th>Status</th><th>Actions</th></tr></thead>
+            <thead><tr><th style="width:30px;"><input type="checkbox" onchange="toggleAllSt(this.checked)"></th><th>Name</th><th>Matric</th><th>Plan</th><th>Username</th><th>Phone</th><th>WhatsApp</th><th>Credits</th><th>Quizzes</th><th>Best</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody id="st-body"></tbody>
           </table></div>
         </div>
@@ -429,6 +429,23 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
           <div class="tbl-wrap"><table>
             <thead><tr><th>Code</th><th>Title</th><th>Department</th><th>Level</th><th>Topics</th><th>Actions</th></tr></thead>
             <tbody id="course-body"></tbody>
+          </table></div>
+        </div>
+
+        <!-- v1.4.1: who's registered for what this semester, and how
+             active they actually are on that specific course. -->
+        <div class="tw">
+          <div class="th">
+            <div class="th-title">Students by Course</div>
+            <div class="th-right">
+              <select id="bc-course-select" style="padding:8px 12px;border-radius:var(--rpill);border:1.5px solid var(--bd2);background:var(--surf2);font-size:12px;font-weight:600;" onchange="loadStudentsByCourse(this.value)">
+                <option value="">Select a course…</option>
+              </select>
+            </div>
+          </div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Name</th><th>Matric</th><th>Username</th><th>Plan</th><th>Attempts (this course)</th><th>Accuracy</th></tr></thead>
+            <tbody id="bc-body"><tr><td colspan="6" style="text-align:center;color:var(--t3);padding:20px;">Select a course above</td></tr></tbody>
           </table></div>
         </div>
       </div>
@@ -729,6 +746,57 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
             <div><label style="font-size:13px;font-weight:600;">Monthly limit (msgs):</label><input type="number" id="cs-chatbot-monthly" class="f-input" style="width:100px;" onchange="saveCreditSettings()"></div>
           </div>
         </div>
+
+        <!-- v1.4: SUBSCRIPTION PLANS ────────────────────────── -->
+        <div class="tw" style="padding:20px;margin-top:20px;">
+          <div class="th-title" style="margin-bottom:4px;">Subscription Plans</div>
+          <div style="font-size:12px;color:var(--t3);margin-bottom:18px;">Free-tier daily caps, and Basic/Pro pricing & limits. Changes apply immediately, no redeploy.</div>
+
+          <div style="margin-bottom:20px;">
+            <b style="font-size:13px;">Free tier daily caps</b>
+            <div style="display:flex;gap:20px;align-items:center;margin-top:8px;flex-wrap:wrap;">
+              <div><label style="font-size:12px;color:var(--t3);">Questions/day:</label><input type="number" id="ts-free-questions" class="f-input" style="width:90px;" onchange="saveTierSettings()"></div>
+              <div><label style="font-size:12px;color:var(--t3);">AI quizzes/day:</label><input type="number" id="ts-free-aiquiz" class="f-input" style="width:90px;" onchange="saveTierSettings()"></div>
+              <div><label style="font-size:12px;color:var(--t3);">AI chat msgs/day:</label><input type="number" id="ts-free-aichat" class="f-input" style="width:90px;" onchange="saveTierSettings()"></div>
+            </div>
+          </div>
+
+          <div style="margin-bottom:20px;">
+            <b style="font-size:13px;">Basic tier</b>
+            <div style="display:flex;gap:20px;align-items:center;margin-top:8px;flex-wrap:wrap;">
+              <div><label style="font-size:12px;color:var(--t3);">Monthly (₦):</label><input type="number" id="ts-basic-monthly" class="f-input" style="width:100px;" onchange="onBasicMonthlyChange()"></div>
+              <div><label style="font-size:12px;color:var(--t3);">Yearly (₦):</label><input type="number" id="ts-basic-yearly" class="f-input" style="width:100px;" onchange="saveTierSettings()"></div>
+            </div>
+            <div style="display:flex;gap:20px;align-items:center;margin-top:10px;flex-wrap:wrap;">
+              <div><label style="font-size:12px;color:var(--t3);">Questions/day:</label><input type="number" id="ts-basic-questions" class="f-input" style="width:90px;" placeholder="Unlimited" onchange="saveTierSettings()"></div>
+              <div><label style="font-size:12px;color:var(--t3);">AI quizzes/day:</label><input type="number" id="ts-basic-aiquiz" class="f-input" style="width:90px;" placeholder="Unlimited" onchange="saveTierSettings()"></div>
+              <div><label style="font-size:12px;color:var(--t3);">AI chat msgs/day:</label><input type="number" id="ts-basic-aichat" class="f-input" style="width:90px;" placeholder="Unlimited" onchange="saveTierSettings()"></div>
+            </div>
+            <div style="font-size:11.5px;color:var(--t4);margin-top:6px;">Leave any cap blank for unlimited.</div>
+          </div>
+
+          <div style="margin-bottom:20px;">
+            <b style="font-size:13px;">Pro tier</b>
+            <div style="display:flex;gap:20px;align-items:center;margin-top:8px;flex-wrap:wrap;">
+              <div><label style="font-size:12px;color:var(--t3);">Monthly (₦):</label><input type="number" id="ts-pro-monthly" class="f-input" style="width:100px;" onchange="onProMonthlyChange()"></div>
+              <div><label style="font-size:12px;color:var(--t3);">Yearly (₦):</label><input type="number" id="ts-pro-yearly" class="f-input" style="width:100px;" onchange="saveTierSettings()"></div>
+            </div>
+            <div style="display:flex;gap:20px;align-items:center;margin-top:10px;flex-wrap:wrap;">
+              <div><label style="font-size:12px;color:var(--t3);">Questions/day:</label><input type="number" id="ts-pro-questions" class="f-input" style="width:90px;" placeholder="Unlimited" onchange="saveTierSettings()"></div>
+              <div><label style="font-size:12px;color:var(--t3);">AI quizzes/day:</label><input type="number" id="ts-pro-aiquiz" class="f-input" style="width:90px;" placeholder="Unlimited" onchange="saveTierSettings()"></div>
+              <div><label style="font-size:12px;color:var(--t3);">AI chat msgs/day:</label><input type="number" id="ts-pro-aichat" class="f-input" style="width:90px;" placeholder="Unlimited" onchange="saveTierSettings()"></div>
+            </div>
+            <div style="font-size:11.5px;color:var(--t4);margin-top:6px;">Leave any cap blank for unlimited. Yearly auto-fills to 10× monthly (2 months free) when you change the monthly price — feel free to override it after.</div>
+          </div>
+
+          <div>
+            <b style="font-size:13px;">Upgrade contact (paywall "Message admin" button)</b>
+            <div style="margin-top:8px;">
+              <label style="font-size:12px;color:var(--t3);">WhatsApp number (with country code, digits only):</label>
+              <input type="text" id="ts-whatsapp" class="f-input" style="width:220px;" placeholder="e.g. 2348012345678" onchange="saveTierSettings()">
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- ═══ v1.3: ANALYTICS ══════════════════════════════ -->
@@ -974,6 +1042,73 @@ function adminFetch(url, opts = {}) {
 // window.open() can't attach an Authorization header, so CSV export
 // buttons (which hit auth-gated endpoints) need to fetch the file with
 // adminFetch and then trigger the download client-side instead.
+async function loadCourseList(){
+  try{
+    const r = await adminFetch('/api/admin/users/course-list', { headers: {} });
+    const rows = await r.json();
+    const sel = document.getElementById('bc-course-select');
+    const current = sel.value;
+    sel.innerHTML = '<option value="">Select a course…</option>' +
+      rows.map(row => `<option value="${escHtml(row.course)}">${escHtml(row.course)} (${row.students})</option>`).join('');
+    if(current) sel.value = current;
+  }catch(e){}
+}
+
+async function loadStudentsByCourse(course){
+  const body = document.getElementById('bc-body');
+  if(!course){ body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--t3);padding:20px;">Select a course above</td></tr>'; return; }
+  body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--t3);padding:20px;">Loading…</td></tr>';
+  try{
+    const r = await adminFetch(`/api/admin/users/by-course/${encodeURIComponent(course)}`, { headers: {} });
+    const d = await r.json();
+    if(!d.students.length){ body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--t3);padding:20px;">No students registered for this course yet</td></tr>'; return; }
+    body.innerHTML = d.students.map(s => `
+      <tr>
+        <td>${escHtml(s.name)}</td>
+        <td>${escHtml(s.matric)}</td>
+        <td>${s.username ? '@'+escHtml(s.username) : '—'}</td>
+        <td><span class="badge b-brand" style="text-transform:capitalize;">${s.tier}</span></td>
+        <td>${s.attempts}</td>
+        <td>${s.accuracy != null ? s.accuracy+'%' : '—'}</td>
+      </tr>
+    `).join('');
+  }catch(e){ body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--no);padding:20px;">Failed to load</td></tr>'; }
+}
+
+async function adminSetTier(matric, tier, durationDays, refreshFn){
+  if(durationDays === undefined) durationDays = tier === 'free' ? 0 : 30;
+  try{
+    const r = await adminFetch(`/api/admin/users/${matric}/tier`, {
+      method:'PUT', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ tier, durationDays }),
+    });
+    if(!r.ok){ const d = await r.json(); toast(d.error || 'Could not update tier'); return; }
+    const d = await r.json();
+    toast(tier === 'free' ? `${matric} moved to Free` : `${matric} set to ${tier} for ${durationDays} day${durationDays===1?'':'s'} (until ${new Date(d.tierExpiresAt).toLocaleDateString()})`);
+    if(refreshFn) refreshFn(); else loadStudents();
+  }catch(e){ toast('Could not update tier'); }
+}
+
+// v1.4.2: quick "Plan" action directly from the Students table row —
+// previously the only way to change a student's tier was to open the
+// full Detail panel first, which made it easy to miss entirely.
+// Duration is now admin-chosen per grant, not a fixed 30 days.
+async function openPlanPicker(matric, currentTier, refreshFn){
+  const tier = prompt(`Set plan for ${matric}\nCurrent: ${currentTier}\n\nType one of: free, basic, pro`, currentTier)?.trim().toLowerCase();
+  if(!tier) return;
+  if(!['free','basic','pro'].includes(tier)){ toast('Plan must be free, basic, or pro'); return; }
+
+  let durationDays = 0;
+  if(tier !== 'free'){
+    const input = prompt(`How many days should ${tier} last for ${matric}?\n(e.g. 30 for a month, 365 for a year)`, '30');
+    if(input === null) return; // cancelled
+    durationDays = parseInt(input, 10);
+    if(!durationDays || durationDays <= 0){ toast('Enter a positive number of days'); return; }
+  }
+
+  adminSetTier(matric, tier, durationDays, refreshFn || loadStudents);
+}
+
 async function downloadCsv(url, filename){
   try{
     const r = await adminFetch(url, { headers: {} });
@@ -1043,7 +1178,7 @@ function go(v, el) {
   if(v==='students')  loadStudents();
   if(v==='codes')     loadCodes('all');
   if(v==='payments')  loadPayments();
-  if(v==='courses')   loadCourses();
+  if(v==='courses')   { loadCourses(); loadCourseList(); }
   if(v==='questions') loadQuestions();
   if(v==='bulk-upload'){ if(!allCourses.length) loadCourses().then(initBulkUpload); else initBulkUpload(); }
   if(v==='contests') loadContests();
@@ -1109,6 +1244,10 @@ function renderStudents(list) {
       <td><input type="checkbox" class="st-check" value="${s.matric}" ${selectedStudents.has(s.matric)?'checked':''} onchange="toggleSt('${s.matric}',this.checked)"></td>
       <td style="font-weight:700">${s.name}</td>
       <td style="font-family:var(--ff-h);font-size:12px">${s.matric}</td>
+      <td>
+        <span class="badge ${s.tier==='pro'?'b-brand':s.tier==='basic'?'b-ok':'b-warn'}" style="text-transform:capitalize;">${s.tier||'free'}</span>
+        ${s.tierExpiresAt ? `<div style="font-size:10px;color:var(--t3);margin-top:2px;">until ${new Date(s.tierExpiresAt).toLocaleDateString()}</div>` : ''}
+      </td>
       <td style="font-size:12px;color:var(--t3);">${s.username ? '@'+s.username : '—'}</td>
       <td>${s.phone||'—'}</td>
       <td>${s.whatsapp||'—'}</td>
@@ -1117,6 +1256,7 @@ function renderStudents(list) {
       <td><span class="badge ${s.best>=70?'b-ok':s.best>=50?'b-warn':'b-no'}">${s.best}%</span></td>
       <td><span class="badge ${s.active?'b-ok':'b-no'}">${s.active?'Active':'Suspended'}</span></td>
       <td><div class="act-row">
+        <button class="ab ab-edit" onclick="openPlanPicker('${s.matric}','${s.tier||'free'}')"><i class="fa-solid fa-crown"></i> Plan</button>
         <button class="ab" onclick="openStudentDetail('${s.matric}')">Detail</button>
         <button class="ab ab-copy" onclick="revealLogin('${s.matric}','${s.password||s.matric}')">Login</button>
         <button class="ab ab-edit" onclick="creditStudent('${s.matric}', ${s.credits||0})"><i class="fa-solid fa-coins"></i> Credit</button>
@@ -1196,6 +1336,11 @@ async function openStudentDetail(matric){
         <div style="font-size:13px;">Username: <b>${p.username ? '@'+p.username : 'not set'}</b></div>
         <button class="ab ab-edit" onclick="forceResetUsername('${p.matric}')">Reset Username</button>
       </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;background:var(--surf2);border-radius:12px;padding:10px 12px;">
+        <div style="font-size:13px;">Plan: <b style="text-transform:capitalize;">${p.tier || 'free'}</b>${p.tierExpiresAt ? ` (until ${new Date(p.tierExpiresAt).toLocaleDateString()})` : ''}</div>
+        <button class="ab ab-edit" onclick="openPlanPicker('${p.matric}','${p.tier||'free'}',()=>openStudentDetail('${p.matric}'))"><i class="fa-solid fa-crown"></i> Change Plan</button>
+      </div>
+      <button class="ab ab-edit" style="margin-bottom:14px;" onclick="downloadCsv('/api/admin/users/${p.matric}/report.pdf', '${p.matric}-performance-report.pdf')"><i class="fa-solid fa-file-pdf"></i> Download Performance Report (PDF)</button>
       <div style="font-weight:700;font-size:13px;margin-bottom:6px;">Recent Credit Transactions</div>
       <div style="max-height:140px;overflow-y:auto;margin-bottom:14px;">
         ${d.credits.recentTransactions.slice(0,10).map(t => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd);font-size:12.5px;"><span>${t.reason}${t.note?' — '+escHtml(t.note):''}</span><span style="font-weight:700;color:${t.delta>0?'var(--ok)':'var(--no)'};">${t.delta>0?'+':''}${t.delta}</span></div>`).join('') || '<div style="color:var(--t3);font-size:12px;">None yet</div>'}
@@ -2166,6 +2311,22 @@ async function loadCreditSettings(){
     document.getElementById('cs-chatbot-toggle').classList.toggle('on', s.aiChatbot.enabled);
     document.getElementById('cs-chatbot-daily').value = s.aiChatbot.dailyLimit;
     document.getElementById('cs-chatbot-monthly').value = s.aiChatbot.monthlyLimit;
+
+    // v1.4: subscription tiers + support contact
+    document.getElementById('ts-free-questions').value = s.tiers.free.dailyQuestions ?? '';
+    document.getElementById('ts-free-aiquiz').value = s.tiers.free.dailyAIQuizzes ?? '';
+    document.getElementById('ts-free-aichat').value = s.tiers.free.dailyAIChatMessages ?? '';
+    document.getElementById('ts-basic-monthly').value = s.tiers.basic.priceMonthly ?? '';
+    document.getElementById('ts-basic-yearly').value = s.tiers.basic.priceYearly ?? '';
+    document.getElementById('ts-basic-questions').value = s.tiers.basic.dailyQuestions ?? '';
+    document.getElementById('ts-basic-aiquiz').value = s.tiers.basic.dailyAIQuizzes ?? '';
+    document.getElementById('ts-basic-aichat').value = s.tiers.basic.dailyAIChatMessages ?? '';
+    document.getElementById('ts-pro-monthly').value = s.tiers.pro.priceMonthly ?? '';
+    document.getElementById('ts-pro-yearly').value = s.tiers.pro.priceYearly ?? '';
+    document.getElementById('ts-pro-questions').value = s.tiers.pro.dailyQuestions ?? '';
+    document.getElementById('ts-pro-aiquiz').value = s.tiers.pro.dailyAIQuizzes ?? '';
+    document.getElementById('ts-pro-aichat').value = s.tiers.pro.dailyAIChatMessages ?? '';
+    document.getElementById('ts-whatsapp').value = s.support?.whatsapp || '';
   }catch(e){}
 }
 function toggleCreditSetting(which){
@@ -2202,6 +2363,57 @@ async function saveCreditSettings(){
       method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body),
     });
   }catch(e){}
+}
+
+// v1.4: subscription tiers + support contact — saved separately from
+// saveCreditSettings() above so a tier-field edit doesn't need to
+// re-send every credit-economy field too.
+function emptyToNull(v){ return v === '' ? null : (parseInt(v, 10) || 0); }
+async function saveTierSettings(){
+  const body = {
+    tiers: {
+      free: {
+        dailyQuestions: emptyToNull(document.getElementById('ts-free-questions').value),
+        dailyAIQuizzes: emptyToNull(document.getElementById('ts-free-aiquiz').value),
+        dailyAIChatMessages: emptyToNull(document.getElementById('ts-free-aichat').value),
+      },
+      basic: {
+        priceMonthly: parseInt(document.getElementById('ts-basic-monthly').value, 10) || 0,
+        priceYearly: parseInt(document.getElementById('ts-basic-yearly').value, 10) || 0,
+        dailyQuestions: emptyToNull(document.getElementById('ts-basic-questions').value),
+        dailyAIQuizzes: emptyToNull(document.getElementById('ts-basic-aiquiz').value),
+        dailyAIChatMessages: emptyToNull(document.getElementById('ts-basic-aichat').value),
+      },
+      pro: {
+        priceMonthly: parseInt(document.getElementById('ts-pro-monthly').value, 10) || 0,
+        priceYearly: parseInt(document.getElementById('ts-pro-yearly').value, 10) || 0,
+        dailyQuestions: emptyToNull(document.getElementById('ts-pro-questions').value),
+        dailyAIQuizzes: emptyToNull(document.getElementById('ts-pro-aiquiz').value),
+        dailyAIChatMessages: emptyToNull(document.getElementById('ts-pro-aichat').value),
+      },
+    },
+    support: {
+      whatsapp: document.getElementById('ts-whatsapp').value.trim(),
+    },
+  };
+  try{
+    await adminFetch('/api/admin/credit-settings', {
+      method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body),
+    });
+  }catch(e){}
+}
+// Marketing angle: yearly = 10× monthly, i.e. "pay for 10 months, get
+// 2 free". Auto-fills yearly when monthly changes — admin can still
+// hand-edit yearly afterwards if they want a different deal.
+function onBasicMonthlyChange(){
+  const m = parseInt(document.getElementById('ts-basic-monthly').value, 10) || 0;
+  document.getElementById('ts-basic-yearly').value = m * 10;
+  saveTierSettings();
+}
+function onProMonthlyChange(){
+  const m = parseInt(document.getElementById('ts-pro-monthly').value, 10) || 0;
+  document.getElementById('ts-pro-yearly').value = m * 10;
+  saveTierSettings();
 }
 
 // ══════════════════════════════════════════════════════════════

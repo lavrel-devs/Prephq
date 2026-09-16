@@ -42,18 +42,45 @@ router.get('/stats', async (req, res) => {
       ? Math.round(allScores.reduce((a, b) => a + b.pct, 0) / allScores.length) : 0;
 
     const students = await Student.find().lean();
-    const scoreMap = {};
+
+    // v1.4 fix: "top scorers" used to be a lifetime average, which meant
+    // a rough start months ago permanently buried anyone who's actively
+    // improving now — a fresh 100% barely moved a long history's average,
+    // while a brand-new account with 2 lucky quizzes could outrank them.
+    // Now it's each student's best recent streak: their highest average
+    // over any 5 consecutive quizzes, considering only quizzes from the
+    // last RECENCY_WINDOW_DAYS — so it reflects who's doing well *now*.
+    const RECENCY_WINDOW_DAYS = 14;
+    const STREAK_LEN = 5;
+    const cutoff = new Date(Date.now() - RECENCY_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+
+    const scoresByMatric = {};
     allScores.forEach(s => {
-      if (!scoreMap[s.matric]) scoreMap[s.matric] = [];
-      scoreMap[s.matric].push(s.pct);
+      if (new Date(s.ts) < cutoff) return; // stale — doesn't count toward current form
+      if (!scoresByMatric[s.matric]) scoresByMatric[s.matric] = [];
+      scoresByMatric[s.matric].push(s);
     });
-    const topStudents = Object.entries(scoreMap)
-      .map(([m, pcts]) => ({
-        matric: m,
-        name: students.find(u => u.matric === m)?.name || m,
-        avg: Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length),
-        quizzes: pcts.length,
-      }))
+
+    const topStudents = Object.entries(scoresByMatric)
+      .map(([m, scores]) => {
+        const sorted = scores.sort((a, b) => new Date(a.ts) - new Date(b.ts));
+        let bestStreakAvg = 0;
+        for (let i = 0; i + STREAK_LEN <= sorted.length; i++) {
+          const window = sorted.slice(i, i + STREAK_LEN);
+          const windowAvg = window.reduce((a, s) => a + s.pct, 0) / window.length;
+          if (windowAvg > bestStreakAvg) bestStreakAvg = windowAvg;
+        }
+        // Fewer than STREAK_LEN recent quizzes: use their average of
+        // whatever recent quizzes they do have, so active new/light
+        // users still show up rather than being excluded outright.
+        if (!bestStreakAvg) bestStreakAvg = sorted.reduce((a, s) => a + s.pct, 0) / sorted.length;
+        return {
+          matric: m,
+          name: students.find(u => u.matric === m)?.name || m,
+          avg: Math.round(bestStreakAvg),
+          quizzes: sorted.length,
+        };
+      })
       .sort((a, b) => b.avg - a.avg)
       .slice(0, 5);
 

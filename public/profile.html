@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#0A5CF5">
+<meta name="theme-color" content="#e0e5ec">
 <link rel="manifest" href="/manifest.json">
 <title>PrepHQ — Profile</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -20,54 +20,335 @@
 })();
 </script>
 <style>
+/* ══════════════════════════════════════════════════════════
+   NEUMORPHISM / SOFT UI — Profile
+   ══════════════════════════════════════════════════════════ */
 :root{
-  --bg:#F0F2F8;--surf:rgba(255,255,255,.6);--surf2:rgba(245,246,250,.55);--surf3:rgba(235,236,242,.55);
-  --brand:#0A5CF5;--brand-dk:#0847C4;--brand-lt:rgba(10,92,245,.10);--brand-glow:rgba(10,92,245,.22);
-  --ok:#00C96B;--ok-lt:rgba(0,201,107,.10);--ok-bd:rgba(0,201,107,.28);
-  --no:#F5340A;--no-lt:rgba(245,52,10,.10);--no-bd:rgba(245,52,10,.28);
-  --warn:#F5930A;--warn-lt:rgba(245,147,10,.10);
-  --purple:#7B2CF5;--purple-lt:rgba(123,44,245,.10);
-  --teal:#0ABCF5;--teal-lt:rgba(10,188,245,.10);
-  --t1:#0D0F1A;--t2:#2E3247;--t3:#6B7089;--t4:#A8ADCA;
-  --bd:rgba(13,15,26,.09);--bd2:rgba(13,15,26,.14);
-  --r8:8px;--r12:12px;--r16:16px;--r20:20px;--r24:24px;--rpill:999px;
-  --sh:0 2px 16px rgba(0,0,0,.07);--sh-md:0 6px 28px rgba(0,0,0,.10);--sh-lg:0 14px 48px rgba(0,0,0,.13);
+  --bg:#e0e5ec;
+  --sd:#b8c0cc;
+  --sl:#ffffff;
+
+  --sh:6px 6px 14px var(--sd), -6px -6px 14px var(--sl);
+  --sh-md:8px 8px 18px var(--sd), -8px -8px 18px var(--sl);
+  --sh-lg:12px 12px 26px var(--sd), -12px -12px 26px var(--sl);
+  --sh-sm:4px 4px 8px var(--sd), -4px -4px 8px var(--sl);
+  --sh-in:inset 4px 4px 10px var(--sd), inset -4px -4px 10px var(--sl);
+  --sh-in-sm:inset 3px 3px 6px var(--sd), inset -3px -3px 6px var(--sl);
+
+  --brand:#4a67d1;--brand-dk:#3a54b8;
+  --brand-lt:rgba(74,103,209,.10);--brand-glow:rgba(74,103,209,.20);
+  --ok:#2d9c6e;--ok-lt:rgba(45,156,110,.12);--ok-bd:rgba(45,156,110,.30);
+  --no:#d14545;--no-lt:rgba(209,69,69,.12);--no-bd:rgba(209,69,69,.30);
+  --warn:#c67a1e;--warn-lt:rgba(198,122,30,.12);
+  --purple:#7b52d1;--purple-lt:rgba(123,82,209,.12);
+  --teal:#2d9cb8;--teal-lt:rgba(45,156,184,.12);
+
+  --t1:#2a3142;--t2:#4a5568;--t3:#7a8296;--t4:#a8b0c0;
+
+  --bd:transparent;--bd2:transparent;
+
+  --r8:10px;--r12:14px;--r16:18px;--r20:22px;--r24:26px;--rpill:999px;
   --ff-h:'Bricolage Grotesque',system-ui,sans-serif;
   --ff-b:'DM Sans',system-ui,sans-serif;
   --ease-o:cubic-bezier(.22,1,.36,1);
 }
 [data-theme=dark]{
-  --bg:#0D0F1A;--surf:rgba(26,30,53,.55);--surf2:rgba(34,38,64,.5);--surf3:rgba(42,47,80,.5);
-  --t1:#EEF0FF;--t2:#C5CAE8;--t3:#7E86B0;--t4:#4A5070;
-  --bd:rgba(238,240,255,.08);--bd2:rgba(238,240,255,.14);
+  --bg:#252932;
+  --sd:#181b21;--sl:#323743;
+  --brand:#7c93ff;--brand-dk:#a5b5ff;
+  --brand-lt:rgba(124,147,255,.12);--brand-glow:rgba(124,147,255,.20);
+  --ok:#3dba86;--ok-lt:rgba(61,186,134,.14);--ok-bd:rgba(61,186,134,.30);
+  --no:#e56161;--no-lt:rgba(229,97,97,.14);--no-bd:rgba(229,97,97,.30);
+  --warn:#e09437;--warn-lt:rgba(224,148,55,.14);
+  --purple:#9d7bea;--purple-lt:rgba(157,123,234,.14);
+  --teal:#4db8d4;--teal-lt:rgba(77,184,212,.14);
+  --t1:#e8ecf5;--t2:#b8c0d0;--t3:#7a8296;--t4:#4a5060;
 }
+
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html{height:100%;}
-body{font-family:var(--ff-b);background:var(--bg);color:var(--t1);min-height:100dvh;-webkit-font-smoothing:antialiased;}
+body{
+  font-family:var(--ff-b);
+  background:var(--bg);
+  color:var(--t1);
+  min-height:100dvh;
+  -webkit-font-smoothing:antialiased;
+}
 .wrap{max-width:520px;margin:0 auto;padding:18px 18px 120px;}
-.topbar{display:flex;align-items:center;gap:12px;padding:6px 0 18px;}
-.back-btn{width:38px;height:38px;border-radius:50%;background:var(--surf);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t1);flex-shrink:0;}
-.pg-title{font-family:var(--ff-h);font-size:20px;font-weight:800;}
-.card{background:var(--surf);border-radius:var(--r20);padding:20px;box-shadow:var(--sh);border:1px solid var(--bd);margin-bottom:14px;}
-.avatar-row{display:flex;align-items:center;gap:14px;margin-bottom:6px;}
-.avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--purple));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:20px;font-family:var(--ff-h);flex-shrink:0;}
-.uname{font-family:var(--ff-h);font-weight:800;font-size:17px;}
-.uhandle{font-size:13px;color:var(--t3);}
-.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px;}
-.stat-box{background:var(--surf2);border-radius:14px;padding:12px 8px;text-align:center;}
-.stat-val{font-family:var(--ff-h);font-weight:800;font-size:18px;color:var(--t1);}
-.stat-lbl{font-size:10.5px;color:var(--t3);font-weight:700;margin-top:2px;text-transform:uppercase;letter-spacing:.03em;}
-.sec-title{font-size:12.5px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.03em;margin:18px 0 8px;}
-.txn-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--bd);}
-.txn-row:last-child{border-bottom:none;}
-.txn-desc{font-size:13.5px;font-weight:600;color:var(--t1);}
-.txn-date{font-size:11.5px;color:var(--t4);margin-top:2px;}
-.txn-amt{font-weight:800;font-size:14px;}
+
+/* ═══════════════════════════════════════
+   TOPBAR
+═══════════════════════════════════════ */
+.topbar{display:flex;align-items:center;gap:12px;padding:6px 0 20px;}
+.back-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--bg);border:none;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--brand);flex-shrink:0;
+  box-shadow:var(--sh);
+  transition:box-shadow .15s, transform .15s;
+}
+.back-btn:active{transform:scale(.93);box-shadow:var(--sh-in);}
+.pg-title{
+  font-family:var(--ff-h);font-size:20px;font-weight:800;
+  color:var(--t1);letter-spacing:-.4px;
+}
+
+/* ═══════════════════════════════════════
+   CARDS
+═══════════════════════════════════════ */
+.card{
+  background:var(--bg);
+  border-radius:var(--r20);
+  padding:20px;
+  box-shadow:var(--sh);
+  border:none;
+  margin-bottom:16px;
+}
+
+/* ═══════════════════════════════════════
+   AVATAR
+═══════════════════════════════════════ */
+.avatar-row{display:flex;align-items:center;gap:14px;margin-bottom:8px;}
+.avatar{
+  width:60px;height:60px;border-radius:50%;
+  background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--brand);
+  font-weight:800;font-size:22px;
+  font-family:var(--ff-h);
+  flex-shrink:0;
+  box-shadow:var(--sh);
+  letter-spacing:-.5px;
+}
+.uname{
+  font-family:var(--ff-h);font-weight:800;font-size:17px;
+  color:var(--t1);letter-spacing:-.3px;
+}
+.uhandle{font-size:13px;color:var(--t3);margin-top:2px;font-weight:600;}
+
+/* ═══════════════════════════════════════
+   DISPLAY NAME FIELD
+═══════════════════════════════════════ */
+.field-btn{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--bg);
+  border-radius:var(--r12);
+  padding:14px 16px;
+  margin-top:12px;
+  box-shadow:var(--sh-in);
+}
+.field-btn input{
+  border:none;background:transparent;
+  font-size:14px;font-weight:700;
+  color:var(--t1);outline:none;width:100%;
+  margin-top:4px;
+  font-family:var(--ff-b);
+}
+.field-btn input::placeholder{color:var(--t4);font-weight:500;}
+
+/* ═══════════════════════════════════════
+   STAT GRID
+═══════════════════════════════════════ */
+.stat-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-top:16px;
+}
+.stat-box{
+  background:var(--bg);
+  border-radius:var(--r12);
+  padding:14px 8px;
+  text-align:center;
+  box-shadow:var(--sh-sm);
+}
+.stat-val{
+  font-family:var(--ff-h);font-weight:800;font-size:19px;
+  color:var(--brand);letter-spacing:-.5px;
+}
+.stat-lbl{
+  font-size:10px;color:var(--t3);font-weight:800;
+  margin-top:4px;text-transform:uppercase;
+  letter-spacing:.08em;
+}
+
+/* ═══════════════════════════════════════
+   SECTION TITLES
+═══════════════════════════════════════ */
+.sec-title{
+  font-size:12px;font-weight:800;
+  color:var(--t3);
+  text-transform:uppercase;
+  letter-spacing:.10em;
+  margin:22px 4px 10px;
+}
+
+/* ═══════════════════════════════════════
+   TRANSFER ROWS
+═══════════════════════════════════════ */
+.txn-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 0;
+  box-shadow:0 -1px 0 var(--sd) inset;
+}
+.txn-row:first-child{box-shadow:none;}
+.txn-desc{font-size:13.5px;font-weight:700;color:var(--t1);}
+.txn-date{font-size:11.5px;color:var(--t4);margin-top:3px;font-weight:500;}
+.txn-amt{font-weight:800;font-size:14.5px;font-family:var(--ff-h);letter-spacing:-.3px;}
 .txn-amt.pos{color:var(--ok);}
 .txn-amt.neg{color:var(--no);}
-.empty{text-align:center;padding:24px;color:var(--t3);font-size:13px;}
-.btn{border:none;border-radius:12px;padding:10px 16px;font-weight:700;font-size:13px;cursor:pointer;background:var(--brand-lt);color:var(--brand);}
-.field-btn{display:flex;align-items:center;justify-content:space-between;background:var(--surf2);border-radius:12px;padding:12px 14px;margin-top:6px;}
+
+.empty{
+  text-align:center;padding:30px 20px;
+  color:var(--t3);font-size:13px;font-weight:500;
+}
+
+/* ═══════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════ */
+.btn{
+  border:none;
+  border-radius:var(--r12);
+  padding:11px 18px;
+  font-weight:800;
+  font-size:12.5px;
+  cursor:pointer;
+  background:var(--bg);
+  color:var(--brand);
+  box-shadow:var(--sh-sm);
+  transition:box-shadow .15s, transform .15s, color .15s;
+  font-family:var(--ff-h);
+  letter-spacing:-.1px;
+}
+.btn:active{transform:scale(.96);box-shadow:var(--sh-in-sm);}
+.btn.primary{
+  color:#fff;
+  background:var(--bg);
+  box-shadow:var(--sh), 0 0 0 2px var(--brand);
+  color:var(--brand);
+  font-weight:800;
+}
+
+/* ═══════════════════════════════════════
+   FORM INPUTS (grading, GPA calculator)
+═══════════════════════════════════════ */
+.neu-input{
+  border:none;
+  background:var(--bg);
+  border-radius:var(--r8);
+  padding:9px 11px;
+  font-size:12.5px;
+  font-weight:700;
+  color:var(--t1);
+  outline:none;
+  box-shadow:var(--sh-in-sm);
+  transition:box-shadow .18s;
+  font-family:var(--ff-b);
+}
+.neu-input::placeholder{color:var(--t4);font-weight:500;}
+.neu-input:focus{box-shadow:var(--sh-in-sm), 0 0 0 2px var(--brand-lt);}
+
+/* ═══════════════════════════════════════
+   PLAN CARD
+═══════════════════════════════════════ */
+#plan-card{
+  border:none;
+  box-shadow:var(--sh-md), 0 0 0 2px var(--brand-lt);
+}
+#plan-badge{
+  font-size:11px;font-weight:800;
+  padding:6px 13px;
+  border-radius:var(--r8);
+  text-transform:capitalize;
+  box-shadow:var(--sh-sm);
+  background:var(--bg) !important;
+}
+
+/* Plan option rows — inset when current, raised when selectable */
+.plan-row{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;
+  border-radius:var(--r12);
+  padding:14px 16px;
+  background:var(--bg);
+  box-shadow:var(--sh-sm);
+  transition:box-shadow .18s, transform .18s;
+}
+.plan-row.current{
+  box-shadow:var(--sh-in-sm), 0 0 0 2px var(--brand-lt);
+}
+.plan-name{font-weight:800;font-size:13.5px;color:var(--t1);font-family:var(--ff-h);letter-spacing:-.2px;}
+.plan-price{font-weight:700;font-size:12px;}
+.plan-desc{font-size:11.5px;color:var(--t3);margin-top:3px;line-height:1.45;}
+
+/* ═══════════════════════════════════════
+   STUDY GUIDE LOCK / RESULT
+═══════════════════════════════════════ */
+.lock-card{
+  background:var(--bg);
+  border-radius:var(--r12);
+  padding:18px 16px;
+  text-align:center;
+  box-shadow:var(--sh-in), 0 0 0 2px var(--brand-lt);
+}
+.lock-title{font-weight:800;font-size:13.5px;color:var(--brand);font-family:var(--ff-h);}
+.lock-sub{font-size:12px;color:var(--t3);margin-top:6px;line-height:1.5;}
+
+/* Study guide week cards */
+.guide-week{
+  background:var(--bg);
+  border-radius:var(--r12);
+  padding:14px 16px;
+  margin-bottom:10px;
+  box-shadow:var(--sh-sm);
+}
+.guide-week-title{
+  font-weight:800;font-size:13px;
+  font-family:var(--ff-h);color:var(--t1);
+  letter-spacing:-.2px;
+}
+.guide-week ul{
+  margin:10px 0 0;padding-left:20px;
+  font-size:12.5px;color:var(--t2);line-height:1.7;
+}
+
+/* Referral code box */
+.referral-box{
+  background:var(--bg);
+  border-radius:var(--r8);
+  padding:12px 14px;
+  margin-top:14px;
+  font-family:monospace;
+  font-weight:700;
+  font-size:12.5px;
+  word-break:break-all;
+  color:var(--t1);
+  box-shadow:var(--sh-in-sm);
+}
+
+/* Grading band / calculator row */
+.dyn-row{
+  display:flex;gap:8px;align-items:center;margin-bottom:8px;
+}
+.dyn-remove{
+  width:28px;height:28px;border-radius:var(--r8);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--t3);cursor:pointer;
+  background:var(--bg);
+  box-shadow:var(--sh-sm);
+  flex-shrink:0;
+  transition:box-shadow .15s, transform .15s, color .15s;
+}
+.dyn-remove:active{transform:scale(.9);box-shadow:var(--sh-in-sm);color:var(--no);}
+
+/* Responsive */
+@media (max-width: 420px){
+  .wrap{padding:16px 16px 100px;}
+  .pg-title{font-size:18px;}
+  .avatar{width:54px;height:54px;font-size:20px;}
+  .stat-val{font-size:17px;}
+}
 </style>
 </head>
 <body>
@@ -76,6 +357,16 @@ body{font-family:var(--ff-b);background:var(--bg);color:var(--t1);min-height:100
   <div class="topbar">
     <div class="back-btn" onclick="window.location.href='/dashboard'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></div>
     <div class="pg-title">Profile</div>
+  </div>
+
+  <!-- v1.4.2: "Your Plan" — permanent, findable section on the page itself -->
+  <div class="card" id="plan-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <div style="font-size:15px;font-weight:800;font-family:var(--ff-h);letter-spacing:-.3px;">Your Plan</div>
+      <div id="plan-badge">—</div>
+    </div>
+    <div id="plan-sub" style="font-size:12.5px;color:var(--t3);margin-top:4px;margin-bottom:16px;line-height:1.5;">Loading your plan…</div>
+    <div id="plan-options" style="display:flex;flex-direction:column;gap:10px;"></div>
   </div>
 
   <div class="card">
@@ -87,9 +378,9 @@ body{font-family:var(--ff-b);background:var(--bg);color:var(--t1);min-height:100
       </div>
     </div>
     <div class="field-btn">
-      <div>
-        <div style="font-size:12px;color:var(--t3);font-weight:700;">Display Name</div>
-        <input id="display-name-input" placeholder="Add a display name" style="border:none;background:transparent;font-size:14px;font-weight:600;color:var(--t1);outline:none;width:100%;margin-top:2px;" onchange="saveDisplayName()">
+      <div style="width:100%;">
+        <div style="font-size:11px;color:var(--t3);font-weight:800;text-transform:uppercase;letter-spacing:.08em;">Display Name</div>
+        <input id="display-name-input" placeholder="Add a display name" onchange="saveDisplayName()">
       </div>
     </div>
     <div class="stat-grid">
@@ -100,19 +391,77 @@ body{font-family:var(--ff-b);background:var(--bg);color:var(--t1);min-height:100
   </div>
 
   <div class="card">
-    <div style="display:flex;align-items:center;justify-content:space-between;">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
       <div>
-        <div style="font-size:15px;font-weight:800;font-family:var(--ff-h);">Referral Link</div>
-        <div style="font-size:12.5px;color:var(--t3);margin-top:2px;">Earn credits when friends join with your code</div>
+        <div style="font-size:15px;font-weight:800;font-family:var(--ff-h);letter-spacing:-.3px;">Referral Link</div>
+        <div style="font-size:12.5px;color:var(--t3);margin-top:3px;line-height:1.45;">Earn credits when friends join with your code</div>
       </div>
       <button class="btn" onclick="copyReferral()">Copy Link</button>
     </div>
-    <div style="background:var(--surf2);border-radius:10px;padding:10px 12px;margin-top:12px;font-family:monospace;font-weight:700;font-size:12.5px;word-break:break-all;" id="referral-code">—</div>
-    <div style="font-size:12px;color:var(--t3);margin-top:8px;">Or share just the code: <b id="referral-code-only">—</b> · <span id="referral-count">0</span> friends referred</div>
+    <div class="referral-box" id="referral-code">—</div>
+    <div style="font-size:12px;color:var(--t3);margin-top:10px;line-height:1.5;">Or share just the code: <b style="color:var(--t1);" id="referral-code-only">—</b> · <span id="referral-count">0</span> friends referred</div>
+  </div>
+
+  <div class="sec-title">GPA Goal</div>
+  <div class="card">
+    <div style="display:flex;gap:12px;margin-bottom:16px;">
+      <div style="flex:1;">
+        <div style="font-size:11px;color:var(--t3);font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Current GPA</div>
+        <input id="gpa-current-input" type="number" min="0" max="5" step="0.01" placeholder="e.g. 3.20" class="neu-input" style="width:100%;padding:11px 12px;font-size:14px;" onchange="saveGPA()">
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:11px;color:var(--t3);font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Target GPA</div>
+        <input id="gpa-target-input" type="number" min="0" max="5" step="0.01" placeholder="e.g. 4.00" class="neu-input" style="width:100%;padding:11px 12px;font-size:14px;" onchange="saveGPA()">
+      </div>
+    </div>
+
+    <div id="sg-locked" class="lock-card" style="display:none;">
+      <div class="lock-title"><i class="fa-solid fa-lock"></i> AI Study Guide is a Basic/Pro feature</div>
+      <div class="lock-sub">Get a personalized 4-week plan built from your GPA goal and courses.</div>
+      <button class="btn primary" style="margin-top:14px;" onclick="promptUpgrade('Basic')">Upgrade to unlock</button>
+    </div>
+
+    <button class="btn primary" id="sg-generate-btn" style="display:none;width:100%;padding:14px;" onclick="generateStudyGuide()">
+      <i class="fa-solid fa-wand-magic-sparkles"></i> Generate AI Study Guide
+    </button>
+
+    <div id="sg-result" style="display:none;margin-top:16px;"></div>
+  </div>
+
+  <!-- v1.4.1: per-student grading system -->
+  <div class="sec-title">Grading System <span style="text-transform:none;font-weight:600;color:var(--t4);letter-spacing:0;">— set this to match your school</span></div>
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+      <label style="font-size:12px;color:var(--t3);font-weight:800;text-transform:uppercase;letter-spacing:.06em;">GPA scale:</label>
+      <select id="gpa-scale-select" class="neu-input" style="padding:9px 12px;font-size:13px;box-shadow:var(--sh-in-sm);" onchange="onScalePresetChange()">
+        <option value="5">5.0</option>
+        <option value="4">4.0</option>
+        <option value="custom">Custom…</option>
+      </select>
+      <input id="gpa-scale-custom" type="number" min="1" max="20" step="0.1" placeholder="e.g. 7.0" class="neu-input" style="display:none;width:90px;padding:9px 11px;" onchange="saveGradingSystem()">
+    </div>
+
+    <div style="font-size:11px;color:var(--t3);font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Score → grade bands</div>
+    <div id="grading-bands"></div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+      <button class="btn" onclick="addGradingBand()"><i class="fa-solid fa-plus"></i> Add band</button>
+      <button class="btn primary" onclick="saveGradingSystem()">Save grading system</button>
+    </div>
+  </div>
+
+  <!-- v1.4.1: quick GPA calculator -->
+  <div class="sec-title">Calculate Your GPA</div>
+  <div class="card">
+    <div id="gpa-calc-rows"></div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+      <button class="btn" onclick="addGpaCalcRow()"><i class="fa-solid fa-plus"></i> Add course</button>
+      <button class="btn primary" onclick="calculateGPA()">Calculate</button>
+    </div>
+    <div id="gpa-calc-result" style="display:none;margin-top:14px;"></div>
   </div>
 
   <div class="sec-title">Transfer History</div>
-  <div class="card" id="transfer-list" style="padding:6px 20px;">
+  <div class="card" id="transfer-list" style="padding:8px 20px;">
     <div class="empty">Loading…</div>
   </div>
 </div>
@@ -145,6 +494,16 @@ function render(){
   document.getElementById('referral-code-only').textContent = d.referral?.code || '—';
   document.getElementById('referral-count').textContent = d.referral?.referredCount ?? 0;
 
+  document.getElementById('gpa-current-input').value = d.currentGPA ?? '';
+  document.getElementById('gpa-target-input').value = d.targetGPA ?? '';
+  const isPaid = d.tier === 'basic' || d.tier === 'pro';
+  document.getElementById('sg-locked').style.display = isPaid ? 'none' : 'block';
+  document.getElementById('sg-generate-btn').style.display = isPaid ? 'block' : 'none';
+  if(isPaid) loadLatestStudyGuide();
+
+  loadGradingSystem();
+  loadPlanCard(d.tier);
+
   const list = document.getElementById('transfer-list');
   const history = d.transferHistory || [];
   if(history.length === 0){
@@ -169,6 +528,237 @@ async function saveDisplayName(){
       method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({displayName: val}),
     }, 'student');
   }catch(e){}
+}
+
+// ── v1.4.2: Your Plan card ──
+let cachedPlans = null;
+async function loadPlanCard(tier){
+  const badge = document.getElementById('plan-badge');
+  const sub = document.getElementById('plan-sub');
+  const opts = document.getElementById('plan-options');
+
+  const tierColors = { free: 'var(--warn)', basic: 'var(--brand)', pro: 'var(--purple)' };
+  badge.textContent = tier;
+  badge.style.color = tierColors[tier];
+  sub.textContent = tier === 'free'
+    ? "You're on the free plan — limited daily questions, AI quizzes, and AI chat."
+    : `You're on ${tier} — unlimited questions, AI quizzes, and AI chat.`;
+
+  let plans;
+  try{
+    const r = await PhqAuth.authFetch('/api/plans', {}, 'student');
+    if(r.ok) plans = await r.json();
+  }catch(e){}
+  if(!plans){ opts.innerHTML = '<div style="font-size:12.5px;color:var(--t3);">Could not load plan pricing right now.</div>'; return; }
+  cachedPlans = plans;
+
+  const rows = [
+    { key: 'free', name: 'Free', desc: '20 questions/day · 2 AI quizzes/day · 5 AI chats/day', price: null },
+    { key: 'basic', name: 'Basic', desc: 'Unlimited questions, AI quizzes & AI chat', price: `₦${plans.tiers.basic.priceMonthly?.toLocaleString()}/mo · ₦${plans.tiers.basic.priceYearly?.toLocaleString()}/yr` },
+    { key: 'pro', name: 'Pro', desc: 'Everything in Basic, plus priority features as they ship', price: `₦${plans.tiers.pro.priceMonthly?.toLocaleString()}/mo · ₦${plans.tiers.pro.priceYearly?.toLocaleString()}/yr` },
+  ];
+
+  opts.innerHTML = rows.map(row => {
+    const isCurrent = row.key === tier;
+    const actionBtn = isCurrent
+      ? `<span style="font-size:11.5px;font-weight:800;color:var(--ok);padding:9px 14px;">Current</span>`
+      : `<button onclick="promptUpgrade('${row.name}')" style="border:none;cursor:pointer;font-size:11.5px;font-weight:800;color:${tierColors[row.key]};background:var(--bg);padding:9px 16px;border-radius:99px;box-shadow:var(--sh-sm);font-family:var(--ff-h);letter-spacing:-.1px;">Upgrade</button>`;
+    return `
+      <div class="plan-row ${isCurrent?'current':''}">
+        <div style="min-width:0;">
+          <div class="plan-name">${row.name}${row.price ? ` <span class="plan-price" style="color:${tierColors[row.key]};">· ${row.price}</span>` : ''}</div>
+          <div class="plan-desc">${row.desc}</div>
+        </div>
+        ${actionBtn}
+      </div>
+    `;
+  }).join('');
+}
+
+async function promptUpgrade(planName){
+  if(!cachedPlans){
+    try{
+      const r = await PhqAuth.authFetch('/api/plans', {}, 'student');
+      if(r.ok) cachedPlans = await r.json();
+    }catch(e){}
+  }
+  document.getElementById('plan-card')?.scrollIntoView({ behavior:'smooth', block:'start' });
+
+  const wa = cachedPlans?.support?.whatsapp;
+  if(!wa){ alert('Upgrades are handled manually right now — please reach out to the PrepHQ admin to upgrade your plan.'); return; }
+  const msg = `Hi, I want to upgrade my PrepHQ plan to ${planName} — my matric is ${profileData?.matric || ''}`;
+  window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+async function saveGPA(){
+  const currentGPA = document.getElementById('gpa-current-input').value;
+  const targetGPA = document.getElementById('gpa-target-input').value;
+  try{
+    await PhqAuth.authFetch('/api/profile/details', {
+      method:'PUT', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ currentGPA: currentGPA===''?null:currentGPA, targetGPA: targetGPA===''?null:targetGPA }),
+    }, 'student');
+  }catch(e){}
+}
+
+// ── v1.4.1: grading system ──
+let gradingBands = [];
+async function loadGradingSystem(){
+  try{
+    const r = await PhqAuth.authFetch('/api/me', {}, 'student');
+    if(!r.ok) return;
+    const d = await r.json();
+    const scale = d.gpaScale ?? 5;
+    const preset = document.getElementById('gpa-scale-select');
+    const customInput = document.getElementById('gpa-scale-custom');
+    if(scale === 5 || scale === 4){
+      preset.value = String(scale);
+      customInput.style.display = 'none';
+    } else {
+      preset.value = 'custom';
+      customInput.style.display = 'inline-block';
+      customInput.value = scale;
+    }
+    gradingBands = Array.isArray(d.gradingScale) && d.gradingScale.length ? d.gradingScale : [
+      {grade:'A',minScore:70,point:5},{grade:'B',minScore:60,point:4},{grade:'C',minScore:50,point:3},
+      {grade:'D',minScore:45,point:2},{grade:'E',minScore:40,point:1},{grade:'F',minScore:0,point:0},
+    ];
+    renderGradingBands();
+    renderGpaCalcRows();
+  }catch(e){}
+}
+
+function renderGradingBands(){
+  const el = document.getElementById('grading-bands');
+  el.innerHTML = gradingBands.map((b,i) => `
+    <div class="dyn-row">
+      <input value="${escHtml(b.grade)}" placeholder="Grade" class="neu-input" style="width:60px;text-align:center;padding:9px 8px;" oninput="gradingBands[${i}].grade=this.value">
+      <input type="number" value="${b.minScore}" placeholder="Min score" class="neu-input" style="flex:1;padding:9px 10px;" oninput="gradingBands[${i}].minScore=parseFloat(this.value)||0">
+      <input type="number" step="0.1" value="${b.point}" placeholder="Point" class="neu-input" style="width:68px;padding:9px 10px;" oninput="gradingBands[${i}].point=parseFloat(this.value)||0">
+      <div class="dyn-remove" onclick="removeGradingBand(${i})"><i class="fa-solid fa-xmark"></i></div>
+    </div>
+  `).join('');
+}
+function addGradingBand(){ gradingBands.push({grade:'',minScore:0,point:0}); renderGradingBands(); }
+function removeGradingBand(i){ gradingBands.splice(i,1); renderGradingBands(); }
+
+function onScalePresetChange(){
+  const v = document.getElementById('gpa-scale-select').value;
+  document.getElementById('gpa-scale-custom').style.display = v==='custom' ? 'inline-block' : 'none';
+  if(v!=='custom') saveGradingSystem();
+}
+
+async function saveGradingSystem(){
+  const preset = document.getElementById('gpa-scale-select').value;
+  const gpaScale = preset==='custom' ? parseFloat(document.getElementById('gpa-scale-custom').value)||5 : parseFloat(preset);
+  const validBands = gradingBands.filter(b=>b.grade && b.grade.trim());
+  if(!validBands.length){ alert('Add at least one grading band with a grade name.'); return; }
+  try{
+    const r = await PhqAuth.authFetch('/api/profile/grading-system', {
+      method:'PUT', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ gpaScale, gradingScale: validBands }),
+    }, 'student');
+    if(!r.ok){ const d = await r.json(); alert(d.error || 'Could not save grading system.'); return; }
+    const d = await r.json();
+    gradingBands = d.gradingScale;
+    renderGradingBands();
+  }catch(e){ alert('Cannot connect to server.'); }
+}
+
+// ── v1.4.1: GPA calculator ──
+let gpaCalcRows = [{name:'',creditUnit:'',score:''}];
+function renderGpaCalcRows(){
+  const el = document.getElementById('gpa-calc-rows');
+  el.innerHTML = gpaCalcRows.map((r,i) => `
+    <div class="dyn-row">
+      <input value="${escHtml(r.name)}" placeholder="Course (e.g. CHM201)" class="neu-input" style="flex:1.4;padding:9px 10px;" oninput="gpaCalcRows[${i}].name=this.value">
+      <input type="number" min="1" value="${r.creditUnit}" placeholder="Units" class="neu-input" style="width:60px;padding:9px 8px;" oninput="gpaCalcRows[${i}].creditUnit=this.value">
+      <input type="number" min="0" max="100" value="${r.score}" placeholder="Score" class="neu-input" style="width:68px;padding:9px 8px;" oninput="gpaCalcRows[${i}].score=this.value">
+      <div class="dyn-remove" onclick="removeGpaCalcRow(${i})"><i class="fa-solid fa-xmark"></i></div>
+    </div>
+  `).join('');
+}
+function addGpaCalcRow(){ gpaCalcRows.push({name:'',creditUnit:'',score:''}); renderGpaCalcRows(); }
+function removeGpaCalcRow(i){ gpaCalcRows.splice(i,1); if(!gpaCalcRows.length) gpaCalcRows.push({name:'',creditUnit:'',score:''}); renderGpaCalcRows(); }
+
+async function calculateGPA(){
+  const courses = gpaCalcRows
+    .filter(r => r.name && r.creditUnit !== '' && r.score !== '')
+    .map(r => ({ name: r.name, creditUnit: Number(r.creditUnit), score: Number(r.score) }));
+  if(!courses.length){ alert('Add at least one course with units and score.'); return; }
+  try{
+    const r = await PhqAuth.authFetch('/api/gpa/calculate', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ courses }),
+    }, 'student');
+    const d = await r.json();
+    if(!r.ok){ alert(d.error || 'Could not calculate GPA.'); return; }
+    const el = document.getElementById('gpa-calc-result');
+    el.style.display = 'block';
+    el.innerHTML = `
+      <div style="font-weight:800;font-size:20px;font-family:var(--ff-h);margin-bottom:12px;color:var(--brand);letter-spacing:-.5px;">GPA: ${d.gpa} <span style="font-size:12px;color:var(--t3);font-weight:600;">/ ${d.gpaScale}</span></div>
+      ${d.breakdown.map(b => `<div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--t2);padding:6px 0;box-shadow:0 -1px 0 var(--sd) inset;"><span>${escHtml(b.name)} (${b.creditUnit}u, ${b.score}%)</span><span style="font-weight:800;color:var(--t1);">${escHtml(b.grade)} · ${b.point}pt</span></div>`).join('')}
+      <button class="btn primary" style="margin-top:14px;width:100%;padding:13px;" onclick="saveCalculatedGPA(${d.gpa})">Save as my current GPA</button>
+    `;
+  }catch(e){ alert('Cannot connect to server.'); }
+}
+
+async function saveCalculatedGPA(gpa){
+  document.getElementById('gpa-current-input').value = gpa;
+  await saveGPA();
+  alert('Saved as your current GPA.');
+}
+
+async function loadLatestStudyGuide(){
+  try{
+    const r = await PhqAuth.authFetch('/api/study-guide/latest', {}, 'student');
+    if(!r.ok) return;
+    const guide = await r.json();
+    if(guide) renderStudyGuide(guide);
+  }catch(e){}
+}
+
+async function generateStudyGuide(){
+  const btn = document.getElementById('sg-generate-btn');
+  const currentGPA = document.getElementById('gpa-current-input').value;
+  const targetGPA = document.getElementById('gpa-target-input').value;
+  if(!currentGPA || !targetGPA){
+    alert('Enter both your current and target GPA first.');
+    return;
+  }
+  btn.disabled = true;
+  const original = btn.innerHTML;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Building your plan…';
+  try{
+    const r = await PhqAuth.authFetch('/api/study-guide/generate', { method:'POST' }, 'student');
+    const d = await r.json();
+    if(!r.ok){
+      if(d.code === 'TIER_REQUIRED' && typeof showPaywall === 'function') showPaywall(d.error);
+      else alert(d.error || 'Could not generate a study guide. Try again.');
+      return;
+    }
+    renderStudyGuide(d);
+  }catch(e){
+    alert('Cannot connect to server.');
+  }finally{
+    btn.disabled = false;
+    btn.innerHTML = original;
+  }
+}
+
+function renderStudyGuide(guide){
+  const el = document.getElementById('sg-result');
+  el.style.display = 'block';
+  el.innerHTML = `
+    <div style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:16px;">${escHtml(guide.summary)}</div>
+    ${guide.weeks.map(w => `
+      <div class="guide-week">
+        <div class="guide-week-title">${escHtml(w.title)} — ${escHtml(w.focus)}</div>
+        <ul>
+          ${w.tasks.map(t => `<li>${escHtml(t)}</li>`).join('')}
+        </ul>
+      </div>
+    `).join('')}
+  `;
 }
 
 function copyReferral(){

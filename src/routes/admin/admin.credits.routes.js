@@ -25,7 +25,7 @@ router.get('/credit-settings', async (req, res) => {
 router.put('/credit-settings', async (req, res) => {
   try {
     const settings = await Settings.getGlobal();
-    const { dailyRefresh, referral, welcomeBonus, streakBonus, aiChatbot } = req.body;
+    const { dailyRefresh, referral, welcomeBonus, streakBonus, aiChatbot, tiers, support } = req.body;
 
     if (dailyRefresh) {
       if (typeof dailyRefresh.enabled === 'boolean') settings.dailyRefresh.enabled = dailyRefresh.enabled;
@@ -46,6 +46,27 @@ router.put('/credit-settings', async (req, res) => {
       if (typeof aiChatbot.enabled === 'boolean') settings.aiChatbot.enabled = aiChatbot.enabled;
       if (Number.isFinite(aiChatbot.dailyLimit) && aiChatbot.dailyLimit >= 0) settings.aiChatbot.dailyLimit = aiChatbot.dailyLimit;
       if (Number.isFinite(aiChatbot.monthlyLimit) && aiChatbot.monthlyLimit >= 0) settings.aiChatbot.monthlyLimit = aiChatbot.monthlyLimit;
+    }
+
+    // v1.4: tier limits/pricing — fully admin-editable, no redeploy.
+    // Accepts a partial shape, e.g. { basic: { priceMonthly: 600 } }.
+    if (tiers) {
+      for (const tierName of ['free', 'basic', 'pro']) {
+        const incoming = tiers[tierName];
+        if (!incoming) continue;
+        const current = settings.tiers[tierName];
+        for (const field of ['dailyQuestions', 'dailyAIQuizzes', 'dailyAIChatMessages', 'priceMonthly', 'priceYearly']) {
+          if (!(field in incoming)) continue;
+          const val = incoming[field];
+          // null explicitly means "unlimited" for the daily* fields — allow it through.
+          if (val === null && field.startsWith('daily')) { current[field] = null; continue; }
+          if (Number.isFinite(val) && val >= 0) current[field] = val;
+        }
+      }
+    }
+
+    if (support && typeof support.whatsapp === 'string') {
+      settings.support.whatsapp = support.whatsapp.replace(/[^0-9]/g, '');
     }
 
     settings.updatedBy = req.admin.sub;

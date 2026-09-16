@@ -124,6 +124,7 @@ app.use('/api', require('./src/routes/leaderboard.routes'));
 app.use('/api', require('./src/routes/studyRoom.routes'));
 app.use('/api', require('./src/routes/chat.routes'));
 app.use('/api/scores', require('./src/routes/scores.routes'));
+app.use('/api', require('./src/routes/studyguide.routes'));
 app.use('/api', require('./src/routes/student.routes')); // /api/questions/:course, /api/me
 
 // ══════════════════════════════════════════════════════════════

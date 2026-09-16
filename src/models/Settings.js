@@ -35,6 +35,39 @@ const SettingsSchema = new mongoose.Schema({
     monthlyLimit: { type: Number, default: 300 },
   },
 
+  // v1.4: subscription tiers. Replaces the old activation-code gate —
+  // signup is now free/open, and these limits gate daily usage instead.
+  // `null` on any daily* field means unlimited for that tier. Prices are
+  // in naira; admin-editable so pricing/limits never need a redeploy.
+  tiers: {
+    free: {
+      dailyQuestions:      { type: Number, default: 20 },
+      dailyAIQuizzes:      { type: Number, default: 2 },
+      dailyAIChatMessages: { type: Number, default: 5 },
+    },
+    basic: {
+      dailyQuestions:      { type: Number, default: null }, // unlimited
+      dailyAIQuizzes:      { type: Number, default: null },
+      dailyAIChatMessages: { type: Number, default: null },
+      priceMonthly:        { type: Number, default: 500 },
+      priceYearly:         { type: Number, default: 5000 },
+    },
+    pro: {
+      dailyQuestions:      { type: Number, default: null },
+      dailyAIQuizzes:      { type: Number, default: null },
+      dailyAIChatMessages: { type: Number, default: null },
+      priceMonthly:        { type: Number, default: 2000 },
+      priceYearly:         { type: Number, default: 20000 },
+    },
+  },
+
+  // v1.4: contact info surfaced to students (e.g. the upgrade paywall's
+  // "message admin" link) — editable here so it's never hardcoded in
+  // the frontend.
+  support: {
+    whatsapp: { type: String, default: '' }, // digits only, e.g. '2348012345678'
+  },
+
   updatedAt: { type: Date, default: Date.now },
   updatedBy: { type: String, default: '' },
 });
