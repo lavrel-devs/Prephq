@@ -479,7 +479,8 @@ button,input,select,textarea{font-family:var(--ff-b);}
 .prog-track{height:8px;background:var(--bg);border-radius:var(--rpill);overflow:hidden;box-shadow:var(--sh-in-sm);}
 .prog-fill{height:100%;border-radius:var(--rpill);background:var(--brand);transition:width .5s var(--ease-s);}
 
-.quiz-body{flex:1;overflow-y:auto;padding:14px 16px 210px;-webkit-overflow-scrolling:touch;}
+.quiz-body{flex:1;overflow-y:auto;padding:14px 16px 230px;-webkit-overflow-scrolling:touch;}
+body.quiz-active #shared-glass-nav{display:none;}
 
 .qcard{background:var(--bg);border-radius:var(--r20);box-shadow:var(--sh-md);overflow:hidden;border:none;}
 .qcard-head{padding:20px 18px 16px;}
@@ -1225,6 +1226,7 @@ button,input,select,textarea{font-family:var(--ff-b);}
    ══════════════════════════════════════════════════════════════ */
 const API_BASE = '';
 let COURSES = {};
+let ALL_COURSES = {}; // full catalog, never filtered down — used by the course editor so students can always add courses back, not just remove them
 
 const CICO = {
   translate:'<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>',
@@ -1510,7 +1512,7 @@ function renderProfileSetupCourses(filterTerm=''){
   const list = document.getElementById('ps-course-list');
   const q = filterTerm.trim().toLowerCase();
   list.innerHTML = '';
-  Object.entries(COURSES).forEach(([key, m]) => {
+  Object.entries(ALL_COURSES).forEach(([key, m]) => {
     if(q && !m.name.toLowerCase().includes(q) && !m.code.toLowerCase().includes(q)) return;
     const on = psSelectedCourses.includes(key);
     const row = document.createElement('label');
@@ -1726,8 +1728,18 @@ async function loadWeakTopics(){
   }catch(e){}
 }
 
-function startWeakTopicQuiz(){
+async function startWeakTopicQuiz(){
   if(!weakTopics.length){ toast('No weak topics identified yet — keep practicing!'); return; }
+  try{
+    const r = await PhqAuth.authFetch('/api/usage/limits', {}, 'student');
+    if(r.ok){
+      const u = await r.json();
+      if(u.questions.limit != null && u.questions.used >= u.questions.limit){
+        showPaywall(`You've used all ${u.questions.limit} of your free daily questions. Upgrade to keep practicing today.`);
+        return;
+      }
+    }
+  }catch(e){}
   curAIQuizId = null;
   let pool = [];
   weakTopics.forEach(t => {
@@ -1770,6 +1782,7 @@ async function loadCourses(){
         next[c.key] = { name:c.courseTitle, color:c.color||'#4a67d1', code:c.courseCode, icon:c.icon||'star' };
       });
       COURSES = next;
+      ALL_COURSES = next;
     }
   }catch(e){}
 
@@ -1812,7 +1825,14 @@ async function loadPlanBanner(){
       icon.className = 'fa-solid fa-circle-check';
       icon.style.color = 'var(--brand)';
       text.style.color = 'var(--brand)';
-      text.textContent = `${u.tier.charAt(0).toUpperCase()+u.tier.slice(1)} plan — unlimited access`;
+      const tierName = u.tier.charAt(0).toUpperCase()+u.tier.slice(1);
+      const parts = [];
+      if(u.questions.limit != null) parts.push(`${u.questions.used}/${u.questions.limit} questions`);
+      if(u.aiQuizzes.limit != null) parts.push(`${u.aiQuizzes.used}/${u.aiQuizzes.limit} AI quizzes`);
+      if(u.aiChatMessages.limit != null) parts.push(`${u.aiChatMessages.used}/${u.aiChatMessages.limit} AI chats`);
+      text.textContent = parts.length
+        ? `${tierName} plan — ${parts.join(' · ')} today`
+        : `${tierName} plan — unlimited access`;
       cta.textContent = 'Manage →';
       cta.style.color = 'var(--brand)';
     }
@@ -2833,6 +2853,11 @@ function showScr(id){
   document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
   document.getElementById(id).classList.add('on');
   window.scrollTo(0,0);
+  // The quiz screen has its own fixed bottom bar (question pager +
+  // Skip/Answer buttons). The shared cross-page nav (shared-nav.js)
+  // is also fixed to the bottom and was never hidden here, so the two
+  // stacked on top of each other and clipped the last answer option.
+  document.body.classList.toggle('quiz-active', id==='quiz');
   if(id==='history')renderHistory();
   if(id==='bookmarks')renderBookmarks();
   if(id==='notes-screen')renderNotes();

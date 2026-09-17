@@ -1,4 +1,6 @@
-# PrepHQ v1.1.5 — Exam Prep Platform
+# PrepHQ v1.4 — Exam Prep Platform
+
+> Note: the changelog sections below are historical (last fully updated at v1.1.5) and don't yet cover v1.2–v1.4 (credit-tier economy, contests, study rooms, chat, GPA/grading tools, transfers, admin analytics). File structure and API route tables below are also out of date relative to `src/routes/`.
 
 ## What's new in v1.1.5
 

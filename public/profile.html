@@ -21,7 +21,7 @@
 </script>
 <style>
 /* ══════════════════════════════════════════════════════════
-   NEUMORPHISM / SOFT UI — Profile
+   NEUMORPHISM / SOFT UI — Profile  v1.5.6
    ══════════════════════════════════════════════════════════ */
 :root{
   --bg:#e0e5ec;
@@ -50,7 +50,8 @@
   --r8:10px;--r12:14px;--r16:18px;--r20:22px;--r24:26px;--rpill:999px;
   --ff-h:'Bricolage Grotesque',system-ui,sans-serif;
   --ff-b:'DM Sans',system-ui,sans-serif;
-  --ease-o:cubic-bezier(.22,1,.36,1);
+  --ease:cubic-bezier(.22,1,.36,1);
+  --spring:cubic-bezier(.34,1.56,.64,1);
 }
 [data-theme=dark]{
   --bg:#252932;
@@ -66,29 +67,37 @@
 }
 
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-html{height:100%;}
+html{height:100%;-webkit-text-size-adjust:100%;}
 body{
   font-family:var(--ff-b);
   background:var(--bg);
   color:var(--t1);
   min-height:100dvh;
   -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+  transition:background .3s var(--ease), color .3s var(--ease);
 }
-.wrap{max-width:520px;margin:0 auto;padding:18px 18px 120px;}
+.wrap{max-width:520px;margin:0 auto;padding:18px 18px 140px;}
 
 /* ═══════════════════════════════════════
    TOPBAR
 ═══════════════════════════════════════ */
-.topbar{display:flex;align-items:center;gap:12px;padding:6px 0 20px;}
+.topbar{
+  display:flex;align-items:center;gap:12px;
+  padding:6px 0 20px;
+  animation:fadeUp .5s var(--ease) both;
+}
 .back-btn{
   width:38px;height:38px;border-radius:50%;
   background:var(--bg);border:none;
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;color:var(--brand);flex-shrink:0;
   box-shadow:var(--sh);
-  transition:box-shadow .15s, transform .15s;
+  transition:box-shadow .15s var(--ease), transform .15s var(--spring);
 }
+.back-btn:hover{box-shadow:var(--sh-md);}
 .back-btn:active{transform:scale(.93);box-shadow:var(--sh-in);}
+.back-btn svg{width:22px;height:22px;fill:currentColor;stroke:currentColor;}
 .pg-title{
   font-family:var(--ff-h);font-size:20px;font-weight:800;
   color:var(--t1);letter-spacing:-.4px;
@@ -104,7 +113,18 @@ body{
   box-shadow:var(--sh);
   border:none;
   margin-bottom:16px;
+  animation:fadeUp .55s var(--ease) both;
+  transition:box-shadow .25s var(--ease);
 }
+.card:hover{box-shadow:var(--sh-md);}
+
+/* Stagger the card entrances */
+.card:nth-of-type(1){animation-delay:.02s;}
+.card:nth-of-type(2){animation-delay:.06s;}
+.card:nth-of-type(3){animation-delay:.10s;}
+.card:nth-of-type(4){animation-delay:.14s;}
+.card:nth-of-type(5){animation-delay:.18s;}
+.card:nth-of-type(6){animation-delay:.22s;}
 
 /* ═══════════════════════════════════════
    AVATAR
@@ -120,7 +140,9 @@ body{
   flex-shrink:0;
   box-shadow:var(--sh);
   letter-spacing:-.5px;
+  transition:transform .35s var(--spring), box-shadow .25s var(--ease);
 }
+.avatar:hover{transform:scale(1.05);box-shadow:var(--sh-md);}
 .uname{
   font-family:var(--ff-h);font-weight:800;font-size:17px;
   color:var(--t1);letter-spacing:-.3px;
@@ -137,13 +159,16 @@ body{
   padding:14px 16px;
   margin-top:12px;
   box-shadow:var(--sh-in);
+  transition:box-shadow .2s var(--ease);
 }
+.field-btn:focus-within{box-shadow:var(--sh-in), 0 0 0 2px var(--brand-lt);}
 .field-btn input{
   border:none;background:transparent;
   font-size:14px;font-weight:700;
   color:var(--t1);outline:none;width:100%;
   margin-top:4px;
   font-family:var(--ff-b);
+  transition:color .15s var(--ease);
 }
 .field-btn input::placeholder{color:var(--t4);font-weight:500;}
 
@@ -162,7 +187,9 @@ body{
   padding:14px 8px;
   text-align:center;
   box-shadow:var(--sh-sm);
+  transition:box-shadow .2s var(--ease), transform .2s var(--spring);
 }
+.stat-box:hover{transform:translateY(-2px);box-shadow:var(--sh);}
 .stat-val{
   font-family:var(--ff-h);font-weight:800;font-size:19px;
   color:var(--brand);letter-spacing:-.5px;
@@ -182,6 +209,7 @@ body{
   text-transform:uppercase;
   letter-spacing:.10em;
   margin:22px 4px 10px;
+  animation:fadeUp .5s var(--ease) both;
 }
 
 /* ═══════════════════════════════════════
@@ -191,6 +219,7 @@ body{
   display:flex;align-items:center;justify-content:space-between;
   padding:14px 0;
   box-shadow:0 -1px 0 var(--sd) inset;
+  animation:fadeUp .45s var(--ease) both;
 }
 .txn-row:first-child{box-shadow:none;}
 .txn-desc{font-size:13.5px;font-weight:700;color:var(--t1);}
@@ -217,22 +246,23 @@ body{
   background:var(--bg);
   color:var(--brand);
   box-shadow:var(--sh-sm);
-  transition:box-shadow .15s, transform .15s, color .15s;
+  transition:box-shadow .18s var(--ease), transform .18s var(--spring), color .18s var(--ease);
   font-family:var(--ff-h);
   letter-spacing:-.1px;
 }
+.btn:hover{box-shadow:var(--sh);}
 .btn:active{transform:scale(.96);box-shadow:var(--sh-in-sm);}
 .btn.primary{
-  color:#fff;
-  background:var(--bg);
-  box-shadow:var(--sh), 0 0 0 2px var(--brand);
   color:var(--brand);
+  background:var(--bg);
+  box-shadow:var(--sh), 0 0 0 2px var(--brand-lt);
   font-weight:800;
 }
+.btn.primary:hover{box-shadow:var(--sh-md), 0 0 0 2px var(--brand-lt);}
 
 /* ═══════════════════════════════════════
-   FORM INPUTS (grading, GPA calculator)
-═══════════════════════════════════════ */
+   FORM INPUTS
+   ═══════════════════════════════════════ */
 .neu-input{
   border:none;
   background:var(--bg);
@@ -243,15 +273,20 @@ body{
   color:var(--t1);
   outline:none;
   box-shadow:var(--sh-in-sm);
-  transition:box-shadow .18s;
+  transition:box-shadow .2s var(--ease);
   font-family:var(--ff-b);
+  width:100%;
+  min-width:0;
+  -moz-appearance:textfield;
 }
+.neu-input::-webkit-outer-spin-button,
+.neu-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
 .neu-input::placeholder{color:var(--t4);font-weight:500;}
 .neu-input:focus{box-shadow:var(--sh-in-sm), 0 0 0 2px var(--brand-lt);}
 
 /* ═══════════════════════════════════════
    PLAN CARD
-═══════════════════════════════════════ */
+   ═══════════════════════════════════════ */
 #plan-card{
   border:none;
   box-shadow:var(--sh-md), 0 0 0 2px var(--brand-lt);
@@ -263,9 +298,9 @@ body{
   text-transform:capitalize;
   box-shadow:var(--sh-sm);
   background:var(--bg) !important;
+  transition:color .25s var(--ease), box-shadow .25s var(--ease);
 }
 
-/* Plan option rows — inset when current, raised when selectable */
 .plan-row{
   display:flex;align-items:center;justify-content:space-between;
   gap:12px;
@@ -273,18 +308,20 @@ body{
   padding:14px 16px;
   background:var(--bg);
   box-shadow:var(--sh-sm);
-  transition:box-shadow .18s, transform .18s;
+  transition:box-shadow .22s var(--ease), transform .22s var(--spring);
 }
+.plan-row:hover{transform:translateY(-1px);box-shadow:var(--sh);}
 .plan-row.current{
   box-shadow:var(--sh-in-sm), 0 0 0 2px var(--brand-lt);
 }
+.plan-row.current:hover{transform:none;}
 .plan-name{font-weight:800;font-size:13.5px;color:var(--t1);font-family:var(--ff-h);letter-spacing:-.2px;}
 .plan-price{font-weight:700;font-size:12px;}
 .plan-desc{font-size:11.5px;color:var(--t3);margin-top:3px;line-height:1.45;}
 
 /* ═══════════════════════════════════════
    STUDY GUIDE LOCK / RESULT
-═══════════════════════════════════════ */
+   ═══════════════════════════════════════ */
 .lock-card{
   background:var(--bg);
   border-radius:var(--r12);
@@ -295,14 +332,20 @@ body{
 .lock-title{font-weight:800;font-size:13.5px;color:var(--brand);font-family:var(--ff-h);}
 .lock-sub{font-size:12px;color:var(--t3);margin-top:6px;line-height:1.5;}
 
-/* Study guide week cards */
 .guide-week{
   background:var(--bg);
   border-radius:var(--r12);
   padding:14px 16px;
   margin-bottom:10px;
   box-shadow:var(--sh-sm);
+  animation:fadeUp .45s var(--ease) both;
+  transition:box-shadow .2s var(--ease), transform .2s var(--spring);
 }
+.guide-week:hover{transform:translateY(-1px);box-shadow:var(--sh);}
+.guide-week:nth-child(1){animation-delay:.05s;}
+.guide-week:nth-child(2){animation-delay:.10s;}
+.guide-week:nth-child(3){animation-delay:.15s;}
+.guide-week:nth-child(4){animation-delay:.20s;}
 .guide-week-title{
   font-weight:800;font-size:13px;
   font-family:var(--ff-h);color:var(--t1);
@@ -313,7 +356,6 @@ body{
   font-size:12.5px;color:var(--t2);line-height:1.7;
 }
 
-/* Referral code box */
 .referral-box{
   background:var(--bg);
   border-radius:var(--r8);
@@ -325,12 +367,54 @@ body{
   word-break:break-all;
   color:var(--t1);
   box-shadow:var(--sh-in-sm);
+  transition:box-shadow .2s var(--ease);
 }
 
-/* Grading band / calculator row */
+/* ═══════════════════════════════════════
+   DYNAMIC ROWS (grading bands + GPA calc)
+   Fixed so it never overflows on mobile.
+   Each row is now a vertical stack of two
+   sub-rows: the fields, then the remove
+   button on its own line. Or — cleaner —
+   we make the row a wrapping flex where
+   inputs shrink and the remove button
+   sits inline without forcing overflow.
+   ═══════════════════════════════════════ */
 .dyn-row{
-  display:flex;gap:8px;align-items:center;margin-bottom:8px;
+  display:flex;
+  gap:8px;
+  align-items:center;
+  margin-bottom:8px;
+  width:100%;
+  min-width:0;
+  animation:fadeUp .35s var(--ease) both;
+  transition:opacity .2s var(--ease);
 }
+
+/* On very narrow screens the row wraps:
+   inputs share the first line, the × button
+   drops to the second line only if it can't fit */
+@media (max-width: 360px){
+  .dyn-row{
+    flex-wrap:wrap;
+  }
+  .dyn-row .dyn-remove{
+    flex-basis:100%;
+    width:100%;
+    height:34px;
+    border-radius:var(--r8);
+    justify-content:center;
+    gap:6px;
+  }
+  .dyn-row .dyn-remove::after{
+    content:'Remove';
+    font-size:11.5px;
+    font-weight:800;
+    font-family:var(--ff-h);
+    letter-spacing:.03em;
+  }
+}
+
 .dyn-remove{
   width:28px;height:28px;border-radius:var(--r8);
   display:flex;align-items:center;justify-content:center;
@@ -338,16 +422,90 @@ body{
   background:var(--bg);
   box-shadow:var(--sh-sm);
   flex-shrink:0;
-  transition:box-shadow .15s, transform .15s, color .15s;
+  transition:box-shadow .15s var(--ease), transform .15s var(--spring), color .15s var(--ease);
+  border:none;
 }
+.dyn-remove:hover{box-shadow:var(--sh);color:var(--no);}
 .dyn-remove:active{transform:scale(.9);box-shadow:var(--sh-in-sm);color:var(--no);}
+.dyn-remove i{font-size:12px;}
+
+/* Grade band row — 3 equal inputs + remove */
+.band-row{display:flex;gap:8px;align-items:center;width:100%;min-width:0;}
+.band-row .neu-input.grade{flex:0 0 60px;text-align:center;padding:9px 6px;}
+.band-row .neu-input.min{flex:1 1 auto;min-width:0;}
+.band-row .neu-input.point{flex:0 0 68px;padding:9px 8px;}
+
+/* GPA calc row — course name grows, units/score fixed */
+.gpa-row{display:flex;gap:8px;align-items:center;width:100%;min-width:0;}
+.gpa-row .neu-input.course{flex:1 1 auto;min-width:0;}
+.gpa-row .neu-input.units{flex:0 0 60px;padding:9px 6px;}
+.gpa-row .neu-input.score{flex:0 0 68px;padding:9px 8px;}
+
+/* ═══════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════ */
+@keyframes fadeUp{
+  from{opacity:0; transform:translateY(12px);}
+  to{opacity:1; transform:translateY(0);}
+}
+@keyframes popIn{
+  0%{opacity:0; transform:scale(.94);}
+  60%{transform:scale(1.02);}
+  100%{opacity:1; transform:scale(1);}
+}
+@keyframes shimmer{
+  0%{background-position:-200% 0;}
+  100%{background-position:200% 0;}
+}
+.pop-in{animation:popIn .4s var(--spring) both;}
+
+/* Row enter animation applied via JS */
+.new-row{
+  animation:popIn .35s var(--spring) both;
+}
+
+/* Toast */
+#toast{
+  position:fixed;bottom:96px;left:50%;
+  transform:translateX(-50%) translateY(16px);
+  background:var(--bg);color:var(--brand);
+  padding:12px 22px;border-radius:var(--rpill);
+  font-size:13px;font-weight:700;
+  opacity:0;transition:all .3s var(--ease);
+  z-index:999;pointer-events:none;white-space:nowrap;
+  box-shadow:var(--sh-md);
+}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
 
 /* Responsive */
 @media (max-width: 420px){
-  .wrap{padding:16px 16px 100px;}
+  .wrap{padding:16px 16px 130px;}
   .pg-title{font-size:18px;}
   .avatar{width:54px;height:54px;font-size:20px;}
   .stat-val{font-size:17px;}
+  .card{padding:18px;}
+  .sec-title{margin:20px 2px 8px;}
+}
+
+/* Loading shimmer for dynamic content */
+.loading-shimmer{
+  background:linear-gradient(
+    90deg,
+    rgba(74,103,209,.05) 25%,
+    rgba(74,103,209,.14) 37%,
+    rgba(74,103,209,.05) 63%
+  );
+  background-size:400% 100%;
+  animation:shimmer 1.3s ease-in-out infinite;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;
+  }
 }
 </style>
 </head>
@@ -355,11 +513,11 @@ body{
 <div class="glass-backdrop"></div>
 <div class="wrap">
   <div class="topbar">
-    <div class="back-btn" onclick="window.location.href='/dashboard'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></div>
+    <div class="back-btn" onclick="window.location.href='/dashboard'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></div>
     <div class="pg-title">Profile</div>
   </div>
 
-  <!-- v1.4.2: "Your Plan" — permanent, findable section on the page itself -->
+  <!-- Plan card -->
   <div class="card" id="plan-card">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
       <div style="font-size:15px;font-weight:800;font-family:var(--ff-h);letter-spacing:-.3px;">Your Plan</div>
@@ -405,13 +563,13 @@ body{
   <div class="sec-title">GPA Goal</div>
   <div class="card">
     <div style="display:flex;gap:12px;margin-bottom:16px;">
-      <div style="flex:1;">
+      <div style="flex:1;min-width:0;">
         <div style="font-size:11px;color:var(--t3);font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Current GPA</div>
-        <input id="gpa-current-input" type="number" min="0" max="5" step="0.01" placeholder="e.g. 3.20" class="neu-input" style="width:100%;padding:11px 12px;font-size:14px;" onchange="saveGPA()">
+        <input id="gpa-current-input" type="number" min="0" max="5" step="0.01" placeholder="e.g. 3.20" class="neu-input" style="padding:11px 12px;font-size:14px;" onchange="saveGPA()">
       </div>
-      <div style="flex:1;">
+      <div style="flex:1;min-width:0;">
         <div style="font-size:11px;color:var(--t3);font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Target GPA</div>
-        <input id="gpa-target-input" type="number" min="0" max="5" step="0.01" placeholder="e.g. 4.00" class="neu-input" style="width:100%;padding:11px 12px;font-size:14px;" onchange="saveGPA()">
+        <input id="gpa-target-input" type="number" min="0" max="5" step="0.01" placeholder="e.g. 4.00" class="neu-input" style="padding:11px 12px;font-size:14px;" onchange="saveGPA()">
       </div>
     </div>
 
@@ -428,12 +586,11 @@ body{
     <div id="sg-result" style="display:none;margin-top:16px;"></div>
   </div>
 
-  <!-- v1.4.1: per-student grading system -->
   <div class="sec-title">Grading System <span style="text-transform:none;font-weight:600;color:var(--t4);letter-spacing:0;">— set this to match your school</span></div>
   <div class="card">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
       <label style="font-size:12px;color:var(--t3);font-weight:800;text-transform:uppercase;letter-spacing:.06em;">GPA scale:</label>
-      <select id="gpa-scale-select" class="neu-input" style="padding:9px 12px;font-size:13px;box-shadow:var(--sh-in-sm);" onchange="onScalePresetChange()">
+      <select id="gpa-scale-select" class="neu-input" style="width:auto;padding:9px 12px;font-size:13px;" onchange="onScalePresetChange()">
         <option value="5">5.0</option>
         <option value="4">4.0</option>
         <option value="custom">Custom…</option>
@@ -443,17 +600,16 @@ body{
 
     <div style="font-size:11px;color:var(--t3);font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Score → grade bands</div>
     <div id="grading-bands"></div>
-    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
       <button class="btn" onclick="addGradingBand()"><i class="fa-solid fa-plus"></i> Add band</button>
       <button class="btn primary" onclick="saveGradingSystem()">Save grading system</button>
     </div>
   </div>
 
-  <!-- v1.4.1: quick GPA calculator -->
   <div class="sec-title">Calculate Your GPA</div>
   <div class="card">
     <div id="gpa-calc-rows"></div>
-    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
       <button class="btn" onclick="addGpaCalcRow()"><i class="fa-solid fa-plus"></i> Add course</button>
       <button class="btn primary" onclick="calculateGPA()">Calculate</button>
     </div>
@@ -466,6 +622,8 @@ body{
   </div>
 </div>
 
+<div id="toast"></div>
+
 <script>
 const API_BASE = '';
 let profileData = null;
@@ -473,13 +631,28 @@ let profileData = null;
 async function loadProfile(){
   try{
     const r = await PhqAuth.authFetch('/api/profile', {}, 'student');
-    if(!r.ok){ PhqAuth.logout('student'); return; }
+    if(!r.ok){
+      try { PhqAuth.logout('student'); } catch(e){}
+      window.location.replace('/login.html');
+      return;
+    }
     profileData = await r.json();
     render();
-  }catch(e){ window.location.href='/login.html'; }
+  }catch(e){
+    try { PhqAuth.logout('student'); } catch(e2){}
+    window.location.replace('/login.html');
+  }
 }
 
 function escHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('on');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=>el.classList.remove('on'), 2200);
+}
 
 function render(){
   const d = profileData;
@@ -510,11 +683,11 @@ function render(){
     list.innerHTML = '<div class="empty">No transfers yet.</div>';
     return;
   }
-  list.innerHTML = history.map(t => {
+  list.innerHTML = history.map((t,i) => {
     const sent = t.fromMatric === d.matric;
     const label = sent ? `Sent to @${t.toUsername || t.toMatric}` : `Received from @${t.fromUsername || t.fromMatric}`;
     const amt = sent ? -(t.totalDebited) : t.amount;
-    return `<div class="txn-row">
+    return `<div class="txn-row" style="animation-delay:${Math.min(i*0.04, 0.4)}s">
       <div><div class="txn-desc">${label}</div><div class="txn-date">${new Date(t.createdAt).toLocaleString()}</div></div>
       <div class="txn-amt ${amt>0?'pos':'neg'}">${amt>0?'+':''}${amt}</div>
     </div>`;
@@ -527,10 +700,10 @@ async function saveDisplayName(){
     await PhqAuth.authFetch('/api/profile/display-name', {
       method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({displayName: val}),
     }, 'student');
+    toast('Display name saved');
   }catch(e){}
 }
 
-// ── v1.4.2: Your Plan card ──
 let cachedPlans = null;
 async function loadPlanCard(tier){
   const badge = document.getElementById('plan-badge');
@@ -558,13 +731,13 @@ async function loadPlanCard(tier){
     { key: 'pro', name: 'Pro', desc: 'Everything in Basic, plus priority features as they ship', price: `₦${plans.tiers.pro.priceMonthly?.toLocaleString()}/mo · ₦${plans.tiers.pro.priceYearly?.toLocaleString()}/yr` },
   ];
 
-  opts.innerHTML = rows.map(row => {
+  opts.innerHTML = rows.map((row,i) => {
     const isCurrent = row.key === tier;
     const actionBtn = isCurrent
       ? `<span style="font-size:11.5px;font-weight:800;color:var(--ok);padding:9px 14px;">Current</span>`
-      : `<button onclick="promptUpgrade('${row.name}')" style="border:none;cursor:pointer;font-size:11.5px;font-weight:800;color:${tierColors[row.key]};background:var(--bg);padding:9px 16px;border-radius:99px;box-shadow:var(--sh-sm);font-family:var(--ff-h);letter-spacing:-.1px;">Upgrade</button>`;
+      : `<button onclick="promptUpgrade('${row.name}')" style="border:none;cursor:pointer;font-size:11.5px;font-weight:800;color:${tierColors[row.key]};background:var(--bg);padding:9px 16px;border-radius:99px;box-shadow:var(--sh-sm);font-family:var(--ff-h);letter-spacing:-.1px;transition:box-shadow .18s var(--ease), transform .18s var(--spring);" onmouseover="this.style.boxShadow='var(--sh)'" onmouseout="this.style.boxShadow='var(--sh-sm)'">Upgrade</button>`;
     return `
-      <div class="plan-row ${isCurrent?'current':''}">
+      <div class="plan-row ${isCurrent?'current':''}" style="animation:fadeUp .4s var(--ease) both;animation-delay:${i*0.06}s;">
         <div style="min-width:0;">
           <div class="plan-name">${row.name}${row.price ? ` <span class="plan-price" style="color:${tierColors[row.key]};">· ${row.price}</span>` : ''}</div>
           <div class="plan-desc">${row.desc}</div>
@@ -601,7 +774,7 @@ async function saveGPA(){
   }catch(e){}
 }
 
-// ── v1.4.1: grading system ──
+// ── Grading system ──
 let gradingBands = [];
 async function loadGradingSystem(){
   try{
@@ -631,15 +804,23 @@ async function loadGradingSystem(){
 function renderGradingBands(){
   const el = document.getElementById('grading-bands');
   el.innerHTML = gradingBands.map((b,i) => `
-    <div class="dyn-row">
-      <input value="${escHtml(b.grade)}" placeholder="Grade" class="neu-input" style="width:60px;text-align:center;padding:9px 8px;" oninput="gradingBands[${i}].grade=this.value">
-      <input type="number" value="${b.minScore}" placeholder="Min score" class="neu-input" style="flex:1;padding:9px 10px;" oninput="gradingBands[${i}].minScore=parseFloat(this.value)||0">
-      <input type="number" step="0.1" value="${b.point}" placeholder="Point" class="neu-input" style="width:68px;padding:9px 10px;" oninput="gradingBands[${i}].point=parseFloat(this.value)||0">
-      <div class="dyn-remove" onclick="removeGradingBand(${i})"><i class="fa-solid fa-xmark"></i></div>
+    <div class="dyn-row band-row" data-idx="${i}" style="animation-delay:${Math.min(i*0.04,0.3)}s">
+      <input value="${escHtml(b.grade)}" placeholder="Grade" class="neu-input grade" oninput="gradingBands[${i}].grade=this.value" maxlength="3">
+      <input type="number" value="${b.minScore}" placeholder="Min score" class="neu-input min" oninput="gradingBands[${i}].minScore=parseFloat(this.value)||0" inputmode="numeric">
+      <input type="number" step="0.1" value="${b.point}" placeholder="Point" class="neu-input point" oninput="gradingBands[${i}].point=parseFloat(this.value)||0" inputmode="decimal">
+      <button class="dyn-remove" onclick="removeGradingBand(${i})" aria-label="Remove band">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
     </div>
   `).join('');
 }
-function addGradingBand(){ gradingBands.push({grade:'',minScore:0,point:0}); renderGradingBands(); }
+function addGradingBand(){
+  gradingBands.push({grade:'',minScore:0,point:0});
+  renderGradingBands();
+  const rows = document.querySelectorAll('#grading-bands .dyn-row');
+  rows[rows.length-1]?.classList.add('new-row');
+  rows[rows.length-1]?.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
 function removeGradingBand(i){ gradingBands.splice(i,1); renderGradingBands(); }
 
 function onScalePresetChange(){
@@ -652,60 +833,73 @@ async function saveGradingSystem(){
   const preset = document.getElementById('gpa-scale-select').value;
   const gpaScale = preset==='custom' ? parseFloat(document.getElementById('gpa-scale-custom').value)||5 : parseFloat(preset);
   const validBands = gradingBands.filter(b=>b.grade && b.grade.trim());
-  if(!validBands.length){ alert('Add at least one grading band with a grade name.'); return; }
+  if(!validBands.length){ toast('Add at least one grading band with a grade name.'); return; }
   try{
     const r = await PhqAuth.authFetch('/api/profile/grading-system', {
       method:'PUT', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ gpaScale, gradingScale: validBands }),
     }, 'student');
-    if(!r.ok){ const d = await r.json(); alert(d.error || 'Could not save grading system.'); return; }
+    if(!r.ok){ const d = await r.json(); toast(d.error || 'Could not save grading system.'); return; }
     const d = await r.json();
     gradingBands = d.gradingScale;
     renderGradingBands();
-  }catch(e){ alert('Cannot connect to server.'); }
+    toast('Grading system saved');
+  }catch(e){ toast('Cannot connect to server.'); }
 }
 
-// ── v1.4.1: GPA calculator ──
+// ── GPA calculator ──
 let gpaCalcRows = [{name:'',creditUnit:'',score:''}];
 function renderGpaCalcRows(){
   const el = document.getElementById('gpa-calc-rows');
   el.innerHTML = gpaCalcRows.map((r,i) => `
-    <div class="dyn-row">
-      <input value="${escHtml(r.name)}" placeholder="Course (e.g. CHM201)" class="neu-input" style="flex:1.4;padding:9px 10px;" oninput="gpaCalcRows[${i}].name=this.value">
-      <input type="number" min="1" value="${r.creditUnit}" placeholder="Units" class="neu-input" style="width:60px;padding:9px 8px;" oninput="gpaCalcRows[${i}].creditUnit=this.value">
-      <input type="number" min="0" max="100" value="${r.score}" placeholder="Score" class="neu-input" style="width:68px;padding:9px 8px;" oninput="gpaCalcRows[${i}].score=this.value">
-      <div class="dyn-remove" onclick="removeGpaCalcRow(${i})"><i class="fa-solid fa-xmark"></i></div>
+    <div class="dyn-row gpa-row" data-idx="${i}" style="animation-delay:${Math.min(i*0.04,0.3)}s">
+      <input value="${escHtml(r.name)}" placeholder="Course (e.g. CHM201)" class="neu-input course" oninput="gpaCalcRows[${i}].name=this.value">
+      <input type="number" min="1" value="${r.creditUnit}" placeholder="Units" class="neu-input units" oninput="gpaCalcRows[${i}].creditUnit=this.value" inputmode="numeric">
+      <input type="number" min="0" max="100" value="${r.score}" placeholder="Score" class="neu-input score" oninput="gpaCalcRows[${i}].score=this.value" inputmode="numeric">
+      <button class="dyn-remove" onclick="removeGpaCalcRow(${i})" aria-label="Remove course">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
     </div>
   `).join('');
 }
-function addGpaCalcRow(){ gpaCalcRows.push({name:'',creditUnit:'',score:''}); renderGpaCalcRows(); }
-function removeGpaCalcRow(i){ gpaCalcRows.splice(i,1); if(!gpaCalcRows.length) gpaCalcRows.push({name:'',creditUnit:'',score:''}); renderGpaCalcRows(); }
+function addGpaCalcRow(){
+  gpaCalcRows.push({name:'',creditUnit:'',score:''});
+  renderGpaCalcRows();
+  const rows = document.querySelectorAll('#gpa-calc-rows .dyn-row');
+  rows[rows.length-1]?.classList.add('new-row');
+  rows[rows.length-1]?.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function removeGpaCalcRow(i){
+  gpaCalcRows.splice(i,1);
+  if(!gpaCalcRows.length) gpaCalcRows.push({name:'',creditUnit:'',score:''});
+  renderGpaCalcRows();
+}
 
 async function calculateGPA(){
   const courses = gpaCalcRows
     .filter(r => r.name && r.creditUnit !== '' && r.score !== '')
     .map(r => ({ name: r.name, creditUnit: Number(r.creditUnit), score: Number(r.score) }));
-  if(!courses.length){ alert('Add at least one course with units and score.'); return; }
+  if(!courses.length){ toast('Add at least one course with units and score.'); return; }
   try{
     const r = await PhqAuth.authFetch('/api/gpa/calculate', {
       method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ courses }),
     }, 'student');
     const d = await r.json();
-    if(!r.ok){ alert(d.error || 'Could not calculate GPA.'); return; }
+    if(!r.ok){ toast(d.error || 'Could not calculate GPA.'); return; }
     const el = document.getElementById('gpa-calc-result');
     el.style.display = 'block';
     el.innerHTML = `
-      <div style="font-weight:800;font-size:20px;font-family:var(--ff-h);margin-bottom:12px;color:var(--brand);letter-spacing:-.5px;">GPA: ${d.gpa} <span style="font-size:12px;color:var(--t3);font-weight:600;">/ ${d.gpaScale}</span></div>
-      ${d.breakdown.map(b => `<div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--t2);padding:6px 0;box-shadow:0 -1px 0 var(--sd) inset;"><span>${escHtml(b.name)} (${b.creditUnit}u, ${b.score}%)</span><span style="font-weight:800;color:var(--t1);">${escHtml(b.grade)} · ${b.point}pt</span></div>`).join('')}
+      <div class="pop-in" style="font-weight:800;font-size:20px;font-family:var(--ff-h);margin-bottom:12px;color:var(--brand);letter-spacing:-.5px;">GPA: ${d.gpa} <span style="font-size:12px;color:var(--t3);font-weight:600;">/ ${d.gpaScale}</span></div>
+      ${d.breakdown.map((b,i) => `<div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--t2);padding:6px 0;box-shadow:0 -1px 0 var(--sd) inset;animation:fadeUp .35s var(--ease) both;animation-delay:${i*0.04}s;"><span>${escHtml(b.name)} (${b.creditUnit}u, ${b.score}%)</span><span style="font-weight:800;color:var(--t1);">${escHtml(b.grade)} · ${b.point}pt</span></div>`).join('')}
       <button class="btn primary" style="margin-top:14px;width:100%;padding:13px;" onclick="saveCalculatedGPA(${d.gpa})">Save as my current GPA</button>
     `;
-  }catch(e){ alert('Cannot connect to server.'); }
+  }catch(e){ toast('Cannot connect to server.'); }
 }
 
 async function saveCalculatedGPA(gpa){
   document.getElementById('gpa-current-input').value = gpa;
   await saveGPA();
-  alert('Saved as your current GPA.');
+  toast('Saved as your current GPA.');
 }
 
 async function loadLatestStudyGuide(){
@@ -722,7 +916,7 @@ async function generateStudyGuide(){
   const currentGPA = document.getElementById('gpa-current-input').value;
   const targetGPA = document.getElementById('gpa-target-input').value;
   if(!currentGPA || !targetGPA){
-    alert('Enter both your current and target GPA first.');
+    toast('Enter both your current and target GPA first.');
     return;
   }
   btn.disabled = true;
@@ -733,12 +927,12 @@ async function generateStudyGuide(){
     const d = await r.json();
     if(!r.ok){
       if(d.code === 'TIER_REQUIRED' && typeof showPaywall === 'function') showPaywall(d.error);
-      else alert(d.error || 'Could not generate a study guide. Try again.');
+      else toast(d.error || 'Could not generate a study guide. Try again.');
       return;
     }
     renderStudyGuide(d);
   }catch(e){
-    alert('Cannot connect to server.');
+    toast('Cannot connect to server.');
   }finally{
     btn.disabled = false;
     btn.innerHTML = original;
@@ -750,8 +944,8 @@ function renderStudyGuide(guide){
   el.style.display = 'block';
   el.innerHTML = `
     <div style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:16px;">${escHtml(guide.summary)}</div>
-    ${guide.weeks.map(w => `
-      <div class="guide-week">
+    ${guide.weeks.map((w,i) => `
+      <div class="guide-week" style="animation-delay:${i*0.08}s">
         <div class="guide-week-title">${escHtml(w.title)} — ${escHtml(w.focus)}</div>
         <ul>
           ${w.tasks.map(t => `<li>${escHtml(t)}</li>`).join('')}
@@ -765,6 +959,7 @@ function copyReferral(){
   const link = document.getElementById('referral-code').textContent;
   if(!link || link === '—') return;
   navigator.clipboard?.writeText(link);
+  toast('Referral link copied');
 }
 
 loadProfile();
