@@ -4,6 +4,7 @@ const StudyRoom = require('../models/StudyRoom');
 const Question = require('../models/Question');
 const Student = require('../models/Student');
 const { requireStudent } = require('../middleware/auth');
+const { requireFeature } = require('../services/entitlements.service');
 const { courseMatchFilter } = require('../utils/courseMatch');
 
 const router = express.Router();
@@ -21,7 +22,7 @@ async function generateRoomCode() {
 // POST /api/study-rooms — create a room. Picks `questionCount` random
 // questions from the given course up front (not re-picked per join),
 // so everyone in the room sees the same quiz.
-router.post('/study-rooms', requireStudent, async (req, res) => {
+router.post('/study-rooms', requireStudent, requireFeature('studyRooms'), async (req, res) => {
   try {
     const { questionCount, secondsPerQuestion } = req.body;
     const course = typeof req.body.course === 'string' ? req.body.course.trim().slice(0, 40) : '';
@@ -58,7 +59,7 @@ router.post('/study-rooms', requireStudent, async (req, res) => {
 });
 
 // GET /api/study-rooms/:code — lobby preview info before joining via socket.
-router.get('/study-rooms/:code', requireStudent, async (req, res) => {
+router.get('/study-rooms/:code', requireStudent, requireFeature('studyRooms'), async (req, res) => {
   try {
     const room = await StudyRoom.findOne({ code: String(req.params.code).toUpperCase() }).lean();
     if (!room) return res.status(404).json({ error: 'Room not found' });

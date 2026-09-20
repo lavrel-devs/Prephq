@@ -7,6 +7,7 @@ const { applyCreditDelta } = require('../utils/credits');
 const { normalizeUsername } = require('../utils/username');
 const { notify } = require('../services/notification.service');
 const { withLock } = require('../utils/lock');
+const { requireFeature } = require('../services/entitlements.service');
 
 const router = express.Router();
 
@@ -26,7 +27,7 @@ const COOLDOWN_MS = 30 * 1000;
 // mongoose session/transaction.
 
 // POST /api/transfer — send credits to another user by @username.
-router.post('/transfer', requireStudent, transferLimiter, async (req, res) => {
+router.post('/transfer', requireStudent, requireFeature('creditTransfers'), transferLimiter, async (req, res) => {
   try {
     const { username, amount } = req.body;
     const parsedAmount = parseInt(amount, 10);

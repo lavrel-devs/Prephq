@@ -8,6 +8,7 @@ const {
   createTeam, joinTeam, updateTeamScore, computeTeamLeaderboard, findStudentTeam, submitQuizScore,
 } = require('../services/contest.service');
 const { isObjectId } = require('../utils/validate');
+const { requireFeature } = require('../services/entitlements.service');
 
 const VISIBLE_STATUSES = ['upcoming', 'live', 'paused', 'ended', 'cancelled']; // never 'draft'
 
@@ -27,7 +28,7 @@ function summarize(contest, matric) {
 }
 
 // GET /api/contests — list, filterable by status via ?status=upcoming|live|ended
-router.get('/contests', requireStudent, async (req, res) => {
+router.get('/contests', requireStudent, requireFeature('contests'), async (req, res) => {
   try {
     // `?status[$ne]=x` parses into an object in Express; only accept a plain known status,
     // otherwise students could list unpublished drafts.
@@ -41,7 +42,7 @@ router.get('/contests', requireStudent, async (req, res) => {
 });
 
 // GET /api/contests/past — ended contests the student can browse results for
-router.get('/contests/past', requireStudent, async (req, res) => {
+router.get('/contests/past', requireStudent, requireFeature('contests'), async (req, res) => {
   try {
     const contests = await Contest.find({ status: 'ended' }).sort({ endTime: -1 }).limit(30).lean();
     res.json(contests.map(c => summarize(c, req.student.sub)));
@@ -50,7 +51,7 @@ router.get('/contests/past', requireStudent, async (req, res) => {
 
 // GET /api/contests/:id — full detail. For team-based contests this
 // returns `myTeam` (with teamCode to share) instead of `myEntry`.
-router.get('/contests/:id', requireStudent, async (req, res) => {
+router.get('/contests/:id', requireStudent, requireFeature('contests'), async (req, res) => {
   try {
     if (!isObjectId(req.params.id)) return res.status(404).json({ error: 'Contest not found' });
     const contest = await Contest.findById(req.params.id).lean();
@@ -66,7 +67,7 @@ router.get('/contests/:id', requireStudent, async (req, res) => {
 });
 
 // POST /api/contests/:id/join — individual (non-team) contests only.
-router.post('/contests/:id/join', requireStudent, contestJoinLimiter, async (req, res) => {
+router.post('/contests/:id/join', requireStudent, requireFeature('contests'), contestJoinLimiter, async (req, res) => {
   try {
     if (!isObjectId(req.params.id)) return res.status(404).json({ error: 'Contest not found' });
     const [contest, student] = await Promise.all([
@@ -86,7 +87,7 @@ router.post('/contests/:id/join', requireStudent, contestJoinLimiter, async (req
 });
 
 // POST /api/contests/:id/team/create — { teamName }
-router.post('/contests/:id/team/create', requireStudent, contestJoinLimiter, async (req, res) => {
+router.post('/contests/:id/team/create', requireStudent, requireFeature('contests'), contestJoinLimiter, async (req, res) => {
   try {
     const { teamName } = req.body;
     if (!isObjectId(req.params.id)) return res.status(404).json({ error: 'Contest not found' });
@@ -106,7 +107,7 @@ router.post('/contests/:id/team/create', requireStudent, contestJoinLimiter, asy
 });
 
 // POST /api/contests/:id/team/join — { teamCode }
-router.post('/contests/:id/team/join', requireStudent, contestJoinLimiter, async (req, res) => {
+router.post('/contests/:id/team/join', requireStudent, requireFeature('contests'), contestJoinLimiter, async (req, res) => {
   try {
     const { teamCode } = req.body;
     if (!isObjectId(req.params.id)) return res.status(404).json({ error: 'Contest not found' });
@@ -127,7 +128,7 @@ router.post('/contests/:id/team/join', requireStudent, contestJoinLimiter, async
 
 // GET /api/contests/:id/leaderboard — branches to team leaderboard for
 // team-based contests, individual leaderboard otherwise.
-router.get('/contests/:id/leaderboard', requireStudent, async (req, res) => {
+router.get('/contests/:id/leaderboard', requireStudent, requireFeature('contests'), async (req, res) => {
   try {
     if (!isObjectId(req.params.id)) return res.status(404).json({ error: 'Contest not found' });
     const contest = await Contest.findById(req.params.id).lean();
@@ -139,7 +140,7 @@ router.get('/contests/:id/leaderboard', requireStudent, async (req, res) => {
 // GET /api/contests/:id/quiz-questions — for quiz-type contests only.
 // Must have joined (individually, or via a team) first. Strips the
 // answer field so it can't be inspected client-side before submitting.
-router.get('/contests/:id/quiz-questions', requireStudent, async (req, res) => {
+router.get('/contests/:id/quiz-questions', requireStudent, requireFeature('contests'), async (req, res) => {
   try {
     if (!isObjectId(req.params.id)) return res.status(404).json({ error: 'Contest not found' });
     const contest = await Contest.findById(req.params.id).populate('questions').lean();
@@ -166,7 +167,7 @@ router.get('/contests/:id/quiz-questions', requireStudent, async (req, res) => {
 // Score is computed server-side against the real answer key, never
 // trusted from the client. For team contests, whichever teammate
 // submits first sets the team's score for everyone.
-router.post('/contests/:id/submit-quiz', requireStudent, async (req, res) => {
+router.post('/contests/:id/submit-quiz', requireStudent, requireFeature('contests'), async (req, res) => {
   try {
     const { answers } = req.body;
     if (!answers || typeof answers !== 'object' || Array.isArray(answers)) return res.status(400).json({ error: 'answers object is required' });
@@ -208,7 +209,7 @@ router.post('/contests/:id/submit-quiz', requireStudent, async (req, res) => {
 // POST /api/contests/:id/score — submit/update score for a
 // leaderboard/timed contest (individual or team). Raffle contests
 // ignore this; quiz contests must use /submit-quiz instead.
-router.post('/contests/:id/score', requireStudent, async (req, res) => {
+router.post('/contests/:id/score', requireStudent, requireFeature('contests'), async (req, res) => {
   try {
     const { score } = req.body;
     if (!Number.isFinite(score) || score < 0 || score > 100000) return res.status(400).json({ error: 'A score between 0 and 100000 is required' });

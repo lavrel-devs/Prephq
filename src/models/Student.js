@@ -17,7 +17,6 @@ const StudentSchema = new mongoose.Schema({
   whatsapp:     { type: String, default: '' },
   role:         { type: String, default: 'student' },
   active:       { type: Boolean, default: true },
-  codeUsed:     { type: String, default: '' },
   credits:      { type: Number, default: 0 },          // PrepHQ Credits — new users start at 0
   devices: [{
     fingerprint: String,
@@ -137,7 +136,10 @@ const StudentSchema = new mongoose.Schema({
   // null for free (never expires) and for lifetime grants; for paid
   // tiers it's set on upgrade and checked to auto-revert to 'free'
   // once passed (see tier.service.js).
-  tier:          { type: String, enum: ['free', 'basic', 'pro'], default: 'free' },
+  tier:          { type: String, enum: ['free', 'premium'], default: 'free' },
+  // Which Premium billing period is active. 'lifetime' is a permanent entitlement (tierExpiresAt is
+  // ignored); null on a premium account = manual/legacy grant.
+  premiumPlan:   { type: String, enum: ['weekly', 'monthly', 'yearly', 'lifetime', null], default: null },
   tierExpiresAt: { type: Date, default: null },
 
   // Daily practice-question usage (free tier: 20/day). Mirrors the

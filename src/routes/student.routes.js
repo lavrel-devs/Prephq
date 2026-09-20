@@ -14,6 +14,7 @@ const { checkAvailability, setUsername } = require('../utils/username');
 const { generateUniqueReferralCode } = require('../utils/referral');
 const { usernameCheckLimiter, usernameChangeLimiter } = require('../middleware/rateLimit');
 const { usageSnapshot } = require('../services/tier.service');
+const { entitlementSummary, requireFeature, FEATURES, PREMIUM_PERIODS, PERIOD_PRICE_FIELD, PERIOD_DAYS, resolvePlan } = require('../services/entitlements.service');
 
 const router = express.Router();
 
@@ -27,7 +28,12 @@ const router = express.Router();
 // param happens to be formatted.
 function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
-router.get('/questions/:course', async (req, res) => {
+// Was fully public; now requires a signed-in student, and honours the Free-plan feature
+// switches: ?mode=exam needs "Exam mode", anything else needs "Practice questions".
+// (Premium always passes.) Admin tools use /api/admin/questions instead.
+router.get('/questions/:course', requireStudent, (req, res, next) =>
+  requireFeature(req.query.mode === 'exam' ? 'examMode' : 'practiceQuestions')(req, res, next),
+async (req, res) => {
   try {
     const param = req.params.course;
     const normalizedKey = param.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -73,7 +79,24 @@ router.get('/usage/limits', requireStudent, async (req, res) => {
 router.get('/plans', async (req, res) => {
   try {
     const settings = await Settings.getGlobal();
-    res.json({ tiers: settings.tiers, support: settings.support, streakBonus: settings.streakBonus });
+    const f = settings.tiers.free, p = settings.tiers.premium;
+    res.json({
+      tiers: {
+        free: {
+          dailyQuestions: f.dailyQuestions, dailyAIQuizzes: f.dailyAIQuizzes, dailyAIChatMessages: f.dailyAIChatMessages,
+          features: FEATURES.reduce((o, x) => { o[x.key] = typeof f.features[x.key] === 'boolean' ? f.features[x.key] : x.freeDefault; return o; }, {}),
+        },
+        premium: {
+          dailyQuestions: p.dailyQuestions, dailyAIQuizzes: p.dailyAIQuizzes, dailyAIChatMessages: p.dailyAIChatMessages,
+          priceWeekly: p.priceWeekly, priceMonthly: p.priceMonthly, priceYearly: p.priceYearly, priceLifetime: p.priceLifetime,
+        },
+      },
+      // Billing options in display order; `price: null` = not offered right now.
+      periods: PREMIUM_PERIODS.map(k => ({ key: k, days: PERIOD_DAYS[k], price: p[PERIOD_PRICE_FIELD[k]] ?? null })),
+      featureLabels: FEATURES.map(x => ({ key: x.key, label: x.label })),
+      support: settings.support,
+      streakBonus: settings.streakBonus,
+    });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -122,7 +145,7 @@ router.put('/profile/grading-system', requireStudent, async (req, res) => {
 // { name, creditUnit, score }, converts each score to a grade point
 // using the student's own gradingScale, computes the weighted GPA on
 // their own gpaScale, and (if `save` is true) writes the result to
-// currentGPA. Doesn't require Basic/Pro — this is a calculator, not
+// currentGPA. Not plan-gated — this is a calculator, not
 // the AI study guide.
 router.post('/gpa/calculate', requireStudent, async (req, res) => {
   try {
@@ -215,7 +238,10 @@ router.get('/me', requireStudent, async (req, res) => {
       showAllCoursesOverride: !!student.showAllCoursesOverride,
       gpaScale: student.gpaScale,
       gradingScale: student.gradingScale,
-      tier: student.tier,
+      tier: resolvePlan(student),
+      premiumPlan: student.premiumPlan || null,
+      tierExpiresAt: student.premiumPlan === 'lifetime' ? null : (student.tierExpiresAt || null),
+      entitlements: await entitlementSummary(student),
       streak, // { count, milestoneHit, bonusAwarded }
     });
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -402,7 +428,10 @@ router.get('/profile', requireStudent, async (req, res) => {
         referredCount: referralCount,
       },
       leaderboardOptIn: !!student.publicLeaderboardOptIn,
-      tier: student.tier,
+      tier: resolvePlan(student),
+      premiumPlan: student.premiumPlan || null,
+      tierExpiresAt: student.premiumPlan === 'lifetime' ? null : (student.tierExpiresAt || null),
+      entitlements: await entitlementSummary(student),
       currentGPA: student.currentGPA,
       targetGPA: student.targetGPA,
     });

@@ -46,4 +46,18 @@ function shuffle(arr) {
   return a;
 }
 
-module.exports = { MATRIC_RE, cleanMatric, cleanName, cleanPhone, isObjectId, escapeRegex, shuffle };
+// Canonical course key: "CHM 141" / "chm-141" / "CHM141" -> "chm141". This is the same form the
+// Course collection uses for `key`, so attempts, weak topics and the question bank all agree.
+function normCourseKey(raw) {
+  return String(raw || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+// Generic labels that describe HOW a question was made, not WHAT it is about — they must never
+// show up as a "topic" (AI-generated flashcards used to make "AI Generated" a weak topic).
+const GENERIC_TAGS = new Set(['ai generated', 'ai', 'general', 'misc', 'other', 'untagged']);
+function cleanTag(raw) {
+  const t = String(raw || '').trim().replace(/\s+/g, ' ').slice(0, 100);
+  return GENERIC_TAGS.has(t.toLowerCase()) ? '' : t;
+}
+
+module.exports = { normCourseKey, cleanTag, GENERIC_TAGS, MATRIC_RE, cleanMatric, cleanName, cleanPhone, isObjectId, escapeRegex, shuffle };

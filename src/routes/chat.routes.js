@@ -3,6 +3,7 @@ const rateLimit = require('express-rate-limit');
 const Student = require('../models/Student');
 const ChatMessage = require('../models/ChatMessage');
 const { requireStudent } = require('../middleware/auth');
+const { requireFeature } = require('../services/entitlements.service');
 const { sendMessage, getQuota } = require('../services/chat.service');
 
 const router = express.Router();
@@ -19,7 +20,7 @@ const chatLimiter = rateLimit({
 
 // GET /api/chat/history — persisted conversation, so it survives a
 // device switch or cleared browser (see ChatMessage model).
-router.get('/chat/history', requireStudent, async (req, res) => {
+router.get('/chat/history', requireStudent, requireFeature('aiTutor'), async (req, res) => {
   try {
     const messages = await ChatMessage.find({ matric: req.student.sub })
       .sort({ ts: 1 }).limit(200).lean();
@@ -30,7 +31,7 @@ router.get('/chat/history', requireStudent, async (req, res) => {
 // GET /api/chat/quota — current remaining daily/monthly messages,
 // without sending anything. Reports 0 remaining rather than erroring
 // if the student is already at the limit.
-router.get('/chat/quota', requireStudent, async (req, res) => {
+router.get('/chat/quota', requireStudent, requireFeature('aiTutor'), async (req, res) => {
   try {
     const student = await Student.findOne({ matric: req.student.sub });
     if (!student) return res.status(404).json({ error: 'Student not found' });
@@ -40,7 +41,7 @@ router.get('/chat/quota', requireStudent, async (req, res) => {
 });
 
 // POST /api/chat/message — { message }
-router.post('/chat/message', requireStudent, chatLimiter, async (req, res) => {
+router.post('/chat/message', requireStudent, requireFeature('aiTutor'), chatLimiter, async (req, res) => {
   try {
     const { message } = req.body;
     if (typeof message !== 'string' || !message.trim()) return res.status(400).json({ error: 'message is required' });

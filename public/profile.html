@@ -574,9 +574,9 @@ body{
     </div>
 
     <div id="sg-locked" class="lock-card" style="display:none;">
-      <div class="lock-title"><i class="fa-solid fa-lock"></i> AI Study Guide is a Basic/Pro feature</div>
+      <div class="lock-title"><i class="fa-solid fa-lock"></i> AI Study Guide is a Premium feature</div>
       <div class="lock-sub">Get a personalized 4-week plan built from your GPA goal and courses.</div>
-      <button class="btn primary" style="margin-top:14px;" onclick="promptUpgrade('Basic')">Upgrade to unlock</button>
+      <button class="btn primary" style="margin-top:14px;" onclick="promptUpgrade('Premium')">Upgrade to unlock</button>
     </div>
 
     <button class="btn primary" id="sg-generate-btn" style="display:none;width:100%;padding:14px;" onclick="generateStudyGuide()">
@@ -669,7 +669,8 @@ function render(){
 
   document.getElementById('gpa-current-input').value = d.currentGPA ?? '';
   document.getElementById('gpa-target-input').value = d.targetGPA ?? '';
-  const isPaid = d.tier === 'basic' || d.tier === 'pro';
+  // Decided by the server's entitlement rules (Premium, or the admin's Free-plan switch for the study guide).
+  const isPaid = !!d.entitlements?.features?.studyGuide;
   document.getElementById('sg-locked').style.display = isPaid ? 'none' : 'block';
   document.getElementById('sg-generate-btn').style.display = isPaid ? 'block' : 'none';
   if(isPaid) loadLatestStudyGuide();
@@ -705,17 +706,25 @@ async function saveDisplayName(){
 }
 
 let cachedPlans = null;
+let selPeriod = 'monthly';
+const PERIOD_LABEL = { weekly:'Weekly', monthly:'Monthly', yearly:'Yearly', lifetime:'Lifetime' };
+const PERIOD_UNIT  = { weekly:'/week', monthly:'/month', yearly:'/year', lifetime:' once' };
+const fmtNaira = n => '\u20A6' + Number(n).toLocaleString();
+const esc = t => String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
 async function loadPlanCard(tier){
   const badge = document.getElementById('plan-badge');
   const sub = document.getElementById('plan-sub');
   const opts = document.getElementById('plan-options');
+  const isPremium = tier === 'premium';
+  const ent = profileData?.entitlements || {};
 
-  const tierColors = { free: 'var(--warn)', basic: 'var(--brand)', pro: 'var(--purple)' };
-  badge.textContent = tier;
-  badge.style.color = tierColors[tier];
-  sub.textContent = tier === 'free'
-    ? "You're on the free plan — limited daily questions, AI quizzes, and AI chat."
-    : `You're on ${tier} — unlimited questions, AI quizzes, and AI chat.`;
+  badge.textContent = isPremium ? 'Premium' + (ent.premiumPlan ? ' \u00B7 ' + PERIOD_LABEL[ent.premiumPlan] : '') : 'Free';
+  badge.style.color = isPremium ? 'var(--purple)' : 'var(--warn)';
+  if(!isPremium) sub.textContent = "You're on the free plan \u2014 limited daily questions, AI quizzes, and AI chat.";
+  else if(ent.lifetime) sub.textContent = "Premium Lifetime \u2014 permanent access, no renewals.";
+  else if(ent.expiresAt) sub.textContent = `Premium \u2014 unlimited access until ${new Date(ent.expiresAt).toLocaleDateString()}.`;
+  else sub.textContent = 'Premium \u2014 unlimited questions, AI quizzes, and AI chat.';
 
   let plans;
   try{
@@ -725,28 +734,38 @@ async function loadPlanCard(tier){
   if(!plans){ opts.innerHTML = '<div style="font-size:12.5px;color:var(--t3);">Could not load plan pricing right now.</div>'; return; }
   cachedPlans = plans;
 
-  const rows = [
-    { key: 'free', name: 'Free', desc: '20 questions/day · 2 AI quizzes/day · 5 AI chats/day', price: null },
-    { key: 'basic', name: 'Basic', desc: 'Unlimited questions, AI quizzes & AI chat', price: `₦${plans.tiers.basic.priceMonthly?.toLocaleString()}/mo · ₦${plans.tiers.basic.priceYearly?.toLocaleString()}/yr` },
-    { key: 'pro', name: 'Pro', desc: 'Everything in Basic, plus priority features as they ship', price: `₦${plans.tiers.pro.priceMonthly?.toLocaleString()}/mo · ₦${plans.tiers.pro.priceYearly?.toLocaleString()}/yr` },
-  ];
+  const f = plans.tiers.free;
+  const freeDesc = [
+    f.dailyQuestions != null ? `${f.dailyQuestions} questions/day` : 'Unlimited questions',
+    f.dailyAIQuizzes != null ? `${f.dailyAIQuizzes} AI quizzes/day` : 'Unlimited AI quizzes',
+    f.dailyAIChatMessages != null ? `${f.dailyAIChatMessages} AI chats/day` : 'Unlimited AI chat',
+  ].join(' \u00B7 ');
 
-  opts.innerHTML = rows.map((row,i) => {
-    const isCurrent = row.key === tier;
-    const actionBtn = isCurrent
-      ? `<span style="font-size:11.5px;font-weight:800;color:var(--ok);padding:9px 14px;">Current</span>`
-      : `<button onclick="promptUpgrade('${row.name}')" style="border:none;cursor:pointer;font-size:11.5px;font-weight:800;color:${tierColors[row.key]};background:var(--bg);padding:9px 16px;border-radius:99px;box-shadow:var(--sh-sm);font-family:var(--ff-h);letter-spacing:-.1px;transition:box-shadow .18s var(--ease), transform .18s var(--spring);" onmouseover="this.style.boxShadow='var(--sh)'" onmouseout="this.style.boxShadow='var(--sh-sm)'">Upgrade</button>`;
-    return `
-      <div class="plan-row ${isCurrent?'current':''}" style="animation:fadeUp .4s var(--ease) both;animation-delay:${i*0.06}s;">
-        <div style="min-width:0;">
-          <div class="plan-name">${row.name}${row.price ? ` <span class="plan-price" style="color:${tierColors[row.key]};">· ${row.price}</span>` : ''}</div>
-          <div class="plan-desc">${row.desc}</div>
-        </div>
-        ${actionBtn}
-      </div>
-    `;
+  const offered = plans.periods.filter(x => x.price != null);
+  if(!offered.find(x => x.key === selPeriod)) selPeriod = offered[0]?.key || 'monthly';
+  const periodBtns = plans.periods.map(x => {
+    const off = x.price == null, on = x.key === selPeriod && !off;
+    return `<button type="button" ${off?'disabled':''} onclick="pickPeriod('${x.key}')" style="border:none;cursor:${off?'not-allowed':'pointer'};text-align:left;padding:10px 12px;border-radius:14px;background:var(--bg);color:var(--t1);font-family:inherit;min-width:0;opacity:${off?.45:1};box-shadow:${on?'var(--sh-in-sm),0 0 0 2px var(--purple)':'var(--sh-sm)'};">
+      <div style="font-weight:800;font-size:12.5px;">${PERIOD_LABEL[x.key]}</div>
+      <div style="font-size:11.5px;font-weight:700;color:${on?'var(--purple)':'var(--t3)'};">${off?'Not available':fmtNaira(x.price)+PERIOD_UNIT[x.key]}</div></button>`;
   }).join('');
+
+  opts.innerHTML = `
+    <div class="plan-row ${!isPremium?'current':''}">
+      <div style="min-width:0;"><div class="plan-name">Free</div><div class="plan-desc">${esc(freeDesc)}</div></div>
+      ${!isPremium ? '<span style="font-size:11.5px;font-weight:800;color:var(--ok);padding:9px 14px;">Current</span>' : ''}
+    </div>
+    <div class="plan-row ${isPremium?'current':''}" style="flex-direction:column;align-items:stretch;gap:10px;">
+      <div style="display:flex;align-items:center;gap:10px;justify-content:space-between;">
+        <div style="min-width:0;"><div class="plan-name">Premium</div><div class="plan-desc">Unlimited questions, AI quizzes &amp; AI chat, plus every feature</div></div>
+        ${isPremium ? '<span style="font-size:11.5px;font-weight:800;color:var(--ok);padding:9px 14px;">Current</span>' : ''}
+      </div>
+      ${isPremium && ent.lifetime ? '' : `
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;">${periodBtns}</div>
+      <button onclick="promptUpgrade('Premium')" style="border:none;cursor:pointer;font-size:12.5px;font-weight:800;color:#fff;background:linear-gradient(140deg,var(--brand),var(--purple));padding:11px 16px;border-radius:99px;box-shadow:var(--sh-sm);font-family:var(--ff-h);">${isPremium ? 'Renew / change plan' : 'Upgrade to Premium'}</button>`}
+    </div>`;
 }
+function pickPeriod(k){ selPeriod = k; loadPlanCard(profileData?.tier || 'free'); }
 
 async function promptUpgrade(planName){
   if(!cachedPlans){
@@ -758,8 +777,9 @@ async function promptUpgrade(planName){
   document.getElementById('plan-card')?.scrollIntoView({ behavior:'smooth', block:'start' });
 
   const wa = cachedPlans?.support?.whatsapp;
-  if(!wa){ alert('Upgrades are handled manually right now — please reach out to the PrepHQ admin to upgrade your plan.'); return; }
-  const msg = `Hi, I want to upgrade my PrepHQ plan to ${planName} — my matric is ${profileData?.matric || ''}`;
+  if(!wa){ alert('Upgrades are handled manually right now \u2014 please reach out to the PrepHQ admin to upgrade your plan.'); return; }
+  const price = (cachedPlans?.periods || []).find(x => x.key === selPeriod)?.price;
+  const msg = `Hi, I want to upgrade my PrepHQ plan to Premium (${PERIOD_LABEL[selPeriod]}${price!=null?', '+fmtNaira(price):''}) \u2014 my matric is ${profileData?.matric || ''}`;
   window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
@@ -926,7 +946,7 @@ async function generateStudyGuide(){
     const r = await PhqAuth.authFetch('/api/study-guide/generate', { method:'POST' }, 'student');
     const d = await r.json();
     if(!r.ok){
-      if(d.code === 'TIER_REQUIRED' && typeof showPaywall === 'function') showPaywall(d.error);
+      if((d.code === 'FEATURE_LOCKED' || d.code === 'TIER_REQUIRED') && typeof showPaywall === 'function') showPaywall(d.error);
       else toast(d.error || 'Could not generate a study guide. Try again.');
       return;
     }

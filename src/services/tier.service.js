@@ -1,11 +1,12 @@
 const Settings = require('../models/Settings');
 const Student = require('../models/Student');
 const { watDateString } = require('./credit.service');
+const { resolvePlan } = require('./entitlements.service');
 
 // ── Tier service ──────────────────────────────────────────────
 // v1.4. Central place for subscription-tier daily usage limits.
 // Free tier: capped daily questions/AI quizzes/AI chat messages.
-// Basic/Pro: whatever Settings.tiers.<tier> says (default: unlimited,
+// Premium: whatever Settings.tiers.premium says (default: unlimited,
 // admin-editable). A `null` limit means unlimited.
 //
 // Pattern mirrors the existing aiChatDailyCount logic in
@@ -15,24 +16,26 @@ const { watDateString } = require('./credit.service');
 // Auto-revert an expired paid tier back to free. Called lazily
 // whenever we touch a student's tier, so no cron job is required.
 async function ensureTierCurrent(student) {
-  if (student.tier !== 'free' && student.tierExpiresAt && new Date() > student.tierExpiresAt) {
+  // Lifetime never expires. Only recurring premium periods (or manual grants with an
+  // end date) fall back to free.
+  if (student.tier !== 'free' && student.premiumPlan !== 'lifetime' && student.tierExpiresAt && new Date() > student.tierExpiresAt) {
     // Conditional update: don't clobber a renewal an admin applied a
     // moment ago (the in-memory doc may already be stale).
     await Student.updateOne(
-      { _id: student._id, tierExpiresAt: { $lte: new Date() } },
-      { $set: { tier: 'free', tierExpiresAt: null } },
+      { _id: student._id, premiumPlan: { $ne: 'lifetime' }, tierExpiresAt: { $lte: new Date() } },
+      { $set: { tier: 'free', tierExpiresAt: null, premiumPlan: null } },
     );
-    student.set('tier', 'free');
-    student.set('tierExpiresAt', null);
-    student.unmarkModified('tier');
-    student.unmarkModified('tierExpiresAt');
+    for (const f of ['tier', 'tierExpiresAt', 'premiumPlan']) {
+      student.set(f, f === 'tier' ? 'free' : null);
+      student.unmarkModified(f);
+    }
   }
   return student;
 }
 
 async function getTierLimits(student) {
   const settings = await Settings.getGlobal();
-  const tier = settings.tiers[student.tier] || settings.tiers.free;
+  const tier = settings.tiers[resolvePlan(student)] || settings.tiers.free;
   return {
     dailyQuestions: tier.dailyQuestions ?? null,
     dailyAIQuizzes: tier.dailyAIQuizzes ?? null,
@@ -122,8 +125,9 @@ async function usageSnapshot(student) {
   const aiChatUsed = student.aiChatDailyDate === today ? student.aiChatDailyCount : 0;
 
   return {
-    tier: student.tier,
-    tierExpiresAt: student.tierExpiresAt,
+    tier: resolvePlan(student),
+    premiumPlan: student.premiumPlan || null,
+    tierExpiresAt: student.premiumPlan === 'lifetime' ? null : student.tierExpiresAt,
     questions: { used: questionsUsed, limit: limits.dailyQuestions },
     aiQuizzes: { used: aiQuizUsed, limit: limits.dailyAIQuizzes },
     aiChatMessages: { used: aiChatUsed, limit: limits.dailyAIChatMessages },

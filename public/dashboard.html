@@ -256,6 +256,9 @@ button,input,select,textarea{font-family:var(--ff-b);}
 
 .btn-surf{background:var(--bg);border:none;color:var(--t2);font-size:15px;font-weight:700;width:100%;padding:14px;border-radius:var(--r12);cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:7px;box-shadow:var(--sh);}
 .btn-surf:active{transform:scale(.98);box-shadow:var(--sh-in);}
+/* Compact inline variant. .btn-surf is width:100% (a full-width button); inside a flex row that made the
+   Play button as wide as the whole card and push it out of it. Size to content instead. */
+.btn-play{width:auto;flex:0 0 auto;padding:9px 16px;font-size:12.5px;}
 .btn-surf svg{fill:currentColor;}
 
 .logo-tap{cursor:pointer;user-select:none;}
@@ -714,8 +717,8 @@ body.quiz-active #shared-glass-nav{display:none;}
   <div id="exam-banner-wrap" style="padding:0 18px;display:none;margin-bottom:2px;">
     <div class="exam-banner">
       <div class="eb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
-      <div class="eb-txt"><div class="eb-title">Exam Countdown</div><div class="eb-sub" id="exam-date-label">Date not set</div></div>
-      <div><div class="eb-days" id="exam-days">—</div><div class="eb-days-lbl">days left</div></div>
+      <div class="eb-txt"><div class="eb-title" id="exam-title">Exam Countdown</div><div class="eb-sub" id="exam-date-label">Date not set</div></div>
+      <div><div class="eb-days" id="exam-days">—</div><div class="eb-days-lbl" id="exam-days-lbl">days left</div></div>
     </div>
   </div>
 
@@ -775,8 +778,8 @@ body.quiz-active #shared-glass-nav{display:none;}
   <div style="background:var(--bg);border-radius:var(--r16);margin:0 18px 18px;padding:16px;box-shadow:var(--sh);">
     <div style="font-size:12.5px;color:var(--t3);margin-bottom:12px;">Generate a fresh set of questions for any course with AI. Costs <b id="ai-quiz-cost">5</b> credits per quiz.</div>
     <div style="display:flex;gap:8px;margin-bottom:10px;">
-      <input id="ai-course-input" placeholder="Course code e.g. CHM142" style="flex:1;padding:12px;border-radius:12px;border:none;background:var(--bg);font-size:14px;font-weight:600;color:var(--t1);outline:none;box-shadow:var(--sh-in-sm);" autocapitalize="characters">
-      <div class="neu-select" id="ai-diff-select-wrap" data-value="medium" style="flex-shrink:0;width:112px;">
+      <input id="ai-course-input" placeholder="Course code e.g. CHM142" style="flex:1;min-width:0;padding:12px;border-radius:12px;border:none;background:var(--bg);font-size:14px;font-weight:600;color:var(--t1);outline:none;box-shadow:var(--sh-in-sm);" autocapitalize="characters">
+      <div class="neu-select" id="ai-diff-select-wrap" data-value="medium" style="flex-shrink:0;width:104px;">
         <input type="hidden" id="ai-diff-select" value="medium">
         <button type="button" class="neu-select-trigger" onclick="toggleNeuSelect('ai-diff-select-wrap')">
           <span class="neu-select-label">Medium</span>
@@ -790,6 +793,11 @@ body.quiz-active #shared-glass-nav{display:none;}
       </div>
     </div>
 
+    <div style="display:flex;gap:8px;margin-bottom:6px;align-items:stretch;">
+      <input id="ai-topic-input" maxlength="80" placeholder="Topic (optional) e.g. Chemical bonding" style="flex:1;min-width:0;padding:12px;border-radius:12px;border:none;background:var(--bg);font-size:13.5px;font-weight:600;color:var(--t1);outline:none;box-shadow:var(--sh-in-sm);">
+      <input id="ai-count-input" type="number" inputmode="numeric" min="5" max="20" step="1" value="10" aria-label="Number of questions" style="flex:0 0 74px;width:74px;padding:12px 8px;border-radius:12px;border:none;background:var(--bg);font-size:14px;font-weight:700;text-align:center;color:var(--t1);outline:none;box-shadow:var(--sh-in-sm);">
+    </div>
+    <div id="ai-count-hint" style="font-size:11.5px;color:var(--t3);margin:0 2px 8px;">Choose 5–20 multiple-choice questions. The cost is the same whatever number you pick.</div>
     <div id="material-toggle" onclick="toggleMaterialPanel()" style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:8px 2px;font-size:12.5px;font-weight:700;color:var(--purple);">
       <i class="fa-solid fa-chevron-right" id="material-chevron" style="font-size:10px;transition:transform .2s;"></i>
       Add study material (optional)
@@ -915,7 +923,11 @@ body.quiz-active #shared-glass-nav{display:none;}
     <button class="back-btn" style="margin-left:auto;color:var(--brand);" title="Generate flashcards for a course" onclick="openFlashcardGenerate()"><i class="fa-solid fa-wand-magic-sparkles" style="font-size:15px;"></i></button>
     <div class="qt-badge" id="fc-badge">0/0</div>
   </div>
-  <div id="fc-body" style="flex:1;display:flex;flex-direction:column;padding:18px 16px 180px;overflow-y:auto;"></div>
+  <div id="fc-bar" style="display:flex;align-items:center;gap:10px;padding:10px 16px 0;">
+    <select id="fc-course-select" class="neu-inline-input" style="flex:1;min-width:0;" onchange="fcSetCourse(this.value)" aria-label="Flashcard course"></select>
+    <i id="fc-loading" class="fa-solid fa-spinner fa-spin" style="display:none;color:var(--brand);"></i>
+  </div>
+  <div id="fc-body" style="flex:1;display:flex;flex-direction:column;padding:14px 16px 180px;overflow-y:auto;"></div>
   <div style="position:fixed;bottom:0;left:0;right:0;z-index:60;background:var(--bg);padding:12px 16px calc(12px + env(safe-area-inset-bottom));box-shadow:0 -6px 16px -8px var(--sd);display:none;" id="fc-actions">
     <div style="display:flex;gap:8px;">
       <button class="qbtn" style="color:var(--no)" onclick="rateFlashcard(0)">Again</button>
@@ -969,8 +981,16 @@ body.quiz-active #shared-glass-nav{display:none;}
       <div style="font-size:15px;font-weight:800;color:var(--t1);font-family:var(--ff-h);margin-bottom:4px;">Exam Date Countdown</div>
       <div style="font-size:13px;color:var(--t3);margin-bottom:14px;">Set your exam date to see a countdown on the home screen.</div>
       <div class="f-group" style="margin-bottom:12px;">
+        <div class="f-label">Course</div>
+        <select class="f-input" id="exam-course-input" style="padding-left:14px;" onchange="saveExamDate()"></select>
+      </div>
+      <div class="f-group" style="margin-bottom:12px;">
         <div class="f-label">Exam Date</div>
         <input type="date" class="f-input" id="exam-date-input" style="padding-left:14px;" onchange="saveExamDate()">
+      </div>
+      <div class="f-group" style="margin-bottom:12px;">
+        <div class="f-label">Exam Time (optional — shows hours remaining on exam day)</div>
+        <input type="time" class="f-input" id="exam-time-input" style="padding-left:14px;" onchange="saveExamDate()">
       </div>
       <div class="f-group" style="margin-bottom:0;">
         <div class="f-label">Exam Name (optional)</div>
@@ -1136,7 +1156,7 @@ body.quiz-active #shared-glass-nav{display:none;}
     </div>
     <div class="menu-item" onclick="closeSheet('menu-sheet');openFlashcards()">
       <div class="mi-icon" style="color:var(--brand)"><i class="fa-solid fa-layer-group" style="font-size:18px;"></i></div>
-      <div class="mi-body"><div class="mi-title">Flashcards</div><div class="mi-sub">Spaced-repetition review (Basic/Pro)</div></div>
+      <div class="mi-body"><div class="mi-title">Flashcards</div><div class="mi-sub">Spaced-repetition review</div></div>
       <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
     </div>
     <div class="menu-item" onclick="closeSheet('menu-sheet');showScr('saved-quizzes')">
@@ -1238,22 +1258,11 @@ body.quiz-active #shared-glass-nav{display:none;}
     <div style="width:60px;height:60px;border-radius:16px;background:var(--bg);color:var(--brand);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:24px;box-shadow:var(--sh);"><i class="fa-solid fa-bolt"></i></div>
     <div class="modal-title" id="pw-title">Daily limit reached</div>
     <div class="modal-sub" id="pw-sub">You've used everything your free plan gives you for today. Upgrade to keep going right now.</div>
-    <div style="display:flex;flex-direction:column;gap:10px;margin:16px 0;">
-      <div style="background:var(--bg);border-radius:14px;padding:14px;text-align:left;box-shadow:var(--sh);">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <span style="font-weight:800;font-size:14px;">Basic</span>
-          <span style="font-weight:700;font-size:13px;color:var(--brand);" id="pw-basic-price">—</span>
-        </div>
-        <div style="font-size:12px;color:var(--t3);margin-top:2px;">Unlimited questions, AI quizzes & AI chat</div>
-      </div>
-      <div style="background:var(--bg);border-radius:14px;padding:14px;text-align:left;box-shadow:var(--sh-in-sm),0 0 0 2px var(--brand-lt);">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <span style="font-weight:800;font-size:14px;">Pro</span>
-          <span style="font-weight:700;font-size:13px;color:var(--brand);" id="pw-pro-price">—</span>
-        </div>
-        <div style="font-size:12px;color:var(--t3);margin-top:2px;">Everything in Basic, plus priority features as they ship</div>
-      </div>
+    <div style="background:var(--bg);border-radius:14px;padding:14px;text-align:left;box-shadow:var(--sh-in-sm),0 0 0 2px var(--brand-lt);margin:16px 0 12px;">
+      <div style="font-weight:800;font-size:15px;font-family:var(--ff-h);">Premium</div>
+      <div style="font-size:12px;color:var(--t3);margin-top:2px;">Unlimited questions, AI quizzes &amp; AI chat, plus every feature</div>
     </div>
+    <div id="pw-periods" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:14px;"></div>
     <div class="modal-sub" style="font-size:12px;">To upgrade right now, reach out via WhatsApp — an admin will confirm your payment and activate your plan.</div>
     <a class="btn-grad" style="width:100%;display:block;box-sizing:border-box;text-decoration:none;margin-top:10px;" id="pw-whatsapp-link" href="#" target="_blank">Message admin to upgrade</a>
     <div style="text-align:center;margin-top:10px;font-size:13px;color:var(--t3);cursor:pointer;" onclick="closePaywall()">Maybe later</div>
@@ -1298,6 +1307,10 @@ const CICO = {
 };
 
 let curUser = null;
+// Can the signed-in student use this feature right now? Decided by the server (Premium, or the
+// admin's Free-plan switches) and delivered with /api/me — never hard-coded per plan here.
+function hasFeature(key){ return !!(curUser && curUser.entitlements && curUser.entitlements.features && curUser.entitlements.features[key]); }
+function lockedMsg(label){ return `${label} isn't available on the Free plan. Upgrade to Premium to unlock it.`; }
 let selCourses = ['gst101'];
 let quizMode = 'practice';
 let selQtyVal = 20;
@@ -1674,20 +1687,38 @@ async function loadPlans(){
   }catch(e){}
   return cachedPlans;
 }
+let pwPeriod = 'monthly';
+const PERIOD_LABEL = { weekly:'Weekly', monthly:'Monthly', yearly:'Yearly', lifetime:'Lifetime' };
+const PERIOD_UNIT  = { weekly:'/week', monthly:'/month', yearly:'/year', lifetime:' once' };
+function fmtNaira(n){ return '\u20A6' + Number(n).toLocaleString(); }
+
+function renderPaywallPeriods(plans){
+  const box = document.getElementById('pw-periods');
+  const periods = plans?.periods || [];
+  const offered = periods.filter(x => x.price != null);
+  if(!offered.find(x => x.key === pwPeriod)) pwPeriod = offered[0]?.key || 'monthly';
+  box.innerHTML = periods.map(x => {
+    const off = x.price == null, on = x.key === pwPeriod && !off;
+    return `<button type="button" ${off?'disabled':''} onclick="pwSelect('${x.key}')" style="border:none;cursor:${off?'not-allowed':'pointer'};text-align:left;padding:11px 12px;border-radius:14px;background:var(--bg);color:var(--t1);opacity:${off?.45:1};box-shadow:${on?'var(--sh-in-sm),0 0 0 2px var(--brand)':'var(--sh-sm)'};font-family:inherit;min-width:0;">
+      <div style="font-weight:800;font-size:13px;">${PERIOD_LABEL[x.key]}</div>
+      <div style="font-size:12px;color:${on?'var(--brand)':'var(--t3)'};font-weight:700;">${off ? 'Not available' : fmtNaira(x.price) + PERIOD_UNIT[x.key]}</div>
+    </button>`;
+  }).join('');
+  updatePaywallLink();
+}
+function pwSelect(k){ pwPeriod = k; renderPaywallPeriods(cachedPlans); }
+function updatePaywallLink(){
+  const wa = cachedPlans?.support?.whatsapp;
+  const price = (cachedPlans?.periods || []).find(x => x.key === pwPeriod)?.price;
+  const msg = `Hi, I want to upgrade my PrepHQ plan to Premium (${PERIOD_LABEL[pwPeriod]}${price!=null?', '+fmtNaira(price):''}) \u2014 my matric is ${curUser?.matric||''}`;
+  document.getElementById('pw-whatsapp-link').href = wa ? `https://wa.me/${wa}?text=${encodeURIComponent(msg)}` : '#';
+}
+
 async function showPaywall(reasonText){
   document.getElementById('pw-sub').textContent = reasonText || "You've used everything your free plan gives you for today. Upgrade to keep going right now.";
   document.getElementById('m-paywall').classList.add('on');
-
   const plans = await loadPlans();
-  if(plans){
-    const b = plans.tiers?.basic, p = plans.tiers?.pro;
-    if(b) document.getElementById('pw-basic-price').textContent = `₦${b.priceMonthly?.toLocaleString()}/mo · ₦${b.priceYearly?.toLocaleString()}/yr`;
-    if(p) document.getElementById('pw-pro-price').textContent = `₦${p.priceMonthly?.toLocaleString()}/mo · ₦${p.priceYearly?.toLocaleString()}/yr`;
-    const wa = plans.support?.whatsapp;
-    document.getElementById('pw-whatsapp-link').href = wa
-      ? `https://wa.me/${wa}?text=${encodeURIComponent('Hi, I want to upgrade my PrepHQ plan — my matric is '+(curUser?.matric||''))}`
-      : '#';
-  }
+  if(plans) renderPaywallPeriods(plans);
 }
 function closePaywall(){ document.getElementById('m-paywall').classList.remove('on'); }
 
@@ -1790,7 +1821,7 @@ async function loadWeakTopics(){
     card.style.display = 'block';
     document.getElementById('weak-topics-list').innerHTML = weakTopics.map(t => `
       <div style="display:flex;align-items:center;justify-content:space-between;font-size:12.5px;">
-        <span style="color:var(--t2);font-weight:600;">${escapeHtml(COURSES[t.course]?.code || t.course)} — ${escapeHtml(t.tag)}</span>
+        <span style="color:var(--t2);font-weight:600;">${escapeHtml(t.courseCode || COURSES[t.course]?.code || t.course)} — ${escapeHtml(t.tag)}</span>
         <span style="font-weight:800;color:var(--no);">${t.accuracy}%</span>
       </div>`).join('');
   }catch(e){}
@@ -1815,8 +1846,10 @@ async function startWeakTopicQuiz(){
   curAIQuizId = null;
   let pool = [];
   weakTopics.forEach(t => {
+    // t.course is the canonical key; compare tags ignoring case/spacing (bank data isn't consistent).
+    const norm = v => String(v||'').trim().toLowerCase();
     const coursePool = BANK[t.course] || [];
-    pool.push(...coursePool.filter(q => (q.tag||'') === t.tag).map(q => ({...q, course: t.course})));
+    pool.push(...coursePool.filter(q => norm(q.tag) === norm(t.tag)).map(q => ({...q, course: t.course})));
   });
   if(!pool.length){ toast('No matching questions found in the bank for your weak topics yet'); return; }
   for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
@@ -1843,6 +1876,7 @@ async function refreshCredits(){
     if(!res.ok) return;
     const data = await res.json();
     curUser.credits = data.credits;
+    curUser.tier = data.tier; curUser.premiumPlan = data.premiumPlan; curUser.entitlements = data.entitlements;
     const el = document.getElementById('tb-credits');
     if(el) el.textContent = data.credits;
   }catch(e){}
@@ -1902,7 +1936,7 @@ async function loadPlanBanner(){
       icon.className = 'fa-solid fa-circle-check';
       icon.style.color = 'var(--brand)';
       text.style.color = 'var(--brand)';
-      const tierName = u.tier.charAt(0).toUpperCase()+u.tier.slice(1);
+      const tierName = 'Premium' + (u.premiumPlan ? ' ' + u.premiumPlan.charAt(0).toUpperCase() + u.premiumPlan.slice(1) : '');
       const parts = [];
       if(u.questions.limit != null) parts.push(`${u.questions.used}/${u.questions.limit} questions`);
       if(u.aiQuizzes.limit != null) parts.push(`${u.aiQuizzes.used}/${u.aiQuizzes.limit} AI quizzes`);
@@ -2010,7 +2044,7 @@ async function buildCourseGrid(){
   await Promise.all(
     Object.entries(COURSES).map(async ([key, m]) => {
       try {
-        const res = await fetch(`${API_BASE}/api/questions/${key}`);
+        const res = await PhqAuth.authFetch(`/api/questions/${key}?mode=${hasFeature('practiceQuestions') ? 'practice' : 'exam'}`, {}, 'student');
         if(!res.ok) throw new Error('not ok');
         const data = await res.json();
         if(Array.isArray(data) && data.length > 0){
@@ -2084,6 +2118,9 @@ function filterCourseGrid(term){
 }
 
 function selMode(el){
+  const m = el.dataset.mode;
+  if(m === 'exam' && !hasFeature('examMode')){ showPaywall(lockedMsg('Exam mode')); return; }
+  if(m !== 'exam' && !hasFeature('practiceQuestions')){ showPaywall(lockedMsg('Practice questions')); return; }
   document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');quizMode=el.dataset.mode;
 }
@@ -2129,6 +2166,12 @@ function loadSettings(){
   const s=getSettings();
   document.getElementById('exam-date-input').value=s.examDate||'';
   document.getElementById('exam-name-input').value=s.examName||'';
+  document.getElementById('exam-time-input').value=s.examTime||'';
+  // Course choices are the student's real registered courses — nothing invented.
+  const cs=document.getElementById('exam-course-input');
+  const regs=(curUser?.selectedCourses||[]).map(k=>({key:k,code:COURSES[k]?.code||ALL_COURSES[k]?.code||k}));
+  cs.innerHTML='<option value="">Not a specific course</option>'+regs.map(c=>`<option value="${escapeHtml(c.code)}">${escapeHtml(c.code)}</option>`).join('');
+  cs.value=regs.some(c=>c.code===s.examCourse)?s.examCourse:'';
   document.getElementById('notif-time').value=s.notifTime||'20:00';
   const nt=document.getElementById('notif-toggle');
   if(s.notif)nt.classList.add('on');
@@ -2143,19 +2186,41 @@ function saveExamDate(){
   const s=getSettings();
   s.examDate=document.getElementById('exam-date-input').value;
   s.examName=document.getElementById('exam-name-input').value;
+  s.examTime=document.getElementById('exam-time-input').value;
+  s.examCourse=document.getElementById('exam-course-input').value;
   saveSettings(s);renderExamBanner();
 }
 
+// Shows e.g. "PHY102 \u2014 Exam in 12 days". Only ever uses what the student entered: no date = no banner.
+// With an exam time set, the last day switches to hours/minutes remaining.
+let examTicker=null;
 function renderExamBanner(){
   const s=getSettings();
   const wrap=document.getElementById('exam-banner-wrap');
-  if(!s.examDate){wrap.style.display='none';return;}
-  const examD=new Date(s.examDate);
-  const diff=Math.ceil((examD-new Date())/(1000*60*60*24));
-  if(diff<0){wrap.style.display='none';return;}
+  clearInterval(examTicker);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(s.examDate||'')){wrap.style.display='none';return;}
+  const [y,m,d]=s.examDate.split('-').map(Number);
+  const hasTime=/^\d{2}:\d{2}$/.test(s.examTime||'');
+  const [hh,mm]=hasTime?s.examTime.split(':').map(Number):[23,59];
+  const target=new Date(y,m-1,d,hh,mm);
+  const now=new Date();
+  if(target<now){wrap.style.display='none';return;}       // exam is over
+  const today0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const days=Math.round((new Date(y,m-1,d)-today0)/86400000);
   wrap.style.display='block';
-  document.getElementById('exam-days').textContent=diff;
-  document.getElementById('exam-date-label').textContent=s.examName||'Upcoming Exam';
+
+  const code=s.examCourse||'';
+  document.getElementById('exam-title').textContent=`${code?code+' \u2014 ':''}Exam ${days===0?'today':days===1?'tomorrow':'in '+days+' days'}`;
+  const dateTxt=new Date(y,m-1,d).toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short',year:'numeric'})+(hasTime?' \u00B7 '+s.examTime:'');
+  document.getElementById('exam-date-label').textContent=(s.examName?s.examName+' \u00B7 ':'')+dateTxt;
+
+  const big=document.getElementById('exam-days'), lbl=document.getElementById('exam-days-lbl');
+  if(days===0 && hasTime){
+    const mins=Math.max(0,Math.floor((target-now)/60000));
+    big.textContent=`${Math.floor(mins/60)}h ${String(mins%60).padStart(2,'0')}m`; lbl.textContent='remaining';
+    examTicker=setInterval(renderExamBanner,30000);
+  } else if(days===0){ big.textContent='Today'; lbl.textContent='exam day'; }
+  else { big.textContent=days; lbl.textContent=days===1?'day left':'days left'; }
 }
 
 function setGoal(el){
@@ -2312,13 +2377,16 @@ async function generateAIQuiz(){
   const studyMaterial = document.getElementById('material-text').value.trim();
   const btn = document.getElementById('ai-quiz-btn');
   if(!course){ toast('Enter a course code first'); return; }
+  const count = Number(document.getElementById('ai-count-input').value);
+  if(!Number.isInteger(count) || count < 5 || count > 20){ toast('Choose between 5 and 20 questions'); document.getElementById('ai-count-input').focus(); return; }
+  const topic = document.getElementById('ai-topic-input').value.trim();
   btn.disabled = true;
   const original = btn.innerHTML;
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating…';
   try{
     const res = await PhqAuth.authFetch('/api/quiz/generate', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ course, difficulty, count: 10, studyMaterial })
+      body: JSON.stringify({ course, difficulty, count, topic, studyMaterial })
     }, 'student');
     const data = await res.json();
     if(!res.ok){
@@ -2799,10 +2867,10 @@ async function renderSavedQuizzes(){
       <div style="margin:0 18px 10px;padding:14px 16px;display:flex;gap:12px;align-items:center;background:var(--bg);border-radius:var(--r16);box-shadow:var(--sh);">
         <div style="width:40px;height:40px;border-radius:12px;background:var(--bg);color:${h.source==='ai'?'var(--purple)':'var(--brand)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:var(--sh-in-sm);"><i class="fa-solid ${h.source==='ai'?'fa-wand-magic-sparkles':'fa-bookmark'}"></i></div>
         <div style="flex:1;min-width:0;">
-          <div style="font-weight:700;font-size:13.5px;">${h.course}${h.source==='ai'?' · AI':''}</div>
+          <div style="font-weight:700;font-size:13.5px;">${escapeHtml(h.course)}${h.source==='ai'?' · AI':''}</div>
           <div style="font-size:11.5px;color:var(--t3);">${h.questions.length} questions · saved ${new Date(h.createdAt).toLocaleDateString()}</div>
         </div>
-        <button class="btn-surf" style="padding:9px 14px;font-size:12.5px;flex-shrink:0;" onclick="playSavedQuiz('${h._id}')">Play</button>
+        <button class="btn-surf btn-play" onclick="playSavedQuiz('${h._id}')">Play</button>
       </div>`).join('');
   }catch(e){
     wrap.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--t3);font-size:13px;">Could not load saved quizzes.</div>';
@@ -2846,14 +2914,30 @@ async function playSavedQuiz(id){
   }catch(e){ toast('Could not load this saved quiz'); }
 }
 
-// ── Flashcards (v1.4, Basic/Pro) ─────────────────────────────────
+// ── Flashcards ───────────────────────────────────────────────
+// The selected course is explicit state (fcCourse) that is passed into every request and checked on
+// every response. Two rules keep it from drifting (the old bug: a generated CHM102 deck was replaced a
+// moment later by a mixed deck of ALL registered courses, so a different course appeared):
+//   1. nothing reloads the deck as a side-effect of showing the screen;
+//   2. every async result is applied only if it is still the latest request for the course on screen.
 let fcDeck = [], fcIdx = 0, fcFlipped = false;
+let fcCourse = '';      // active course CODE, e.g. "CHM102"; '' = review all my registered courses
+let fcLoadReq = 0;      // id of the newest deck-load; older responses are dropped
+let fcEpoch = 0;        // bumps whenever the student changes course; generate results from an old epoch are not shown
+let fcDeckId = 0;       // bumps whenever the on-screen deck is replaced; stale "rate" callbacks can't touch a new deck
+let fcGenerating = false;
+const FC_KEY = 'phq_fc_course';
+
+const fcNorm = c => String(c || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+const fcMyCodes = () => (curUser?.selectedCourses || []).map(k => COURSES[k]?.code || ALL_COURSES[k]?.code || k);
+function fcMsg(html){ document.getElementById('fc-body').innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--t3);font-size:13.5px;">${html}</div>`; }
+function fcBusy(on){ const el = document.getElementById('fc-loading'); if(el) el.style.display = on ? 'inline-block' : 'none'; }
 
 async function refreshFlashcardBadge(){
   const badge = document.getElementById('fc-due-badge');
   if(!badge) return;
-  if(curUser.tier === 'free'){ badge.textContent = 'Upgrade'; badge.style.color = 'var(--t4)'; return; }
-  const courses = (curUser.selectedCourses||[]).map(k=>COURSES[k]?.code||ALL_COURSES[k]?.code||k);
+  if(!hasFeature('flashcards')){ badge.textContent = 'Upgrade'; badge.style.color = 'var(--t4)'; return; }
+  const courses = fcMyCodes();
   if(!courses.length){ badge.textContent = ''; return; }
   try{
     const r = await PhqAuth.authFetch(`/api/flashcards/stats?courses=${encodeURIComponent(courses.join(','))}`, {}, 'student');
@@ -2863,35 +2947,46 @@ async function refreshFlashcardBadge(){
   }catch(e){ badge.textContent = ''; }
 }
 
-function openFlashcards(){
-  if(curUser.tier === 'free'){
-    showPaywall('Flashcards are a Basic/Pro feature — spaced-repetition review that adapts to what you keep getting wrong. Upgrade to unlock it.');
-    return;
-  }
-  showScr('flashcards');
+function fcRenderSelector(){
+  const sel = document.getElementById('fc-course-select');
+  const codes = fcMyCodes();
+  sel.innerHTML = '<option value="">All my courses</option>' + codes.map(c => `<option value="${c}">${c}</option>`).join('');
+  sel.value = codes.includes(fcCourse) ? fcCourse : '';
 }
 
-// Student-initiated flashcard generation — any course they choose,
-// any time, independent of weak topics, wrong answers, or a dry deck.
-// Never triggered automatically by the app.
+function openFlashcards(){
+  if(!hasFeature('flashcards')){ showPaywall(lockedMsg('Flashcards')); return; }
+  const codes = fcMyCodes();
+  let saved = ''; try{ saved = localStorage.getItem(FC_KEY) || ''; }catch(e){}
+  // keep the student's last course (or the one already on screen); never invent a default
+  if(!fcCourse || !codes.includes(fcCourse)) fcCourse = codes.includes(saved) ? saved : (codes.length === 1 ? codes[0] : '');
+  showScr('flashcards');
+  fcRenderSelector();
+  loadFlashcardDeck();
+}
+
+function fcSetCourse(code){
+  if(code === fcCourse) return;
+  fcCourse = code; fcEpoch++;
+  try{ localStorage.setItem(FC_KEY, code); }catch(e){}
+  loadFlashcardDeck();
+}
+
+// Student-initiated: generates for the course currently selected in the picker — no prompt, no fallback.
 function openFlashcardGenerate(){
-  const courses = (curUser.selectedCourses||[]).map(k=>ALL_COURSES[k]?.code||COURSES[k]?.code||k);
-  const hint = courses.length ? `\n\nYour registered courses: ${courses.join(', ')}` : '';
-  const input = prompt(`Generate AI flashcards for which course code?${hint}`, courses[0]||'');
-  if(!input || !input.trim()) return;
-  generateFlashcardsForCourse(input.trim().toUpperCase());
+  if(!hasFeature('flashcards')){ showPaywall(lockedMsg('Flashcards')); return; }
+  if(!fcCourse){ toast('Pick a course in the selector first, then generate.'); return; }
+  generateFlashcardsForCourse(fcCourse);
 }
 
 async function generateFlashcardsForCourse(course){
+  if(fcGenerating) return;
+  fcGenerating = true;
+  const epoch = fcEpoch;
   const wandBtn = document.querySelector('#flashcards .back-btn[title]');
-  const body = document.getElementById('fc-body');
-  const prevBodyHTML = body.innerHTML;
   if(wandBtn) wandBtn.disabled = true;
-  body.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--t3);font-size:13.5px;"><i class="fa-solid fa-spinner fa-spin" style="font-size:26px;display:block;margin-bottom:12px;color:var(--brand);"></i>Generating flashcards for ${course}…<br><span style="font-size:11.5px;color:var(--t4);">This can take up to 30 seconds</span></div>`;
+  fcBusy(true); // the current deck stays on screen while this runs
 
-  // Hard client-side cutoff — without this, a slow/unreachable AI
-  // service on the server could leave the student staring at this
-  // spinner indefinitely with no way to know it failed.
   const controller = new AbortController();
   const cutoff = setTimeout(()=>controller.abort(), 35000);
   try{
@@ -2902,73 +2997,86 @@ async function generateFlashcardsForCourse(course){
     clearTimeout(cutoff);
     const d = await r.json();
     if(!r.ok){
-      body.innerHTML = prevBodyHTML;
-      if(d.code==='INSUFFICIENT_CREDITS') toast(`Not enough credits — you have ${d.balance}, need ${d.required}.`);
-      else if(d.code==='LIMIT_REACHED') showPaywall(d.error);
-      else if(r.status===403) showPaywall(d.error);
+      if(d.code==='INSUFFICIENT_CREDITS') toast(`Not enough credits \u2014 you have ${d.balance}, need ${d.required}.`);
+      else if(d.code==='LIMIT_REACHED' || d.code==='FEATURE_LOCKED' || r.status===403) showPaywall(d.error);
       else if(d.code==='GROQ_TIMEOUT') toast('The AI took too long to respond. Please try again.');
-      else if(d.code==='GROQ_NOT_CONFIGURED') toast('AI generation isn\'t set up on the server yet. Contact support.');
+      else if(d.code==='GROQ_NOT_CONFIGURED') toast("AI generation isn't set up on the server yet. Contact support.");
       else toast(d.error || 'Could not generate flashcards. Try again.');
       return;
     }
     curUser.credits = d.newBalance;
     const creditsEl = document.getElementById('tb-credits');
     if(creditsEl) creditsEl.textContent = d.newBalance;
-    fcDeck = d.cards;
-    fcIdx = 0; fcFlipped = false;
-    document.getElementById('fc-badge').textContent = `1/${fcDeck.length}`;
+
+    // Integrity checks before anything is shown: the set must be for the course we asked for...
+    const got = d.set?.courseCode || d.cards?.[0]?.courseCode || '';
+    if(fcNorm(got) !== fcNorm(course)){ toast(`Received cards for ${got || 'another course'} \u2014 ignored. Please try again.`); return; }
+    // ...and the student must still be looking at that course (they may have switched while it ran).
+    if(epoch !== fcEpoch || fcNorm(fcCourse) !== fcNorm(course)){
+      toast(`${course} flashcards are ready \u2014 select ${course} to review them.`);
+      return;
+    }
+    fcLoadReq++;                     // any in-flight deck load is now stale
+    fcDeckId++;
+    fcDeck = d.cards; fcIdx = 0; fcFlipped = false;
     document.getElementById('fc-actions').style.display = 'block';
-    showScr('flashcards');
     renderFlashcard();
-    toast(`Generated ${fcDeck.length} new flashcards for ${course} — ${d.creditsCharged} credits used`);
+    toast(`Generated ${fcDeck.length} new ${course} flashcards \u2014 ${d.creditsCharged} credits used`);
   }catch(e){
     clearTimeout(cutoff);
-    body.innerHTML = prevBodyHTML;
     if(e.name==='AbortError') toast('This took too long and was cancelled. Check your connection and try again.');
     else toast('Cannot connect to server.');
   }finally{
+    fcGenerating = false; fcBusy(false);
     if(wandBtn) wandBtn.disabled = false;
   }
 }
 
 async function loadFlashcardDeck(){
-  const body = document.getElementById('fc-body');
+  const my = ++fcLoadReq;
+  const course = fcCourse;
+  const codes = course ? [course] : fcMyCodes();
   const actions = document.getElementById('fc-actions');
-  actions.style.display = 'none';
-  body.innerHTML = '<div style="text-align:center;padding:60px 0;color:var(--t3);font-size:13px;">Loading your deck…</div>';
-  const courses = (curUser.selectedCourses||[]).map(k=>COURSES[k]?.code||ALL_COURSES[k]?.code||k);
-  if(!courses.length){
-    body.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--t3);font-size:13.5px;">Register for a course in Settings first — flashcards are built from your course question bank.</div>';
+  if(!codes.length){
+    actions.style.display = 'none';
+    fcMsg('Register for a course in Settings first \u2014 flashcards are built from your course question bank.');
     return;
   }
+  fcBusy(true);
+  // Only blank the screen when there is nothing valid to keep showing for this course.
+  const keep = fcDeck.length && course && fcDeck.every(c => fcNorm(c.course) === fcNorm(course));
+  if(!keep){ actions.style.display = 'none'; fcMsg(`<i class="fa-solid fa-spinner fa-spin" style="font-size:22px;display:block;margin-bottom:12px;color:var(--brand);"></i>Loading ${course || 'your'} deck\u2026`); }
   try{
-    const r = await PhqAuth.authFetch(`/api/flashcards/due?courses=${encodeURIComponent(courses.join(','))}`, {}, 'student');
+    const r = await PhqAuth.authFetch(`/api/flashcards/due?courses=${encodeURIComponent(codes.join(','))}`, {}, 'student');
+    if(my !== fcLoadReq) return;                       // a newer request owns the screen now
     if(r.status === 403){
       const d = await r.json();
-      showScr('home');
-      showPaywall(d.error);
+      showScr('home'); showPaywall(d.error);
       return;
     }
+    if(!r.ok) throw new Error('bad status');
     const d = await r.json();
-    fcDeck = d.cards || [];
-    fcIdx = 0; fcFlipped = false;
-    if(d.aiGenerated){
-      toast(`Generated ${fcDeck.length} new flashcards with AI — ${d.creditsCharged} credits used`);
-    }
+    if(my !== fcLoadReq) return;
+
+    let cards = d.cards || [];
+    // A single-course deck may only contain that course's cards — drop anything else outright.
+    if(course) cards = cards.filter(c => fcNorm(c.course) === fcNorm(course));
+    fcDeckId++;
+    fcDeck = cards; fcIdx = 0; fcFlipped = false;
+
     if(!fcDeck.length){
-      let msg = 'All caught up — no cards due right now.';
-      if(d.aiSkippedReason === 'insufficient_credits') msg = "You've run out of the bank for this course, and don't have enough credits left for AI to generate more today.";
-      else if(d.aiSkippedReason === 'daily_ai_limit') msg = "You've run out of the bank for this course, and hit today's AI generation limit. Try again tomorrow or upgrade.";
-      else if(d.aiSkippedReason === 'ai_error' || d.aiSkippedReason === 'ai_empty') msg = "You've run out of the bank for this course, and AI couldn't generate more right now. Try again shortly.";
-      body.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--t3);font-size:13.5px;"><i class="fa-solid fa-circle-check" style="font-size:28px;display:block;margin-bottom:10px;color:var(--ok);"></i>${msg}</div>`;
+      actions.style.display = 'none';
+      fcMsg(`<i class="fa-solid fa-circle-check" style="font-size:28px;display:block;margin-bottom:10px;color:var(--ok);"></i>${course ? `No ${course} cards due right now.` : 'All caught up \u2014 no cards due right now.'}${course ? '<br><span style="font-size:12px;">Tap the wand above to generate more with AI.</span>' : ''}`);
       document.getElementById('fc-badge').textContent = '0/0';
       return;
     }
-    document.getElementById('fc-badge').textContent = `1/${fcDeck.length}`;
     actions.style.display = 'block';
     renderFlashcard();
   }catch(e){
-    body.innerHTML = '<div style="text-align:center;padding:60px 0;color:var(--t3);font-size:13px;">Could not load flashcards. Try again.</div>';
+    if(my !== fcLoadReq) return;
+    fcMsg('Could not load flashcards. Try again.');
+  }finally{
+    if(my === fcLoadReq) fcBusy(false);
   }
 }
 
@@ -2979,7 +3087,7 @@ function renderFlashcard(){
   document.getElementById('fc-badge').textContent = `${fcIdx+1}/${fcDeck.length}`;
   document.getElementById('fc-body').innerHTML = `
     <div class="qcard fade-up" style="min-height:260px;display:flex;flex-direction:column;justify-content:center;padding:28px 22px;cursor:pointer;" onclick="flipFlashcard()">
-      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--brand);margin-bottom:14px;">${card.course}${card.tag?' · '+card.tag:''}</div>
+      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--brand);margin-bottom:14px;">${(card.courseCode||card.course||'').toUpperCase()}${card.tag?' · '+card.tag:''}</div>
       <div id="fc-front" style="font-size:var(--qfont);font-weight:700;line-height:1.5;color:var(--t1);font-family:var(--ff-h);">${card.q}</div>
       <div id="fc-back" style="display:none;margin-top:18px;padding-top:16px;border-top:1px solid var(--sd);">
         <div style="font-size:11px;font-weight:800;color:var(--ok);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">Answer</div>
@@ -3001,12 +3109,14 @@ async function rateFlashcard(quality){
   const card = fcDeck[fcIdx];
   if(!card) return;
   if(!fcFlipped){ flipFlashcard(); return; } // force a look at the answer before rating
+  const deckId = fcDeckId;
   try{
     await PhqAuth.authFetch('/api/flashcards/review', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ questionId: card.id, course: card.course, quality })
     }, 'student');
   }catch(e){}
+  if(deckId !== fcDeckId) return;   // the deck was replaced (course switch / regenerate) while saving — don't touch the new one
   fcIdx++;
   if(fcIdx >= fcDeck.length){
     document.getElementById('fc-actions').style.display = 'none';
@@ -3225,7 +3335,6 @@ function showScr(id){
   // is also fixed to the bottom and was never hidden here, so the two
   // stacked on top of each other and clipped the last answer option.
   document.body.classList.toggle('quiz-active', id==='quiz' || id==='flashcards');
-  if(id==='flashcards')loadFlashcardDeck();
   if(id==='history')renderHistory();
   if(id==='bookmarks')renderBookmarks();
   if(id==='notes-screen')renderNotes();

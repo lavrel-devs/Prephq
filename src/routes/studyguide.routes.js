@@ -5,6 +5,8 @@ const QuestionAttempt = require('../models/QuestionAttempt');
 const { requireStudent } = require('../middleware/auth');
 const { generateStudyGuide } = require('../services/groq.service');
 const { ensureTierCurrent } = require('../services/tier.service');
+const { requireFeature, canUse } = require('../services/entitlements.service');
+const Settings = require('../models/Settings');
 const rateLimit = require('express-rate-limit');
 const guideLimiter = rateLimit({ windowMs: 60 * 1000, max: 3, standardHeaders: true, legacyHeaders: false, message: { error: 'Slow down — try again in a minute.' } });
 
@@ -19,20 +21,23 @@ const router = express.Router();
 
 // v1.4: GPA + AI study guide. Free users can save/edit their GPA
 // fields (see /api/profile/details in student.routes.js) but the
-// *generated* plan itself is Basic/Pro only — enforced here, not by
+// *generated* plan itself is a Premium feature (or enabled for Free by the admin switch) — enforced here, not by
 // hiding the GPA inputs, so a free user always sees what they're
 // unlocking.
-function requirePaidTier(student) {
-  if (student.tier === 'free') {
-    const err = new Error('The AI study guide is a Basic/Pro feature. Upgrade to unlock it.');
-    err.code = 'TIER_REQUIRED';
+async function requirePaidTier(student) {
+  // Kept under its old name so callers didn't have to change; the decision now comes from
+  // the central entitlement rules (Premium, or the Free-plan "AI study guide" switch).
+  const settings = await Settings.getGlobal();
+  if (!canUse(student, 'studyGuide', settings)) {
+    const err = new Error("The AI study guide isn't available on the Free plan. Upgrade to Premium to unlock it.");
+    err.code = 'FEATURE_LOCKED';
     throw err;
   }
 }
 
 // GET /api/study-guide/latest — the student's most recent saved plan,
 // if any (so the profile/dashboard can show it without regenerating).
-router.get('/study-guide/latest', requireStudent, async (req, res) => {
+router.get('/study-guide/latest', requireStudent, requireFeature('studyGuide'), async (req, res) => {
   try {
     const guide = await StudyGuide.findOne({ matric: req.student.sub }).sort({ createdAt: -1 }).lean();
     res.json(guide || null);
@@ -50,7 +55,7 @@ router.post('/study-guide/generate', requireStudent, guideLimiter, async (req, r
 
     await ensureTierCurrent(student); // expired paid plans must lose access
     try {
-      requirePaidTier(student);
+      await requirePaidTier(student);
     } catch (e) {
       return res.status(403).json({ error: e.message, code: e.code });
     }

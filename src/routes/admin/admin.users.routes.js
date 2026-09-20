@@ -95,8 +95,10 @@ router.get('/users/course-list', async (req, res) => {
 router.get('/users/tier-distribution', async (req, res) => {
   try {
     const rows = await Student.aggregate([{ $group: { _id: '$tier', count: { $sum: 1 } } }]);
-    const dist = { free: 0, basic: 0, pro: 0 };
-    rows.forEach(r => { dist[r._id || 'free'] = r.count; });
+    const plans = await Student.aggregate([{ $match: { tier: 'premium' } }, { $group: { _id: '$premiumPlan', count: { $sum: 1 } } }]);
+    const dist = { free: 0, premium: 0, premiumByPlan: { weekly: 0, monthly: 0, yearly: 0, lifetime: 0, other: 0 } };
+    rows.forEach(r => { if (r._id === 'free' || r._id === 'premium') dist[r._id] = r.count; });
+    plans.forEach(r => { dist.premiumByPlan[r._id in dist.premiumByPlan ? r._id : 'other'] += r.count; });
     res.json(dist);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -222,21 +224,33 @@ router.get('/users/:matric/report.pdf', async (req, res) => {
 // grant or reverting to free).
 router.put('/users/:matric/tier', async (req, res) => {
   try {
-    const { tier, durationDays, logPayment } = req.body;
-    if (!['free', 'basic', 'pro'].includes(tier))
-      return res.status(400).json({ error: 'tier must be free, basic, or pro' });
+    const { PREMIUM_PERIODS, PERIOD_DAYS } = require('../../services/entitlements.service');
+    const { tier, plan, durationDays, logPayment } = req.body;
+    if (!['free', 'premium'].includes(tier))
+      return res.status(400).json({ error: 'tier must be free or premium' });
 
-    const days = Number(durationDays);
-    if (durationDays !== undefined && durationDays !== null && durationDays !== '' && (!Number.isFinite(days) || days < 0 || days > 3650))
-      return res.status(400).json({ error: 'durationDays must be a number between 0 and 3650' });
-    const tierExpiresAt = (tier !== 'free' && days > 0)
-      ? new Date(Date.now() + days * 24 * 60 * 60 * 1000)
-      : null;
+    let update;
+    if (tier === 'free') {
+      update = { tier: 'free', premiumPlan: null, tierExpiresAt: null };
+    } else {
+      if (!PREMIUM_PERIODS.includes(plan))
+        return res.status(400).json({ error: `Premium needs a plan: ${PREMIUM_PERIODS.join(', ')}` });
+      // Lifetime = permanent entitlement (no expiry date at all). The recurring plans expire after
+      // their period; `durationDays` may override it (e.g. a 14-day promo on a monthly plan).
+      let days = PERIOD_DAYS[plan];
+      if (plan !== 'lifetime' && durationDays !== undefined && durationDays !== null && durationDays !== '') {
+        days = Number(durationDays);
+        if (!Number.isFinite(days) || days <= 0 || days > 3650)
+          return res.status(400).json({ error: 'durationDays must be a number between 1 and 3650' });
+      }
+      update = {
+        tier: 'premium', premiumPlan: plan,
+        tierExpiresAt: plan === 'lifetime' ? null : new Date(Date.now() + days * 24 * 60 * 60 * 1000),
+      };
+    }
 
     const student = await Student.findOneAndUpdate(
-      { matric: req.params.matric.toUpperCase() },
-      { tier, tierExpiresAt },
-      { new: true },
+      { matric: req.params.matric.toUpperCase() }, update, { new: true },
     ).lean();
     if (!student) return res.status(404).json({ error: 'Student not found' });
 
@@ -249,12 +263,12 @@ router.put('/users/:matric/tier', async (req, res) => {
         amount: Number(logPayment.amount),
         method: logPayment.method || 'bank_transfer',
         reference: logPayment.reference || '',
-        note: logPayment.note || `${tier} tier${durationDays ? ` — ${durationDays} days` : ''}`,
+        note: logPayment.note || (tier === 'premium' ? `Premium ${plan}` : 'Reverted to free'),
         status: 'confirmed',
       });
     }
 
-    res.json({ success: true, matric: student.matric, tier: student.tier, tierExpiresAt: student.tierExpiresAt });
+    res.json({ success: true, matric: student.matric, tier: student.tier, premiumPlan: student.premiumPlan, tierExpiresAt: student.tierExpiresAt });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 

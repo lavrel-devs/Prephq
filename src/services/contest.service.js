@@ -6,6 +6,7 @@ const { applyCreditDelta } = require('../utils/credits');
 const { notify } = require('./notification.service');
 const { courseMatchFilter } = require('../utils/courseMatch');
 const { withLock } = require('../utils/lock');
+const { logActivity } = require('./activity.service');
 const { shuffle } = require('../utils/validate');
 
 // WAT (UTC+1, no DST) "now" broken into the pieces recurrence checks
@@ -90,6 +91,7 @@ async function spawnFromTemplate(tpl) {
   });
 
   await ContestTemplate.updateOne({ _id: tpl._id }, { $set: { lastSpawnedContestId: contest._id } });
+  logActivity({ actor: 'scheduler', action: 'contest.spawned', detail: { contestId: String(contest._id), title: tpl.title } });
 
   return contest;
 }
@@ -337,6 +339,7 @@ async function settleContest(contestArg) {
     { new: true },
   );
   if (!contest) return Contest.findById(contestArg._id);
+  logActivity({ actor: 'scheduler', action: 'contest.settled', detail: { contestId: String(contest._id), title: contest.title, participants: contest.participants.length, teams: (contest.teams || []).length } });
   if (contest.teamBased) return settleTeamContest(contest);
 
   if (contest.participants.length === 0 || contest.prizeDistribution.length === 0) {

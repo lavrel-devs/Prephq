@@ -9,6 +9,7 @@ const { applyCreditDelta } = require('../utils/credits');
 const { generateQuiz, explainAnswer } = require('../services/groq.service');
 const { checkDailyLimit, incrementDailyUsage } = require('../services/tier.service');
 const { withLock } = require('../utils/lock');
+const { requireFeature } = require('../services/entitlements.service');
 const { isObjectId } = require('../utils/validate');
 
 const router = express.Router();
@@ -36,7 +37,7 @@ const explainLimiter = rateLimit({
 });
 
 // POST /api/quiz/generate  { course, difficulty, count?, studyMaterial? }
-router.post('/generate', genLimiter, (req, res) => {
+router.post('/generate', genLimiter, requireFeature('aiQuestionGeneration'), (req, res) => {
   // One generation at a time per student: the credit/daily-limit checks
   // below run before a multi-second AI call, so parallel requests could
   // each pass them and overspend.
@@ -46,6 +47,7 @@ router.post('/generate', genLimiter, (req, res) => {
 async function generateHandler(req, res) {
   try {
     const { difficulty, count, studyMaterial } = req.body;
+    const topic = typeof req.body.topic === 'string' ? req.body.topic.trim().replace(/[<>"]/g, '').slice(0, 80) : '';
     // `course` is interpolated into the AI prompt, so keep it to a
     // plain course-code-like string rather than arbitrary text.
     const course = typeof req.body.course === 'string' ? req.body.course.trim() : '';
@@ -53,10 +55,24 @@ async function generateHandler(req, res) {
     if (!/^[A-Za-z0-9 _&.,()\/'\-]{2,60}$/.test(course)) return res.status(400).json({ error: 'That course code looks invalid' });
 
     const diff = ['easy', 'medium', 'hard'].includes(difficulty) ? difficulty : 'medium';
-    const qCount = Math.min(Math.max(parseInt(count) || 10, 5), 20);
+    // The student chooses how many questions. An out-of-range request is REJECTED with the real
+    // limits instead of being silently clamped to a different number than they asked for.
+    const MIN_Q = 5, MAX_Q = 20;
+    let qCount = 10;
+    if (count !== undefined && count !== null && count !== '') {
+      const n = Number(count);
+      if (!Number.isInteger(n) || n < MIN_Q || n > MAX_Q) {
+        return res.status(400).json({
+          error: `You can generate between ${MIN_Q} and ${MAX_Q} questions per quiz (you asked for ${String(count).slice(0, 6)}).`,
+          code: 'INVALID_COUNT', min: MIN_Q, max: MAX_Q,
+        });
+      }
+      qCount = n;
+    }
     // Cap study material length so a huge paste/PDF can't blow up the
     // prompt — it's discarded after this request either way, never stored.
-    const material = typeof studyMaterial === 'string' ? studyMaterial.trim().slice(0, 6000) : '';
+    const rawMaterial = typeof studyMaterial === 'string' ? studyMaterial.trim().slice(0, 6000) : '';
+    const material = topic ? `Focus specifically on the topic: ${topic}.\n${rawMaterial}`.trim() : rawMaterial;
 
     const matric = req.student.sub;
     const student = await Student.findOne({ matric });

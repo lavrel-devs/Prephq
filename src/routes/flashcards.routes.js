@@ -5,7 +5,9 @@ const FlashcardProgress = require('../models/FlashcardProgress');
 const { requireStudent } = require('../middleware/auth');
 const { generateQuiz } = require('../services/groq.service');
 const { applyCreditDelta } = require('../utils/credits');
-const { checkDailyLimit, incrementDailyUsage, ensureTierCurrent } = require('../services/tier.service');
+const { checkDailyLimit, incrementDailyUsage } = require('../services/tier.service');
+const { requireFeature } = require('../services/entitlements.service');
+const FlashcardSet = require('../models/FlashcardSet');
 const Course = require('../models/Course');
 const { courseMatchFilter } = require('../utils/courseMatch');
 const { isObjectId } = require('../utils/validate');
@@ -20,34 +22,41 @@ const router = express.Router();
 // safe — there are no public routes sharing this prefix to shadow.
 router.use(requireStudent);
 
-// Flashcards are a Basic/Pro perk — free users can see the feature
-// exists (so they know what they're missing) but every data route
-// below enforces the tier server-side, not just by hiding the tab.
-async function requirePaidTier(req, res, next) {
+// Access is decided by the central entitlement rules (Premium, or the Free-plan
+// "Flashcards" switch) — enforced here on every data route, not just by hiding the tab.
+const gate = requireFeature('flashcards');
+async function loadStudent(req, res, next) {
   try {
     const student = await Student.findOne({ matric: req.student.sub });
     if (!student) return res.status(404).json({ error: 'Student not found' });
-    await ensureTierCurrent(student); // an expired Basic/Pro plan must not keep flashcard access
-    if (student.tier === 'free') {
-      return res.status(403).json({ error: 'Flashcards are a Basic/Pro feature. Upgrade to unlock spaced-repetition review.', code: 'TIER_REQUIRED' });
-    }
     req._student = student;
     next();
   } catch (e) { res.status(500).json({ error: e.message }); }
 }
+const requirePaidTier = [gate, loadStudent];
+
+// A course can be written as key ("chm102") or code ("CHM102") depending on which
+// screen/tool wrote a record. Return every spelling so lookups can't silently miss.
+const spellings = (list) => [...new Set(list.flatMap(c => {
+  const t = String(c).trim();
+  return [t, t.toLowerCase().replace(/[^a-z0-9]/g, ''), t.toUpperCase()];
+}))];
 
 // GET /api/flashcards/due?courses=CHM142,PHY102 — cards due for review
 // right now across the student's selected courses, oldest-due first,
 // topped up with never-reviewed cards from the bank so the deck never
 // runs dry just because nothing has technically come "due" yet.
-router.get('/due', requirePaidTier, async (req, res) => {
+router.get('/due', ...requirePaidTier, async (req, res) => {
   try {
     const matric = req.student.sub;
     const courses = String(req.query.courses || '').split(',').map(c => c.trim()).filter(Boolean);
     if (!courses.length) return res.status(400).json({ error: 'courses query param is required' });
 
+    if (courses.length > 20) return res.status(400).json({ error: 'Too many courses' });
+    const courseVariants = spellings(courses);
+
     const progressDue = await FlashcardProgress.find({
-      matric, course: { $in: courses }, dueDate: { $lte: new Date() },
+      matric, course: { $in: courseVariants }, dueDate: { $lte: new Date() },
     }).sort({ dueDate: 1 }).limit(40).lean();
 
     const seenIds = progressDue.map(p => p.questionId);
@@ -61,7 +70,7 @@ router.get('/due', requirePaidTier, async (req, res) => {
 
     // Top up with fresh (never-reviewed) cards if the due pile is thin.
     if (cards.length < 15) {
-      const excludeIds = await FlashcardProgress.find({ matric, course: { $in: courses } }).distinct('questionId');
+      const excludeIds = await FlashcardProgress.find({ matric, course: { $in: courseVariants } }).distinct('questionId');
       // Questions store the course as key or code depending on who wrote them — match both.
       const filters = await Promise.all(courses.slice(0, 20).map(c => courseMatchFilter(c)));
       const fresh = await Question.find({ $or: filters.flatMap(f => f.$or), _id: { $nin: excludeIds } })
@@ -74,7 +83,8 @@ router.get('/due', requirePaidTier, async (req, res) => {
     // themselves whether to spend credits generating more, via
     // POST /api/flashcards/generate. Never triggered for them based on
     // performance, wrong answers, or anything else — it's their call.
-    res.json({ cards, dueCount: progressDue.length });
+    // `courses` is echoed back so the client can verify the deck belongs to the course it asked for.
+    res.json({ cards, dueCount: progressDue.length, courses });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -85,7 +95,7 @@ router.get('/due', requirePaidTier, async (req, res) => {
 // cap as the AI Quiz Generator so it can't be used as a free backdoor
 // around either. Saved straight into the real Question bank, so it
 // also benefits future quizzes for every student on that course.
-router.post('/generate', requirePaidTier, (req, res) =>
+router.post('/generate', ...requirePaidTier, (req, res) =>
   withLock(`quizgen:${req.student.sub}`, () => generateHandler(req, res)));
 
 async function generateHandler(req, res) {
@@ -100,6 +110,7 @@ async function generateHandler(req, res) {
     if (!courseDoc) return res.status(400).json({ error: `Unknown course "${rawCourse.slice(0, 40)}"` });
     const course = courseDoc.key;
     const count = Math.min(Math.max(parseInt(req.body.count) || FLASHCARD_GEN_COUNT, 5), 20);
+    const topic = typeof req.body.topic === 'string' ? req.body.topic.trim().slice(0, 80) : '';
 
     try {
       await checkDailyLimit(student, 'aiQuiz');
@@ -121,7 +132,7 @@ async function generateHandler(req, res) {
 
     let generated;
     try {
-      generated = await generateQuiz({ course, difficulty: 'medium', count });
+      generated = await generateQuiz({ course: courseDoc.courseCode, difficulty: 'medium', count, ...(topic ? { studyMaterial: `Focus on the topic: ${topic}` } : {}) });
     } catch (e) {
       const status = e.code === 'GROQ_NOT_CONFIGURED' ? 503 : 502;
       return res.status(status).json({ error: e.message, code: e.code || 'GROQ_ERROR' });
@@ -152,8 +163,24 @@ async function generateHandler(req, res) {
     }
     await incrementDailyUsage(student, 'aiQuiz');
 
-    const cards = created.map(q => ({ id: q._id, q: q.q, opts: q.opts, ans: q.ans, exp: q.exp, tag: q.tag, course: q.course, isNew: true, aiGenerated: true }));
-    res.status(201).json({ cards, creditsCharged: FLASHCARD_GEN_COST, newBalance: balance });
+    // Permanent record tying this generated set to the student AND the course it was requested for.
+    let set = null;
+    try {
+      set = await FlashcardSet.create({
+        matric, courseKey: courseDoc.key, courseCode: courseDoc.courseCode, courseTitle: courseDoc.courseTitle || '',
+        topic, questionIds: created.map(q => q._id), creditCost: FLASHCARD_GEN_COST, model: generated.model || '',
+      });
+    } catch (e) { console.error('[flashcards] set record failed:', e.message); }
+
+    const cards = created.map(q => ({
+      id: q._id, q: q.q, opts: q.opts, ans: q.ans, exp: q.exp, tag: q.tag,
+      course: q.course, courseCode: courseDoc.courseCode, isNew: true, aiGenerated: true,
+    }));
+    res.status(201).json({
+      cards, creditsCharged: FLASHCARD_GEN_COST, newBalance: balance,
+      // The client checks this against the course it asked for before showing anything.
+      set: { id: set ? set._id : null, courseKey: courseDoc.key, courseCode: courseDoc.courseCode, courseTitle: courseDoc.courseTitle || '', topic, createdAt: set ? set.createdAt : new Date() },
+    });
   } catch (e) { res.status(500).json({ error: e.message }); }
 }
 
@@ -171,7 +198,7 @@ router.post('/review', requirePaidTier, async (req, res) => {
     // Upsert: two rapid first reviews of one card used to collide on the unique index (500).
     const p = await FlashcardProgress.findOneAndUpdate(
       { matric, questionId },
-      { $setOnInsert: { course: course.trim().slice(0, 30) } },
+      { $setOnInsert: { course: course.trim().toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 30) } },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );
 
@@ -198,14 +225,14 @@ router.post('/review', requirePaidTier, async (req, res) => {
 // GET /api/flashcards/stats?courses=... — quick counts for a summary
 // badge (how many cards are due today per course), used on the home
 // screen entry point into the flashcards feature.
-router.get('/stats', requirePaidTier, async (req, res) => {
+router.get('/stats', ...requirePaidTier, async (req, res) => {
   try {
     const matric = req.student.sub;
     const courses = String(req.query.courses || '').split(',').map(c => c.trim()).filter(Boolean);
     const dueCount = !courses.length ? 0 : await FlashcardProgress.countDocuments({
-      matric, course: { $in: courses }, dueDate: { $lte: new Date() },
+      matric, course: { $in: spellings(courses) }, dueDate: { $lte: new Date() },
     });
-    res.json({ dueCount });
+    res.json({ dueCount, courses });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 

@@ -1,5 +1,6 @@
 const Student = require('../models/Student');
 const CreditTransaction = require('../models/CreditTransaction');
+const { logActivity } = require('../services/activity.service');
 
 // Applies `delta` (positive or negative) to a student's credit balance
 // and writes an audit-trail CreditTransaction. Throws if the student
@@ -70,6 +71,11 @@ async function applyCreditDelta({
     // for the admin instead of throwing.
     console.error(`[credits] Ledger write failed for ${updated.matric} (delta ${delta}, reason ${reason}):`, e.message);
   }
+
+  logActivity({
+    source: 'credit', actorType: 'student', actor: updated.matric, action: `credit.${reason}`,
+    detail: { delta, balanceAfter: updated.credits, by: actor, note: String(note).slice(0, 120) },
+  });
 
   return { balance: updated.credits, transaction: tx };
 }

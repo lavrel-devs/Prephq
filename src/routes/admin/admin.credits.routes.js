@@ -15,7 +15,8 @@ router.use(requireAdmin);
 router.get('/credit-settings', async (req, res) => {
   try {
     const settings = await Settings.getGlobal();
-    res.json(settings);
+    const { FEATURES } = require('../../services/entitlements.service');
+    res.json({ ...settings.toObject(), featureDefs: FEATURES.map(f => ({ key: f.key, label: f.label })) });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -48,19 +49,27 @@ router.put('/credit-settings', async (req, res) => {
       if (Number.isFinite(aiChatbot.monthlyLimit) && aiChatbot.monthlyLimit >= 0) settings.aiChatbot.monthlyLimit = aiChatbot.monthlyLimit;
     }
 
-    // v1.4: tier limits/pricing — fully admin-editable, no redeploy.
-    // Accepts a partial shape, e.g. { basic: { priceMonthly: 600 } }.
+    // Tier limits, Premium prices and Free-plan feature switches — all admin-editable, no redeploy.
+    // Accepts a partial shape, e.g. { premium: { priceWeekly: 500 }, free: { features: { flashcards: true } } }.
     if (tiers) {
-      for (const tierName of ['free', 'basic', 'pro']) {
+      const { FEATURE_KEYS } = require('../../services/entitlements.service');
+      const PRICE_FIELDS = ['priceWeekly', 'priceMonthly', 'priceYearly', 'priceLifetime'];
+      for (const tierName of ['free', 'premium']) {
         const incoming = tiers[tierName];
-        if (!incoming) continue;
+        if (!incoming || typeof incoming !== 'object') continue;
         const current = settings.tiers[tierName];
-        for (const field of ['dailyQuestions', 'dailyAIQuizzes', 'dailyAIChatMessages', 'priceMonthly', 'priceYearly']) {
+        const fields = ['dailyQuestions', 'dailyAIQuizzes', 'dailyAIChatMessages', ...(tierName === 'premium' ? PRICE_FIELDS : [])];
+        for (const field of fields) {
           if (!(field in incoming)) continue;
           const val = incoming[field];
-          // null explicitly means "unlimited" for the daily* fields — allow it through.
-          if (val === null && field.startsWith('daily')) { current[field] = null; continue; }
+          // null means "unlimited" for daily* fields and "not offered" for prices.
+          if (val === null) { current[field] = null; continue; }
           if (Number.isFinite(val) && val >= 0) current[field] = val;
+        }
+        if (tierName === 'free' && incoming.features && typeof incoming.features === 'object') {
+          for (const key of FEATURE_KEYS) {
+            if (typeof incoming.features[key] === 'boolean') current.features[key] = incoming.features[key];
+          }
         }
       }
     }

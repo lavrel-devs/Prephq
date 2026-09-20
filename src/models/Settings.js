@@ -40,24 +40,34 @@ const SettingsSchema = new mongoose.Schema({
   // `null` on any daily* field means unlimited for that tier. Prices are
   // in naira; admin-editable so pricing/limits never need a redeploy.
   tiers: {
+    // FREE: daily caps + an ON/OFF switch per feature (Admin ▸ Credit Settings).
+    // Premium always gets every feature. Keep `features` in sync with
+    // services/entitlements.service.js FEATURES.
     free: {
       dailyQuestions:      { type: Number, default: 20 },
       dailyAIQuizzes:      { type: Number, default: 2 },
       dailyAIChatMessages: { type: Number, default: 5 },
+      features: {
+        aiTutor:              { type: Boolean, default: true },
+        practiceQuestions:    { type: Boolean, default: true },
+        aiQuestionGeneration: { type: Boolean, default: true },
+        flashcards:           { type: Boolean, default: false }, // paid-only before switches existed
+        examMode:             { type: Boolean, default: true },
+        studyGuide:           { type: Boolean, default: false }, // paid-only before switches existed
+        studyRooms:           { type: Boolean, default: true },
+        contests:             { type: Boolean, default: true },
+        creditTransfers:      { type: Boolean, default: true },
+      },
     },
-    basic: {
+    // PREMIUM: one plan, four billing periods. A null price = "not offered yet".
+    premium: {
       dailyQuestions:      { type: Number, default: null }, // unlimited
       dailyAIQuizzes:      { type: Number, default: null },
       dailyAIChatMessages: { type: Number, default: null },
-      priceMonthly:        { type: Number, default: 500 },
-      priceYearly:         { type: Number, default: 5000 },
-    },
-    pro: {
-      dailyQuestions:      { type: Number, default: null },
-      dailyAIQuizzes:      { type: Number, default: null },
-      dailyAIChatMessages: { type: Number, default: null },
+      priceWeekly:         { type: Number, default: null },
       priceMonthly:        { type: Number, default: 2000 },
       priceYearly:         { type: Number, default: 20000 },
+      priceLifetime:       { type: Number, default: null },
     },
   },
 

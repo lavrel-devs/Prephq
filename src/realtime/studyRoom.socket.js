@@ -1,5 +1,8 @@
 const { verifyAccessToken } = require('../utils/jwt');
 const { isSessionAllowed } = require('../middleware/auth');
+const { logActivity } = require('../services/activity.service');
+const { canUse } = require('../services/entitlements.service');
+const Settings = require('../models/Settings');
 const StudyRoom = require('../models/StudyRoom');
 const Question = require('../models/Question');
 const Student = require('../models/Student');
@@ -45,6 +48,9 @@ function initStudyRoomSockets(io) {
   });
 
   io.on('connection', (socket) => {
+    const sLog = (action, detail = '') => logActivity({ source: 'socket', actorType: 'student', actor: socket.data.matric, action, detail, ip: socket.handshake.address || '' });
+    sLog('socket.connect');
+    socket.on('disconnect', () => sLog('socket.disconnect'));
     // NOTE: handlers take `payload` and read fields defensively. With
     // `async ({ code }) =>` a client emitting no payload threw during
     // argument destructuring — an unhandled promise rejection that
@@ -57,6 +63,8 @@ function initStudyRoomSockets(io) {
 
         const student = await Student.findOne({ matric: socket.data.matric }).lean();
         if (!student) return socket.emit('room-error', { error: 'Student not found' });
+        // Same Free/Premium rule as the REST routes — the socket can't be used to skirt the switch.
+        if (!canUse(student, 'studyRooms', await Settings.getGlobal())) return socket.emit('room-error', { error: "Study rooms aren't available on the Free plan. Upgrade to Premium to unlock them.", code: 'FEATURE_LOCKED' });
 
         const already = room.participants.some(p => p.matric === student.matric);
         if (room.status === 'ended') return socket.emit('room-error', { error: 'This room has ended' });
@@ -73,6 +81,7 @@ function initStudyRoomSockets(io) {
         if (socket.data.roomCode && socket.data.roomCode !== code) socket.leave(socket.data.roomCode);
         socket.data.roomCode = code;
         socket.join(code);
+        sLog('study-room.join', { code });
 
         const fresh = await StudyRoom.findOne({ code });
         io.to(code).emit('room-state', {
@@ -96,6 +105,7 @@ function initStudyRoomSockets(io) {
           if (existing && existing.hostMatric !== socket.data.matric) socket.emit('room-error', { error: 'Only the host can start the room' });
           return;
         }
+        sLog('study-room.start', { code: room.code });
         await sendCurrentQuestion(io, room);
       } catch (e) { socket.emit('room-error', { error: 'Could not start room' }); }
     });
@@ -130,6 +140,7 @@ function initStudyRoomSockets(io) {
         if (!r.modifiedCount) return;
 
         socket.emit('answer-ack', { correct });
+        sLog('study-room.answer', { code: room.code, question: room.currentQuestionIndex, correct });
         const fresh = await StudyRoom.findOne({ code: room.code });
         io.to(room.code).emit('room-state', {
           code: fresh.code, status: fresh.status, course: fresh.course,

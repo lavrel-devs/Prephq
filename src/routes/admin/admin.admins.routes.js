@@ -16,6 +16,7 @@ const USERNAME_RE = /^[a-z0-9][a-z0-9_.-]{2,29}$/;
 function publicAdmin(a, lastActive) {
   return {
     username: a.username,
+    isOwner: a.isOwner === true,
     fullAccess: a.fullAccess !== false,
     permissions: a.fullAccess !== false ? [] : (a.permissions || []),
     active: a.active !== false,
@@ -41,6 +42,7 @@ router.get('/admins/me', (req, res) => {
   res.json({
     username: sub,
     fullAccess: !!access.full,
+    owner: !!access.owner,
     permissions: access.full ? [] : access.permissions,
     areas: AREAS,
   });
@@ -102,6 +104,11 @@ router.put('/admins/:username', async (req, res) => {
     if (!admin) return res.status(404).json({ error: 'Admin not found' });
 
     const isSelf = username === req.admin.sub;
+    if (admin.isOwner) {
+      // The owner can't be weakened or locked out by anyone, and only the owner may reset their password.
+      if (req.body.fullAccess === false || req.body.active === false) return res.status(400).json({ error: 'The owner account always keeps full access and stays active' });
+      if (req.body.password && !req.admin.access.owner) return res.status(403).json({ error: "Only the owner can reset the owner's password" });
+    }
     const wasFull = admin.fullAccess !== false;
     const wasActive = admin.active !== false;
     const { fullAccess, permissions, active, password } = req.body;
@@ -159,6 +166,7 @@ router.delete('/admins/:username', async (req, res) => {
     if (username === req.admin.sub) return res.status(400).json({ error: "You can't delete your own account" });
     const admin = await Admin.findOne({ username });
     if (!admin) return res.status(404).json({ error: 'Admin not found' });
+    if (admin.isOwner) return res.status(400).json({ error: 'The owner account cannot be deleted' });
     if (admin.fullAccess !== false && admin.active !== false && !(await otherFullAdminExists(username)))
       return res.status(400).json({ error: 'At least one active full-access admin must remain' });
 

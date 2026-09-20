@@ -89,7 +89,6 @@ Log in as admin, then **change your admin password** from the panel (Settings �
 
 - New students start with **0 credits**.
 - Admin → Students table → **Credit** button → enter a signed amount (negative to debit) and an optional note. Fully logged.
-- Activation codes can optionally be generated with `creditsGranted > 0`, so a batch of codes can hand out starting credits automatically on registration.
 - Each AI quiz generation costs `CREDIT_COST_QUIZ_GEN` credits (default 5, configurable in `.env`). Credits are only charged if Groq successfully returns usable questions — a failed API call costs nothing.
 
 ---
@@ -106,7 +105,7 @@ prephq/
 │   ├── models/                  ← Student, Admin, Code, Score, Payment, Question,
 │   │                                Session, CreditTransaction, GeneratedQuestion
 │   ├── middleware/auth.js       ← requireStudent / requireAdmin (JWT + legacy key fallback)
-│   ├── utils/                   ← jwt.js, fingerprint.js, credits.js, codeGen.js
+│   ├── utils/                   ← jwt.js, fingerprint.js, credits.js
 │   ├── services/groq.service.js ← AI quiz generation
 │   └── routes/                  ← auth, admin, quiz, scores, student(misc)
 └── public/
@@ -146,9 +145,8 @@ prephq/
 | PUT/DELETE | /api/admin/students/:matric | admin | Edit / delete student |
 | POST | /api/admin/students/:matric/credits | admin | Credit/debit a student's balance |
 | GET | /api/admin/students/:matric/credits/history | admin | That student's credit ledger |
-| GET | /api/admin/codes | admin | List codes |
-| POST | /api/admin/codes/generate | admin | Generate a batch of codes (with optional expiry + starting credits) |
-| PUT/DELETE | /api/admin/codes/:id | admin | Update / delete a code |
+| GET | /api/admin/activity/days, /activity, /activity/download | owner | Activity log: per-day counts, browse, download a day as CSV/JSONL |
+| GET/POST/PUT/DELETE | /api/admin/admins[/:username] | full access | Manage admins and their permissions |
 | GET/POST | /api/admin/payments | admin | List / record payments |
 | GET/POST | /api/admin/questions | admin | List / add questions |
 | PUT/DELETE | /api/admin/questions/:id | admin | Edit / delete a question |

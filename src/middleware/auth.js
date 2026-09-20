@@ -64,10 +64,10 @@ async function isSessionAllowed(payload) {
       const st = await Student.findOne({ matric: payload.sub }).select('active').lean();
       ok = !!st && st.active !== false;
     } else if (payload.role === 'admin') {
-      const a = await Admin.findOne({ username: payload.sub }).select('active fullAccess permissions').lean();
+      const a = await Admin.findOne({ username: payload.sub }).select('active fullAccess permissions isOwner').lean();
       ok = !!a && a.active !== false;
       // Missing field (admin created before roles existed) = full access.
-      if (ok) access = { full: a.fullAccess !== false, permissions: a.permissions || [] };
+      if (ok) access = { full: a.fullAccess !== false, permissions: a.permissions || [], owner: a.isOwner === true };
     }
   }
 
@@ -89,7 +89,7 @@ function forgetSubject(role, sub) {
 // Access level for an admin whose session was just approved by isSessionAllowed.
 function cachedAccess(payload) {
   const hit = allowCache.get(`${payload.role}:${payload.sub}:${payload.sid || ''}`);
-  return (hit && hit.access) || { full: false, permissions: [] };
+  return (hit && hit.access) || { full: false, permissions: [], owner: false };
 }
 
 function tokenError(e) {
@@ -133,7 +133,7 @@ async function requireStudent(req, res, next) {
 async function requireAdmin(req, res, next) {
   const legacyKey = req.headers['x-admin-key'] || req.body?.adminKey;
   if (legacyKey && process.env.ADMIN_KEY && typeof legacyKey === 'string' && safeEqual(legacyKey, process.env.ADMIN_KEY)) {
-    req.admin = { username: 'legacy-key', sub: 'legacy-key', role: 'admin', access: { full: true, permissions: [] } };
+    req.admin = { username: 'legacy-key', sub: 'legacy-key', role: 'admin', access: { full: true, permissions: [], owner: true } }; // the ADMIN_KEY is the owner's secret
     return next();
   }
 

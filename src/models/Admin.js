@@ -15,6 +15,9 @@ const AdminSchema = new mongoose.Schema({
   fullAccess:   { type: Boolean, default: true },
   permissions:  { type: [String], default: [] },
   createdBy:    { type: String, default: '' },
+  // The main/owner account: the only one that can open the Activity Log, and it can't be
+  // demoted, deactivated or deleted by other admins.
+  isOwner:      { type: Boolean, default: false },
   createdAt:    { type: Date, default: Date.now },
 });
 

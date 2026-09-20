@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 // New in v1.4. Stores each AI-generated GPA study plan so a student
 // can revisit it rather than regenerating (regeneration still costs
 // a fresh Groq call — this is just the persisted record of past ones).
-// Basic/Pro tier only — gated in the route, not here.
+// Premium only (or when the Free-plan study-guide switch is on) — gated in the route, not here.
 const StudyGuideSchema = new mongoose.Schema({
   matric:     { type: String, required: true, uppercase: true },
   currentGPA: { type: Number, required: true },

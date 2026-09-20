@@ -2,7 +2,6 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 
 const Student = require('../models/Student');
-const Code = require('../models/Code');
 const Score = require('../models/Score');
 const Payment = require('../models/Payment');
 const Question = require('../models/Question');
@@ -11,7 +10,6 @@ const CreditTransaction = require('../models/CreditTransaction');
 const Course = require('../models/Course');
 
 const { requireAdmin } = require('../middleware/auth');
-const { generateCode } = require('../utils/codeGen');
 const { applyCreditDelta } = require('../utils/credits');
 const { checkAvailability, adminSetUsername } = require('../utils/username');
 const { cleanMatric, cleanName, cleanPhone, isObjectId, escapeRegex } = require('../utils/validate');
@@ -34,12 +32,9 @@ router.use(requireAdmin);
 // ══════════════════════════════════════════════════════════════
 router.get('/stats', async (req, res) => {
   try {
-    const [totalStudents, totalCodes, usedCodes, unusedCodes, totalPayments, avgAgg] =
+    const [totalStudents, totalPayments, avgAgg] =
       await Promise.all([
         Student.countDocuments(),
-        Code.countDocuments(),
-        Code.countDocuments({ status: 'used' }),
-        Code.countDocuments({ status: 'unused' }),
         Payment.countDocuments({ status: 'confirmed' }),
         Score.aggregate([{ $group: { _id: null, avg: { $avg: { $ifNull: ['$pct', 0] } } } }]),
       ]);
@@ -99,9 +94,6 @@ router.get('/stats', async (req, res) => {
 
     res.json({
       totalStudents,
-      totalCodes,
-      usedCodes,
-      unusedCodes,
       totalPayments,
       totalRevenue: revenueAgg[0]?.total || 0,
       avgScore,
@@ -168,7 +160,6 @@ router.post('/students', async (req, res) => {
         name,
         phone,
         whatsapp,
-        codeUsed:          'ADMIN_ADDED',
         credits:           0,
         username:          usernameCheck.username,
         usernameChangedAt: new Date(),
@@ -332,73 +323,6 @@ router.put('/students/:matric/username', async (req, res) => {
     const status = { INVALID_FORMAT: 400, TAKEN: 409 }[e.code] || 500;
     res.status(status).json({ error: e.message, code: e.code || 'SERVER_ERROR' });
   }
-});
-
-// ══════════════════════════════════════════════════════════════
-//  ACTIVATION CODES
-// ══════════════════════════════════════════════════════════════
-router.get('/codes', async (req, res) => {
-  try {
-    const filter = {};
-    if (typeof req.query.status === 'string' && req.query.status) filter.status = req.query.status;
-    if (typeof req.query.batch === 'string' && req.query.batch)  filter.batch  = req.query.batch;
-    const codes = await Code.find(filter).sort({ createdAt: -1 }).lean();
-    res.json(codes);
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-router.post('/codes/generate', async (req, res) => {
-  try {
-    const count     = Math.min(parseInt(req.body.count) || 10, 200);
-    const batch     = req.body.batch || `Batch ${new Date().toLocaleDateString('en-GB')}`;
-    const note      = req.body.note || '';
-    const expiresAt = req.body.expiresAt ? new Date(req.body.expiresAt) : null;
-    if (expiresAt && Number.isNaN(expiresAt.getTime())) return res.status(400).json({ error: 'expiresAt is not a valid date' });
-    const creditsGranted = Math.max(0, parseInt(req.body.creditsGranted) || 0);
-
-    const codes = [];
-    let attempts = 0;
-    while (codes.length < count && attempts < count * 5) {
-      attempts++;
-      const code = generateCode();
-      const existsCode = await Code.findOne({ code });
-      if (!existsCode) codes.push({ code, batch, note, expiresAt, creditsGranted });
-    }
-
-    await Code.insertMany(codes);
-    res.status(201).json({
-      generated: codes.length,
-      batch,
-      creditsGranted,
-      codes: codes.map(c => c.code),
-    });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-router.put('/codes/:id', async (req, res) => {
-  try {
-    // Whitelist: passing req.body straight to updateOne let a caller rewrite any field (code, usedBy...).
-    const allowed = ['status', 'expiresAt', 'note', 'batch', 'creditsGranted'];
-    const update = {};
-    for (const f of allowed) if (req.body[f] !== undefined) update[f] = req.body[f];
-    if (update.status && !['unused', 'used', 'expired'].includes(update.status)) return res.status(400).json({ error: 'Invalid status' });
-    await Code.updateOne({ _id: req.params.id }, update);
-    res.json({ success: true });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-router.delete('/codes/:id', async (req, res) => {
-  try {
-    await Code.deleteOne({ _id: req.params.id });
-    res.json({ success: true });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-router.delete('/codes/batch/:batch', async (req, res) => {
-  try {
-    const result = await Code.deleteMany({ batch: req.params.batch, status: 'unused' });
-    res.json({ deleted: result.deletedCount });
-  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // ══════════════════════════════════════════════════════════════

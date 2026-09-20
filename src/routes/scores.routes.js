@@ -6,6 +6,9 @@ const { requireStudent, requireAdmin } = require('../middleware/auth');
 const { getWeakTopics } = require('../services/weakTopics.service');
 const { checkDailyLimit, incrementDailyUsage } = require('../services/tier.service');
 
+const { canUse } = require('../services/entitlements.service');
+const Settings = require('../models/Settings');
+const { normCourseKey, cleanTag } = require('../utils/validate');
 const router = express.Router();
 
 // GET /api/scores/:matric — a student may only read their own scores
@@ -53,14 +56,22 @@ router.post('/:matric', requireStudent, async (req, res) => {
     const student = await Student.findOne({ matric: req.params.matric.toUpperCase() });
     if (!student) return res.status(404).json({ error: 'Student not found' });
 
+    // Exam-mode results need the Exam mode feature (Premium, or enabled for Free).
+    if (mode === 'exam' && !canUse(student, 'examMode', await Settings.getGlobal())) {
+      return res.status(403).json({ error: "Exam mode isn't available on the Free plan. Upgrade to Premium to unlock it.", code: 'FEATURE_LOCKED', feature: 'examMode' });
+    }
+
     const attemptDocs = Array.isArray(perQuestion)
       ? perQuestion
-          .filter(p => p && typeof p.course === 'string' && p.course && typeof p.correct === 'boolean')
+          .filter(p => p && typeof p.course === 'string' && normCourseKey(p.course) && typeof p.correct === 'boolean')
           .slice(0, 100)
           .map(p => ({
             matric: req.params.matric.toUpperCase(),
-            course: p.course.trim().slice(0, 30),
-            tag: String(p.tag || '').trim().slice(0, 100),
+            // Stored in ONE canonical form. Attempts used to keep whatever spelling the client sent
+            // ("chm141" from the bank, "CHM 141" from an AI quiz), which split one topic into several
+            // rows and made "weak topics" impossible to match back to the question bank.
+            course: normCourseKey(p.course).slice(0, 30),
+            tag: cleanTag(p.tag),
             correct: p.correct,
           }))
       : [];

@@ -11,6 +11,7 @@ const { connectDB } = require('./src/config/db');
 const Admin = require('./src/models/Admin');
 const Course = require('./src/models/Course');
 const { initStudyRoomSockets } = require('./src/realtime/studyRoom.socket');
+const { activityMiddleware, flushActivity } = require('./src/services/activity.service');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -45,17 +46,24 @@ app.use(cors({ origin: '*', methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 app.set('trust proxy', 1); // set BEFORE any middleware so req.ip / rate limiting see the real client behind Render's proxy
 // 1mb: the default 100kb made PUT /api/student-data (notes/bookmarks backup) fail for heavy users.
 app.use(express.json({ limit: '1mb' }));
+app.use(activityMiddleware); // logs every API request + page view (see services/activity.service.js)
 
 // ══════════════════════════════════════════════════════════════
 //  DATABASE
 // ══════════════════════════════════════════════════════════════
 connectDB().then(async () => {
   await bootstrapAdmin();
+  await require('./src/utils/migratePlans').migratePlans();
+  await ensureOwnerAdmin();
   await bootstrapCourses();
   require('./src/services/scheduler.service').startScheduler();
 }).catch(e => console.error('Startup tasks failed:', e));
 
 // One stray rejected promise must not take the whole server down.
+// Don't lose the last couple of seconds of log rows on a restart/deploy.
+for (const sig of ['SIGTERM', 'SIGINT']) {
+  process.on(sig, async () => { try { await flushActivity(); } finally { process.exit(0); } });
+}
 process.on('unhandledRejection', (err) => console.error('[unhandledRejection]', err));
 process.on('uncaughtException', (err) => console.error('[uncaughtException]', err));
 
@@ -67,7 +75,7 @@ async function bootstrapAdmin() {
     if (count > 0) return;
     const username = (process.env.ADMIN_BOOTSTRAP_USERNAME || 'admin').toLowerCase().trim();
     const passwordHash = await bcrypt.hash(process.env.ADMIN_KEY, 10);
-    await Admin.create({ username, passwordHash });
+    await Admin.create({ username, passwordHash, isOwner: true });
     console.log('\n╔══════════════════════════════════════════════════╗');
     console.log('║  First-run: admin account created                 ║');
     console.log(`║  username: ${username}`);
@@ -77,6 +85,23 @@ async function bootstrapAdmin() {
     console.log('╚══════════════════════════════════════════════════╝\n');
   } catch (e) {
     console.error('Admin bootstrap failed:', e.message);
+  }
+}
+
+// The "owner" is the main admin: the only one who can open/download the Activity Log and
+// who can't be demoted or removed. If none is marked yet (existing deployments), the
+// oldest active admin — the one bootstrapped from ADMIN_KEY — becomes the owner.
+async function ensureOwnerAdmin() {
+  try {
+    if (await Admin.exists({ isOwner: true })) return;
+    const first = await Admin.findOneAndUpdate(
+      { active: { $ne: false } },
+      { $set: { isOwner: true, fullAccess: true } },
+      { sort: { createdAt: 1 }, new: true },
+    );
+    if (first) console.log(`Owner admin set to "${first.username}"`);
+  } catch (e) {
+    console.error('Owner bootstrap failed:', e.message);
   }
 }
 
@@ -120,6 +145,7 @@ app.use('/api/auth', require('./src/routes/auth.routes'));
 const { requireAdmin, adminGate } = require('./src/middleware/auth');
 app.use('/api/admin', requireAdmin, adminGate);
 app.use('/api/admin', require('./src/routes/admin/admin.admins.routes'));
+app.use('/api/admin', require('./src/routes/admin/admin.activity.routes'));
 app.use('/api/admin', require('./src/routes/admin.routes'));
 app.use('/api/admin', require('./src/routes/admin/admin.credits.routes'));
 app.use('/api/admin', require('./src/routes/admin/admin.contests.routes'));

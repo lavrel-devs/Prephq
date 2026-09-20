@@ -281,6 +281,9 @@ body{
   .title{font-size:22px;}
   .s-title{font-size:22px;}
 }
+.pw-wrap{position:relative;display:flex;align-items:center;}
+.pw-wrap input{width:100%;padding-right:74px;box-sizing:border-box;}
+.pw-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:transparent;color:var(--brand,#0A5CF5);font-weight:800;font-size:12px;padding:8px 10px;cursor:pointer;border-radius:10px;font-family:inherit;}
 </style>
 </head>
 <body>
@@ -326,6 +329,21 @@ body{
       <div class="hint">Must be reachable on WhatsApp</div>
     </div>
     <div class="fg">
+      <label>Create Password</label>
+      <div class="pw-wrap">
+        <input id="r-pass" type="password" placeholder="At least 8 characters" autocomplete="new-password" oninput="checkPwMatch()">
+        <button type="button" class="pw-toggle" id="pw-toggle" onclick="togglePw()" aria-label="Show or hide password" aria-pressed="false">Show</button>
+      </div>
+      <div class="hint">Minimum 8 characters. Don't use your matric number.</div>
+    </div>
+    <div class="fg">
+      <label>Confirm Password</label>
+      <div class="pw-wrap">
+        <input id="r-pass2" type="password" placeholder="Type it again" autocomplete="new-password" oninput="checkPwMatch()">
+      </div>
+      <div class="hint" id="pw-match-hint">&nbsp;</div>
+    </div>
+    <div class="fg">
       <label>Referral Code (optional)</label>
       <input id="r-referral" type="text" placeholder="e.g. AB12CD3" autocomplete="off" autocapitalize="characters">
       <div class="hint">Have a friend's referral link or code? Enter it here — you'll both get bonus credits.</div>
@@ -343,11 +361,10 @@ body{
   <div id="success" class="success-card fade-up">
     <div class="s-icon"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
     <div class="s-title">Account Created! 🎉</div>
-    <div class="s-sub">Save your login details below. Your password is your matric number.</div>
+    <div class="s-sub">Your account is ready. Sign in with your matric number and the password you just created.</div>
     <div class="login-details">
       <div class="ld-title">Your Login Details</div>
       <div class="ld-row"><span class="ld-label">Matric</span><span class="ld-val" id="s-matric">—</span></div>
-      <div class="ld-row"><span class="ld-label">Password</span><span class="ld-val" id="s-pass">—</span></div>
       <div class="ld-row"><span class="ld-label">Login URL</span><span class="ld-val" style="font-size:13px" id="s-url">—</span></div>
     </div>
     <button class="btn" style="margin-top:18px;" onclick="goLogin()">
@@ -408,6 +425,8 @@ async function doRegister() {
   const phone    = document.getElementById('r-phone').value.trim();
   const whatsapp = document.getElementById('r-whatsapp').value.trim();
   const referralCode = document.getElementById('r-referral').value.trim();
+  const password  = document.getElementById('r-pass').value;
+  const password2 = document.getElementById('r-pass2').value;
   const errEl    = document.getElementById('reg-err');
   const errMsg   = document.getElementById('reg-err-msg');
   const btn      = document.getElementById('reg-btn');
@@ -416,6 +435,18 @@ async function doRegister() {
 
   if (!name || !matric || !username || !phone || !whatsapp) {
     errMsg.textContent = 'All fields are required.';
+    errEl.classList.add('on'); return;
+  }
+  if (password.length < 8) {
+    errMsg.textContent = 'Your password must be at least 8 characters.';
+    errEl.classList.add('on'); return;
+  }
+  if (password.trim().toUpperCase() === matric) {
+    errMsg.textContent = "Your password can't be the same as your matric number.";
+    errEl.classList.add('on'); return;
+  }
+  if (password !== password2) {
+    errMsg.textContent = 'The two passwords do not match.';
     errEl.classList.add('on'); return;
   }
   if (!regUsernameOk) {
@@ -430,7 +461,7 @@ async function doRegister() {
     const r = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, matric, username, phone, whatsapp, password: matric, referralCode: referralCode || undefined }),
+      body: JSON.stringify({ name, matric, username, phone, whatsapp, password, referralCode: referralCode || undefined }),
     });
     const d = await r.json();
 
@@ -444,7 +475,6 @@ async function doRegister() {
 
     // Show success
     document.getElementById('s-matric').textContent = d.matric;
-    document.getElementById('s-pass').textContent   = d.password;
     document.getElementById('s-url').textContent    = window.location.origin;
     document.getElementById('reg-form').style.display = 'none';
     document.getElementById('success').style.display  = 'block';
@@ -455,6 +485,21 @@ async function doRegister() {
     btn.disabled = false;
     btn.innerHTML = 'Create Account';
   }
+}
+
+function togglePw() {
+  const a = document.getElementById('r-pass'), b = document.getElementById('r-pass2'), t = document.getElementById('pw-toggle');
+  const show = a.type === 'password';
+  a.type = b.type = show ? 'text' : 'password';
+  t.textContent = show ? 'Hide' : 'Show';
+  t.setAttribute('aria-pressed', show ? 'true' : 'false');
+}
+function checkPwMatch() {
+  const a = document.getElementById('r-pass').value, b = document.getElementById('r-pass2').value;
+  const h = document.getElementById('pw-match-hint');
+  if (!b) { h.innerHTML = '&nbsp;'; h.style.color = ''; return; }
+  h.textContent = a === b ? 'Passwords match' : 'Passwords do not match';
+  h.style.color = a === b ? 'var(--ok, #00a35a)' : 'var(--no, #F5340A)';
 }
 
 function goLogin() { window.location.href = '/'; }

@@ -1,4 +1,6 @@
 const QuestionAttempt = require('../models/QuestionAttempt');
+const Course = require('../models/Course');
+const { GENERIC_TAGS } = require('../utils/validate');
 
 const MIN_ATTEMPTS = 3;      // need at least this many recent attempts on a tag before judging it "weak"
 const WEAK_THRESHOLD = 0.65; // below 65% accuracy (within the recent window) counts as weak
@@ -17,15 +19,25 @@ const RECENT_WINDOW = 8;     // only the last N attempts per tag count — see n
 // doing well on a focused practice quiz for a topic can actually clear
 // it from the list, which is the whole point of drilling it.
 async function getWeakTopics(matric, limit = 5) {
+  // Older attempt rows were saved with inconsistent spelling, so course and tag are normalised here
+  // too (lower-case; course also stripped of spaces/punctuation) before grouping.
+  const courseKey = { $let: { vars: { c: { $toLower: { $ifNull: ['$course', ''] } } }, in:
+    { $reduce: { input: [' ', '-', '_', '/', '.', '&', '(', ')', ','], initialValue: '$$c',
+        in: { $replaceAll: { input: '$$value', find: '$$this', replacement: '' } } } } } };
+  const tagKey = { $trim: { input: { $toLower: { $ifNull: ['$tag', ''] } } } };
+
   const rows = await QuestionAttempt.aggregate([
-    { $match: { matric: matric.toUpperCase(), tag: { $ne: '' } } },
+    { $match: { matric: matric.toUpperCase() } },
+    { $addFields: { _course: courseKey, _tag: tagKey } },
+    { $match: { _tag: { $nin: ['', ...[...GENERIC_TAGS]] }, _course: { $ne: '' } } },
     { $sort: { ts: -1 } },
     { $group: {
-      _id: { course: '$course', tag: '$tag' },
-      recentResults: { $push: '$correct' }, // newest first, thanks to the $sort above
+      _id: { course: '$_course', tag: '$_tag' },
+      label: { $first: '$tag' },              // newest spelling, for display
+      recentResults: { $push: '$correct' },   // newest first, thanks to the $sort above
     } },
     { $project: {
-      _id: 0, course: '$_id.course', tag: '$_id.tag',
+      _id: 0, course: '$_id.course', tag: { $trim: { input: '$label' } },
       recentResults: { $slice: ['$recentResults', RECENT_WINDOW] },
     } },
     { $project: {
@@ -42,7 +54,15 @@ async function getWeakTopics(matric, limit = 5) {
     { $sort: { accuracy: 1 } },
     { $limit: limit },
   ]);
-  return rows;
+
+  // Attach the real course code/title so the UI never has to guess from a raw string.
+  const courses = await Course.find({ key: { $in: rows.map(r => r.course) } }).select('key courseCode courseTitle').lean();
+  const byKey = Object.fromEntries(courses.map(c => [c.key, c]));
+  return rows.map(r => ({
+    ...r,
+    courseCode: byKey[r.course]?.courseCode || r.course.toUpperCase(),
+    courseTitle: byKey[r.course]?.courseTitle || '',
+  }));
 }
 
 module.exports = { getWeakTopics, MIN_ATTEMPTS, WEAK_THRESHOLD, RECENT_WINDOW };

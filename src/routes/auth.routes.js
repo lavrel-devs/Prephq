@@ -4,7 +4,6 @@ const rateLimit = require('express-rate-limit');
 
 const Student = require('../models/Student');
 const Admin = require('../models/Admin');
-const Code = require('../models/Code');
 const Session = require('../models/Session');
 
 const { signAccessToken, signRefreshToken, verifyRefreshToken, hashToken } = require('../utils/jwt');
@@ -75,14 +74,10 @@ async function issueSession({ subjectId, role, req, deviceFingerprint, flaggedNe
 //  STUDENT AUTH
 // ══════════════════════════════════════════════════════════════
 
-// POST /api/auth/register — v1.4: free, open signup. The activation-
-// code gate is gone — anyone can register. `code` is still accepted
-// (and honored, including any creditsGranted bonus) purely for
-// backward compatibility with any codes already issued/in flight; it
-// is never required. Every new account starts on the free tier.
+// POST /api/auth/register — free, open signup. Every new account starts on the free tier.
 router.post('/register', async (req, res) => {
   try {
-    const { code, password, referralCode, username } = req.body;
+    const { password, referralCode, username } = req.body;
 
     const matric = cleanMatric(req.body.matric);
     const name = cleanName(req.body.name);
@@ -97,11 +92,15 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Please enter your name (2–80 characters, no < or > symbols)' });
     if (phone === null || whatsapp === null)
       return res.status(400).json({ error: 'Phone numbers can only contain digits, +, -, ( ) and spaces' });
-    if (password !== undefined && password !== '' && (typeof password !== 'string' || password.length < 4 || password.length > 72))
-      return res.status(400).json({ error: 'Password must be 4–72 characters' });
+    // Self-registration requires the student to choose their own password (the old default
+    // "your matric is your password" was guessable by anyone who knew a matric number).
+    if (typeof password !== 'string' || password.length < 8 || password.length > 72)
+      return res.status(400).json({ error: 'Choose a password of 8–72 characters' });
+    if (password.trim().toUpperCase() === matric)
+      return res.status(400).json({ error: "Your password can't be the same as your matric number" });
 
     // v1.3: username is now required at signup. Validate format and
-    // availability BEFORE touching the activation code or creating the
+    // availability BEFORE creating the
     // account, so a taken/invalid username fails fast with a clear
     // message instead of a half-finished registration.
     if (typeof username !== 'string' || !username.trim())
@@ -117,24 +116,7 @@ router.post('/register', async (req, res) => {
     if (exists)
       return res.status(409).json({ error: 'This matric number is already registered' });
 
-    // Optional legacy code path — validated up front for clear errors,
-    // but only actually *consumed* atomically below (a plain
-    // check-then-mark let two simultaneous signups redeem one code).
-    let codeDoc = null;
-    if (code && typeof code === 'string' && code.trim()) {
-      codeDoc = await Code.findOne({ code: code.trim().toUpperCase() });
-      if (!codeDoc)
-        return res.status(404).json({ error: 'Invalid activation code' });
-      if (codeDoc.status === 'used')
-        return res.status(409).json({ error: 'This code has already been used' });
-      if (codeDoc.status === 'expired')
-        return res.status(410).json({ error: 'This code has expired' });
-      if (codeDoc.expiresAt && new Date() > codeDoc.expiresAt)
-        return res.status(410).json({ error: 'This code has expired' });
-    }
-
-    const pw = (typeof password === 'string' && password) ? password : matric;
-    const passwordHash = await bcrypt.hash(pw, 10);
+    const passwordHash = await bcrypt.hash(password, 10); // bcrypt only — the plaintext is never stored or returned
 
     let student;
     try {
@@ -144,7 +126,6 @@ router.post('/register', async (req, res) => {
         name,
         phone,
         whatsapp,
-        codeUsed:          codeDoc?.code || '',
         credits:           0,
         tier:              'free',
         username:          usernameCheck.username,
@@ -160,37 +141,15 @@ router.post('/register', async (req, res) => {
       throw e;
     }
 
-    if (codeDoc) {
-      const consumed = await Code.updateOne(
-        { _id: codeDoc._id, status: 'unused' },
-        { status: 'used', usedBy: student.matric, usedAt: new Date() },
-      );
-      // Lost the race for the code: still a valid free account, just no code perks.
-      if (!consumed.modifiedCount) codeDoc = null;
-    }
-
     // v1.2: welcome bonus + referral payout. Assigns the student their
     // own referralCode, credits the welcome bonus (stacked with the
     // referee bonus if they signed up via a valid referral link), and
     // pays the referrer's reward — all amounts driven by Settings.
     await activateNewStudent(student, referralCode);
 
-    // If this code was configured with a starting credit grant (separate
-    // from the welcome bonus, e.g. paid-batch codes), apply it too.
-    if (codeDoc?.creditsGranted > 0) {
-      await applyCreditDelta({
-        matric: student.matric,
-        delta: codeDoc.creditsGranted,
-        reason: 'admin_credit',
-        note: `Starting credits from activation code ${codeDoc.code}`,
-        actor: 'system',
-      });
-    }
-
     res.status(201).json({
       matric:   student.matric,
       name:     student.name,
-      password: pw,
       message:  'Account created successfully',
     });
   } catch (e) { console.error('[auth] register', e); res.status(500).json({ error: 'Could not create the account. Please try again.' }); }

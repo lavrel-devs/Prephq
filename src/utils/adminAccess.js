@@ -11,8 +11,7 @@ const AREAS = [
   { key: 'analytics',     label: 'Dashboard & analytics',  desc: 'Overview stats, analytics charts' },
   { key: 'students',      label: 'Students',                desc: 'View/edit accounts, suspend, reset usernames & passwords, reports' },
   { key: 'credits',       label: 'Credits & transfers',     desc: 'Grant/deduct credits, bulk grants, transaction & transfer logs' },
-  { key: 'payments',      label: 'Payments & plans',        desc: 'Payment records, upgrade students to Basic/Pro' },
-  { key: 'codes',         label: 'Activation codes',        desc: 'Generate and manage activation codes' },
+  { key: 'payments',      label: 'Payments & plans',        desc: 'Payment records, upgrade students to Premium (weekly/monthly/yearly/lifetime)' },
   { key: 'courses',       label: 'Courses',                 desc: 'Add/edit/remove courses' },
   { key: 'questions',     label: 'Question bank',           desc: 'Add/edit/delete questions, bulk upload' },
   { key: 'contests',      label: 'Contests',                desc: 'Create/run contests and recurring templates (can adjust contest prizes)' },
@@ -23,10 +22,11 @@ const AREAS = [
 const AREA_KEYS = AREAS.map(a => a.key);
 
 // [pattern on the path after /api/admin, areas that unlock it]
-// 'ANY' = every admin; 'FULL' = full-access admins only. First match wins.
+// 'ANY' = every admin; 'FULL' = full-access admins only; 'OWNER' = the main admin only. First match wins.
 const RULES = [
   [/^\/admins\/me(\/password)?\/?$/, 'ANY'],
   [/^\/admins(\/|$)/, 'FULL'],
+  [/^\/activity(\/|$)/, 'OWNER'],
 
   [/^\/credits(\/|$)/, ['credits']],
   [/^\/transfers(\/|$)/, ['credits']],
@@ -44,7 +44,6 @@ const RULES = [
   [/^\/students(\/|$)/, ['students']],
   [/^\/users(\/|$)/, ['students']],
 
-  [/^\/codes(\/|$)/, ['codes']],
   [/^\/courses(\/|$)/, ['courses']],
   [/^\/questions(\/|$)/, ['questions']],
   [/^\/contests-question-bank\/?$/, ['questions', 'contests']],
@@ -88,6 +87,7 @@ function checkAccess(access, method, path) {
   const need = rule[1];
   if (need === 'ANY') return true;
   if (need === 'FULL') return access.full;
+  if (need === 'OWNER') return !!access.owner;
   return areaAllowed(access, method, need);
 }
 

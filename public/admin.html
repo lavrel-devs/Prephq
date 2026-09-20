@@ -196,6 +196,88 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
 .f-input{padding:9px 12px;border-radius:10px;border:1.5px solid var(--bd2,rgba(13,15,26,.14));background:var(--surf2,#F5F6FA);font-size:14px;font-weight:600;color:var(--t1);outline:none;}
 .f-group{margin-bottom:12px;}
 .f-label{font-size:12px;font-weight:700;color:var(--t3);margin-bottom:5px;}
+
+/* ═══════════════════════════════════════════════════════════
+   NEUMORPHISM THEME — soft, extruded surfaces on one base colour.
+   Raised = outer light+dark shadow. Pressed / inputs = inset shadow.
+   (Overrides the earlier glass styling; everything keys off these tokens.)
+   ═══════════════════════════════════════════════════════════ */
+:root{
+  --bg:#E3E8F1;
+  --surf:#E3E8F1;--surf2:#DCE2EC;--surf3:#D3DAE6;
+  --nu-hi:#FFFFFF;--nu-lo:#BCC5D6;
+  --raise:6px 6px 14px var(--nu-lo),-6px -6px 14px var(--nu-hi);
+  --raise-sm:3px 3px 7px var(--nu-lo),-3px -3px 7px var(--nu-hi);
+  --press:inset 4px 4px 9px var(--nu-lo),inset -4px -4px 9px var(--nu-hi);
+  --press-sm:inset 2px 2px 5px var(--nu-lo),inset -2px -2px 5px var(--nu-hi);
+  --sh:var(--raise);--sh-md:10px 10px 24px var(--nu-lo),-10px -10px 24px var(--nu-hi);
+  --bd:transparent;--bd2:transparent;
+  --brand-lt:rgba(10,92,245,.09);
+}
+[data-theme=dark]{
+  --bg:#242938;--surf:#242938;--surf2:#202432;--surf3:#1B1F2B;
+  --nu-hi:#2E3448;--nu-lo:#171A25;
+  --t1:#EEF0FF;--t2:#C5CAE8;--t3:#8890B8;--t4:#5A6188;
+}
+body{background:var(--bg)!important;}
+body::before,body::after,html::before,html::after{display:none!important;} /* drop the glass-theme colour blobs */
+.topbar,.sidebar,.mnav{background:var(--bg)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;border:none!important;}
+.topbar{box-shadow:0 6px 14px var(--nu-lo);position:relative;z-index:5;}
+.sidebar{box-shadow:6px 0 14px var(--nu-lo);}
+.mnav{box-shadow:0 -6px 14px var(--nu-lo);}
+
+/* raised surfaces */
+.lc,.sc,.tw,.modal{background:var(--bg)!important;border:none!important;box-shadow:var(--raise)!important;}
+.modal{box-shadow:var(--sh-md)!important;}
+.sc{border-radius:20px;}
+.sc-ico{background:var(--bg)!important;box-shadow:var(--press-sm);}
+.th{border-bottom:none!important;}
+table thead th{background:transparent!important;color:var(--t3);}
+table tbody tr{border-bottom:1px solid rgba(120,130,160,.14)!important;}
+table tbody tr:hover{background:var(--surf2)!important;}
+
+/* nav */
+.nav-item{color:var(--t3);border-radius:14px;}
+.nav-item:hover{background:transparent!important;color:var(--t1);box-shadow:var(--raise-sm);}
+.nav-item.on{background:var(--bg)!important;color:var(--brand)!important;box-shadow:var(--press-sm)!important;}
+.mn-item.on{color:var(--brand);}
+
+/* inputs = pressed in */
+.field input,.field select,.field textarea,.f-input,.modal-input,input[type=date],input[type=number],input[type=search]{
+  background:var(--bg)!important;border:none!important;box-shadow:var(--press-sm)!important;border-radius:14px!important;color:var(--t1);
+}
+.field input:focus,.field select:focus,.field textarea:focus,.f-input:focus{box-shadow:var(--press-sm),0 0 0 2px var(--brand-glow)!important;background:var(--bg)!important;}
+input[type=checkbox]{accent-color:var(--brand);}
+
+/* buttons = raised, pressed on click */
+.btn-main,.btn-confirm{background:linear-gradient(140deg,var(--brand),var(--purple))!important;color:#fff!important;border:none!important;box-shadow:var(--raise-sm)!important;}
+.btn-main:active,.btn-confirm:active{box-shadow:var(--press-sm)!important;transform:none!important;}
+.btn-main:disabled{background:var(--bg)!important;color:var(--t4)!important;box-shadow:var(--press-sm)!important;}
+.btn-confirm.red{background:linear-gradient(140deg,#F5340A,#d81b60)!important;}
+.btn-cancel{background:var(--bg)!important;color:var(--t2)!important;border:none!important;box-shadow:var(--raise-sm)!important;}
+.btn-cancel:active{box-shadow:var(--press-sm)!important;}
+.ab{background:var(--bg)!important;border:none!important;box-shadow:var(--raise-sm)!important;}
+.ab:active{box-shadow:var(--press-sm)!important;transform:none!important;}
+.ab-edit{color:var(--brand)!important;}.ab-del{color:var(--no)!important;}.ab-warn{color:var(--warn)!important;}
+.ab-ok{color:var(--ok)!important;}.ab-copy{color:var(--purple)!important;}.ab-gray{color:var(--t3)!important;}
+
+/* badges = small pressed chips */
+.badge{box-shadow:var(--press-sm);background-color:var(--bg)!important;}
+.b-brand{color:var(--brand)!important;}.b-ok{color:var(--ok)!important;}.b-no{color:var(--no)!important;}
+.b-warn{color:var(--warn)!important;}.b-gray{color:var(--t3)!important;}.b-teal{color:var(--teal)!important;}.b-purple{color:var(--purple)!important;}
+
+/* toggle */
+.toggle{background:var(--bg)!important;box-shadow:var(--press-sm)!important;}
+.toggle.on{background:var(--bg)!important;}
+.toggle::after{background:var(--t4)!important;box-shadow:var(--raise-sm)!important;}
+.toggle.on::after{background:var(--brand)!important;}
+
+/* misc */
+.lc-logo{box-shadow:var(--raise-sm)!important;}
+.err{box-shadow:var(--press-sm);border:none!important;}
+#toast{background:var(--bg)!important;color:var(--t1)!important;box-shadow:var(--raise)!important;}
+.modal-bg{background:rgba(20,24,40,.35)!important;}
+select.f-input option{background:var(--bg);color:var(--t1);}
 </style>
 </head>
 <body>
@@ -257,9 +339,6 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
       <div class="nav-item" data-v="students" onclick="go('students',this)">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>Students
       </div>
-      <div class="nav-item" data-v="codes" onclick="go('codes',this)">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>Activation Codes
-      </div>
       <div class="nav-item" data-v="payments" onclick="go('payments',this)">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>Payments
       </div>
@@ -293,6 +372,9 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>Analytics
       </div>
       <div class="nav-sec" id="nav-sec-admin" style="display:none">Admin</div>
+      <div class="nav-item" data-v="activity" id="nav-activity" style="display:none" onclick="go('activity',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6a7 7 0 1 1 2.05 4.95l-1.42 1.42A9 9 0 1 0 13 3zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>Activity Log
+      </div>
       <div class="nav-item" data-v="admins" id="nav-admins" style="display:none" onclick="go('admins',this)">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>Admins
       </div>
@@ -307,7 +389,7 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
         <div class="sg" id="dash-sg">
           <div class="sc"><div class="sc-ico" style="background:var(--brand-lt);color:var(--brand)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div><div class="sc-val" id="ds-students">—</div><div class="sc-lbl">Students</div></div>
           <div class="sc"><div class="sc-ico" style="background:var(--ok-lt);color:var(--ok)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg></div><div class="sc-val" id="ds-revenue">—</div><div class="sc-lbl">Revenue (₦)</div></div>
-          <div class="sc"><div class="sc-ico" style="background:var(--purple-lt);color:var(--purple)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg></div><div class="sc-val" id="ds-unused">—</div><div class="sc-lbl">Unused Codes</div></div>
+          <div class="sc"><div class="sc-ico" style="background:var(--purple-lt);color:var(--purple)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg></div><div class="sc-val" id="ds-credits">—</div><div class="sc-lbl">Credits Issued</div></div>
           <div class="sc"><div class="sc-ico" style="background:var(--warn-lt);color:var(--warn)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="sc-val" id="ds-avg">—</div><div class="sc-lbl">Avg Score</div></div>
           <div class="sc"><div class="sc-ico" style="background:var(--no-lt);color:var(--no)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 4v3h5.5v12h3V7H19V4z"/></svg></div><div class="sc-val" id="ds-live-contests">—</div><div class="sc-lbl">Live Contests</div></div>
           <div class="sc"><div class="sc-ico" style="background:var(--teal-lt);color:var(--teal)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg></div><div class="sc-val" id="ds-transfers">—</div><div class="sc-lbl">Transfers</div></div>
@@ -372,36 +454,6 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
         </div>
       </div>
 
-      <!-- ═══ CODES ══════════════════════════════════════════ -->
-      <div id="v-codes" class="view">
-        <div class="ph">
-          <div><div class="ph-title">Activation Codes</div><div class="ph-sub">Scratch card vouchers for student registration</div></div>
-          <button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;" onclick="openGenCodes()">⚡ Generate Codes</button>
-        </div>
-
-        <!-- Filter tabs -->
-        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
-          <button class="badge b-brand" style="cursor:pointer;padding:7px 16px;font-size:12px;" onclick="loadCodes('all',this)" id="ct-all">All</button>
-          <button class="badge b-gray" style="cursor:pointer;padding:7px 16px;font-size:12px;" onclick="loadCodes('unused',this)" id="ct-unused">Unused</button>
-          <button class="badge b-ok" style="cursor:pointer;padding:7px 16px;font-size:12px;" onclick="loadCodes('used',this)" id="ct-used">Used</button>
-          <button class="badge b-no" style="cursor:pointer;padding:7px 16px;font-size:12px;" onclick="loadCodes('expired',this)" id="ct-expired">Expired</button>
-        </div>
-
-        <div class="tw">
-          <div class="th">
-            <div class="th-title" id="codes-count">Codes</div>
-            <div class="th-right">
-              <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input placeholder="Search code..." oninput="filterCodes(this.value)"></div>
-            </div>
-          </div>
-          <div class="tbl-wrap"><table>
-            <thead><tr><th>Code</th><th>Batch</th><th>Status</th><th>Used By</th><th>Used At</th><th>Actions</th></tr></thead>
-            <tbody id="codes-body"></tbody>
-          </table></div>
-        </div>
-      </div>
-
-      <!-- ═══ PAYMENTS ═════════════════════════════════════ -->
       <div id="v-payments" class="view">
         <div class="ph">
           <div><div class="ph-title">Payments</div><div class="ph-sub" id="pay-total-lbl">—</div></div>
@@ -707,6 +759,37 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
         </div>
       </div>
 
+      <!-- ═══ ACTIVITY LOG (owner only) ════════════════════ -->
+      <div id="v-activity" class="view">
+        <div class="ph">
+          <div><div class="ph-title">Activity Log</div><div class="ph-sub">Every request, page view, realtime event and credit movement — owner only</div></div>
+        </div>
+        <div class="tw" style="padding:18px;">
+          <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+            <input type="date" id="act-date" class="f-input" onchange="actLoad(1)">
+            <input id="act-actor" class="f-input" placeholder="Actor (matric / username)" style="min-width:170px;" oninput="actDebounce()">
+            <input id="act-action" class="f-input" placeholder="Action contains…" style="min-width:170px;" oninput="actDebounce()">
+            <select id="act-source" class="f-input" onchange="actLoad(1)">
+              <option value="">All sources</option><option value="http">API requests</option><option value="page">Page views</option>
+              <option value="socket">Realtime</option><option value="credit">Credits</option><option value="system">System jobs</option>
+            </select>
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;"><input type="checkbox" id="act-errors" onchange="actLoad(1)"> Errors only</label>
+            <div style="flex:1"></div>
+            <button class="btn-main" style="width:auto;padding:9px 16px;font-size:13px;" onclick="actDownload('csv')"><i class="fa-solid fa-download"></i> Download day (CSV)</button>
+            <button class="btn-main" style="width:auto;padding:9px 16px;font-size:13px;" onclick="actDownload('jsonl')">JSON</button>
+          </div>
+          <div id="act-days" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;"></div>
+        </div>
+        <div class="tw">
+          <div class="th"><div class="th-title" id="act-count">Activity</div>
+            <div class="th-right"><button class="ab ab-gray" onclick="actLoad(actPage-1)">‹ Prev</button><span id="act-page" style="font-size:12px;color:var(--t3);"></span><button class="ab ab-gray" onclick="actLoad(actPage+1)">Next ›</button></div></div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Time (WAT)</th><th>Who</th><th>Action</th><th>Status</th><th>IP</th><th>ms</th><th>Detail</th></tr></thead>
+            <tbody id="act-body"></tbody>
+          </table></div>
+        </div>
+      </div>
+
       <!-- ═══ ADMINS & ACCESS ══════════════════════════════ -->
       <div id="v-admins" class="view">
         <div class="ph">
@@ -769,7 +852,7 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
         <!-- v1.4: SUBSCRIPTION PLANS ────────────────────────── -->
         <div class="tw" style="padding:20px;margin-top:20px;">
           <div class="th-title" style="margin-bottom:4px;">Subscription Plans</div>
-          <div style="font-size:12px;color:var(--t3);margin-bottom:18px;">Free-tier daily caps, and Basic/Pro pricing & limits. Changes apply immediately, no redeploy.</div>
+          <div style="font-size:12px;color:var(--t3);margin-bottom:18px;">Free-plan caps and feature switches, and Premium pricing (weekly / monthly / yearly / lifetime). Changes apply immediately, no redeploy.</div>
 
           <div style="margin-bottom:20px;">
             <b style="font-size:13px;">Free tier daily caps</b>
@@ -781,31 +864,26 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
           </div>
 
           <div style="margin-bottom:20px;">
-            <b style="font-size:13px;">Basic tier</b>
-            <div style="display:flex;gap:20px;align-items:center;margin-top:8px;flex-wrap:wrap;">
-              <div><label style="font-size:12px;color:var(--t3);">Monthly (₦):</label><input type="number" id="ts-basic-monthly" class="f-input" style="width:100px;" onchange="onBasicMonthlyChange()"></div>
-              <div><label style="font-size:12px;color:var(--t3);">Yearly (₦):</label><input type="number" id="ts-basic-yearly" class="f-input" style="width:100px;" onchange="saveTierSettings()"></div>
-            </div>
-            <div style="display:flex;gap:20px;align-items:center;margin-top:10px;flex-wrap:wrap;">
-              <div><label style="font-size:12px;color:var(--t3);">Questions/day:</label><input type="number" id="ts-basic-questions" class="f-input" style="width:90px;" placeholder="Unlimited" onchange="saveTierSettings()"></div>
-              <div><label style="font-size:12px;color:var(--t3);">AI quizzes/day:</label><input type="number" id="ts-basic-aiquiz" class="f-input" style="width:90px;" placeholder="Unlimited" onchange="saveTierSettings()"></div>
-              <div><label style="font-size:12px;color:var(--t3);">AI chat msgs/day:</label><input type="number" id="ts-basic-aichat" class="f-input" style="width:90px;" placeholder="Unlimited" onchange="saveTierSettings()"></div>
-            </div>
-            <div style="font-size:11.5px;color:var(--t4);margin-top:6px;">Leave any cap blank for unlimited.</div>
+            <b style="font-size:13px;">Free plan &mdash; feature switches</b>
+            <div style="font-size:11.5px;color:var(--t4);margin:4px 0 10px;">ON = Free students can use it. OFF = locked for Free students (blocked on the server too, not just hidden). Premium always has everything.</div>
+            <div id="ts-free-features" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;"></div>
           </div>
 
           <div style="margin-bottom:20px;">
-            <b style="font-size:13px;">Pro tier</b>
-            <div style="display:flex;gap:20px;align-items:center;margin-top:8px;flex-wrap:wrap;">
-              <div><label style="font-size:12px;color:var(--t3);">Monthly (₦):</label><input type="number" id="ts-pro-monthly" class="f-input" style="width:100px;" onchange="onProMonthlyChange()"></div>
-              <div><label style="font-size:12px;color:var(--t3);">Yearly (₦):</label><input type="number" id="ts-pro-yearly" class="f-input" style="width:100px;" onchange="saveTierSettings()"></div>
+            <b style="font-size:13px;">Premium &mdash; pricing (₦)</b>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-top:8px;max-width:640px;">
+              <div><label style="font-size:12px;color:var(--t3);">Weekly:</label><input type="number" min="0" id="ts-premium-weekly" class="f-input" style="width:100%;" placeholder="Not offered" onchange="saveTierSettings()"></div>
+              <div><label style="font-size:12px;color:var(--t3);">Monthly:</label><input type="number" min="0" id="ts-premium-monthly" class="f-input" style="width:100%;" placeholder="Not offered" onchange="saveTierSettings()"></div>
+              <div><label style="font-size:12px;color:var(--t3);">Yearly:</label><input type="number" min="0" id="ts-premium-yearly" class="f-input" style="width:100%;" placeholder="Not offered" onchange="saveTierSettings()"></div>
+              <div><label style="font-size:12px;color:var(--t3);">Lifetime:</label><input type="number" min="0" id="ts-premium-lifetime" class="f-input" style="width:100%;" placeholder="Not offered" onchange="saveTierSettings()"></div>
             </div>
-            <div style="display:flex;gap:20px;align-items:center;margin-top:10px;flex-wrap:wrap;">
-              <div><label style="font-size:12px;color:var(--t3);">Questions/day:</label><input type="number" id="ts-pro-questions" class="f-input" style="width:90px;" placeholder="Unlimited" onchange="saveTierSettings()"></div>
-              <div><label style="font-size:12px;color:var(--t3);">AI quizzes/day:</label><input type="number" id="ts-pro-aiquiz" class="f-input" style="width:90px;" placeholder="Unlimited" onchange="saveTierSettings()"></div>
-              <div><label style="font-size:12px;color:var(--t3);">AI chat msgs/day:</label><input type="number" id="ts-pro-aichat" class="f-input" style="width:90px;" placeholder="Unlimited" onchange="saveTierSettings()"></div>
+            <div style="font-size:11.5px;color:var(--t4);margin-top:6px;">Leave a price blank to hide that billing option from students. Lifetime is a one-off payment for permanent Premium access.</div>
+            <div style="display:flex;gap:20px;align-items:center;margin-top:12px;flex-wrap:wrap;">
+              <div><label style="font-size:12px;color:var(--t3);">Questions/day:</label><input type="number" id="ts-premium-questions" class="f-input" style="width:90px;" placeholder="Unlimited" onchange="saveTierSettings()"></div>
+              <div><label style="font-size:12px;color:var(--t3);">AI quizzes/day:</label><input type="number" id="ts-premium-aiquiz" class="f-input" style="width:90px;" placeholder="Unlimited" onchange="saveTierSettings()"></div>
+              <div><label style="font-size:12px;color:var(--t3);">AI chat msgs/day:</label><input type="number" id="ts-premium-aichat" class="f-input" style="width:90px;" placeholder="Unlimited" onchange="saveTierSettings()"></div>
             </div>
-            <div style="font-size:11.5px;color:var(--t4);margin-top:6px;">Leave any cap blank for unlimited. Yearly auto-fills to 10× monthly (2 months free) when you change the monthly price — feel free to override it after.</div>
+            <div style="font-size:11.5px;color:var(--t4);margin-top:6px;">Leave any cap blank for unlimited.</div>
           </div>
 
           <div>
@@ -861,7 +939,6 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
   <div class="mnav">
     <div class="mn-item on" data-v="dashboard" onclick="go('dashboard',this)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>Home</div>
     <div class="mn-item" data-v="students" onclick="go('students',this)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>Students</div>
-    <div class="mn-item" data-v="codes" onclick="go('codes',this)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>Codes</div>
     <div class="mn-item" data-v="payments" onclick="go('payments',this)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>Pay</div>
     <div class="mn-item" data-v="courses" onclick="go('courses',this)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-3 14H9v-2h6v2zm3-4H6V4h12v8z"/></svg>Courses</div>
     <div class="mn-item" data-v="questions" onclick="go('questions',this)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>Questions</div>
@@ -911,32 +988,6 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
 </div>
 
 <!-- GENERATE CODES -->
-<div class="modal-bg" id="m-gen-codes" onclick="closeMBg(event,'m-gen-codes')">
-  <div class="modal">
-    <div class="modal-title">Generate Activation Codes</div>
-    <div class="modal-sub">Codes will be in format: XXXX-XXXX-XXXX</div>
-    <div class="err" id="m-gc-err"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-      <div class="field"><label>Number of Codes *</label><input id="gc-count" type="number" value="10" min="1" max="200" placeholder="e.g. 20"></div>
-      <div class="field"><label>Price per Code (₦)</label><input id="gc-price" type="number" placeholder="e.g. 2000"></div>
-    </div>
-    <div class="field"><label>Batch Label</label><input id="gc-batch" placeholder="e.g. Batch 1 - March 2026"></div>
-    <div class="field"><label>Expiry Date <span style="color:var(--t4);font-weight:400">(optional)</span></label><input id="gc-expiry" type="date"></div>
-    <div class="field"><label>Note</label><input id="gc-note" placeholder="e.g. Sold at 100L orientation"></div>
-    <div class="mfooter">
-      <button class="btn-cancel" onclick="closeM('m-gen-codes')">Cancel</button>
-      <button class="btn-confirm green" onclick="genCodes()">⚡ Generate</button>
-    </div>
-    <!-- Generated codes display -->
-    <div id="gc-result" style="display:none;margin-top:16px;">
-      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--ok);margin-bottom:10px;">✅ Codes Generated</div>
-      <div class="code-grid" id="gc-codes-grid"></div>
-      <button class="btn-main" style="margin-top:12px;" onclick="copyAllCodes()">📋 Copy All Codes</button>
-    </div>
-  </div>
-</div>
-
-<!-- ADD PAYMENT -->
 <div class="modal-bg" id="m-add-payment" onclick="closeMBg(event,'m-add-payment')">
   <div class="modal">
     <div class="modal-title">Record Payment</div>
@@ -1066,7 +1117,7 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
 const API = '';
-let allStudents = [], allCodes = [], allPayments = [], allQuestions = [];
+let allStudents = [], allPayments = [], allQuestions = [];
 let editingQ = null, editingSt = null, delFn = null, editingCourse = null;
 let allCourses = [];
 let generatedCodes = [];
@@ -1110,7 +1161,7 @@ async function loadStudentsByCourse(course){
         <td>${escHtml(s.name)}</td>
         <td>${escHtml(s.matric)}</td>
         <td>${s.username ? '@'+escHtml(s.username) : '—'}</td>
-        <td><span class="badge b-brand" style="text-transform:capitalize;">${s.tier}</span></td>
+        <td><span class="badge ${s.tier==='premium'?'b-brand':'b-warn'}">${escHtml(planLabel(s))}</span></td>
         <td>${s.attempts}</td>
         <td>${s.accuracy != null ? s.accuracy+'%' : '—'}</td>
       </tr>
@@ -1118,38 +1169,35 @@ async function loadStudentsByCourse(course){
   }catch(e){ body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--no);padding:20px;">Failed to load</td></tr>'; }
 }
 
-async function adminSetTier(matric, tier, durationDays, refreshFn){
-  if(durationDays === undefined) durationDays = tier === 'free' ? 0 : 30;
+// "Free" / "Premium · Weekly" / "Premium · Lifetime" (premiumPlan is null for old manual grants).
+function planLabel(s){
+  if(!s || s.tier !== 'premium') return 'Free';
+  return 'Premium' + (s.premiumPlan ? ' \u00B7 ' + s.premiumPlan.charAt(0).toUpperCase() + s.premiumPlan.slice(1) : '');
+}
+
+async function adminSetTier(matric, tier, plan, refreshFn){
   try{
     const r = await adminFetch(`/api/admin/users/${encodeURIComponent(matric)}/tier`, {
       method:'PUT', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ tier, durationDays }),
+      body: JSON.stringify(tier === 'free' ? { tier } : { tier, plan }),
     });
-    if(!r.ok){ const d = await r.json(); toast(d.error || 'Could not update tier'); return; }
-    const d = await r.json();
-    toast(tier === 'free' ? `${matric} moved to Free` : `${matric} set to ${tier} for ${durationDays} day${durationDays===1?'':'s'} (until ${new Date(d.tierExpiresAt).toLocaleDateString()})`);
+    const d = await r.json().catch(()=>({}));
+    if(!r.ok){ toast(d.error || 'Could not update plan'); return; }
+    toast(tier === 'free' ? `${matric} moved to Free`
+      : plan === 'lifetime' ? `${matric} set to Premium Lifetime (never expires)`
+      : `${matric} set to Premium ${plan} (until ${new Date(d.tierExpiresAt).toLocaleDateString()})`);
     if(refreshFn) refreshFn(); else loadStudents();
-  }catch(e){ toast('Could not update tier'); }
+  }catch(e){ toast('Could not update plan'); }
 }
 
-// v1.4.2: quick "Plan" action directly from the Students table row —
-// previously the only way to change a student's tier was to open the
-// full Detail panel first, which made it easy to miss entirely.
-// Duration is now admin-chosen per grant, not a fixed 30 days.
+// Quick "Plan" action from the Students table row. Choices: free, or Premium with one of the four
+// billing periods (weekly=7 days, monthly=30, yearly=365, lifetime=permanent, no expiry).
 async function openPlanPicker(matric, currentTier, refreshFn){
-  const tier = prompt(`Set plan for ${matric}\nCurrent: ${currentTier}\n\nType one of: free, basic, pro`, currentTier)?.trim().toLowerCase();
-  if(!tier) return;
-  if(!['free','basic','pro'].includes(tier)){ toast('Plan must be free, basic, or pro'); return; }
-
-  let durationDays = 0;
-  if(tier !== 'free'){
-    const input = prompt(`How many days should ${tier} last for ${matric}?\n(e.g. 30 for a month, 365 for a year)`, '30');
-    if(input === null) return; // cancelled
-    durationDays = parseInt(input, 10);
-    if(!durationDays || durationDays <= 0){ toast('Enter a positive number of days'); return; }
-  }
-
-  adminSetTier(matric, tier, durationDays, refreshFn || loadStudents);
+  const choice = prompt(`Set plan for ${matric}\nCurrent: ${currentTier}\n\nType one of:\n  free\n  weekly\n  monthly\n  yearly\n  lifetime`, '')?.trim().toLowerCase();
+  if(!choice) return;
+  if(choice === 'free') return adminSetTier(matric, 'free', null, refreshFn || loadStudents);
+  if(!['weekly','monthly','yearly','lifetime'].includes(choice)){ toast('Choose free, weekly, monthly, yearly or lifetime'); return; }
+  adminSetTier(matric, 'premium', choice, refreshFn || loadStudents);
 }
 
 async function downloadCsv(url, filename){
@@ -1221,12 +1269,13 @@ let editingAdmin = null; // username being edited, or null when creating
 
 // which sidebar / mobile-nav view needs which permission area ('FULL' = full access only)
 const VIEW_AREA = {
-  dashboard:'analytics', analytics:'analytics', students:'students', codes:'codes', payments:'payments',
+  dashboard:'analytics', analytics:'analytics', students:'students', payments:'payments',
   courses:'courses', questions:'questions', 'bulk-upload':'questions', contests:'contests', recurring:'contests',
-  transfers:'credits', announcements:'announcements', 'credit-settings':'settings', admins:'FULL',
+  transfers:'credits', announcements:'announcements', 'credit-settings':'settings', admins:'FULL', activity:'OWNER',
 };
 function canView(area){
-  if(myAccess.fullAccess) return true;
+  if(myAccess.fullAccess && area!=='OWNER') return true;
+  if(area==='OWNER') return !!myAccess.owner;
   if(area==='FULL') return false;
   return myAccess.permissions.includes(area) || myAccess.permissions.includes(area+':view');
 }
@@ -1240,10 +1289,11 @@ async function bootAdmin(){
   document.querySelectorAll('[data-v]').forEach(el => {
     const area = VIEW_AREA[el.dataset.v];
     if(area && !canView(area)) el.style.display = 'none';
-    else if(el.dataset.v==='admins') el.style.display = '';
+    else if(el.dataset.v==='admins' || el.dataset.v==='activity') el.style.display = '';
   });
   const sec = document.getElementById('nav-sec-admin'); if(sec && myAccess.fullAccess) sec.style.display = '';
   const who = document.getElementById('nav-admins'); if(who && myAccess.fullAccess) who.style.display = '';
+  const act = document.getElementById('nav-activity'); if(act) act.style.display = myAccess.owner ? '' : 'none';
 
   if(canView('analytics')) loadDashboard();
   else {
@@ -1271,13 +1321,13 @@ async function loadAdmins(){
           }).join('');
       const me = a.username === myAccess.username;
       return `<tr>
-        <td style="font-weight:700">${escHtml(a.username)}${me?' <span style="color:var(--t4);font-weight:600;">(you)</span>':''}</td>
+        <td style="font-weight:700">${escHtml(a.username)}${a.isOwner?' <span class="badge b-warn">Owner</span>':''}${me?' <span style="color:var(--t4);font-weight:600;">(you)</span>':''}</td>
         <td>${chips}</td>
         <td><span class="badge ${a.active?'b-ok':'b-no'}">${a.active?'Active':'Deactivated'}</span></td>
         <td style="font-size:12px;color:var(--t4)">${a.lastActiveAt ? new Date(a.lastActiveAt).toLocaleString() : 'Never'}</td>
         <td><div class="act-row">
           <button class="ab ab-edit" onclick="openAdminModal('${escHtml(a.username)}')">Edit</button>
-          ${me ? '' : `<button class="ab ${a.active?'ab-warn':'ab-ok'}" onclick="toggleAdminActive('${escHtml(a.username)}',${!a.active})">${a.active?'Deactivate':'Activate'}</button>
+          ${(me || a.isOwner) ? '' : `<button class="ab ${a.active?'ab-warn':'ab-ok'}" onclick="toggleAdminActive('${escHtml(a.username)}',${!a.active})">${a.active?'Deactivate':'Activate'}</button>
           <button class="ab ab-del" onclick="deleteAdmin('${escHtml(a.username)}')">Del</button>`}
         </div></td>
       </tr>`;
@@ -1370,6 +1420,70 @@ async function deleteAdmin(username){
   loadAdmins();
 }
 
+
+// ══════════════════════════════════════════════════════════════
+//  ACTIVITY LOG (owner only)
+// ══════════════════════════════════════════════════════════════
+let actPage = 1, actPages = 1, actTimer = null;
+const watToday = () => new Date(Date.now() + 3600000).toISOString().slice(0, 10);
+function actDebounce(){ clearTimeout(actTimer); actTimer = setTimeout(() => actLoad(1), 350); }
+
+async function loadActivity(){
+  const d = document.getElementById('act-date');
+  if(!d.value) d.value = watToday();
+  actLoadDays();
+  actLoad(1);
+}
+async function actLoadDays(){
+  try{
+    const r = await adminFetch('/api/admin/activity/days?limit=30', { headers: {} });
+    const days = await r.json();
+    document.getElementById('act-days').innerHTML = (Array.isArray(days) ? days : []).map(x =>
+      `<button class="ab ab-gray" onclick="document.getElementById('act-date').value='${escHtml(x.date)}';actLoad(1)">${escHtml(x.date)} · ${x.count.toLocaleString()}${x.errors?` <span style="color:var(--no)">(${x.errors} err)</span>`:''}</button>`).join('');
+  }catch(e){}
+}
+function actQuery(page){
+  const q = new URLSearchParams({ date: document.getElementById('act-date').value, page });
+  const a = document.getElementById('act-actor').value.trim(); if(a) q.set('actor', a);
+  const ac = document.getElementById('act-action').value.trim(); if(ac) q.set('action', ac);
+  const so = document.getElementById('act-source').value; if(so) q.set('source', so);
+  if(document.getElementById('act-errors').checked) q.set('status', 'errors');
+  return q;
+}
+async function actLoad(page){
+  if(page < 1 || (actPages && page > actPages && page !== 1)) return;
+  const body = document.getElementById('act-body');
+  body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--t3);padding:20px;">Loading…</td></tr>';
+  try{
+    const r = await adminFetch('/api/admin/activity?' + actQuery(page), { headers: {} });
+    const d = await r.json();
+    if(!r.ok) throw new Error(d.error || 'failed');
+    actPage = d.page; actPages = d.pages;
+    document.getElementById('act-count').textContent = `${d.total.toLocaleString()} event${d.total===1?'':'s'} on ${document.getElementById('act-date').value}`;
+    document.getElementById('act-page').textContent = `Page ${d.page} / ${d.pages}`;
+    body.innerHTML = d.rows.map(x => {
+      const t = new Date(new Date(x.ts).getTime() + 3600000).toISOString().slice(11, 19);
+      const cls = x.status >= 500 ? 'b-no' : x.status >= 400 ? 'b-warn' : 'b-ok';
+      return `<tr>
+        <td style="font-family:monospace;font-size:12px;white-space:nowrap">${t}</td>
+        <td><span class="badge b-brand" style="text-transform:none">${escHtml(x.actorType)}</span> ${escHtml(x.actor)||'<span style="color:var(--t4)">—</span>'}</td>
+        <td style="font-size:12.5px;font-weight:600">${escHtml(x.action)}</td>
+        <td>${x.status ? `<span class="badge ${cls}">${x.status}</span>` : '—'}</td>
+        <td style="font-size:11.5px;color:var(--t3)">${escHtml(x.ip)}</td>
+        <td style="font-size:11.5px;color:var(--t3)">${x.ms||''}</td>
+        <td style="max-width:280px;font-size:11px;color:var(--t3);word-break:break-all">${escHtml(x.detail)}</td>
+      </tr>`;
+    }).join('') || '<tr class="empty-row"><td colspan="7">No activity for these filters</td></tr>';
+  }catch(e){
+    body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--no);padding:20px;">Could not load the log (owner access required)</td></tr>';
+  }
+}
+function actDownload(fmt){
+  const date = document.getElementById('act-date').value;
+  if(!date) return toast('Pick a day first');
+  downloadCsv(`/api/admin/activity/download?date=${encodeURIComponent(date)}&format=${fmt}`, `prephq-activity-${date}.${fmt}`);
+}
+
 // ── NAVIGATION ────────────────────────────────────────────────
 function go(v, el) {
   document.querySelectorAll('.view').forEach(x => x.classList.remove('on'));
@@ -1378,7 +1492,6 @@ function go(v, el) {
   document.querySelectorAll(`[data-v="${v}"]`).forEach(x => x.classList.add('on'));
   if(v==='dashboard') loadDashboard();
   if(v==='students')  loadStudents();
-  if(v==='codes')     loadCodes('all');
   if(v==='payments')  loadPayments();
   if(v==='courses')   { loadCourses(); loadCourseList(); }
   if(v==='questions') loadQuestions();
@@ -1390,6 +1503,7 @@ function go(v, el) {
   if(v==='credit-settings') loadCreditSettings();
   if(v==='analytics') loadAnalytics();
   if(v==='admins') loadAdmins();
+  if(v==='activity') loadActivity();
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────
@@ -1399,7 +1513,7 @@ async function loadDashboard() {
     const d = await r.json();
     document.getElementById('ds-students').textContent = d.totalStudents;
     document.getElementById('ds-revenue').textContent = '₦' + (d.totalRevenue||0).toLocaleString();
-    document.getElementById('ds-unused').textContent = d.unusedCodes;
+    document.getElementById('ds-credits').textContent = (d.totalCreditsIssued||0).toLocaleString();
     document.getElementById('ds-avg').textContent = (d.avgScore||0) + '%';
 
     document.getElementById('dash-top').innerHTML = d.topStudents?.length
@@ -1448,8 +1562,8 @@ function renderStudents(list) {
       <td style="font-weight:700">${escHtml(s.name)}</td>
       <td style="font-family:var(--ff-h);font-size:12px">${escHtml(s.matric)}</td>
       <td>
-        <span class="badge ${s.tier==='pro'?'b-brand':s.tier==='basic'?'b-ok':'b-warn'}" style="text-transform:capitalize;">${s.tier||'free'}</span>
-        ${s.tierExpiresAt ? `<div style="font-size:10px;color:var(--t3);margin-top:2px;">until ${new Date(s.tierExpiresAt).toLocaleDateString()}</div>` : ''}
+        <span class="badge ${s.tier==='premium'?'b-brand':'b-warn'}">${escHtml(planLabel(s))}</span>
+        ${(s.tierExpiresAt && s.premiumPlan !== 'lifetime') ? `<div style="font-size:10px;color:var(--t3);margin-top:2px;">until ${new Date(s.tierExpiresAt).toLocaleDateString()}</div>` : ''}
       </td>
       <td style="font-size:12px;color:var(--t3);">${s.username ? '@'+escHtml(s.username) : '—'}</td>
       <td>${escHtml(s.phone)||'—'}</td>
@@ -1540,7 +1654,7 @@ async function openStudentDetail(matric){
         <button class="ab ab-edit" onclick="forceResetUsername('${jsq(p.matric)}')">Reset Username</button>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;background:var(--surf2);border-radius:12px;padding:10px 12px;">
-        <div style="font-size:13px;">Plan: <b style="text-transform:capitalize;">${p.tier || 'free'}</b>${p.tierExpiresAt ? ` (until ${new Date(p.tierExpiresAt).toLocaleDateString()})` : ''}</div>
+        <div style="font-size:13px;">Plan: <b>${escHtml(planLabel(p))}</b>${(p.tierExpiresAt && p.premiumPlan !== 'lifetime') ? ` (until ${new Date(p.tierExpiresAt).toLocaleDateString()})` : ''}</div>
         <button class="ab ab-edit" onclick="openPlanPicker('${jsq(p.matric)}','${p.tier||'free'}',()=>openStudentDetail('${jsq(p.matric)}'))"><i class="fa-solid fa-crown"></i> Change Plan</button>
       </div>
       <button class="ab ab-edit" style="margin-bottom:14px;" onclick="downloadCsv('/api/admin/users/${encodeURIComponent(jsq(p.matric))}/report.pdf', '${jsq(p.matric).replace(/[^A-Za-z0-9._-]/g,'_')}-performance-report.pdf')"><i class="fa-solid fa-file-pdf"></i> Download Performance Report (PDF)</button>
@@ -1775,103 +1889,6 @@ function copyLogin() {
   const url    = document.getElementById('rv-url').textContent;
   const text = `🎓 *PrepHQ Login Details*\n\nMatric: *${matric}*\nPassword: *${pass}*\nLink: ${url}\n\nLogin with your matric and password. Your password is your matric number unless changed.`;
   navigator.clipboard.writeText(text).then(() => toast('Copied! Paste on WhatsApp'));
-}
-
-// ── CODES ─────────────────────────────────────────────────────
-let codesFilter = 'all';
-async function loadCodes(filter, el) {
-  codesFilter = filter || 'all';
-  document.querySelectorAll('[id^="ct-"]').forEach(b => {
-    b.className = b.className.replace(/b-\w+/, 'b-gray');
-  });
-  const map = {all:'b-brand', unused:'b-gray', used:'b-ok', expired:'b-no'};
-  document.getElementById('ct-'+codesFilter).className =
-    document.getElementById('ct-'+codesFilter).className.replace(/b-\w+/, map[codesFilter]);
-  try {
-    const q = codesFilter === 'all' ? '' : `?status=${codesFilter}`;
-    const r = await adminFetch(`/api/admin/codes${q}`, { headers: {} });
-    allCodes = await r.json();
-    renderCodes(allCodes);
-  } catch(e) { toast('Failed to load codes'); }
-}
-
-function renderCodes(list) {
-  document.getElementById('codes-count').textContent = list.length + ' code' + (list.length!==1?'s':'');
-  document.getElementById('codes-body').innerHTML = list.length ? list.map(c => {
-    const badge = c.status==='unused'?'b-purple':c.status==='used'?'b-ok':'b-no';
-    return `<tr>
-      <td><span style="font-family:var(--ff-h);font-size:14px;font-weight:800;letter-spacing:.05em">${c.code}</span></td>
-      <td style="color:var(--t3);font-size:12px">${escHtml(c.batch)||'—'}</td>
-      <td><span class="badge ${badge}">${c.status}</span></td>
-      <td>${escHtml(c.usedBy)||'—'}</td>
-      <td style="color:var(--t4);font-size:12px">${c.usedAt?fmtDate(c.usedAt):'—'}</td>
-      <td><div class="act-row">
-        ${c.status==='unused'?`<button class="ab ab-warn" onclick="expireCode('${c._id}')">Expire</button>`:''}
-        <button class="ab ab-del" onclick="delCode('${c._id}','${c.code}')">Del</button>
-      </div></td>
-    </tr>`;
-  }).join('') : '<tr class="empty-row"><td colspan="6">No codes found</td></tr>';
-}
-
-function filterCodes(q) {
-  renderCodes(allCodes.filter(c => c.code.includes(q.toUpperCase()) || (c.batch||'').toLowerCase().includes(q.toLowerCase())));
-}
-
-function openGenCodes() {
-  document.getElementById('gc-result').style.display = 'none';
-  document.getElementById('m-gc-err').classList.remove('on');
-  document.getElementById('gc-count').value = '10';
-  document.getElementById('gc-price').value = '';
-  document.getElementById('gc-batch').value = '';
-  document.getElementById('gc-expiry').value = '';
-  document.getElementById('gc-note').value = '';
-  document.getElementById('m-gen-codes').classList.add('on');
-}
-
-async function genCodes() {
-  const count   = parseInt(document.getElementById('gc-count').value) || 10;
-  const batch   = document.getElementById('gc-batch').value || `Batch ${new Date().toLocaleDateString('en-GB')}`;
-  const expiry  = document.getElementById('gc-expiry').value;
-  const note    = document.getElementById('gc-note').value;
-  const errEl   = document.getElementById('m-gc-err');
-  errEl.classList.remove('on');
-  try {
-    const r = await adminFetch('/api/admin/codes/generate', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ count, batch, expiresAt: expiry||null, note })
-    });
-    const d = await r.json();
-    if (!r.ok) { errEl.textContent = d.error||'Error'; errEl.classList.add('on'); return; }
-    generatedCodes = d.codes;
-    document.getElementById('gc-codes-grid').innerHTML = d.codes.map(c =>
-      `<div class="code-card"><div class="code-val">${c}</div><div class="code-meta">${batch}</div></div>`
-    ).join('');
-    document.getElementById('gc-result').style.display = 'block';
-    toast(`${d.generated} codes generated`);
-    loadCodes('all');
-  } catch(e) { errEl.textContent = 'Network error.'; errEl.classList.add('on'); }
-}
-
-function copyAllCodes() {
-  const text = generatedCodes.join('\n');
-  navigator.clipboard.writeText(text).then(() => toast('All codes copied!'));
-}
-
-async function expireCode(id) {
-  await adminFetch(`/api/admin/codes/${id}`, {
-    method:'PUT', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ status:'expired' })
-  });
-  toast('Code expired'); loadCodes(codesFilter);
-}
-
-function delCode(id, code) {
-  document.getElementById('m-del-sub').textContent = `Delete code ${code}? This cannot be undone.`;
-  delFn = async () => {
-    await adminFetch(`/api/admin/codes/${id}`, { method:'DELETE', headers:{} });
-    toast('Code deleted'); loadCodes(codesFilter); closeM('m-del');
-  };
-  document.getElementById('m-del').classList.add('on');
 }
 
 // ── PAYMENTS ──────────────────────────────────────────────────
@@ -2519,16 +2536,15 @@ async function loadCreditSettings(){
     document.getElementById('ts-free-questions').value = s.tiers.free.dailyQuestions ?? '';
     document.getElementById('ts-free-aiquiz').value = s.tiers.free.dailyAIQuizzes ?? '';
     document.getElementById('ts-free-aichat').value = s.tiers.free.dailyAIChatMessages ?? '';
-    document.getElementById('ts-basic-monthly').value = s.tiers.basic.priceMonthly ?? '';
-    document.getElementById('ts-basic-yearly').value = s.tiers.basic.priceYearly ?? '';
-    document.getElementById('ts-basic-questions').value = s.tiers.basic.dailyQuestions ?? '';
-    document.getElementById('ts-basic-aiquiz').value = s.tiers.basic.dailyAIQuizzes ?? '';
-    document.getElementById('ts-basic-aichat').value = s.tiers.basic.dailyAIChatMessages ?? '';
-    document.getElementById('ts-pro-monthly').value = s.tiers.pro.priceMonthly ?? '';
-    document.getElementById('ts-pro-yearly').value = s.tiers.pro.priceYearly ?? '';
-    document.getElementById('ts-pro-questions').value = s.tiers.pro.dailyQuestions ?? '';
-    document.getElementById('ts-pro-aiquiz').value = s.tiers.pro.dailyAIQuizzes ?? '';
-    document.getElementById('ts-pro-aichat').value = s.tiers.pro.dailyAIChatMessages ?? '';
+    const pr = s.tiers.premium || {};
+    document.getElementById('ts-premium-weekly').value = pr.priceWeekly ?? '';
+    document.getElementById('ts-premium-monthly').value = pr.priceMonthly ?? '';
+    document.getElementById('ts-premium-yearly').value = pr.priceYearly ?? '';
+    document.getElementById('ts-premium-lifetime').value = pr.priceLifetime ?? '';
+    document.getElementById('ts-premium-questions').value = pr.dailyQuestions ?? '';
+    document.getElementById('ts-premium-aiquiz').value = pr.dailyAIQuizzes ?? '';
+    document.getElementById('ts-premium-aichat').value = pr.dailyAIChatMessages ?? '';
+    renderFreeFeatureSwitches(s.featureDefs || [], s.tiers.free.features || {});
     document.getElementById('ts-whatsapp').value = s.support?.whatsapp || '';
   }catch(e){}
 }
@@ -2579,20 +2595,16 @@ async function saveTierSettings(){
         dailyQuestions: emptyToNull(document.getElementById('ts-free-questions').value),
         dailyAIQuizzes: emptyToNull(document.getElementById('ts-free-aiquiz').value),
         dailyAIChatMessages: emptyToNull(document.getElementById('ts-free-aichat').value),
+        features: readFreeFeatureSwitches(),
       },
-      basic: {
-        priceMonthly: parseInt(document.getElementById('ts-basic-monthly').value, 10) || 0,
-        priceYearly: parseInt(document.getElementById('ts-basic-yearly').value, 10) || 0,
-        dailyQuestions: emptyToNull(document.getElementById('ts-basic-questions').value),
-        dailyAIQuizzes: emptyToNull(document.getElementById('ts-basic-aiquiz').value),
-        dailyAIChatMessages: emptyToNull(document.getElementById('ts-basic-aichat').value),
-      },
-      pro: {
-        priceMonthly: parseInt(document.getElementById('ts-pro-monthly').value, 10) || 0,
-        priceYearly: parseInt(document.getElementById('ts-pro-yearly').value, 10) || 0,
-        dailyQuestions: emptyToNull(document.getElementById('ts-pro-questions').value),
-        dailyAIQuizzes: emptyToNull(document.getElementById('ts-pro-aiquiz').value),
-        dailyAIChatMessages: emptyToNull(document.getElementById('ts-pro-aichat').value),
+      premium: {
+        priceWeekly: emptyToNull(document.getElementById('ts-premium-weekly').value),
+        priceMonthly: emptyToNull(document.getElementById('ts-premium-monthly').value),
+        priceYearly: emptyToNull(document.getElementById('ts-premium-yearly').value),
+        priceLifetime: emptyToNull(document.getElementById('ts-premium-lifetime').value),
+        dailyQuestions: emptyToNull(document.getElementById('ts-premium-questions').value),
+        dailyAIQuizzes: emptyToNull(document.getElementById('ts-premium-aiquiz').value),
+        dailyAIChatMessages: emptyToNull(document.getElementById('ts-premium-aichat').value),
       },
     },
     support: {
@@ -2605,17 +2617,24 @@ async function saveTierSettings(){
     });
   }catch(e){}
 }
-// Marketing angle: yearly = 10× monthly, i.e. "pay for 10 months, get
-// 2 free". Auto-fills yearly when monthly changes — admin can still
-// hand-edit yearly afterwards if they want a different deal.
-function onBasicMonthlyChange(){
-  const m = parseInt(document.getElementById('ts-basic-monthly').value, 10) || 0;
-  document.getElementById('ts-basic-yearly').value = m * 10;
-  saveTierSettings();
+// Free-plan feature switches. Each toggle saves immediately; the server then enforces it on the
+// matching API routes, so it can't be bypassed by calling the API directly.
+function renderFreeFeatureSwitches(defs, features){
+  const box = document.getElementById('ts-free-features');
+  box.innerHTML = defs.map(d => `
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:14px;background:var(--bg);box-shadow:var(--press-sm);">
+      <span style="font-size:13px;font-weight:700;min-width:0;">${escHtml(d.label)}</span>
+      <button type="button" class="toggle ${features[d.key] ? 'on' : ''}" data-feature="${escHtml(d.key)}" role="switch" aria-checked="${!!features[d.key]}" aria-label="${escHtml(d.label)} for Free users" onclick="toggleFreeFeature(this)"></button>
+    </div>`).join('');
 }
-function onProMonthlyChange(){
-  const m = parseInt(document.getElementById('ts-pro-monthly').value, 10) || 0;
-  document.getElementById('ts-pro-yearly').value = m * 10;
+function readFreeFeatureSwitches(){
+  const out = {};
+  document.querySelectorAll('#ts-free-features .toggle').forEach(t => { out[t.dataset.feature] = t.classList.contains('on'); });
+  return out;
+}
+function toggleFreeFeature(el){
+  el.classList.toggle('on');
+  el.setAttribute('aria-checked', el.classList.contains('on'));
   saveTierSettings();
 }
 

@@ -1,6 +1,7 @@
 const cron = require('node-cron');
 const { runBulkDailyRefresh } = require('./credit.service');
 const { transitionContestStates, spawnRecurringContests } = require('./contest.service');
+const { logActivity, purgeOldActivity } = require('./activity.service');
 
 // ── Scheduler ─────────────────────────────────────────────────
 // New in v1.2. Two jobs:
@@ -24,6 +25,7 @@ function startScheduler() {
     try {
       const { applied } = await runBulkDailyRefresh();
       console.log(`[scheduler] Daily credit refresh applied to ${applied} students`);
+      logActivity({ actor: 'scheduler', action: 'system.daily_refresh', detail: { applied } });
     } catch (e) {
       console.error('[scheduler] Daily refresh failed:', e.message);
     } finally { refreshRunning = false; }
@@ -39,6 +41,14 @@ function startScheduler() {
       console.error('[scheduler] Contest tick failed:', e.message);
     } finally { contestTickRunning = false; }
   });
+
+  // Old activity-log rows are dropped after ACTIVITY_LOG_RETENTION_DAYS (default 365, 0 = keep forever).
+  cron.schedule('30 3 * * *', async () => {
+    try {
+      const n = await purgeOldActivity();
+      if (n) console.log(`[scheduler] Purged ${n} old activity-log rows`);
+    } catch (e) { console.error('[scheduler] Activity purge failed:', e.message); }
+  }, { timezone: 'Africa/Lagos' });
 
   console.log('[scheduler] Started: daily credit refresh (00:00 WAT), contest transitions + recurring spawns (every minute)');
 }
