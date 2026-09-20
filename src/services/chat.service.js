@@ -2,7 +2,8 @@ const Settings = require('../models/Settings');
 const ChatMessage = require('../models/ChatMessage');
 const { watDateString } = require('./credit.service');
 const { chatReply } = require('./groq.service');
-const { getTierLimits, ensureTierCurrent } = require('./tier.service');
+const { getTierLimits, ensureTierCurrent, bumpCounter } = require('./tier.service');
+const { withLock } = require('../utils/lock');
 
 function watMonthString(d = new Date()) {
   return watDateString(d).slice(0, 7); // YYYY-MM
@@ -54,14 +55,40 @@ async function checkUsageLimit(student) {
 }
 
 async function incrementUsage(student) {
-  student.aiChatDailyCount += 1;
-  student.aiChatMonthlyCount += 1;
-  await student.save();
+  await bumpCounter(student, 'aiChatDailyCount', 'aiChatDailyDate', watDateString());
+  await bumpCounter(student, 'aiChatMonthlyCount', 'aiChatMonthlyMonth', watMonthString());
+}
+
+// Read-only quota snapshot for GET /api/chat/quota. Unlike
+// checkUsageLimit it never throws for "limit reached" — it reports the
+// real remaining figure for each window (the old route reported BOTH
+// as 0 whenever either one was exhausted).
+async function getQuota(student) {
+  const settings = await Settings.getGlobal();
+  await ensureTierCurrent(student);
+  const today = watDateString();
+  const thisMonth = watMonthString();
+  const dailyUsed = student.aiChatDailyDate === today ? student.aiChatDailyCount : 0;
+  const monthlyUsed = student.aiChatMonthlyMonth === thisMonth ? student.aiChatMonthlyCount : 0;
+  const { dailyAIChatMessages } = await getTierLimits(student);
+  return {
+    enabled: !!settings.aiChatbot.enabled,
+    dailyRemaining: dailyAIChatMessages == null ? null : Math.max(0, dailyAIChatMessages - dailyUsed),
+    monthlyRemaining: Math.max(0, settings.aiChatbot.monthlyLimit - monthlyUsed),
+  };
 }
 
 // Sends a message, persists both sides, enforces + increments usage.
 // Returns { reply, dailyRemaining, monthlyRemaining }.
+//
+// Serialized per student: check-then-increment around a multi-second AI
+// call meant a burst of parallel requests all passed the quota check
+// before any of them counted, blowing straight through the daily cap.
 async function sendMessage(student, content) {
+  return withLock(`chat:${student.matric}`, () => sendMessageLocked(student, content));
+}
+
+async function sendMessageLocked(student, content) {
   await checkUsageLimit(student); // throws before we touch the DB or call Groq if already over limit
 
   const recentHistory = await ChatMessage.find({ matric: student.matric })
@@ -83,4 +110,4 @@ async function sendMessage(student, content) {
   };
 }
 
-module.exports = { checkUsageLimit, incrementUsage, sendMessage };
+module.exports = { checkUsageLimit, incrementUsage, sendMessage, getQuota };

@@ -15,6 +15,7 @@ const ParticipantSchema = new mongoose.Schema({
   rank:         { type: Number, default: null },
   prizeAwarded: { type: Number, default: 0 },
   entryFeePaid: { type: Number, default: 0 },
+  submittedAt:  { type: Date, default: null }, // set on quiz submission — a 0% score must still count as "submitted"
 }, { _id: false });
 
 // v1.3: team-based contests. A team is created by one student (who
@@ -28,6 +29,7 @@ const TeamMemberSchema = new mongoose.Schema({
   matric:    { type: String, required: true, uppercase: true },
   username:  { type: String, default: '' },
   joinedAt:  { type: Date, default: Date.now },
+  entryFeePaid: { type: Number, default: null }, // null on pre-fix records; refunds fall back to contest.entryFee
 }, { _id: false });
 
 const TeamSchema = new mongoose.Schema({
@@ -36,6 +38,7 @@ const TeamSchema = new mongoose.Schema({
   members:      { type: [TeamMemberSchema], default: [] },
   score:        { type: Number, default: 0 },
   rank:         { type: Number, default: null },
+  submittedAt:  { type: Date, default: null },
   prizeAwarded: { type: Number, default: 0 }, // total prize for the team, before the even split at payout time
 }, { _id: false });
 

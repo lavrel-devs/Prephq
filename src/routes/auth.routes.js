@@ -13,18 +13,33 @@ const { applyCreditDelta } = require('../utils/credits');
 const { activateNewStudent } = require('../services/credit.service');
 const { checkAvailability } = require('../utils/username');
 const { usernameCheckLimiter } = require('../middleware/rateLimit');
+const { cleanMatric, cleanName, cleanPhone } = require('../utils/validate');
 
 const router = express.Router();
 
 const SESSION_INACTIVITY_MIN = parseInt(process.env.SESSION_INACTIVITY_MIN || '180', 10);
 
-// Light brute-force protection on login/refresh endpoints.
+// Brute-force protection on login. Keyed by IP *and* the account being
+// tried: students routinely share one campus/hostel NAT address, and a
+// plain per-IP cap of 30 would lock a whole hall out of the app.
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 30,
+  max: 20,
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: (req) => `${req.ip}|${String(req.body?.matric || req.body?.username || '').toLowerCase().slice(0, 40)}`,
   message: { error: 'Too many attempts. Try again in a few minutes.' },
+});
+
+// Silent token refresh runs in the background for every open tab, so it
+// must NOT share the (much tighter) login bucket — hitting the login
+// cap used to make refresh 429 and the client would log the student out.
+const refreshLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many refresh attempts. Try again shortly.', code: 'RATE_LIMITED' },
 });
 
 // ── helpers ──────────────────────────────────────────────────
@@ -67,16 +82,29 @@ async function issueSession({ subjectId, role, req, deviceFingerprint, flaggedNe
 // is never required. Every new account starts on the free tier.
 router.post('/register', async (req, res) => {
   try {
-    const { matric, name, phone, whatsapp, code, password, referralCode, username } = req.body;
+    const { code, password, referralCode, username } = req.body;
 
-    if (!matric || !name)
+    const matric = cleanMatric(req.body.matric);
+    const name = cleanName(req.body.name);
+    const phone = cleanPhone(req.body.phone);
+    const whatsapp = cleanPhone(req.body.whatsapp);
+
+    if (!req.body.matric || !req.body.name)
       return res.status(400).json({ error: 'Matric number and name are required' });
+    if (!matric)
+      return res.status(400).json({ error: 'Matric number can only contain letters, numbers, spaces and / - _ . (3–30 characters)' });
+    if (!name)
+      return res.status(400).json({ error: 'Please enter your name (2–80 characters, no < or > symbols)' });
+    if (phone === null || whatsapp === null)
+      return res.status(400).json({ error: 'Phone numbers can only contain digits, +, -, ( ) and spaces' });
+    if (password !== undefined && password !== '' && (typeof password !== 'string' || password.length < 4 || password.length > 72))
+      return res.status(400).json({ error: 'Password must be 4–72 characters' });
 
     // v1.3: username is now required at signup. Validate format and
     // availability BEFORE touching the activation code or creating the
     // account, so a taken/invalid username fails fast with a clear
     // message instead of a half-finished registration.
-    if (!username || !username.trim())
+    if (typeof username !== 'string' || !username.trim())
       return res.status(400).json({ error: 'Please choose a username' });
 
     const usernameCheck = await checkAvailability(username);
@@ -85,13 +113,15 @@ router.post('/register', async (req, res) => {
         ? 'Username already taken'
         : usernameCheck.reason });
 
-    const exists = await Student.findOne({ matric: matric.toUpperCase() });
+    const exists = await Student.findOne({ matric });
     if (exists)
       return res.status(409).json({ error: 'This matric number is already registered' });
 
-    // Optional legacy code path — only validated/consumed if provided.
+    // Optional legacy code path — validated up front for clear errors,
+    // but only actually *consumed* atomically below (a plain
+    // check-then-mark let two simultaneous signups redeem one code).
     let codeDoc = null;
-    if (code && code.trim()) {
+    if (code && typeof code === 'string' && code.trim()) {
       codeDoc = await Code.findOne({ code: code.trim().toUpperCase() });
       if (!codeDoc)
         return res.status(404).json({ error: 'Invalid activation code' });
@@ -103,28 +133,40 @@ router.post('/register', async (req, res) => {
         return res.status(410).json({ error: 'This code has expired' });
     }
 
-    const pw = password || matric.toUpperCase();
+    const pw = (typeof password === 'string' && password) ? password : matric;
     const passwordHash = await bcrypt.hash(pw, 10);
 
-    const student = await Student.create({
-      matric:            matric.toUpperCase().trim(),
-      passwordHash,
-      name:              name.trim(),
-      phone:             phone?.trim() || '',
-      whatsapp:          whatsapp?.trim() || '',
-      codeUsed:          codeDoc?.code || '',
-      credits:           0,
-      tier:              'free',
-      username:          usernameCheck.username,
-      usernameChangedAt: new Date(),
-    });
+    let student;
+    try {
+      student = await Student.create({
+        matric,
+        passwordHash,
+        name,
+        phone,
+        whatsapp,
+        codeUsed:          codeDoc?.code || '',
+        credits:           0,
+        tier:              'free',
+        username:          usernameCheck.username,
+        usernameChangedAt: new Date(),
+      });
+    } catch (e) {
+      // Two signups racing for the same matric/username slip past the
+      // pre-checks above; the unique indexes catch them here.
+      if (e.code === 11000) {
+        const dupUser = e.keyPattern && e.keyPattern.username;
+        return res.status(409).json({ error: dupUser ? 'Username already taken' : 'This matric number is already registered' });
+      }
+      throw e;
+    }
 
     if (codeDoc) {
-      await Code.updateOne({ _id: codeDoc._id }, {
-        status: 'used',
-        usedBy: student.matric,
-        usedAt: new Date(),
-      });
+      const consumed = await Code.updateOne(
+        { _id: codeDoc._id, status: 'unused' },
+        { status: 'used', usedBy: student.matric, usedAt: new Date() },
+      );
+      // Lost the race for the code: still a valid free account, just no code perks.
+      if (!consumed.modifiedCount) codeDoc = null;
     }
 
     // v1.2: welcome bonus + referral payout. Assigns the student their
@@ -151,7 +193,7 @@ router.post('/register', async (req, res) => {
       password: pw,
       message:  'Account created successfully',
     });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { console.error('[auth] register', e); res.status(500).json({ error: 'Could not create the account. Please try again.' }); }
 });
 
 // GET /api/auth/username-check/:username — public availability check for
@@ -160,8 +202,10 @@ router.post('/register', async (req, res) => {
 // the logged-in dashboard modal uses (src/routes/student.routes.js),
 // just without requiring a session.
 router.get('/username-check/:username', usernameCheckLimiter, async (req, res) => {
-  const result = await checkAvailability(req.params.username);
-  res.json(result);
+  try {
+    const result = await checkAvailability(req.params.username);
+    res.json(result);
+  } catch (e) { res.status(500).json({ error: 'Could not check that username right now' }); }
 });
 
 // POST /api/auth/login — student login, issues JWT access + refresh tokens
@@ -170,8 +214,12 @@ router.post('/login', loginLimiter, async (req, res) => {
     const { matric, password, deviceFingerprint } = req.body;
     if (!matric || !password)
       return res.status(400).json({ error: 'Matric and password required' });
+    // A JSON body can carry objects/arrays here; only plain strings are
+    // valid credentials (and keep objects out of the Mongo query).
+    if (typeof matric !== 'string' || typeof password !== 'string')
+      return res.status(400).json({ error: 'Matric and password required' });
 
-    const student = await Student.findOne({ matric: matric.toUpperCase() });
+    const student = await Student.findOne({ matric: matric.trim().replace(/\s+/g, ' ').toUpperCase() });
     if (!student) return res.status(401).json({ error: 'Invalid matric number or password' });
 
     let valid = false;
@@ -191,11 +239,15 @@ router.post('/login', loginLimiter, async (req, res) => {
     if (!valid) return res.status(401).json({ error: 'Invalid matric number or password' });
     if (!student.active) return res.status(403).json({ error: 'Account suspended. Contact admin.' });
 
-    const flaggedNewDevice = isNewDevice(student.devices, deviceFingerprint);
-    if (deviceFingerprint) {
-      const known = student.devices.find(d => d.fingerprint === deviceFingerprint);
+    const fp = typeof deviceFingerprint === 'string' ? deviceFingerprint.slice(0, 128) : '';
+    const flaggedNewDevice = isNewDevice(student.devices, fp);
+    if (fp) {
+      const known = student.devices.find(d => d.fingerprint === fp);
       if (known) known.lastSeenAt = new Date();
-      else student.devices.push({ fingerprint: deviceFingerprint });
+      else {
+        student.devices.push({ fingerprint: fp });
+        if (student.devices.length > 20) student.devices.splice(0, student.devices.length - 20); // don't let the list grow forever
+      }
     }
     await student.save();
 
@@ -203,7 +255,7 @@ router.post('/login', loginLimiter, async (req, res) => {
       subjectId: student.matric,
       role: 'student',
       req,
-      deviceFingerprint,
+      deviceFingerprint: fp,
       flaggedNewDevice,
     });
 
@@ -225,7 +277,7 @@ router.post('/login', loginLimiter, async (req, res) => {
 });
 
 // POST /api/auth/refresh — silently rotate a student's access token
-router.post('/refresh', loginLimiter, async (req, res) => {
+router.post('/refresh', refreshLimiter, async (req, res) => {
   await handleRefresh(req, res, 'student');
 });
 
@@ -244,6 +296,8 @@ router.post('/admin/login', loginLimiter, async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password)
       return res.status(400).json({ error: 'Username and password required' });
+    if (typeof username !== 'string' || typeof password !== 'string')
+      return res.status(400).json({ error: 'Username and password required' });
 
     const admin = await Admin.findOne({ username: username.toLowerCase().trim() });
     if (!admin || !admin.active)
@@ -256,12 +310,14 @@ router.post('/admin/login', loginLimiter, async (req, res) => {
       subjectId: admin.username,
       role: 'admin',
       req,
-      deviceFingerprint: req.body.deviceFingerprint,
+      deviceFingerprint: typeof req.body.deviceFingerprint === 'string' ? req.body.deviceFingerprint.slice(0, 128) : '',
       flaggedNewDevice: false,
     });
 
     res.json({
       username: admin.username,
+      fullAccess: admin.fullAccess !== false,
+      permissions: admin.fullAccess !== false ? [] : (admin.permissions || []),
       accessToken,
       refreshToken,
       expiresInMin: parseInt(process.env.JWT_ACCESS_TTL_MIN || '15', 10),
@@ -270,7 +326,7 @@ router.post('/admin/login', loginLimiter, async (req, res) => {
 });
 
 // POST /api/auth/admin/refresh
-router.post('/admin/refresh', loginLimiter, async (req, res) => {
+router.post('/admin/refresh', refreshLimiter, async (req, res) => {
   await handleRefresh(req, res, 'admin');
 });
 
@@ -283,7 +339,7 @@ router.post('/admin/logout', async (req, res) => {
 async function handleRefresh(req, res, expectedRole) {
   try {
     const { refreshToken } = req.body;
-    if (!refreshToken) return res.status(400).json({ error: 'Refresh token required' });
+    if (!refreshToken || typeof refreshToken !== 'string') return res.status(400).json({ error: 'Refresh token required' });
 
     let payload;
     try {
@@ -308,6 +364,19 @@ async function handleRefresh(req, res, expectedRole) {
       return res.status(401).json({ error: 'Session expired from inactivity. Please log in again.', code: 'SESSION_EXPIRED' });
     }
 
+    // A suspended student / deactivated admin must not be able to keep a
+    // session alive just by refreshing it (the sliding window would
+    // otherwise let them stay signed in for up to 30 days).
+    const subject = expectedRole === 'admin'
+      ? await Admin.findOne({ username: payload.sub }).select('active').lean()
+      : await Student.findOne({ matric: payload.sub }).select('active').lean();
+    if (!subject || subject.active === false) {
+      session.revoked = true;
+      session.revokedAt = new Date();
+      await session.save();
+      return res.status(401).json({ error: 'This account is no longer active', code: 'SESSION_REVOKED' });
+    }
+
     // Sliding window: still active, so extend the session and rotate tokens.
     const newAccessToken = signAccessToken({ sub: payload.sub, role: payload.role, sid: session._id.toString() });
     const newRefreshToken = signRefreshToken({ sub: payload.sub, role: payload.role, sid: session._id.toString() });
@@ -329,7 +398,7 @@ async function handleRefresh(req, res, expectedRole) {
 async function handleLogout(req, res) {
   try {
     const { refreshToken } = req.body;
-    if (!refreshToken) return res.json({ success: true });
+    if (!refreshToken || typeof refreshToken !== 'string') return res.json({ success: true });
     try {
       const payload = verifyRefreshToken(refreshToken);
       await Session.updateOne({ _id: payload.sid }, { revoked: true, revokedAt: new Date() });

@@ -5,6 +5,8 @@ const Student = require('../models/Student');
 const { applyCreditDelta } = require('../utils/credits');
 const { notify } = require('./notification.service');
 const { courseMatchFilter } = require('../utils/courseMatch');
+const { withLock } = require('../utils/lock');
+const { shuffle } = require('../utils/validate');
 
 // WAT (UTC+1, no DST) "now" broken into the pieces recurrence checks
 // need. Matches the same offset approach as credit.service.js's
@@ -28,17 +30,31 @@ function watNow() {
 // just hh:mm).
 async function spawnRecurringContests() {
   const now = watNow();
-  const templates = await ContestTemplate.find({ active: true, timeOfDay: now.hhmm });
+  const nowMin = parseInt(now.hhmm.slice(0, 2), 10) * 60 + parseInt(now.hhmm.slice(3, 5), 10);
+  const dayStart = new Date(`${now.dateStr}T00:00:00+01:00`);
+  const GRACE_MIN = 15; // still spawn if the exact minute was missed (server asleep/restarting)
 
+  const templates = await ContestTemplate.find({ active: true });
   for (const tpl of templates) {
     if (tpl.frequency === 'weekly' && tpl.dayOfWeek !== now.dayOfWeek) continue;
+    const m = /^(\d{2}):(\d{2})$/.exec(tpl.timeOfDay || '');
+    if (!m) continue;
+    const late = nowMin - (parseInt(m[1], 10) * 60 + parseInt(m[2], 10));
+    if (late < 0 || late > GRACE_MIN) continue;
 
-    const alreadySpawnedToday = tpl.lastGeneratedAt
-      && new Date(tpl.lastGeneratedAt.getTime() + 60 * 60 * 1000).toISOString().slice(0, 10) === now.dateStr;
-    if (alreadySpawnedToday) continue;
+    // Claim today's slot atomically so overlapping ticks can't double-spawn.
+    const claimed = await ContestTemplate.findOneAndUpdate(
+      { _id: tpl._id, $or: [{ lastGeneratedAt: null }, { lastGeneratedAt: { $lt: dayStart } }] },
+      { $set: { lastGeneratedAt: new Date() } },
+      { new: true },
+    );
+    if (!claimed) continue;
 
-    try { await spawnFromTemplate(tpl, now); }
-    catch (e) { console.error(`[contest.service] Failed to spawn from template ${tpl._id}:`, e.message); }
+    try { await spawnFromTemplate(claimed, now); }
+    catch (e) {
+      console.error(`[contest.service] Failed to spawn from template ${tpl._id}:`, e.message);
+      await ContestTemplate.updateOne({ _id: tpl._id }, { $set: { lastGeneratedAt: tpl.lastGeneratedAt || null } }).catch(() => {});
+    }
   }
 }
 
@@ -56,6 +72,7 @@ async function spawnFromTemplate(tpl) {
       { $sample: { size: tpl.autoPickCount || 10 } },
     ]);
     questions = pool.map(q => q._id);
+    if (!questions.length) throw new Error(`No questions found for course "${tpl.autoPickCourse}"`);
   }
 
   const contest = await Contest.create({
@@ -72,9 +89,7 @@ async function spawnFromTemplate(tpl) {
     createdBy: `template:${tpl._id}`,
   });
 
-  tpl.lastGeneratedAt = startTime;
-  tpl.lastSpawnedContestId = contest._id;
-  await tpl.save();
+  await ContestTemplate.updateOne({ _id: tpl._id }, { $set: { lastSpawnedContestId: contest._id } });
 
   return contest;
 }
@@ -93,13 +108,14 @@ async function transitionContestStates() {
 
   const toGoLive = await Contest.find({ status: 'upcoming', startTime: { $lte: now } });
   for (const contest of toGoLive) {
-    contest.status = 'live';
-    await contest.save();
+    // Conditional, so an admin who paused/cancelled it a moment ago isn't overridden.
+    await Contest.updateOne({ _id: contest._id, status: 'upcoming' }, { $set: { status: 'live' } });
   }
 
   const toEnd = await Contest.find({ status: 'live', endTime: { $lte: now } });
   for (const contest of toEnd) {
-    await settleContest(contest);
+    try { await settleContest(contest); }
+    catch (e) { console.error(`[contest.service] Settling ${contest._id} failed:`, e.message); }
   }
 }
 
@@ -107,53 +123,75 @@ async function transitionContestStates() {
 // Deducts the entry fee (if any) and adds the student to
 // `participants`. Throws with `.code` for the route to branch on:
 // NOT_JOINABLE | ALREADY_JOINED | FULL | INSUFFICIENT_CREDITS
-async function joinContest(contest, student) {
-  if (!['upcoming', 'live'].includes(contest.status)) {
-    const err = new Error('This contest is not open for entry right now');
-    err.code = 'NOT_JOINABLE';
-    throw err;
-  }
+async function joinContest(contestArg, student) {
+  // Serialized per contest and re-read inside the lock: a double-tap on
+  // "Join" used to pass the ALREADY_JOINED check twice, charging the
+  // entry fee twice and adding the student twice.
+  return withLock(`contest:${contestArg._id}`, async () => {
+    const contest = await Contest.findById(contestArg._id);
+    if (!contest) { const err = new Error('Contest not found'); err.code = 'NOT_JOINABLE'; throw err; }
 
-  const already = contest.participants.some(p => p.matric === student.matric);
-  if (already) {
-    const err = new Error('You have already joined this contest');
-    err.code = 'ALREADY_JOINED';
-    throw err;
-  }
+    if (!['upcoming', 'live'].includes(contest.status)) {
+      const err = new Error('This contest is not open for entry right now');
+      err.code = 'NOT_JOINABLE';
+      throw err;
+    }
+    if (contest.participants.some(p => p.matric === student.matric)) {
+      const err = new Error('You have already joined this contest');
+      err.code = 'ALREADY_JOINED';
+      throw err;
+    }
+    if (contest.maxParticipants && contest.participants.length >= contest.maxParticipants) {
+      const err = new Error('This contest is full');
+      err.code = 'FULL';
+      throw err;
+    }
 
-  if (contest.maxParticipants && contest.participants.length >= contest.maxParticipants) {
-    const err = new Error('This contest is full');
-    err.code = 'FULL';
-    throw err;
-  }
+    await chargeEntryFee(contest, student, `Entry fee for "${contest.title}"`);
+    contest.participants.push({
+      studentId: student._id,
+      matric: student.matric,
+      username: student.username || '',
+      joinedAt: new Date(),
+      entryFeePaid: contest.entryFee,
+    });
+    await saveOrRefund(contest, student);
+    return contest;
+  });
+}
 
-  if (contest.entryFee > 0) {
-    if ((student.credits || 0) < contest.entryFee) {
+// Debits the entry fee (no-op for free contests). Atomic: the balance
+// check is part of the debit itself.
+async function chargeEntryFee(contest, student, note) {
+  if (!(contest.entryFee > 0)) return;
+  try {
+    await applyCreditDelta({
+      matric: student.matric, delta: -contest.entryFee, reason: 'contest_entry',
+      note, actor: student.matric, contestId: contest._id, studentDoc: student,
+    });
+  } catch (e) {
+    if (e.code === 'INSUFFICIENT_CREDITS') {
       const err = new Error('Insufficient credits for the entry fee');
       err.code = 'INSUFFICIENT_CREDITS';
       throw err;
     }
-    await applyCreditDelta({
-      matric: student.matric,
-      delta: -contest.entryFee,
-      reason: 'contest_entry',
-      note: `Entry fee for "${contest.title}"`,
-      actor: student.matric,
-      contestId: contest._id,
-      studentDoc: student,
-    });
+    throw e;
   }
+}
 
-  contest.participants.push({
-    studentId: student._id,
-    matric: student.matric,
-    username: student.username || '',
-    joinedAt: new Date(),
-    entryFeePaid: contest.entryFee,
-  });
-  await contest.save();
-
-  return contest;
+// Saves the contest; if that fails after the fee was taken, give it back.
+async function saveOrRefund(contest, student) {
+  try {
+    await contest.save();
+  } catch (e) {
+    if (contest.entryFee > 0) {
+      await applyCreditDelta({
+        matric: student.matric, delta: contest.entryFee, reason: 'refund',
+        note: `Refund — could not join "${contest.title}"`, actor: 'system', contestId: contest._id,
+      }).catch(err => console.error('[contest] REFUND FAILED for', student.matric, err.message));
+    }
+    throw e;
+  }
 }
 
 // ── Teams: create, join, score ───────────────────────────────────
@@ -170,55 +208,70 @@ function findStudentTeam(contest, matric) {
 // Creates a new team and adds the creator as its first member, paying
 // their entry fee individually (there's no shared team wallet — each
 // member pays their own way in).
-async function createTeam(contest, student, teamName) {
-  if (!contest.teamBased) { const err = new Error('This is not a team-based contest'); err.code = 'NOT_TEAM_CONTEST'; throw err; }
-  if (!['upcoming', 'live'].includes(contest.status)) { const err = new Error('This contest is not open for entry right now'); err.code = 'NOT_JOINABLE'; throw err; }
-  if (findStudentTeam(contest, student.matric)) { const err = new Error('You are already on a team in this contest'); err.code = 'ALREADY_JOINED'; throw err; }
-  if (!teamName || !teamName.trim()) { const err = new Error('Team name is required'); err.code = 'INVALID_TEAM_NAME'; throw err; }
+async function createTeam(contestArg, student, teamName) {
+  return withLock(`contest:${contestArg._id}`, async () => {
+    const contest = await Contest.findById(contestArg._id);
+    if (!contest) { const err = new Error('Contest not found'); err.code = 'NOT_JOINABLE'; throw err; }
+    if (!contest.teamBased) { const err = new Error('This is not a team-based contest'); err.code = 'NOT_TEAM_CONTEST'; throw err; }
+    if (!['upcoming', 'live'].includes(contest.status)) { const err = new Error('This contest is not open for entry right now'); err.code = 'NOT_JOINABLE'; throw err; }
+    if (findStudentTeam(contest, student.matric)) { const err = new Error('You are already on a team in this contest'); err.code = 'ALREADY_JOINED'; throw err; }
+    const name = typeof teamName === 'string' ? teamName.trim().replace(/\s+/g, ' ') : '';
+    if (!name || name.length > 40 || /[<>]/.test(name)) { const err = new Error('Team name is required (max 40 characters, no < or >)'); err.code = 'INVALID_TEAM_NAME'; throw err; }
 
-  if (contest.entryFee > 0) {
-    if ((student.credits || 0) < contest.entryFee) { const err = new Error('Insufficient credits for the entry fee'); err.code = 'INSUFFICIENT_CREDITS'; throw err; }
-    await applyCreditDelta({
-      matric: student.matric, delta: -contest.entryFee, reason: 'contest_entry',
-      note: `Entry fee for "${contest.title}" (team: ${teamName.trim()})`, actor: student.matric,
-      contestId: contest._id, studentDoc: student,
+    await chargeEntryFee(contest, student, `Entry fee for "${contest.title}" (team: ${name})`);
+
+    let teamCode;
+    do { teamCode = generateTeamCode(); } while (contest.teams.some(t => t.teamCode === teamCode));
+
+    contest.teams.push({
+      teamCode, teamName: name,
+      members: [{ studentId: student._id, matric: student.matric, username: student.username || '', entryFeePaid: contest.entryFee }],
     });
-  }
-
-  let teamCode;
-  do { teamCode = generateTeamCode(); } while (contest.teams.some(t => t.teamCode === teamCode));
-
-  contest.teams.push({
-    teamCode, teamName: teamName.trim(),
-    members: [{ studentId: student._id, matric: student.matric, username: student.username || '' }],
+    await saveOrRefund(contest, student);
+    return contest.teams[contest.teams.length - 1];
   });
-  await contest.save();
-  return contest.teams[contest.teams.length - 1];
 }
 
 // Joins an existing team by its shareable code, paying the entry fee
 // individually. Throws TEAM_FULL if teamSize is set and already met.
-async function joinTeam(contest, student, teamCode) {
-  if (!contest.teamBased) { const err = new Error('This is not a team-based contest'); err.code = 'NOT_TEAM_CONTEST'; throw err; }
-  if (!['upcoming', 'live'].includes(contest.status)) { const err = new Error('This contest is not open for entry right now'); err.code = 'NOT_JOINABLE'; throw err; }
-  if (findStudentTeam(contest, student.matric)) { const err = new Error('You are already on a team in this contest'); err.code = 'ALREADY_JOINED'; throw err; }
+async function joinTeam(contestArg, student, teamCode) {
+  return withLock(`contest:${contestArg._id}`, async () => {
+    const contest = await Contest.findById(contestArg._id);
+    if (!contest) { const err = new Error('Contest not found'); err.code = 'NOT_JOINABLE'; throw err; }
+    if (!contest.teamBased) { const err = new Error('This is not a team-based contest'); err.code = 'NOT_TEAM_CONTEST'; throw err; }
+    if (!['upcoming', 'live'].includes(contest.status)) { const err = new Error('This contest is not open for entry right now'); err.code = 'NOT_JOINABLE'; throw err; }
+    if (findStudentTeam(contest, student.matric)) { const err = new Error('You are already on a team in this contest'); err.code = 'ALREADY_JOINED'; throw err; }
 
-  const team = contest.teams.find(t => t.teamCode === String(teamCode || '').toUpperCase());
-  if (!team) { const err = new Error('No team found with that code'); err.code = 'TEAM_NOT_FOUND'; throw err; }
-  if (contest.teamSize && team.members.length >= contest.teamSize) { const err = new Error('This team is full'); err.code = 'TEAM_FULL'; throw err; }
+    const team = contest.teams.find(t => t.teamCode === String(teamCode || '').toUpperCase());
+    if (!team) { const err = new Error('No team found with that code'); err.code = 'TEAM_NOT_FOUND'; throw err; }
+    if (contest.teamSize && team.members.length >= contest.teamSize) { const err = new Error('This team is full'); err.code = 'TEAM_FULL'; throw err; }
 
-  if (contest.entryFee > 0) {
-    if ((student.credits || 0) < contest.entryFee) { const err = new Error('Insufficient credits for the entry fee'); err.code = 'INSUFFICIENT_CREDITS'; throw err; }
-    await applyCreditDelta({
-      matric: student.matric, delta: -contest.entryFee, reason: 'contest_entry',
-      note: `Entry fee for "${contest.title}" (team: ${team.teamName})`, actor: student.matric,
-      contestId: contest._id, studentDoc: student,
-    });
-  }
+    await chargeEntryFee(contest, student, `Entry fee for "${contest.title}" (team: ${team.teamName})`);
+    team.members.push({ studentId: student._id, matric: student.matric, username: student.username || '', entryFeePaid: contest.entryFee });
+    await saveOrRefund(contest, student);
+    return team;
+  });
+}
 
-  team.members.push({ studentId: student._id, matric: student.matric, username: student.username || '' });
-  await contest.save();
-  return team;
+// One-shot quiz submission. The update itself is conditional on "not
+// submitted yet", so a double-submit can't score twice, and a 0% result
+// still locks the entry (the old `score > 0` check let a student who
+// scored 0 retake the quiz indefinitely).
+async function submitQuizScore(contestId, matric, score) {
+  const now = new Date();
+  const r1 = await Contest.updateOne(
+    { _id: contestId, status: 'live', participants: { $elemMatch: { matric, submittedAt: null, score: { $lte: 0 } } } },
+    { $set: { 'participants.$.score': score, 'participants.$.submittedAt': now } },
+  );
+  if (r1.modifiedCount) return;
+  const r2 = await Contest.updateOne(
+    { _id: contestId, status: 'live', teams: { $elemMatch: { 'members.matric': matric, submittedAt: null, score: { $lte: 0 } } } },
+    { $set: { 'teams.$.score': score, 'teams.$.submittedAt': now } },
+  );
+  if (r2.modifiedCount) return;
+  const err = new Error('You have already submitted this quiz');
+  err.code = 'ALREADY_SUBMITTED';
+  throw err;
 }
 
 // Sets a team's score — locked after the first successful submission,
@@ -273,7 +326,17 @@ function computeLeaderboard(contest) {
 // `prizeDistribution` ({rank, amount}) and each winner is notified.
 // v1.3: team-based contests settle by team rank instead, and each
 // tier's prize is split evenly across that team's members.
-async function settleContest(contest) {
+async function settleContest(contestArg) {
+  // Claim the settlement atomically. Anything that isn't already
+  // ended/cancelled flips to 'ended' exactly once, so the cron tick,
+  // an admin "End now" click and a retry after a partial failure can
+  // never pay the same prizes twice.
+  const contest = await Contest.findOneAndUpdate(
+    { _id: contestArg._id, status: { $in: ['upcoming', 'live', 'paused'] } },
+    { $set: { status: 'ended' } },
+    { new: true },
+  );
+  if (!contest) return Contest.findById(contestArg._id);
   if (contest.teamBased) return settleTeamContest(contest);
 
   if (contest.participants.length === 0 || contest.prizeDistribution.length === 0) {
@@ -285,7 +348,7 @@ async function settleContest(contest) {
   let ranked;
   if (contest.type === 'raffle') {
     // Random draw: shuffle a copy of participants, assign rank by draw order.
-    ranked = [...contest.participants].sort(() => Math.random() - 0.5);
+    ranked = shuffle(contest.participants);
   } else {
     ranked = [...contest.participants].sort((a, b) => (b.score || 0) - (a.score || 0));
   }
@@ -296,15 +359,21 @@ async function settleContest(contest) {
 
     const tier = contest.prizeDistribution.find(t => t.rank === rank);
     if (tier && tier.amount > 0) {
-      ranked[i].prizeAwarded = tier.amount;
-      await applyCreditDelta({
-        matric: ranked[i].matric,
-        delta: tier.amount,
-        reason: 'contest_prize',
-        note: `Prize for rank #${rank} in "${contest.title}"`,
-        actor: 'system',
-        contestId: contest._id,
-      });
+      try {
+        await applyCreditDelta({
+          matric: ranked[i].matric,
+          delta: tier.amount,
+          reason: 'contest_prize',
+          note: `Prize for rank #${rank} in "${contest.title}"`,
+          actor: 'system',
+          contestId: contest._id,
+        });
+        ranked[i].prizeAwarded = tier.amount;
+      } catch (e) {
+        // Status is already 'ended', so this is never retried automatically (no double pay).
+        console.error(`[contest] PRIZE PAYOUT FAILED contest=${contest._id} matric=${ranked[i].matric} amount=${tier.amount}:`, e.message);
+        continue;
+      }
       await notify({
         matric: ranked[i].matric,
         type: 'contest_result',
@@ -343,7 +412,7 @@ async function settleTeamContest(contest) {
 
   let ranked;
   if (contest.type === 'raffle') {
-    ranked = [...contest.teams].sort(() => Math.random() - 0.5);
+    ranked = shuffle(contest.teams);
   } else {
     ranked = [...contest.teams].sort((a, b) => (b.score || 0) - (a.score || 0));
   }
@@ -358,14 +427,19 @@ async function settleTeamContest(contest) {
       ranked[i].prizeAwarded = tier.amount;
       if (perMember > 0) {
         for (const member of ranked[i].members) {
-          await applyCreditDelta({
-            matric: member.matric,
-            delta: perMember,
-            reason: 'contest_prize',
-            note: `Team "${ranked[i].teamName}" placed #${rank} in "${contest.title}"`,
-            actor: 'system',
-            contestId: contest._id,
-          });
+          try {
+            await applyCreditDelta({
+              matric: member.matric,
+              delta: perMember,
+              reason: 'contest_prize',
+              note: `Team "${ranked[i].teamName}" placed #${rank} in "${contest.title}"`,
+              actor: 'system',
+              contestId: contest._id,
+            });
+          } catch (e) {
+            console.error(`[contest] TEAM PRIZE PAYOUT FAILED contest=${contest._id} matric=${member.matric}:`, e.message);
+            continue;
+          }
           await notify({
             matric: member.matric,
             type: 'contest_result',
@@ -405,7 +479,13 @@ async function sendUpcomingReminders() {
   });
 
   for (const contest of due) {
-    for (const p of contest.participants) {
+    // Claim first so overlapping ticks don't notify everyone twice.
+    const claimed = await Contest.updateOne({ _id: contest._id, remindersSent: false }, { $set: { remindersSent: true } });
+    if (!claimed.modifiedCount) continue;
+    const members = contest.teamBased
+      ? contest.teams.flatMap(t => t.members)
+      : contest.participants;
+    for (const p of members) {
       await notify({
         matric: p.matric,
         type: 'contest_reminder',
@@ -415,8 +495,6 @@ async function sendUpcomingReminders() {
         relatedType: 'Contest',
       });
     }
-    contest.remindersSent = true;
-    await contest.save();
   }
 }
 
@@ -431,6 +509,7 @@ module.exports = {
   createTeam,
   joinTeam,
   updateTeamScore,
+  submitQuizScore,
   computeTeamLeaderboard,
   findStudentTeam,
 };

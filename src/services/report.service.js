@@ -19,13 +19,14 @@ async function generatePerformanceReportPDF(student, res) {
   const scores = await Score.find({ matric: student.matric }).sort({ ts: -1 }).limit(50).lean();
   const weakTopics = await getWeakTopics(student.matric, 5);
 
-  const avgPct = scores.length ? Math.round(scores.reduce((a, s) => a + s.pct, 0) / scores.length) : null;
-  const bestPct = scores.length ? Math.max(...scores.map(s => s.pct)) : null;
+  const avgPct = scores.length ? Math.round(scores.reduce((a, s) => a + (s.pct || 0), 0) / scores.length) : null;
+  const bestPct = scores.length ? Math.max(...scores.map(s => s.pct || 0)) : null;
   const totalQuizzes = scores.length;
 
   const doc = new PDFDocument({ size: 'A4', margin: 50 });
   res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', `attachment; filename="${student.matric}-performance-report.pdf"`);
+  // matrics contain "/" — keep the filename to safe characters.
+  res.setHeader('Content-Disposition', `attachment; filename="${String(student.matric).replace(/[^A-Za-z0-9._-]/g, '_')}-performance-report.pdf"`);
   doc.pipe(res);
 
   // ── Header ──
@@ -38,7 +39,7 @@ async function generatePerformanceReportPDF(student, res) {
   doc.fontSize(14).font('Helvetica-Bold').fillColor('#000000').text(student.name);
   doc.fontSize(10).font('Helvetica').fillColor('#555555')
     .text(`Matric: ${student.matric}   |   University: ${student.university || 'Not set'}   |   Department: ${student.department || 'Not set'}`);
-  doc.text(`Plan: ${student.tier.charAt(0).toUpperCase() + student.tier.slice(1)}`);
+  doc.text(`Plan: ${String(student.tier || 'free').charAt(0).toUpperCase() + String(student.tier || 'free').slice(1)}`);
 
   // ── GPA ──
   drawSectionTitle(doc, 'GPA Progress');

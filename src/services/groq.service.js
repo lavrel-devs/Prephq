@@ -1,16 +1,77 @@
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
-// Asks Groq to generate a set of multiple-choice questions for a course
-// at a given difficulty, and returns them as a parsed array of:
-//   { q, opts: [4 strings], ans: <index 0-3>, exp: <short explanation> }
-async function generateQuiz({ course, difficulty = 'medium', count = 10, studyMaterial = '' }) {
+// Shared fetch wrapper for every Groq call in this file. Centralizes
+// the 30s hard timeout — without it, a slow/unreachable Groq endpoint
+// (or a flaky outbound connection from a free-tier host) can hang a
+// request indefinitely, leaving the student staring at a spinner with
+// no error to act on.
+async function callGroq(body) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
+  let res;
+  try {
+    res = await fetch(GROQ_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.GROQ_API_KEY}` },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+  } catch (e) {
+    if (e.name === 'AbortError') {
+      const err = new Error('The AI took too long to respond. Please try again.');
+      err.code = 'GROQ_TIMEOUT';
+      throw err;
+    }
+    const err = new Error(`Could not reach the AI service: ${e.message}`);
+    err.code = 'GROQ_UNREACHABLE';
+    throw err;
+  } finally {
+    clearTimeout(timeout);
+  }
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    const err = new Error(`Groq API error (${res.status}): ${text.slice(0, 300)}`);
+    err.code = 'GROQ_REQUEST_FAILED';
+    throw err;
+  }
+  return res.json();
+}
+
+// Reasoning models (gpt-oss, qwen3, deepseek-r1…) spend part of `max_tokens`
+// on hidden reasoning. The old tight caps (220 / 500) could be used up before
+// any answer text appeared, producing "Groq returned an empty response".
+function tokenBudget(model, base) {
+  return /gpt-oss|qwen3|deepseek-r1|reason/i.test(model) ? base * 4 : base;
+}
+function extraParams(model) {
+  return /gpt-oss/i.test(model) ? { reasoning_effort: 'low' } : {};
+}
+
+// AI text is rendered as HTML by the dashboard (question banks legitimately use
+// <sub>/<sup>), so keep only harmless inline formatting tags and drop attributes.
+// `<` followed by a space/digit (e.g. "x < 5") is not a tag and is left alone.
+function cleanAiText(v) {
+  return String(v)
+    .replace(/<(\/?)(sub|sup|b|i|em|strong|br)\b[^>]*>/gi, '\u0001$1$2\u0002')
+    .replace(/<(?=[a-zA-Z\/!?])[^>]*>?/g, '')
+    .replace(/\u0001(\/?)(sub|sup|b|i|em|strong|br)\u0002/gi, '<$1$2>')
+    .trim();
+}
+
+function requireGroqKey() {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey || apiKey === 'REPLACE_WITH_YOUR_GROQ_KEY') {
     const err = new Error('GROQ_API_KEY is not configured on the server');
     err.code = 'GROQ_NOT_CONFIGURED';
     throw err;
   }
+}
 
+// Asks Groq to generate a set of multiple-choice questions for a course
+// at a given difficulty, and returns them as a parsed array of:
+//   { q, opts: [4 strings], ans: <index 0-3>, exp: <short explanation> }
+async function generateQuiz({ course, difficulty = 'medium', count = 10, studyMaterial = '' }) {
+  requireGroqKey();
   const model = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
 
   const systemPrompt = `You are a quiz question generator for Nigerian university students preparing for exams. You output ONLY valid JSON — no markdown fences, no commentary, no preamble. The JSON must be an array of exactly ${count} objects, each with this exact shape:
@@ -27,31 +88,17 @@ async function generateQuiz({ course, difficulty = 'medium', count = 10, studyMa
 
   const userPrompt = `Generate ${count} multiple-choice questions for the course "${course}" at "${difficulty}" difficulty. Return only the JSON array.${materialBlock}`;
 
-  const res = await fetch(GROQ_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      temperature: 0.6,
-      response_format: { type: 'json_object' }, // some Groq models require an object wrapper; we handle both shapes below
-    }),
+  const data = await callGroq({
+    model,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ],
+    temperature: 0.6,
+    ...extraParams(model),
+    response_format: { type: 'json_object' }, // some Groq models require an object wrapper; we handle both shapes below
   });
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    const err = new Error(`Groq API error (${res.status}): ${text.slice(0, 300)}`);
-    err.code = 'GROQ_REQUEST_FAILED';
-    throw err;
-  }
-
-  const data = await res.json();
   const raw = data?.choices?.[0]?.message?.content;
   if (!raw) {
     const err = new Error('Groq returned an empty response');
@@ -89,12 +136,15 @@ function parseQuestionsFromModelOutput(raw) {
   }
 
   return list
-    .filter(item => item && item.q && Array.isArray(item.opts) && item.opts.length >= 2 && typeof item.ans === 'number')
+    .map(item => item && ({ ...item, ans: typeof item.ans === 'string' && /^\d+$/.test(item.ans) ? parseInt(item.ans, 10) : item.ans }))
+    // `ans` must point at a real option — the model sometimes returns 1-based or out-of-range indexes.
+    .filter(item => item && item.q && Array.isArray(item.opts) && item.opts.length >= 2 && item.opts.length <= 8
+      && Number.isInteger(item.ans) && item.ans >= 0 && item.ans < item.opts.length)
     .map(item => ({
-      q: String(item.q).trim(),
-      opts: item.opts.map(String),
+      q: cleanAiText(item.q),
+      opts: item.opts.map(cleanAiText),
       ans: item.ans,
-      exp: item.exp ? String(item.exp).trim() : '',
+      exp: item.exp ? cleanAiText(item.exp) : '',
     }));
 }
 
@@ -103,44 +153,29 @@ function parseQuestionsFromModelOutput(raw) {
 // field filled in by an admin. Kept deliberately short (2-3 sentences)
 // — this is a quick "why" nudge during results review, not a lecture.
 async function explainAnswer({ course, question, opts, correctIndex, chosenIndex }) {
-  const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey || apiKey === 'REPLACE_WITH_YOUR_GROQ_KEY') {
-    const err = new Error('GROQ_API_KEY is not configured on the server');
-    err.code = 'GROQ_NOT_CONFIGURED';
-    throw err;
-  }
-
+  requireGroqKey();
   const model = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
   const lettered = opts.map((o, i) => `${String.fromCharCode(65 + i)}. ${o}`).join('\n');
-  const chosenLine = Number.isInteger(chosenIndex) && chosenIndex !== correctIndex
-    ? `The student chose "${String.fromCharCode(65 + chosenIndex)}. ${opts[chosenIndex]}", which is wrong.`
-    : 'The student skipped this question.';
+  const chosenLine = !Number.isInteger(chosenIndex)
+    ? 'The student skipped this question.'
+    : chosenIndex === correctIndex
+      ? 'The student answered correctly and wants to understand why.'
+      : `The student chose "${String.fromCharCode(65 + chosenIndex)}. ${opts[chosenIndex]}", which is wrong.`;
 
   const systemPrompt = `You are a patient tutor helping a Nigerian university student understand a quiz question they got wrong. Explain in 2-3 short sentences, plain language, no markdown headers or bullet lists — just prose. Explain why the correct answer is right, and briefly why the option they picked (if any) is a common misconception, without being condescending.`;
   const userPrompt = `Course: ${course}\nQuestion: ${question}\nOptions:\n${lettered}\nCorrect answer: ${String.fromCharCode(65 + correctIndex)}. ${opts[correctIndex]}\n${chosenLine}\n\nExplain.`;
 
-  const res = await fetch(GROQ_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      temperature: 0.4,
-      max_tokens: 220,
-    }),
+  const data = await callGroq({
+    model,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ],
+    temperature: 0.4,
+    max_tokens: tokenBudget(model, 220),
+    ...extraParams(model),
   });
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    const err = new Error(`Groq API error (${res.status}): ${text.slice(0, 300)}`);
-    err.code = 'GROQ_REQUEST_FAILED';
-    throw err;
-  }
-
-  const data = await res.json();
   const explanation = data?.choices?.[0]?.message?.content?.trim();
   if (!explanation) {
     const err = new Error('Groq returned an empty response');
@@ -154,13 +189,7 @@ async function explainAnswer({ course, question, opts, correctIndex, chosenIndex
 // (oldest first) so the model has context; kept short (last ~12
 // messages) to control token spend per turn.
 async function chatReply(history) {
-  const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey || apiKey === 'REPLACE_WITH_YOUR_GROQ_KEY') {
-    const err = new Error('GROQ_API_KEY is not configured on the server');
-    err.code = 'GROQ_NOT_CONFIGURED';
-    throw err;
-  }
-
+  requireGroqKey();
   const model = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
   const systemPrompt = `You are PrepHQ's academic study assistant, helping Nigerian university students. Answer academic/study questions clearly and concisely. Use plain prose, not markdown headers. Keep answers focused — a few sentences to a short paragraph unless the student clearly wants a longer worked explanation (e.g. a multi-step calculation or proof). If asked something entirely unrelated to academics/studying, politely redirect to study topics.`;
 
@@ -169,20 +198,8 @@ async function chatReply(history) {
     ...history.map(m => ({ role: m.role, content: m.content })),
   ];
 
-  const res = await fetch(GROQ_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-    body: JSON.stringify({ model, messages, temperature: 0.5, max_tokens: 500 }),
-  });
+  const data = await callGroq({ model, messages, temperature: 0.5, max_tokens: tokenBudget(model, 500), ...extraParams(model) });
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    const err = new Error(`Groq API error (${res.status}): ${text.slice(0, 300)}`);
-    err.code = 'GROQ_REQUEST_FAILED';
-    throw err;
-  }
-
-  const data = await res.json();
   const reply = data?.choices?.[0]?.message?.content?.trim();
   if (!reply) {
     const err = new Error('Groq returned an empty response');
@@ -198,15 +215,10 @@ async function chatReply(history) {
 // those they're weakest on if we have weak-topic data for them).
 // Returns { weeks: [{ title, focus, tasks: [string] }], summary }.
 async function generateStudyGuide({ currentGPA, targetGPA, gpaScale = 5.0, department, courses, weakCourses = [] }) {
-  const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey || apiKey === 'REPLACE_WITH_YOUR_GROQ_KEY') {
-    const err = new Error('GROQ_API_KEY is not configured on the server');
-    err.code = 'GROQ_NOT_CONFIGURED';
-    throw err;
-  }
-
+  requireGroqKey();
   const model = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
   const gpaGap = (Number(targetGPA) - Number(currentGPA)).toFixed(2);
+  courses = (courses || []).map(c => String(c).slice(0, 30));
   const weakLine = weakCourses.length ? `\nThe student has been scoring weakest recently in: ${weakCourses.join(', ')}. Weight the plan toward these.` : '';
 
   const systemPrompt = `You are an academic coach for a Nigerian university student. You output ONLY valid JSON — no markdown fences, no commentary. The JSON must have this exact shape:
@@ -220,28 +232,17 @@ Current GPA: ${currentGPA} · Target GPA: ${targetGPA} (gap: ${gpaGap} on a ${gp
 
 Generate a 4-week study plan to help close this GPA gap. Return only the JSON object.`;
 
-  const res = await fetch(GROQ_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      temperature: 0.6,
-      response_format: { type: 'json_object' },
-    }),
+  const data = await callGroq({
+    model,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ],
+    temperature: 0.6,
+    ...extraParams(model),
+    response_format: { type: 'json_object' },
   });
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    const err = new Error(`Groq API error (${res.status}): ${text.slice(0, 300)}`);
-    err.code = 'GROQ_REQUEST_FAILED';
-    throw err;
-  }
-
-  const data = await res.json();
   const raw = data?.choices?.[0]?.message?.content;
   if (!raw) {
     const err = new Error('Groq returned an empty response');
@@ -265,11 +266,11 @@ Generate a 4-week study plan to help close this GPA gap. Return only the JSON ob
   }
 
   return {
-    summary: String(parsed.summary || '').trim(),
+    summary: cleanAiText(parsed.summary || ''),
     weeks: parsed.weeks.map(w => ({
-      title: String(w.title || '').trim(),
-      focus: String(w.focus || '').trim(),
-      tasks: Array.isArray(w.tasks) ? w.tasks.map(String).slice(0, 8) : [],
+      title: cleanAiText(w.title || ''),
+      focus: cleanAiText(w.focus || ''),
+      tasks: Array.isArray(w.tasks) ? w.tasks.map(cleanAiText).slice(0, 8) : [],
     })),
     model,
   };

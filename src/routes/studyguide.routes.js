@@ -4,6 +4,9 @@ const StudyGuide = require('../models/StudyGuide');
 const QuestionAttempt = require('../models/QuestionAttempt');
 const { requireStudent } = require('../middleware/auth');
 const { generateStudyGuide } = require('../services/groq.service');
+const { ensureTierCurrent } = require('../services/tier.service');
+const rateLimit = require('express-rate-limit');
+const guideLimiter = rateLimit({ windowMs: 60 * 1000, max: 3, standardHeaders: true, legacyHeaders: false, message: { error: 'Slow down — try again in a minute.' } });
 
 const router = express.Router();
 // NOTE: requireStudent is applied per-route below, NOT via router.use()
@@ -40,11 +43,12 @@ router.get('/study-guide/latest', requireStudent, async (req, res) => {
 // student's saved currentGPA/targetGPA/selectedCourses (must already
 // be set via /api/profile/details), optionally weighted toward their
 // weakest courses if we have QuestionAttempt data for them.
-router.post('/study-guide/generate', requireStudent, async (req, res) => {
+router.post('/study-guide/generate', requireStudent, guideLimiter, async (req, res) => {
   try {
     const student = await Student.findOne({ matric: req.student.sub });
     if (!student) return res.status(404).json({ error: 'Student not found' });
 
+    await ensureTierCurrent(student); // expired paid plans must lose access
     try {
       requirePaidTier(student);
     } catch (e) {
@@ -66,8 +70,8 @@ router.post('/study-guide/generate', requireStudent, async (req, res) => {
       const agg = await QuestionAttempt.aggregate([
         { $match: { matric: student.matric, course: { $in: student.selectedCourses } } },
         { $group: { _id: '$course', total: { $sum: 1 }, correct: { $sum: { $cond: ['$correct', 1, 0] } } } },
+        { $match: { total: { $gte: 3 } } }, // (was after a $project that dropped `total`, so it never matched)
         { $project: { pct: { $divide: ['$correct', '$total'] } } },
-        { $match: { total: { $gte: 3 } } },
         { $sort: { pct: 1 } },
         { $limit: 3 },
       ]);

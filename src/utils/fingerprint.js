@@ -1,8 +1,10 @@
-// Resolve the real client IP, respecting Render/other proxies' x-forwarded-for.
+// Resolve the real client IP. `app.set('trust proxy', 1)` (server.js)
+// makes Express's req.ip pick the correct hop out of x-forwarded-for.
+// The old version trusted the *first* x-forwarded-for entry directly,
+// which any client can forge by sending the header themselves — so a
+// session's recorded IP (and anything keyed off it) could be spoofed.
 function getClientIp(req) {
-  const fwd = req.headers['x-forwarded-for'];
-  if (fwd) return fwd.split(',')[0].trim();
-  return req.socket?.remoteAddress || req.ip || '';
+  return req.ip || req.socket?.remoteAddress || '';
 }
 
 // Given a subject's known device list and the fingerprint sent on this

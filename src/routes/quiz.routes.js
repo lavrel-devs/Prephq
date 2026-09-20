@@ -8,6 +8,8 @@ const { requireStudent } = require('../middleware/auth');
 const { applyCreditDelta } = require('../utils/credits');
 const { generateQuiz, explainAnswer } = require('../services/groq.service');
 const { checkDailyLimit, incrementDailyUsage } = require('../services/tier.service');
+const { withLock } = require('../utils/lock');
+const { isObjectId } = require('../utils/validate');
 
 const router = express.Router();
 router.use(requireStudent);
@@ -34,10 +36,21 @@ const explainLimiter = rateLimit({
 });
 
 // POST /api/quiz/generate  { course, difficulty, count?, studyMaterial? }
-router.post('/generate', genLimiter, async (req, res) => {
+router.post('/generate', genLimiter, (req, res) => {
+  // One generation at a time per student: the credit/daily-limit checks
+  // below run before a multi-second AI call, so parallel requests could
+  // each pass them and overspend.
+  return withLock(`quizgen:${req.student.sub}`, () => generateHandler(req, res));
+});
+
+async function generateHandler(req, res) {
   try {
-    const { course, difficulty, count, studyMaterial } = req.body;
+    const { difficulty, count, studyMaterial } = req.body;
+    // `course` is interpolated into the AI prompt, so keep it to a
+    // plain course-code-like string rather than arbitrary text.
+    const course = typeof req.body.course === 'string' ? req.body.course.trim() : '';
     if (!course) return res.status(400).json({ error: 'Course code is required' });
+    if (!/^[A-Za-z0-9 _&.,()\/'\-]{2,60}$/.test(course)) return res.status(400).json({ error: 'That course code looks invalid' });
 
     const diff = ['easy', 'medium', 'hard'].includes(difficulty) ? difficulty : 'medium';
     const qCount = Math.min(Math.max(parseInt(count) || 10, 5), 20);
@@ -81,22 +94,41 @@ router.post('/generate', genLimiter, async (req, res) => {
       return res.status(502).json({ error: 'AI did not return any usable questions. Try again.', code: 'GROQ_EMPTY' });
     }
 
-    const { balance } = await applyCreditDelta({
-      matric,
-      delta: -QUIZ_COST,
-      reason: 'quiz_generation',
-      note: `AI quiz — ${course} (${diff})`,
-      actor: 'system',
-    });
+    let balance;
+    try {
+      ({ balance } = await applyCreditDelta({
+        matric,
+        delta: -QUIZ_COST,
+        reason: 'quiz_generation',
+        note: `AI quiz — ${course} (${diff})`,
+        actor: 'system',
+      }));
+    } catch (e) {
+      if (e.code === 'INSUFFICIENT_CREDITS') {
+        return res.status(402).json({
+          error: `Not enough credits. This costs ${QUIZ_COST} credits.`,
+          code: 'INSUFFICIENT_CREDITS',
+          required: QUIZ_COST,
+        });
+      }
+      throw e;
+    }
 
-    const record = await GeneratedQuestion.create({
-      matric,
-      course: course.trim(),
-      difficulty: diff,
-      model: generated.model,
-      creditCost: QUIZ_COST,
-      questions: generated.questions,
-    });
+    let record;
+    try {
+      record = await GeneratedQuestion.create({
+        matric,
+        course,
+        difficulty: diff,
+        model: generated.model,
+        creditCost: QUIZ_COST,
+        questions: generated.questions,
+      });
+    } catch (e) {
+      // Charged but nothing saved — give the credits back.
+      await applyCreditDelta({ matric, delta: QUIZ_COST, reason: 'refund', note: 'AI quiz could not be saved — refunded', actor: 'system' }).catch(() => {});
+      throw e;
+    }
 
     await incrementDailyUsage(student, 'aiQuiz');
 
@@ -109,7 +141,7 @@ router.post('/generate', genLimiter, async (req, res) => {
       newBalance: balance,
     });
   } catch (e) { res.status(500).json({ error: e.message }); }
-});
+}
 
 // GET /api/quiz/history — this student's past AI-generated quizzes
 router.get('/history', async (req, res) => {
@@ -125,9 +157,50 @@ router.get('/history', async (req, res) => {
 router.get('/history/:id', async (req, res) => {
   try {
     const matric = req.student.sub;
+    if (!isObjectId(req.params.id)) return res.status(404).json({ error: 'Quiz not found' });
     const quiz = await GeneratedQuestion.findOne({ _id: req.params.id, matric }).lean();
     if (!quiz) return res.status(404).json({ error: 'Quiz not found' });
     res.json(quiz);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// POST /api/quiz/save-for-later — v1.4. Student chooses to bank a
+// quiz (regular practice, weak-topics, or an AI set they didn't play
+// through) instead of finishing it now. No credit cost and no daily-
+// limit check here — the limit is enforced the normal way (via
+// /api/usage/limits + /api/scores) whenever they actually come back
+// and play it, exactly like a fresh quiz would be.
+router.post('/save-for-later', async (req, res) => {
+  try {
+    const matric = req.student.sub;
+    const { difficulty, questions } = req.body;
+    const course = typeof req.body.course === 'string' ? req.body.course.trim().slice(0, 50) : '';
+    if (!course || !Array.isArray(questions) || !questions.length)
+      return res.status(400).json({ error: 'course and a non-empty questions[] are required' });
+    if (questions.length > 50)
+      return res.status(400).json({ error: 'A saved quiz can hold at most 50 questions' });
+
+    const clean = questions
+      .filter(q => q && typeof q === 'object')
+      .map(q => {
+        const opts = Array.isArray(q.opts) ? q.opts.slice(0, 10).map(o => String(o).slice(0, 500)) : [];
+        return {
+          q: String(q.q || '').slice(0, 2000),
+          opts,
+          ans: Number.isInteger(q.ans) && q.ans >= 0 && q.ans < opts.length ? q.ans : 0,
+          exp: String(q.exp || '').slice(0, 2000),
+          tag: String(q.tag || '').slice(0, 200),
+          course: String(q.course || course).slice(0, 50),
+        };
+      })
+      .filter(q => q.q && q.opts.length >= 2);
+    if (!clean.length) return res.status(400).json({ error: 'None of the supplied questions were valid' });
+
+    const record = await GeneratedQuestion.create({
+      matric, course, difficulty: ['easy', 'medium', 'hard'].includes(difficulty) ? difficulty : 'medium',
+      questions: clean, creditCost: 0, source: 'manual',
+    });
+    res.json({ id: record._id });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -141,11 +214,14 @@ router.patch('/history/:id/submit', async (req, res) => {
     const { userAnswers, score, totalQuestions } = req.body;
     if (!Array.isArray(userAnswers) || typeof score !== 'number' || typeof totalQuestions !== 'number')
       return res.status(400).json({ error: 'userAnswers[], score, and totalQuestions are required' });
+    if (!isObjectId(req.params.id)) return res.status(404).json({ error: 'Quiz not found' });
+    if (!Number.isFinite(score) || !Number.isFinite(totalQuestions) || totalQuestions < 0 || score < 0 || score > totalQuestions || userAnswers.length > 100)
+      return res.status(400).json({ error: 'score must be between 0 and totalQuestions' });
 
     const quiz = await GeneratedQuestion.findOne({ _id: req.params.id, matric });
     if (!quiz) return res.status(404).json({ error: 'Quiz not found' });
 
-    quiz.userAnswers = userAnswers;
+    quiz.userAnswers = userAnswers.map(a => (Number.isInteger(a) ? a : null));
     quiz.score = score;
     quiz.totalQuestions = totalQuestions;
     quiz.submittedAt = new Date();
@@ -162,12 +238,15 @@ router.patch('/history/:id/submit', async (req, res) => {
 router.post('/explain', explainLimiter, async (req, res) => {
   try {
     const { course, question, opts, correctIndex, chosenIndex } = req.body;
-    if (!question || !Array.isArray(opts) || opts.length < 2 || !Number.isInteger(correctIndex)) {
+    if (typeof question !== 'string' || !question.trim() || !Array.isArray(opts) || opts.length < 2 || opts.length > 10 || !Number.isInteger(correctIndex)) {
       return res.status(400).json({ error: 'question, opts[], and correctIndex are required' });
     }
+    if (correctIndex < 0 || correctIndex >= opts.length || question.length > 2000 || opts.some(o => typeof o !== 'string' || o.length > 500)) {
+      return res.status(400).json({ error: 'question or options are invalid' });
+    }
     const explanation = await explainAnswer({
-      course: course || '', question, opts, correctIndex,
-      chosenIndex: Number.isInteger(chosenIndex) ? chosenIndex : null,
+      course: typeof course === 'string' ? course.slice(0, 50) : '', question, opts, correctIndex,
+      chosenIndex: Number.isInteger(chosenIndex) && chosenIndex >= 0 && chosenIndex < opts.length ? chosenIndex : null,
     });
     res.json({ explanation });
   } catch (e) {

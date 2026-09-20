@@ -17,6 +17,10 @@ const CreditTransactionSchema = new mongoose.Schema({
       'welcome_bonus', 'daily_refresh', 'transfer_sent', 'transfer_received',
       'referral_bonus', 'contest_entry', 'contest_prize',
       'admin_grant', 'admin_deduct', 'quiz_cost',
+      // reasons the routes were already writing, but that were missing
+      // here — every flashcard generation / cosmetic purchase used to
+      // charge the student and then fail ledger validation.
+      'flashcard_generation', 'cosmetic_purchase',
     ],
     required: true,
   },

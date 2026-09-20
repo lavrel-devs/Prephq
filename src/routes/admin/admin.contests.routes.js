@@ -5,6 +5,9 @@ const { requireAdmin } = require('../../middleware/auth');
 const { applyCreditDelta } = require('../../utils/credits');
 const { settleContest } = require('../../services/contest.service');
 const { notify } = require('../../services/notification.service');
+const { courseMatchFilter } = require('../../utils/courseMatch');
+const { csvRow } = require('../../utils/csv');
+const { isObjectId } = require('../../utils/validate');
 
 const router = express.Router();
 router.use(requireAdmin);
@@ -19,8 +22,8 @@ router.use(requireAdmin);
 router.get('/contests-question-bank', async (req, res) => {
   try {
     const Question = require('../../models/Question');
-    const filter = {};
-    if (req.query.course) filter.course = req.query.course;
+    // Same key/code-tolerant matching as the student-facing routes (exact match hid questions).
+    const filter = req.query.course ? await courseMatchFilter(String(req.query.course)) : {};
     const questions = await Question.find(filter).sort({ createdAt: -1 }).limit(300).lean();
     res.json(questions.map(q => ({ _id: q._id, course: q.course, q: q.q, opts: q.opts, tag: q.tag })));
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -30,7 +33,7 @@ router.get('/contests-question-bank', async (req, res) => {
 router.get('/contests', async (req, res) => {
   try {
     const filter = {};
-    if (req.query.status) filter.status = req.query.status;
+    if (typeof req.query.status === 'string' && req.query.status) filter.status = req.query.status;
     const contests = await Contest.find(filter).sort({ createdAt: -1 }).lean();
     res.json(contests.map(c => ({ ...c, participantCount: c.participants.length, teamCount: (c.teams || []).length })));
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -63,6 +66,7 @@ router.post('/contests', async (req, res) => {
 
     const start = new Date(startTime);
     const end = new Date(endTime);
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return res.status(400).json({ error: 'startTime and endTime must be valid dates' });
     if (end <= start) return res.status(400).json({ error: 'endTime must be after startTime' });
 
     let resolvedStatus = status;
@@ -102,6 +106,9 @@ router.put('/contests/:id', async (req, res) => {
     for (const field of editable) {
       if (req.body[field] !== undefined) contest[field] = req.body[field];
     }
+    if (Number.isNaN(new Date(contest.startTime).getTime()) || Number.isNaN(new Date(contest.endTime).getTime()) || new Date(contest.endTime) <= new Date(contest.startTime)) {
+      return res.status(400).json({ error: 'endTime must be a valid date after startTime' });
+    }
     await contest.save();
     res.json(contest);
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -128,12 +135,15 @@ router.post('/contests/:id/duplicate', async (req, res) => {
     const original = await Contest.findById(req.params.id).lean();
     if (!original) return res.status(404).json({ error: 'Contest not found' });
 
-    const { _id, participants, createdAt, updatedAt, status, ...rest } = original;
+    // Don't carry over teams (with their members/scores), the reminder flag, or __v.
+    const { _id, participants, teams, remindersSent, createdAt, updatedAt, status, __v, ...rest } = original;
     const copy = await Contest.create({
       ...rest,
       title: `${original.title} (copy)`,
       status: 'draft',
       participants: [],
+      teams: [],
+      remindersSent: false,
       createdBy: req.admin.sub,
     });
     res.status(201).json(copy);
@@ -218,36 +228,47 @@ router.post('/contests/:id/end', async (req, res) => {
 // refunds entry fees already paid.
 router.post('/contests/:id/cancel', async (req, res) => {
   try {
-    const contest = await Contest.findById(req.params.id);
-    if (!contest) return res.status(404).json({ error: 'Contest not found' });
-    if (['ended', 'cancelled'].includes(contest.status)) {
-      return res.status(400).json({ error: 'This contest is already ended or cancelled' });
+    // Claim the cancellation first (conditional), THEN refund. Refunding
+    // first and flipping the status last meant a crash halfway, or a
+    // second click, refunded the same people again.
+    const contest = await Contest.findOneAndUpdate(
+      { _id: req.params.id, status: { $nin: ['ended', 'cancelled'] } },
+      { $set: { status: 'cancelled' } },
+      { new: true },
+    );
+    if (!contest) {
+      const exists = await Contest.exists({ _id: req.params.id });
+      return exists
+        ? res.status(400).json({ error: 'This contest is already ended or cancelled' })
+        : res.status(404).json({ error: 'Contest not found' });
     }
 
-    for (const p of contest.participants) {
-      if (p.entryFeePaid > 0) {
+    // Individual entries plus team members (team contests were never refunded before).
+    const entrants = [
+      ...contest.participants.map(p => ({ matric: p.matric, fee: p.entryFeePaid || 0 })),
+      ...(contest.teams || []).flatMap(t => t.members.map(m => ({ matric: m.matric, fee: m.entryFeePaid ?? contest.entryFee ?? 0 }))),
+    ];
+    const failed = [];
+    for (const e of entrants) {
+      if (!(e.fee > 0)) continue;
+      try {
         await applyCreditDelta({
-          matric: p.matric,
-          delta: p.entryFeePaid,
-          reason: 'refund',
-          note: `Refund — "${contest.title}" was cancelled`,
-          actor: req.admin.sub,
-          contestId: contest._id,
+          matric: e.matric, delta: e.fee, reason: 'refund',
+          note: `Refund — "${contest.title}" was cancelled`, actor: req.admin.sub, contestId: contest._id,
         });
         await notify({
-          matric: p.matric,
-          type: 'contest_result',
+          matric: e.matric, type: 'contest_result',
           title: `"${contest.title}" was cancelled`,
-          message: `Your ${p.entryFeePaid}-credit entry fee has been refunded`,
-          relatedId: contest._id,
-          relatedType: 'Contest',
-        });
+          message: `Your ${e.fee}-credit entry fee has been refunded`,
+          relatedId: contest._id, relatedType: 'Contest',
+        }).catch(() => {});
+      } catch (err) {
+        failed.push(e.matric);
+        console.error(`[contest] REFUND FAILED contest=${contest._id} matric=${e.matric}:`, err.message);
       }
     }
 
-    contest.status = 'cancelled';
-    await contest.save();
-    res.json(contest);
+    res.json({ ...contest.toObject(), refundFailures: failed });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -347,13 +368,19 @@ router.get('/contests/:id/export', async (req, res) => {
     const contest = await Contest.findById(req.params.id).lean();
     if (!contest) return res.status(404).json({ error: 'Contest not found' });
 
-    const rows = ['matric,username,score,rank,entryFeePaid,prizeAwarded,joinedAt'];
-    contest.participants.forEach(p => {
-      rows.push([
+    const rows = [];
+    if (contest.teamBased) {
+      rows.push('team,teamCode,members,score,rank,prizeAwarded');
+      (contest.teams || []).forEach(t => rows.push(csvRow([
+        t.teamName, t.teamCode, t.members.map(m => m.matric).join(' '), t.score || 0, t.rank ?? '', t.prizeAwarded || 0,
+      ])));
+    } else {
+      rows.push('matric,username,score,rank,entryFeePaid,prizeAwarded,joinedAt');
+      contest.participants.forEach(p => rows.push(csvRow([
         p.matric, p.username || '', p.score || 0, p.rank ?? '',
-        p.entryFeePaid || 0, p.prizeAwarded || 0, new Date(p.joinedAt).toISOString(),
-      ].join(','));
-    });
+        p.entryFeePaid || 0, p.prizeAwarded || 0, new Date(p.joinedAt),
+      ])));
+    }
 
     const filename = `contest-${contest.title.replace(/[^a-z0-9]/gi, '_')}-results.csv`;
     res.setHeader('Content-Type', 'text/csv');

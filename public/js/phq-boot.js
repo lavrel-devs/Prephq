@@ -16,11 +16,12 @@
  * pages to call once the DOM is ready.
  */
 (function (global) {
-  const THEME_KEY = 'phq_theme';
+  // Same key as theme.js ('phq-theme'); the two used different keys, so a theme chosen on one page was ignored by the other.
+  const THEME_KEY = 'phq-theme';
 
   // ── Theme: applied instantly, no flash ──────────────────────────
   function getSavedTheme() {
-    try { return localStorage.getItem(THEME_KEY); } catch { return null; }
+    try { return localStorage.getItem(THEME_KEY) || localStorage.getItem('phq_theme'); } catch { return null; }
   }
   function applyTheme(theme) {
     const t = theme || getSavedTheme() || document.documentElement.getAttribute('data-theme') || 'light';
@@ -92,7 +93,13 @@
       document.body.appendChild(el);
     }
     const icons = { info: 'fa-circle-info', success: 'fa-circle-check', error: 'fa-circle-exclamation', warn: 'fa-triangle-exclamation' };
-    el.innerHTML = `<i class="fa-solid ${icons[type] || icons.info}"></i><span>${message}</span>`;
+    // textContent, not innerHTML: toast() is often handed server error text.
+    el.textContent = '';
+    const ico = document.createElement('i');
+    ico.className = `fa-solid ${icons[type] || icons.info}`;
+    const span = document.createElement('span');
+    span.textContent = String(message);
+    el.append(ico, span);
     el.dataset.type = type;
     clearTimeout(toastTimer);
     requestAnimationFrame(() => el.classList.add('on'));

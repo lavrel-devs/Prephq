@@ -73,7 +73,7 @@ router.get('/usage/limits', requireStudent, async (req, res) => {
 router.get('/plans', async (req, res) => {
   try {
     const settings = await Settings.getGlobal();
-    res.json({ tiers: settings.tiers, support: settings.support });
+    res.json({ tiers: settings.tiers, support: settings.support, streakBonus: settings.streakBonus });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -92,7 +92,7 @@ router.put('/profile/grading-system', requireStudent, async (req, res) => {
     }
 
     if (gradingScale !== undefined) {
-      if (!Array.isArray(gradingScale) || !gradingScale.length) return res.status(400).json({ error: 'gradingScale must be a non-empty array' });
+      if (!Array.isArray(gradingScale) || !gradingScale.length || gradingScale.length > 15) return res.status(400).json({ error: 'gradingScale must be a non-empty array' });
       for (const band of gradingScale) {
         if (!band || typeof band.grade !== 'string' || !band.grade.trim()
           || !Number.isFinite(Number(band.minScore)) || !Number.isFinite(Number(band.point))) {
@@ -132,17 +132,20 @@ router.post('/gpa/calculate', requireStudent, async (req, res) => {
     const student = await Student.findOne({ matric: req.student.sub });
     if (!student) return res.status(404).json({ error: 'Student not found' });
 
+    if (courses.length > 40) return res.status(400).json({ error: 'At most 40 courses at a time' });
     const bands = [...student.gradingScale].sort((a, b) => b.minScore - a.minScore);
     let totalUnits = 0, totalPoints = 0;
     const breakdown = courses.map(c => {
+      c = c && typeof c === 'object' ? c : {};
       const creditUnit = Number(c.creditUnit);
       const score = Number(c.score);
-      if (!Number.isFinite(creditUnit) || creditUnit <= 0 || !Number.isFinite(score)) {
+      if (!Number.isFinite(creditUnit) || creditUnit <= 0 || creditUnit > 30 || !Number.isFinite(score) || score < 0 || score > 100) {
         const err = new Error(`Invalid creditUnit/score for "${c.name || 'a course'}"`);
         err.code = 'BAD_INPUT';
         throw err;
       }
       const band = bands.find(b => score >= b.minScore) || bands[bands.length - 1];
+      if (!band) { const err = new Error('You have no grading bands configured'); err.code = 'BAD_INPUT'; throw err; }
       totalUnits += creditUnit;
       totalPoints += creditUnit * band.point;
       return { name: c.name || '', creditUnit, score, grade: band.grade, point: band.point };
@@ -212,6 +215,7 @@ router.get('/me', requireStudent, async (req, res) => {
       showAllCoursesOverride: !!student.showAllCoursesOverride,
       gpaScale: student.gpaScale,
       gradingScale: student.gradingScale,
+      tier: student.tier,
       streak, // { count, milestoneHit, bonusAwarded }
     });
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -299,7 +303,7 @@ router.put('/profile/details', requireStudent, async (req, res) => {
     const update = {};
     if (university !== undefined) update.university = String(university).trim().slice(0, 120);
     if (department !== undefined) update.department = String(department).trim().slice(0, 120);
-    if (Array.isArray(selectedCourses)) update.selectedCourses = selectedCourses.map(c => String(c).trim()).filter(Boolean);
+    if (Array.isArray(selectedCourses)) update.selectedCourses = [...new Set(selectedCourses.map(c => String(c).trim().slice(0, 30)).filter(Boolean))].slice(0, 60);
 
     const student = await Student.findOne({ matric: req.student.sub });
     if (!student) return res.status(404).json({ error: 'Student not found' });
@@ -318,7 +322,8 @@ router.put('/profile/details', requireStudent, async (req, res) => {
     // this request's payload — so a student who set university/department
     // earlier and is only adding courses now still gets marked complete.
     const hasCourses = Array.isArray(student.selectedCourses) && student.selectedCourses.length > 0;
-    if (student.university && student.department && hasCourses) student.profileCompleted = true;
+    // Both directions: clearing a required field re-opens the completion prompt.
+    student.profileCompleted = !!(student.university && student.department && hasCourses);
 
     await student.save();
 
@@ -363,17 +368,21 @@ router.get('/profile', requireStudent, async (req, res) => {
       await student.save();
     }
 
-    const [scores, transfersOut, transfersIn, referralCount] = await Promise.all([
-      Score.find({ matric: student.matric }).sort({ ts: -1 }).lean(),
+    const [statsAgg, transfersOut, transfersIn, referralCount] = await Promise.all([
+      Score.aggregate([
+        { $match: { matric: student.matric } },
+        { $group: { _id: null, n: { $sum: 1 }, avg: { $avg: { $ifNull: ['$pct', 0] } }, best: { $max: { $ifNull: ['$pct', 0] } } } },
+      ]),
       Transfer.find({ fromMatric: student.matric }).sort({ createdAt: -1 }).limit(20).lean(),
       Transfer.find({ toMatric: student.matric }).sort({ createdAt: -1 }).limit(20).lean(),
       Student.countDocuments({ referredBy: student._id }),
     ]);
 
+    const st = statsAgg[0];
     const quizStats = {
-      totalQuizzes: scores.length,
-      avgScore: scores.length ? Math.round(scores.reduce((a, s) => a + (s.pct || 0), 0) / scores.length) : 0,
-      bestScore: scores.length ? Math.max(...scores.map(s => s.pct || 0)) : 0,
+      totalQuizzes: st ? st.n : 0,
+      avgScore: st ? Math.round(st.avg) : 0,
+      bestScore: st ? st.best : 0,
     };
 
     const transferHistory = [...transfersOut, ...transfersIn]
@@ -417,6 +426,7 @@ router.get('/notifications', requireStudent, async (req, res) => {
 // POST /api/notifications/:id/read
 router.post('/notifications/:id/read', requireStudent, async (req, res) => {
   try {
+    if (!/^[a-f0-9]{24}$/i.test(req.params.id)) return res.status(400).json({ error: 'Invalid notification id' });
     await Notification.updateOne(
       { _id: req.params.id, matric: req.student.sub },
       { read: true },
@@ -459,6 +469,13 @@ router.get('/student-data', requireStudent, async (req, res) => {
 router.put('/student-data', requireStudent, async (req, res) => {
   try {
     const { bookmarks, notes, goal, settings } = req.body;
+    const isObj = v => v && typeof v === 'object' && !Array.isArray(v);
+    if ((bookmarks !== undefined && !Array.isArray(bookmarks)) ||
+        (notes !== undefined && !isObj(notes)) ||
+        (goal !== undefined && !isObj(goal)) ||
+        (settings !== undefined && !isObj(settings))) {
+      return res.status(400).json({ error: 'bookmarks must be an array; notes, goal and settings must be objects' });
+    }
     const update = {};
     if (bookmarks !== undefined) update.bookmarks = bookmarks;
     if (notes !== undefined) update.notes = notes;

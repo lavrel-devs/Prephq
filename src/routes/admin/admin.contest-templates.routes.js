@@ -28,7 +28,7 @@ router.post('/contest-templates', async (req, res) => {
     if (frequency === 'weekly' && (dayOfWeek === undefined || dayOfWeek === null)) {
       return res.status(400).json({ error: 'dayOfWeek is required for weekly templates' });
     }
-    if (!/^\d{2}:\d{2}$/.test(timeOfDay)) return res.status(400).json({ error: 'timeOfDay must be HH:MM' });
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(timeOfDay)) return res.status(400).json({ error: 'timeOfDay must be HH:MM' });
 
     const template = await ContestTemplate.create({
       title, description: description || '', type,
@@ -56,6 +56,10 @@ router.put('/contest-templates/:id', async (req, res) => {
     for (const field of editable) {
       if (req.body[field] !== undefined) template[field] = req.body[field];
     }
+    // Same rules as create — an invalid timeOfDay would silently stop the template ever spawning.
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(template.timeOfDay || '')) return res.status(400).json({ error: 'timeOfDay must be HH:MM (00:00–23:59)' });
+    if (template.frequency === 'weekly' && !(Number.isInteger(template.dayOfWeek) && template.dayOfWeek >= 0 && template.dayOfWeek <= 6)) return res.status(400).json({ error: 'dayOfWeek (0–6) is required for weekly templates' });
+    if (template.frequency === 'daily') template.dayOfWeek = null;
     await template.save();
     res.json(template);
   } catch (e) { res.status(500).json({ error: e.message }); }

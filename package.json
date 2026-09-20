@@ -1,7 +1,7 @@
 {
   "name": "prephq",
   "version": "1.4.0",
-  "description": "PrepHQ — Exam Prep Platform",
+  "description": "PrepHQ \u2014 Exam Prep Platform",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -23,5 +23,8 @@
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

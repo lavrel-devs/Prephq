@@ -278,7 +278,7 @@ async function loadLeaderboard(){
     list.innerHTML = rows.map(row => `
       <div class="lb-row ${row.isMe?'me':''}">
         <div class="lb-rank ${row.rank===1?'top1':row.rank===2?'top2':row.rank===3?'top3':''}">${row.rank}</div>
-        <div class="lb-name">${row.badge?row.badge+' ':''}${escapeHtml(row.displayName)}${row.isMe?' (you)':''}</div>
+        <div class="lb-name">${row.badge?escapeHtml(row.badge)+' ':''}${escapeHtml(row.displayName)}${row.isMe?' (you)':''}</div>
         <div class="lb-stats"><div class="lb-score">${row.avgScore}%</div><div class="lb-sub">${row.totalQuizzes} quizzes</div></div>
       </div>`).join('');
   }catch(e){}

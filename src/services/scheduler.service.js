@@ -14,23 +14,30 @@ const { transitionContestStates, spawnRecurringContests } = require('./contest.s
 //      and settles prizes when a contest ends. v1.3: the same tick
 //      also checks recurring contest templates and spawns a fresh
 //      Contest the moment one's scheduled slot arrives.
+let contestTickRunning = false; // a slow tick must not overlap the next one (double settlement risk)
+let refreshRunning = false;
+
 function startScheduler() {
   cron.schedule('0 0 * * *', async () => {
+    if (refreshRunning) return;
+    refreshRunning = true;
     try {
       const { applied } = await runBulkDailyRefresh();
       console.log(`[scheduler] Daily credit refresh applied to ${applied} students`);
     } catch (e) {
       console.error('[scheduler] Daily refresh failed:', e.message);
-    }
+    } finally { refreshRunning = false; }
   }, { timezone: 'Africa/Lagos' });
 
   cron.schedule('* * * * *', async () => {
+    if (contestTickRunning) return;
+    contestTickRunning = true;
     try {
       await transitionContestStates();
       await spawnRecurringContests();
     } catch (e) {
       console.error('[scheduler] Contest tick failed:', e.message);
-    }
+    } finally { contestTickRunning = false; }
   });
 
   console.log('[scheduler] Started: daily credit refresh (00:00 WAT), contest transitions + recurring spawns (every minute)');

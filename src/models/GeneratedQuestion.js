@@ -9,11 +9,18 @@ const GeneratedQuestionSchema = new mongoose.Schema({
   difficulty: { type: String, enum: ['easy', 'medium', 'hard'], default: 'medium' },
   model:      { type: String, default: '' },
   creditCost: { type: Number, default: 0 },
+  // v1.4: 'ai' = generated via Groq (existing behavior). 'manual' = a
+  // regular/weak-topics quiz the student chose to save for later
+  // instead of playing immediately. Both show up in /api/quiz/history
+  // and can be replayed the same way.
+  source: { type: String, enum: ['ai', 'manual'], default: 'ai' },
   questions: [{
     q:    String,
     opts: [String],
     ans:  Number,
     exp:  { type: String, default: '' },
+    tag:  { type: String, default: '' },
+    course: { type: String, default: '' },
   }],
   // Populated once the student finishes this quiz (v1.1.5). Optional —
   // a record with no `submittedAt` just means the student generated

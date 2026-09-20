@@ -42,8 +42,9 @@ if (missing.length) {
 // referrer-policy, etc.) is still active.
 app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
 app.use(cors({ origin: '*', methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'] }));
-app.use(express.json());
-app.set('trust proxy', 1); // needed so req.ip / x-forwarded-for resolve correctly behind Render's proxy
+app.set('trust proxy', 1); // set BEFORE any middleware so req.ip / rate limiting see the real client behind Render's proxy
+// 1mb: the default 100kb made PUT /api/student-data (notes/bookmarks backup) fail for heavy users.
+app.use(express.json({ limit: '1mb' }));
 
 // ══════════════════════════════════════════════════════════════
 //  DATABASE
@@ -52,7 +53,11 @@ connectDB().then(async () => {
   await bootstrapAdmin();
   await bootstrapCourses();
   require('./src/services/scheduler.service').startScheduler();
-});
+}).catch(e => console.error('Startup tasks failed:', e));
+
+// One stray rejected promise must not take the whole server down.
+process.on('unhandledRejection', (err) => console.error('[unhandledRejection]', err));
+process.on('uncaughtException', (err) => console.error('[uncaughtException]', err));
 
 // Auto-creates the first admin account from ADMIN_KEY if none exist yet,
 // so there's always a way into /login.html on a fresh deploy.
@@ -110,6 +115,11 @@ async function bootstrapCourses() {
 //  API ROUTES
 // ══════════════════════════════════════════════════════════════
 app.use('/api/auth', require('./src/routes/auth.routes'));
+// Every /api/admin request is authenticated and then checked against the admin's
+// permissions (utils/adminAccess.js) before reaching any admin router.
+const { requireAdmin, adminGate } = require('./src/middleware/auth');
+app.use('/api/admin', requireAdmin, adminGate);
+app.use('/api/admin', require('./src/routes/admin/admin.admins.routes'));
 app.use('/api/admin', require('./src/routes/admin.routes'));
 app.use('/api/admin', require('./src/routes/admin/admin.credits.routes'));
 app.use('/api/admin', require('./src/routes/admin/admin.contests.routes'));
@@ -118,6 +128,7 @@ app.use('/api/admin', require('./src/routes/admin/admin.announcements.routes'));
 app.use('/api/admin', require('./src/routes/admin/admin.contest-templates.routes'));
 app.use('/api/admin', require('./src/routes/admin/admin.analytics.routes'));
 app.use('/api/quiz', require('./src/routes/quiz.routes'));
+app.use('/api/flashcards', require('./src/routes/flashcards.routes'));
 app.use('/api', require('./src/routes/transfer.routes'));
 app.use('/api', require('./src/routes/contest.routes'));
 app.use('/api', require('./src/routes/leaderboard.routes'));
@@ -125,7 +136,12 @@ app.use('/api', require('./src/routes/studyRoom.routes'));
 app.use('/api', require('./src/routes/chat.routes'));
 app.use('/api/scores', require('./src/routes/scores.routes'));
 app.use('/api', require('./src/routes/studyguide.routes'));
+app.use('/api', require('./src/routes/cosmetics.routes'));
+app.use('/api/admin', require('./src/routes/admin/admin.cosmetics.routes'));
 app.use('/api', require('./src/routes/student.routes')); // /api/questions/:course, /api/me
+
+// Unknown /api paths must answer JSON, not the HTML login page.
+app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));
 
 // ══════════════════════════════════════════════════════════════
 //  CLEAN ROUTES (v1.2)
@@ -164,6 +180,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => res.redirect('/login'));
 
+app.get('/healthz', (req, res) => res.json({ ok: true }));
+
 app.get('*', (req, res) => {
   res.status(404).sendFile(path.join(__dirname, 'public', 'login.html'));
 });
@@ -171,14 +189,25 @@ app.get('*', (req, res) => {
 // ══════════════════════════════════════════════════════════════
 //  KEEP-ALIVE (Render free tier)
 // ══════════════════════════════════════════════════════════════
-const YOUR_URL = process.env.SELF_URL || 'https://prephq.onrender.com';
+// Only runs on Render (RENDER=true) or when SELF_URL is set, so local dev
+// no longer pings the production site.
+const YOUR_URL = process.env.SELF_URL || (process.env.RENDER ? 'https://prephq.onrender.com' : '');
 function keepAlive() {
   const randomMinutes = Math.floor(Math.random() * 5) + 10; // 10-14 min
   setTimeout(() => {
-    fetch(YOUR_URL).catch(() => {}).finally(keepAlive);
+    fetch(`${YOUR_URL.replace(/\/$/, '')}/healthz`).catch(() => {}).finally(keepAlive);
   }, randomMinutes * 60 * 1000);
 }
-keepAlive();
+if (YOUR_URL) keepAlive();
+
+// Global error handler (malformed JSON bodies etc.) — JSON, never a stack trace.
+app.use((err, req, res, next) => {
+  if (res.headersSent) return next(err);
+  if (err.type === 'entity.parse.failed') return res.status(400).json({ error: 'Malformed JSON body' });
+  if (err.type === 'entity.too.large') return res.status(413).json({ error: 'Request body too large' });
+  console.error('[error]', err);
+  res.status(500).json({ error: 'Server error' });
+});
 
 // ══════════════════════════════════════════════════════════════
 //  SOCKET.IO (v1.3 — real-time study rooms)

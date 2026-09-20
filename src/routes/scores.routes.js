@@ -35,13 +35,39 @@ router.post('/:matric', requireStudent, async (req, res) => {
   try {
     if (req.student.sub !== req.params.matric.toUpperCase())
       return res.status(403).json({ error: 'Forbidden' });
-    const { correct, total, pct, wrong, skip, courses, mode, perQuestion } = req.body;
-    if (typeof pct !== 'number') return res.status(400).json({ error: 'Invalid' });
+    const { perQuestion } = req.body;
+    const { pct } = req.body;
+    if (typeof pct !== 'number' || !Number.isFinite(pct) || pct < 0 || pct > 100) return res.status(400).json({ error: 'Invalid' });
+
+    // Clamp every numeric field: this data is client-posted, feeds the
+    // leaderboard/admin stats, and `total` drives the free-tier daily cap.
+    const clampInt = (v, max) => (Number.isFinite(v) ? Math.min(Math.max(Math.round(v), 0), max) : 0);
+    const total = clampInt(req.body.total, 500);
+    const correct = Math.min(clampInt(req.body.correct, 500), total);
+    const wrong = clampInt(req.body.wrong, 500);
+    const skip = clampInt(req.body.skip, 500);
+    const courses = Array.isArray(req.body.courses) ? req.body.courses.join(', ').slice(0, 200)
+      : (typeof req.body.courses === 'string' ? req.body.courses.slice(0, 200) : '');
+    const mode = typeof req.body.mode === 'string' ? req.body.mode.slice(0, 30) : '';
 
     const student = await Student.findOne({ matric: req.params.matric.toUpperCase() });
     if (!student) return res.status(404).json({ error: 'Student not found' });
 
-    const questionCount = Number.isFinite(total) ? total : 0;
+    const attemptDocs = Array.isArray(perQuestion)
+      ? perQuestion
+          .filter(p => p && typeof p.course === 'string' && p.course && typeof p.correct === 'boolean')
+          .slice(0, 100)
+          .map(p => ({
+            matric: req.params.matric.toUpperCase(),
+            course: p.course.trim().slice(0, 30),
+            tag: String(p.tag || '').trim().slice(0, 100),
+            correct: p.correct,
+          }))
+      : [];
+
+    // Omitting `total` used to skip the daily-question cap entirely; the
+    // per-question list is a second, independent count of what was answered.
+    const questionCount = Math.max(total, attemptDocs.length);
     if (questionCount > 0) {
       try {
         await checkDailyLimit(student, 'questions', questionCount);
@@ -60,17 +86,9 @@ router.post('/:matric', requireStudent, async (req, res) => {
 
     if (questionCount > 0) await incrementDailyUsage(student, 'questions', questionCount);
 
-    if (Array.isArray(perQuestion) && perQuestion.length) {
-      const docs = perQuestion
-        .filter(p => p && p.course && typeof p.correct === 'boolean')
-        .slice(0, 100) // sanity cap — no single quiz submission should exceed this
-        .map(p => ({
-          matric: req.params.matric.toUpperCase(),
-          course: String(p.course).trim(),
-          tag: String(p.tag || '').trim(),
-          correct: p.correct,
-        }));
-      if (docs.length) await QuestionAttempt.insertMany(docs);
+    if (attemptDocs.length) {
+      // Score is already saved — a failure here only costs weak-topic data, not the quiz.
+      await QuestionAttempt.insertMany(attemptDocs).catch(e => console.error('[scores] attempt insert failed:', e.message));
     }
 
     res.status(201).json({ success: true });

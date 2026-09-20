@@ -18,7 +18,7 @@ router.get('/analytics/signups', async (req, res) => {
     const since = daysAgo(days);
     const rows = await Student.aggregate([
       { $match: { createdAt: { $gte: since } } },
-      { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }, count: { $sum: 1 } } },
+      { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: 'Africa/Lagos' } }, count: { $sum: 1 } } },
       { $sort: { _id: 1 } },
     ]);
     res.json(rows.map(r => ({ date: r._id, count: r.count })));
@@ -75,7 +75,7 @@ router.get('/analytics/credit-velocity', async (req, res) => {
     const rows = await CreditTransaction.aggregate([
       { $match: { createdAt: { $gte: since } } },
       { $group: {
-        _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+        _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: 'Africa/Lagos' } },
         granted: { $sum: { $cond: [{ $gt: ['$delta', 0] }, '$delta', 0] } },
         spent: { $sum: { $cond: [{ $lt: ['$delta', 0] }, { $multiply: ['$delta', -1] }, 0] } },
       } },
@@ -97,14 +97,14 @@ router.get('/analytics/contest-participation', async (req, res) => {
       Contest.aggregate([
         { $unwind: '$participants' },
         { $match: { 'participants.joinedAt': { $gte: since } } },
-        { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$participants.joinedAt' } }, count: { $sum: 1 } } },
+        { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$participants.joinedAt', timezone: 'Africa/Lagos' } }, count: { $sum: 1 } } },
       ]),
       Contest.aggregate([
         { $match: { teamBased: true } },
         { $unwind: '$teams' },
         { $unwind: '$teams.members' },
         { $match: { 'teams.members.joinedAt': { $gte: since } } },
-        { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$teams.members.joinedAt' } }, count: { $sum: 1 } } },
+        { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$teams.members.joinedAt', timezone: 'Africa/Lagos' } }, count: { $sum: 1 } } },
       ]),
       Student.countDocuments({ active: { $ne: false } }),
     ]);

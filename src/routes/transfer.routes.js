@@ -6,6 +6,7 @@ const { transferLimiter } = require('../middleware/rateLimit');
 const { applyCreditDelta } = require('../utils/credits');
 const { normalizeUsername } = require('../utils/username');
 const { notify } = require('../services/notification.service');
+const { withLock } = require('../utils/lock');
 
 const router = express.Router();
 
@@ -30,11 +31,23 @@ router.post('/transfer', requireStudent, transferLimiter, async (req, res) => {
     const { username, amount } = req.body;
     const parsedAmount = parseInt(amount, 10);
 
-    if (!username) return res.status(400).json({ error: 'Recipient username is required' });
+    if (typeof username !== 'string' || !username.trim()) return res.status(400).json({ error: 'Recipient username is required' });
     if (!Number.isFinite(parsedAmount) || parsedAmount < MIN_TRANSFER) {
       return res.status(400).json({ error: `Minimum transfer is ${MIN_TRANSFER} credits` });
     }
 
+    // Serialized per sender: the cooldown / 10-a-day checks read the
+    // Transfer log, which is only written at the END, so parallel
+    // requests all passed them.
+    return await withLock(`transfer:${req.student.sub}`, () => doTransfer(req, res, username, parsedAmount));
+  } catch (e) {
+    if (e.code === 'INSUFFICIENT_CREDITS') return res.status(400).json({ error: 'Insufficient credits' });
+    res.status(500).json({ error: e.message });
+  }
+});
+
+async function doTransfer(req, res, username, parsedAmount) {
+  {
     const sender = await Student.findOne({ matric: req.student.sub });
     if (!sender) return res.status(404).json({ error: 'Sender not found' });
 
@@ -42,6 +55,7 @@ router.post('/transfer', requireStudent, transferLimiter, async (req, res) => {
     const recipient = await Student.findOne({ username: targetUsername });
     if (!recipient) return res.status(404).json({ error: 'No user found with that username' });
     if (recipient.matric === sender.matric) return res.status(400).json({ error: "You can't transfer credits to yourself" });
+    if (recipient.active === false) return res.status(400).json({ error: 'That account is not active' });
 
     const totalDebited = parsedAmount + FEE;
     if ((sender.credits || 0) < totalDebited) {
@@ -75,14 +89,24 @@ router.post('/transfer', requireStudent, transferLimiter, async (req, res) => {
       studentDoc: sender,
     });
 
-    const recipientResult = await applyCreditDelta({
-      matric: recipient.matric,
-      delta: parsedAmount,
-      reason: 'transfer_received',
-      note: `Received ${parsedAmount} credits from @${sender.username || sender.matric}`,
-      actor: sender.matric,
-      studentDoc: recipient,
-    });
+    let recipientResult;
+    try {
+      recipientResult = await applyCreditDelta({
+        matric: recipient.matric,
+        delta: parsedAmount,
+        reason: 'transfer_received',
+        note: `Received ${parsedAmount} credits from @${sender.username || sender.matric}`,
+        actor: sender.matric,
+        studentDoc: recipient,
+      });
+    } catch (e) {
+      // Sender was already debited — put it back rather than losing the credits.
+      await applyCreditDelta({
+        matric: sender.matric, delta: totalDebited, reason: 'refund',
+        note: 'Transfer failed — refunded', actor: 'system',
+      }).catch(err => console.error('[transfer] REFUND FAILED for', sender.matric, totalDebited, err.message));
+      throw e;
+    }
 
     const transfer = await Transfer.create({
       fromMatric: sender.matric,
@@ -93,8 +117,8 @@ router.post('/transfer', requireStudent, transferLimiter, async (req, res) => {
       fee: FEE,
       totalDebited,
       status: 'completed',
-      senderTxId: senderResult.transaction._id,
-      recipientTxId: recipientResult.transaction._id,
+      senderTxId: senderResult.transaction?._id || null,
+      recipientTxId: recipientResult.transaction?._id || null,
     });
 
     await notify({
@@ -113,11 +137,8 @@ router.post('/transfer', requireStudent, transferLimiter, async (req, res) => {
       fee: FEE,
       newBalance: senderResult.balance,
     });
-  } catch (e) {
-    if (e.code === 'INSUFFICIENT_CREDITS') return res.status(400).json({ error: 'Insufficient credits' });
-    res.status(500).json({ error: e.message });
   }
-});
+}
 
 // GET /api/transfer/history — the current student's send + receive log.
 router.get('/transfer/history', requireStudent, async (req, res) => {

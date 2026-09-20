@@ -12,7 +12,7 @@ const ROOM_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 async function generateRoomCode() {
   for (let attempt = 0; attempt < 10; attempt++) {
     const code = Array.from({ length: 5 }, () => ROOM_CODE_CHARS[crypto.randomInt(ROOM_CODE_CHARS.length)]).join('');
-    const exists = await StudyRoom.findOne({ code, status: { $ne: 'ended' } }).lean();
+    const exists = await StudyRoom.exists({ code }); // ANY status: `code` is unique, so an ended room's code can't be reused
     if (!exists) return code;
   }
   throw new Error('Could not generate a unique room code, please retry');
@@ -23,7 +23,8 @@ async function generateRoomCode() {
 // so everyone in the room sees the same quiz.
 router.post('/study-rooms', requireStudent, async (req, res) => {
   try {
-    const { course, questionCount, secondsPerQuestion } = req.body;
+    const { questionCount, secondsPerQuestion } = req.body;
+    const course = typeof req.body.course === 'string' ? req.body.course.trim().slice(0, 40) : '';
     if (!course) return res.status(400).json({ error: 'course is required' });
 
     const student = await Student.findOne({ matric: req.student.sub }).lean();
@@ -59,7 +60,7 @@ router.post('/study-rooms', requireStudent, async (req, res) => {
 // GET /api/study-rooms/:code — lobby preview info before joining via socket.
 router.get('/study-rooms/:code', requireStudent, async (req, res) => {
   try {
-    const room = await StudyRoom.findOne({ code: req.params.code.toUpperCase() }).lean();
+    const room = await StudyRoom.findOne({ code: String(req.params.code).toUpperCase() }).lean();
     if (!room) return res.status(404).json({ error: 'Room not found' });
     res.json({
       code: room.code,

@@ -152,6 +152,15 @@ const StudentSchema = new mongoose.Schema({
   dailyAIQuizCount: { type: Number, default: 0 },
   dailyAIQuizDate:  { type: String, default: null },
 
+  // ── Cosmetics shop (routes/cosmetics.routes.js) ─────────────
+  // These three fields were referenced by the shop routes but never
+  // defined on the schema, so Mongoose's strict mode dropped them:
+  // `student.ownedCosmetics.push(...)` threw *after* the credits had
+  // already been deducted.
+  ownedCosmetics: { type: [mongoose.Schema.Types.ObjectId], ref: 'CosmeticItem', default: [] },
+  equippedBadge:  { type: mongoose.Schema.Types.ObjectId, ref: 'CosmeticItem', default: null },
+  equippedFrame:  { type: mongoose.Schema.Types.ObjectId, ref: 'CosmeticItem', default: null },
+
   createdAt: { type: Date, default: Date.now },
 });
 

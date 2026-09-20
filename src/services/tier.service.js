@@ -1,4 +1,5 @@
 const Settings = require('../models/Settings');
+const Student = require('../models/Student');
 const { watDateString } = require('./credit.service');
 
 // ── Tier service ──────────────────────────────────────────────
@@ -15,9 +16,16 @@ const { watDateString } = require('./credit.service');
 // whenever we touch a student's tier, so no cron job is required.
 async function ensureTierCurrent(student) {
   if (student.tier !== 'free' && student.tierExpiresAt && new Date() > student.tierExpiresAt) {
-    student.tier = 'free';
-    student.tierExpiresAt = null;
-    await student.save();
+    // Conditional update: don't clobber a renewal an admin applied a
+    // moment ago (the in-memory doc may already be stale).
+    await Student.updateOne(
+      { _id: student._id, tierExpiresAt: { $lte: new Date() } },
+      { $set: { tier: 'free', tierExpiresAt: null } },
+    );
+    student.set('tier', 'free');
+    student.set('tierExpiresAt', null);
+    student.unmarkModified('tier');
+    student.unmarkModified('tierExpiresAt');
   }
   return student;
 }
@@ -66,10 +74,39 @@ async function checkDailyLimit(student, kind, amount = 1) {
   return { remaining: limit == null ? null : limit - student[countField] };
 }
 
+// Atomically bumps a "count within a window" counter (window key =
+// a WAT date/month string). If the stored window is the current one the
+// count is $inc'd; otherwise the window rolls over and the count
+// restarts at `amount`. The old `student[field] += amount; save()` wrote
+// an absolute number computed from a possibly stale document, so
+// parallel requests under-counted and the daily caps could be
+// out-run. The in-memory doc is synced without being marked dirty.
+async function bumpCounter(student, countField, keyField, keyValue, amount = 1) {
+  const projection = { [countField]: 1, [keyField]: 1 };
+  let doc = await Student.findOneAndUpdate(
+    { _id: student._id, [keyField]: keyValue },
+    { $inc: { [countField]: amount } },
+    { new: true, projection },
+  );
+  if (!doc) {
+    doc = await Student.findOneAndUpdate(
+      { _id: student._id },
+      { $set: { [keyField]: keyValue, [countField]: amount } },
+      { new: true, projection },
+    );
+  }
+  if (doc) {
+    student.set(countField, doc[countField]);
+    student.set(keyField, keyValue);
+    student.unmarkModified(countField);
+    student.unmarkModified(keyField);
+  }
+  return doc ? doc[countField] : null;
+}
+
 async function incrementDailyUsage(student, kind, amount = 1) {
-  const { countField } = COUNTER_FIELDS[kind];
-  student[countField] += amount;
-  await student.save();
+  const { countField, dateField } = COUNTER_FIELDS[kind];
+  await bumpCounter(student, countField, dateField, watDateString(), amount);
 }
 
 // Full usage snapshot for a student — powers GET /api/usage/limits so
@@ -93,4 +130,4 @@ async function usageSnapshot(student) {
   };
 }
 
-module.exports = { ensureTierCurrent, getTierLimits, checkDailyLimit, incrementDailyUsage, usageSnapshot };
+module.exports = { ensureTierCurrent, getTierLimits, checkDailyLimit, incrementDailyUsage, usageSnapshot, bumpCounter };

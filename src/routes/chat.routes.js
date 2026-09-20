@@ -3,7 +3,7 @@ const rateLimit = require('express-rate-limit');
 const Student = require('../models/Student');
 const ChatMessage = require('../models/ChatMessage');
 const { requireStudent } = require('../middleware/auth');
-const { sendMessage, checkUsageLimit } = require('../services/chat.service');
+const { sendMessage, getQuota } = require('../services/chat.service');
 
 const router = express.Router();
 
@@ -34,13 +34,8 @@ router.get('/chat/quota', requireStudent, async (req, res) => {
   try {
     const student = await Student.findOne({ matric: req.student.sub });
     if (!student) return res.status(404).json({ error: 'Student not found' });
-    try {
-      const { dailyRemaining, monthlyRemaining } = await checkUsageLimit(student);
-      res.json({ dailyRemaining, monthlyRemaining });
-    } catch (e) {
-      if (e.code === 'LIMIT_REACHED') return res.json({ dailyRemaining: 0, monthlyRemaining: 0 });
-      throw e;
-    }
+    const { enabled, dailyRemaining, monthlyRemaining } = await getQuota(student);
+    res.json({ dailyRemaining, monthlyRemaining, disabled: !enabled });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -48,7 +43,7 @@ router.get('/chat/quota', requireStudent, async (req, res) => {
 router.post('/chat/message', requireStudent, chatLimiter, async (req, res) => {
   try {
     const { message } = req.body;
-    if (!message || !message.trim()) return res.status(400).json({ error: 'message is required' });
+    if (typeof message !== 'string' || !message.trim()) return res.status(400).json({ error: 'message is required' });
     if (message.length > 2000) return res.status(400).json({ error: 'Message is too long (max 2000 characters)' });
 
     const student = await Student.findOne({ matric: req.student.sub });

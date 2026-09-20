@@ -72,18 +72,38 @@
   }
 
   // ── Refresh ──────────────────────────────────────────────────
-  async function silentRefresh(role) {
+  // Single-flight: several requests (or tabs) hitting an expired token used to
+  // each fire their own refresh with the SAME refresh token. The server rotates it,
+  // so all but the first got "Token mismatch" and the user was logged out.
+  let refreshInFlight = null;
+
+  function silentRefresh(role) {
+    if (refreshInFlight) return refreshInFlight;
+    refreshInFlight = doRefresh(role).finally(() => { refreshInFlight = null; });
+    return refreshInFlight;
+  }
+
+  async function doRefresh(role) {
     const session = getSession();
     if (!session || !session.refreshToken) return false;
+    const sentToken = session.refreshToken;
     try {
       const res = await fetch(`/api/auth/${role === 'admin' ? 'admin/' : ''}refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken: session.refreshToken }),
+        body: JSON.stringify({ refreshToken: sentToken }),
       });
-      if (!res.ok) { clearSession(); return false; }
+      if (!res.ok) {
+        // Another tab may have rotated the token while we were in flight — that's a success, not a logout.
+        const latest = getSession();
+        if (latest && latest.refreshToken && latest.refreshToken !== sentToken) { scheduleRefresh(role); return true; }
+        // Only a definitive "this session is dead" answer ends the session. A 429 (rate
+        // limit) or 5xx is temporary and must NOT log the student out.
+        if (res.status === 401 || res.status === 403) clearSession();
+        return false;
+      }
       const data = await res.json();
-      setSession({ ...session, accessToken: data.accessToken, refreshToken: data.refreshToken, expiresInMin: data.expiresInMin, issuedAt: Date.now() });
+      setSession({ ...(getSession() || session), accessToken: data.accessToken, refreshToken: data.refreshToken, expiresInMin: data.expiresInMin, issuedAt: Date.now() });
       scheduleRefresh(role);
       return true;
     } catch {
@@ -130,10 +150,11 @@
       if (ok) {
         const fresh = getSession();
         res = await doFetch(fresh.accessToken);
-      } else {
+      } else if (!getSession()) {
         redirectToLogin(role);
         throw new Error('Session expired');
       }
+      // else: refresh failed temporarily (offline / rate-limited) — hand back the 401 and keep the session
     }
     return res;
   }

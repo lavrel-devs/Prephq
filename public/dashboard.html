@@ -700,6 +700,7 @@ body.quiz-active #shared-glass-nav{display:none;}
     <div class="hero-streak">
       <svg viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg>
       <span id="streak-txt">0 day streak</span>
+      <span id="streak-sub" style="opacity:.75;font-weight:600;"></span>
     </div>
   </div>
 
@@ -809,6 +810,16 @@ body.quiz-active #shared-glass-nav{display:none;}
     </button>
   </div>
 
+  <div id="flashcards-card" style="margin:0 18px 16px;background:var(--bg);border-radius:var(--r16);padding:16px;box-shadow:var(--sh),0 0 0 2px var(--brand-lt);">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <i class="fa-solid fa-layer-group" style="color:var(--brand);"></i>
+      <div style="font-weight:800;font-size:14px;font-family:var(--ff-h);">Flashcards</div>
+      <span id="fc-due-badge" style="margin-left:auto;font-size:11px;font-weight:800;color:var(--brand);background:var(--bg);box-shadow:var(--sh-sm);padding:3px 9px;border-radius:var(--r8);"></span>
+    </div>
+    <div style="font-size:12.5px;color:var(--t3);margin-bottom:12px;">Spaced-repetition review of your registered courses — weak cards resurface sooner.</div>
+    <button class="btn-grad" style="width:100%;padding:12px;border-radius:11px;color:var(--brand);font-weight:700;font-size:13px;cursor:pointer;" onclick="openFlashcards()">Review Flashcards</button>
+  </div>
+
   <div id="weak-topics-card" style="display:none;margin:0 18px 16px;background:var(--bg);border-radius:var(--r16);padding:16px;box-shadow:var(--sh),0 0 0 2px var(--no-lt);">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
       <i class="fa-solid fa-crosshairs" style="color:var(--no);"></i>
@@ -896,6 +907,25 @@ body.quiz-active #shared-glass-nav{display:none;}
 </div>
 
 <!-- ═══ PERFORMANCE ══════════════════════════════════════════ -->
+<!-- ═══ FLASHCARDS ══════════════════════════════════════════════ -->
+<div id="flashcards" class="scr">
+  <div class="sub-topbar">
+    <button class="back-btn" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+    <div class="scr-title"><i class="fa-solid fa-layer-group" style="margin-right:6px;"></i>Flashcards</div>
+    <button class="back-btn" style="margin-left:auto;color:var(--brand);" title="Generate flashcards for a course" onclick="openFlashcardGenerate()"><i class="fa-solid fa-wand-magic-sparkles" style="font-size:15px;"></i></button>
+    <div class="qt-badge" id="fc-badge">0/0</div>
+  </div>
+  <div id="fc-body" style="flex:1;display:flex;flex-direction:column;padding:18px 16px 180px;overflow-y:auto;"></div>
+  <div style="position:fixed;bottom:0;left:0;right:0;z-index:60;background:var(--bg);padding:12px 16px calc(12px + env(safe-area-inset-bottom));box-shadow:0 -6px 16px -8px var(--sd);display:none;" id="fc-actions">
+    <div style="display:flex;gap:8px;">
+      <button class="qbtn" style="color:var(--no)" onclick="rateFlashcard(0)">Again</button>
+      <button class="qbtn" style="color:var(--warn)" onclick="rateFlashcard(1)">Hard</button>
+      <button class="qbtn" style="color:var(--brand)" onclick="rateFlashcard(2)">Good</button>
+      <button class="qbtn" style="color:var(--ok)" onclick="rateFlashcard(3)">Easy</button>
+    </div>
+  </div>
+</div>
+
 <div id="performance" class="scr">
   <div class="sub-topbar">
     <button class="back-btn" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
@@ -1000,6 +1030,15 @@ body.quiz-active #shared-glass-nav{display:none;}
   </div>
 </div>
 
+<!-- ═══ SAVED QUIZZES ═══════════════════════════════════════════ -->
+<div id="saved-quizzes" class="scr">
+  <div class="sub-topbar">
+    <button class="back-btn" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+    <div class="scr-title"><i class="fa-solid fa-bookmark" style="margin-right:6px;"></i>Saved Quizzes</div>
+  </div>
+  <div id="saved-quizzes-list" style="padding-top:8px;"></div>
+</div>
+
 <!-- ═══ NOTIFICATIONS ═══════════════════════════════════════════ -->
 <div id="notifications" class="scr">
   <div class="sub-topbar">
@@ -1069,6 +1108,10 @@ body.quiz-active #shared-glass-nav{display:none;}
   <div class="rev-title">Review Answers</div>
   <div id="rev-list"></div>
   <div class="res-actions">
+    <button class="btn-surf" onclick="saveQuizForLater()" id="save-later-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+      Save Quiz for Later
+    </button>
     <button class="btn-grad" onclick="retryQuiz()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
       Try Again
@@ -1089,6 +1132,16 @@ body.quiz-active #shared-glass-nav{display:none;}
     <div class="menu-item" onclick="closeSheet('menu-sheet');showScr('notifications');loadNotifications()">
       <div class="mi-icon" style="color:var(--no)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg></div>
       <div class="mi-body"><div class="mi-title">Notifications</div><div class="mi-sub">Credits, contests, announcements</div></div>
+      <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>
+    <div class="menu-item" onclick="closeSheet('menu-sheet');openFlashcards()">
+      <div class="mi-icon" style="color:var(--brand)"><i class="fa-solid fa-layer-group" style="font-size:18px;"></i></div>
+      <div class="mi-body"><div class="mi-title">Flashcards</div><div class="mi-sub">Spaced-repetition review (Basic/Pro)</div></div>
+      <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>
+    <div class="menu-item" onclick="closeSheet('menu-sheet');showScr('saved-quizzes')">
+      <div class="mi-icon" style="color:var(--brand)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg></div>
+      <div class="mi-body"><div class="mi-title">Saved Quizzes</div><div class="mi-sub">Quizzes you banked to play later</div></div>
       <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
     </div>
     <div class="menu-item" onclick="closeSheet('menu-sheet');showScr('performance')">
@@ -1169,7 +1222,7 @@ body.quiz-active #shared-glass-nav{display:none;}
       <input class="modal-input" id="ps-target-gpa" type="number" min="0" max="5" step="0.01" placeholder="Target GPA (optional)">
     </div>
 
-    <div class="modal-sub" style="margin-top:14px;margin-bottom:6px;">Select the courses you're offering this semester</div>
+    <div class="modal-sub" style="margin-top:14px;margin-bottom:6px;">Select the courses you're offering this semester <span id="ps-course-count" style="font-weight:800;color:var(--brand);"></span></div>
     <input class="modal-input" id="ps-course-search" placeholder="Search courses…" oninput="filterProfileSetupCourses(this.value)">
     <div id="ps-course-list" style="max-height:220px;overflow-y:auto;margin-top:8px;display:flex;flex-direction:column;gap:6px;"></div>
 
@@ -1336,7 +1389,7 @@ const saveSettings=s => save('settings',s);
 
 async function pushScore(entry){
   try{
-    const r = await PhqAuth.authFetch(`${API_BASE}/api/scores/${curUser.matric}`,{
+    const r = await PhqAuth.authFetch(`${API_BASE}/api/scores/${encodeURIComponent(curUser.matric)}`,{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify(entry)
     }, 'student');
@@ -1352,7 +1405,7 @@ async function pushScore(entry){
 
 async function pullHistory(){
   try{
-    const r = await PhqAuth.authFetch(`${API_BASE}/api/scores/${curUser.matric}`, {}, 'student');
+    const r = await PhqAuth.authFetch(`${API_BASE}/api/scores/${encodeURIComponent(curUser.matric)}`, {}, 'student');
     return await r.json();
   }catch{return [];}
 }
@@ -1498,13 +1551,19 @@ async function submitUsername(){
 }
 
 let psSelectedCourses = [];
-function openProfileSetupModal(){
+async function openProfileSetupModal(){
+  // The editor must always list the FULL catalog. If it hasn't loaded yet (or failed
+  // earlier) fetch it now, otherwise the list is empty/stale and students can only
+  // untick the courses they already have.
+  if(!Object.keys(ALL_COURSES).length){ try{ await loadCourses(); }catch(e){} }
+  const searchBox = document.getElementById('ps-course-search'); if(searchBox) searchBox.value = '';
   document.getElementById('ps-university').value = curUser.university || '';
   document.getElementById('ps-department').value = curUser.department || '';
   document.getElementById('ps-current-gpa').value = curUser.currentGPA ?? '';
   document.getElementById('ps-target-gpa').value = curUser.targetGPA ?? '';
   psSelectedCourses = Array.isArray(curUser.selectedCourses) ? [...curUser.selectedCourses] : [];
   renderProfileSetupCourses();
+  const cnt = document.getElementById('ps-course-count'); if(cnt) cnt.textContent = psSelectedCourses.length + ' selected';
   document.getElementById('ps-cancel-btn').style.display = 'none';
   document.getElementById('m-profile-setup').classList.add('on');
 }
@@ -1512,7 +1571,15 @@ function renderProfileSetupCourses(filterTerm=''){
   const list = document.getElementById('ps-course-list');
   const q = filterTerm.trim().toLowerCase();
   list.innerHTML = '';
-  Object.entries(ALL_COURSES).forEach(([key, m]) => {
+  const entries = Object.entries(ALL_COURSES);
+  if(!entries.length){
+    list.innerHTML = '<div style="padding:14px;text-align:center;font-size:12.5px;color:var(--t3);">Could not load the course list. Check your connection and reopen this window.</div>';
+    return;
+  }
+  // Courses the student already picked go first so it's clear what's selected, and the
+  // rest of the catalog is right below for adding more.
+  entries.sort((a, b) => (psSelectedCourses.includes(b[0]) ? 1 : 0) - (psSelectedCourses.includes(a[0]) ? 1 : 0));
+  entries.forEach(([key, m]) => {
     if(q && !m.name.toLowerCase().includes(q) && !m.code.toLowerCase().includes(q)) return;
     const on = psSelectedCourses.includes(key);
     const row = document.createElement('label');
@@ -1523,6 +1590,7 @@ function renderProfileSetupCourses(filterTerm=''){
     row.querySelector('input').onchange = (e) => {
       if(e.target.checked){ if(!psSelectedCourses.includes(key)) psSelectedCourses.push(key); }
       else { psSelectedCourses = psSelectedCourses.filter(c=>c!==key); }
+      const cnt = document.getElementById('ps-course-count'); if(cnt) cnt.textContent = psSelectedCourses.length + ' selected';
     };
     list.appendChild(row);
   });
@@ -1565,8 +1633,8 @@ async function submitProfileSetup(){
   btn.disabled = false; btn.textContent = 'Continue';
 }
 
-function openCourseEditor(){
-  openProfileSetupModal();
+async function openCourseEditor(){
+  await openProfileSetupModal();
   document.getElementById('ps-cancel-btn').style.display = 'block';
 }
 
@@ -1714,7 +1782,7 @@ async function explainAnswer(i){
 let weakTopics = [];
 async function loadWeakTopics(){
   try{
-    const r = await PhqAuth.authFetch(`/api/scores/${curUser.matric}/weak-topics`, {}, 'student');
+    const r = await PhqAuth.authFetch(`/api/scores/${encodeURIComponent(curUser.matric)}/weak-topics`, {}, 'student');
     if(!r.ok) return;
     weakTopics = await r.json();
     const card = document.getElementById('weak-topics-card');
@@ -1730,13 +1798,17 @@ async function loadWeakTopics(){
 
 async function startWeakTopicQuiz(){
   if(!weakTopics.length){ toast('No weak topics identified yet — keep practicing!'); return; }
+  let remaining = null;
   try{
     const r = await PhqAuth.authFetch('/api/usage/limits', {}, 'student');
     if(r.ok){
       const u = await r.json();
-      if(u.questions.limit != null && u.questions.used >= u.questions.limit){
-        showPaywall(`You've used all ${u.questions.limit} of your free daily questions. Upgrade to keep practicing today.`);
-        return;
+      if(u.questions.limit != null){
+        remaining = Math.max(0, u.questions.limit - u.questions.used);
+        if(remaining <= 0){
+          showPaywall(`You've used all ${u.questions.limit} of your free daily questions. Upgrade to keep practicing today.`);
+          return;
+        }
       }
     }
   }catch(e){}
@@ -1748,7 +1820,12 @@ async function startWeakTopicQuiz(){
   });
   if(!pool.length){ toast('No matching questions found in the bank for your weak topics yet'); return; }
   for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
-  quizQ = pool.slice(0, Math.min(15, pool.length));
+  let qty = Math.min(15, pool.length);
+  if(remaining != null && qty > remaining){
+    toast(`Capped to ${remaining} questions — that's all that's left in your daily limit today`);
+    qty = remaining;
+  }
+  quizQ = pool.slice(0, qty);
   selCourses = [...new Set(quizQ.map(q=>q.course))];
   answers=new Array(quizQ.length).fill(null);
   confirmed=new Array(quizQ.length).fill(false);
@@ -1840,6 +1917,19 @@ async function loadPlanBanner(){
   }catch(e){}
 }
 
+async function updateStreakProgress(count){
+  const sub = document.getElementById('streak-sub');
+  try{
+    const r = await PhqAuth.authFetch('/api/plans', {}, 'student');
+    if(!r.ok){ sub.textContent=''; return; }
+    const { streakBonus } = await r.json();
+    if(!streakBonus || !streakBonus.enabled || !streakBonus.milestoneDays){ sub.textContent=''; return; }
+    const md = streakBonus.milestoneDays;
+    const daysLeft = count % md === 0 ? md : md - (count % md);
+    sub.textContent = ` · ${daysLeft} to go for +${streakBonus.amount} credits`;
+  }catch(e){ sub.textContent=''; }
+}
+
 async function initHome(){
   const init=curUser.matric.replace(/[^A-Z]/g,'').slice(0,2)||'FU';
   document.getElementById('tb-avatar').textContent=init;
@@ -1861,11 +1951,13 @@ async function initHome(){
   }
   const st=getStreak();
   document.getElementById('streak-txt').textContent=st.count+' day streak';
+  updateStreakProgress(st.count);
 
   document.getElementById('s-total').textContent='…';
 
   await loadCourses();
   buildCourseGrid();
+  refreshFlashcardBadge();
   loadWeakTopics();
   refreshStats();
   renderExamBanner();
@@ -1904,6 +1996,15 @@ async function buildCourseGrid(){
     d.onclick=()=>toggleCourse(d,key);
     grid.appendChild(d);
   });
+
+  // The grid only shows the courses a student registered for, so it can only ever be
+  // used to deselect. Give them a direct way to add more.
+  const addTile=document.createElement('div');
+  addTile.className='cc';
+  addTile.style.cssText='display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:110px;cursor:pointer;border:2px dashed var(--brand);color:var(--brand);font-weight:800;font-size:13px;text-align:center;';
+  addTile.innerHTML='<span style="font-size:28px;line-height:1;">+</span>Add / edit my courses';
+  addTile.onclick=()=>openCourseEditor();
+  grid.appendChild(addTile);
 
   const counts = {};
   await Promise.all(
@@ -2282,13 +2383,17 @@ async function renderNotifications(){
 }
 
 async function startQuiz(){
+  let remaining = null;
   try{
     const r = await PhqAuth.authFetch('/api/usage/limits', {}, 'student');
     if(r.ok){
       const u = await r.json();
-      if(u.questions.limit != null && u.questions.used >= u.questions.limit){
-        showPaywall(`You've used all ${u.questions.limit} of your free daily questions. Upgrade to keep practicing today.`);
-        return;
+      if(u.questions.limit != null){
+        remaining = Math.max(0, u.questions.limit - u.questions.used);
+        if(remaining <= 0){
+          showPaywall(`You've used all ${u.questions.limit} of your free daily questions. Upgrade to keep practicing today.`);
+          return;
+        }
       }
     }
   }catch(e){}
@@ -2298,11 +2403,20 @@ async function startQuiz(){
   if(quizMode==='wrong'){
     if(!lastWrong.length){toast('No wrong answers from last quiz');return;}
     quizQ=[...lastWrong];
+    if(remaining != null && quizQ.length > remaining){
+      quizQ = quizQ.slice(0, remaining);
+      toast(`Capped to ${remaining} questions — that's all that's left in your daily limit today`);
+    }
   } else {
     let pool=[];
     selCourses.forEach(c=>{if(BANK[c])pool.push(...BANK[c].map(q=>({...q,course:c})));});
     for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
-    quizQ=pool.slice(0,Math.min(selQtyVal,pool.length));
+    let qty = Math.min(selQtyVal,pool.length);
+    if(remaining != null && qty > remaining){
+      toast(`Capped to ${remaining} questions — that's all that's left in your daily limit today`);
+      qty = remaining;
+    }
+    quizQ=pool.slice(0,qty);
   }
   if(!quizQ.length){toast('No questions available for selected course(s)');return;}
   answers=new Array(quizQ.length).fill(null);
@@ -2648,8 +2762,261 @@ function shareResult(){
   else navigator.clipboard.writeText(text).then(()=>toast('Result copied!')).catch(()=>toast('Could not share'));
 }
 
-function retryQuiz(){ clearAutoAdvance(); startQuiz(); }
-function goHome(){ clearAutoAdvance(); stopTimer(); showScr('home');refreshStats();renderDailyGoal(); }
+function retryQuiz(){ clearAutoAdvance(); startQuiz(); }function goHome(){ clearAutoAdvance(); stopTimer(); showScr('home');refreshStats();renderDailyGoal(); }
+
+async function saveQuizForLater(){
+  if(!quizQ.length) return;
+  const btn = document.getElementById('save-later-btn');
+  btn.disabled = true;
+  try{
+    const names = selCourses.map(c=>COURSES[c]?.code||ALL_COURSES[c]?.code||c);
+    const r = await PhqAuth.authFetch('/api/quiz/save-for-later', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        course: names.length<=2 ? names.join('+') : 'Mixed',
+        questions: quizQ.map(q=>({ q:q.q||q.question||'', opts:q.opts, ans:q.ans, exp:q.exp||'', tag:q.tag||'', course:q.course })),
+      })
+    }, 'student');
+    if(r.ok) toast('Saved — find it under Saved Quizzes in the menu');
+    else toast('Could not save this quiz. Try again.');
+  }catch(e){ toast('Could not save this quiz. Try again.'); }
+  btn.disabled = false;
+}
+
+let savedQuizzesCache = [];
+async function renderSavedQuizzes(){
+  const wrap = document.getElementById('saved-quizzes-list');
+  wrap.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--t3);font-size:13px;">Loading…</div>';
+  try{
+    const r = await PhqAuth.authFetch('/api/quiz/history', {}, 'student');
+    const all = r.ok ? await r.json() : [];
+    savedQuizzesCache = all.filter(h => h.source === 'manual' || (h.source === 'ai' && h.submittedAt == null));
+    if(!savedQuizzesCache.length){
+      wrap.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--t3);font-size:13.5px;"><i class="fa-solid fa-bookmark" style="font-size:28px;display:block;margin-bottom:10px;color:var(--t4);"></i>No saved quizzes yet.<br>Finish a quiz and tap "Save Quiz for Later" to bank it here.</div>';
+      return;
+    }
+    wrap.innerHTML = savedQuizzesCache.map(h => `
+      <div style="margin:0 18px 10px;padding:14px 16px;display:flex;gap:12px;align-items:center;background:var(--bg);border-radius:var(--r16);box-shadow:var(--sh);">
+        <div style="width:40px;height:40px;border-radius:12px;background:var(--bg);color:${h.source==='ai'?'var(--purple)':'var(--brand)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:var(--sh-in-sm);"><i class="fa-solid ${h.source==='ai'?'fa-wand-magic-sparkles':'fa-bookmark'}"></i></div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:700;font-size:13.5px;">${h.course}${h.source==='ai'?' · AI':''}</div>
+          <div style="font-size:11.5px;color:var(--t3);">${h.questions.length} questions · saved ${new Date(h.createdAt).toLocaleDateString()}</div>
+        </div>
+        <button class="btn-surf" style="padding:9px 14px;font-size:12.5px;flex-shrink:0;" onclick="playSavedQuiz('${h._id}')">Play</button>
+      </div>`).join('');
+  }catch(e){
+    wrap.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--t3);font-size:13px;">Could not load saved quizzes.</div>';
+  }
+}
+
+async function playSavedQuiz(id){
+  let remaining = null;
+  try{
+    const r = await PhqAuth.authFetch('/api/usage/limits', {}, 'student');
+    if(r.ok){
+      const u = await r.json();
+      if(u.questions.limit != null){
+        remaining = Math.max(0, u.questions.limit - u.questions.used);
+        if(remaining <= 0){
+          showPaywall(`You've used all ${u.questions.limit} of your free daily questions. Upgrade to keep practicing today.`);
+          return;
+        }
+      }
+    }
+  }catch(e){}
+  try{
+    const r = await PhqAuth.authFetch(`/api/quiz/history/${id}`, {}, 'student');
+    if(!r.ok){ toast('Could not load this saved quiz'); return; }
+    const data = await r.json();
+    let qs = data.questions.map(q=>({ ...q, course: q.course || data.course }));
+    if(remaining != null && qs.length > remaining){
+      toast(`Capped to ${remaining} questions — that's all that's left in your daily limit today`);
+      qs = qs.slice(0, remaining);
+    }
+    curAIQuizId = null;
+    quizQ = qs;
+    selCourses = [...new Set(qs.map(q=>q.course))];
+    answers=new Array(quizQ.length).fill(null);
+    confirmed=new Array(quizQ.length).fill(false);
+    timedOut=new Array(quizQ.length).fill(false);
+    cur=0;
+    document.getElementById('qt-title').textContent = data.course;
+    showScr('quiz');
+    renderQ();
+  }catch(e){ toast('Could not load this saved quiz'); }
+}
+
+// ── Flashcards (v1.4, Basic/Pro) ─────────────────────────────────
+let fcDeck = [], fcIdx = 0, fcFlipped = false;
+
+async function refreshFlashcardBadge(){
+  const badge = document.getElementById('fc-due-badge');
+  if(!badge) return;
+  if(curUser.tier === 'free'){ badge.textContent = 'Upgrade'; badge.style.color = 'var(--t4)'; return; }
+  const courses = (curUser.selectedCourses||[]).map(k=>COURSES[k]?.code||ALL_COURSES[k]?.code||k);
+  if(!courses.length){ badge.textContent = ''; return; }
+  try{
+    const r = await PhqAuth.authFetch(`/api/flashcards/stats?courses=${encodeURIComponent(courses.join(','))}`, {}, 'student');
+    if(!r.ok){ badge.textContent = ''; return; }
+    const d = await r.json();
+    badge.textContent = d.dueCount > 0 ? `${d.dueCount} due` : 'All caught up';
+  }catch(e){ badge.textContent = ''; }
+}
+
+function openFlashcards(){
+  if(curUser.tier === 'free'){
+    showPaywall('Flashcards are a Basic/Pro feature — spaced-repetition review that adapts to what you keep getting wrong. Upgrade to unlock it.');
+    return;
+  }
+  showScr('flashcards');
+}
+
+// Student-initiated flashcard generation — any course they choose,
+// any time, independent of weak topics, wrong answers, or a dry deck.
+// Never triggered automatically by the app.
+function openFlashcardGenerate(){
+  const courses = (curUser.selectedCourses||[]).map(k=>ALL_COURSES[k]?.code||COURSES[k]?.code||k);
+  const hint = courses.length ? `\n\nYour registered courses: ${courses.join(', ')}` : '';
+  const input = prompt(`Generate AI flashcards for which course code?${hint}`, courses[0]||'');
+  if(!input || !input.trim()) return;
+  generateFlashcardsForCourse(input.trim().toUpperCase());
+}
+
+async function generateFlashcardsForCourse(course){
+  const wandBtn = document.querySelector('#flashcards .back-btn[title]');
+  const body = document.getElementById('fc-body');
+  const prevBodyHTML = body.innerHTML;
+  if(wandBtn) wandBtn.disabled = true;
+  body.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--t3);font-size:13.5px;"><i class="fa-solid fa-spinner fa-spin" style="font-size:26px;display:block;margin-bottom:12px;color:var(--brand);"></i>Generating flashcards for ${course}…<br><span style="font-size:11.5px;color:var(--t4);">This can take up to 30 seconds</span></div>`;
+
+  // Hard client-side cutoff — without this, a slow/unreachable AI
+  // service on the server could leave the student staring at this
+  // spinner indefinitely with no way to know it failed.
+  const controller = new AbortController();
+  const cutoff = setTimeout(()=>controller.abort(), 35000);
+  try{
+    const r = await PhqAuth.authFetch('/api/flashcards/generate', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ course }), signal: controller.signal,
+    }, 'student');
+    clearTimeout(cutoff);
+    const d = await r.json();
+    if(!r.ok){
+      body.innerHTML = prevBodyHTML;
+      if(d.code==='INSUFFICIENT_CREDITS') toast(`Not enough credits — you have ${d.balance}, need ${d.required}.`);
+      else if(d.code==='LIMIT_REACHED') showPaywall(d.error);
+      else if(r.status===403) showPaywall(d.error);
+      else if(d.code==='GROQ_TIMEOUT') toast('The AI took too long to respond. Please try again.');
+      else if(d.code==='GROQ_NOT_CONFIGURED') toast('AI generation isn\'t set up on the server yet. Contact support.');
+      else toast(d.error || 'Could not generate flashcards. Try again.');
+      return;
+    }
+    curUser.credits = d.newBalance;
+    const creditsEl = document.getElementById('tb-credits');
+    if(creditsEl) creditsEl.textContent = d.newBalance;
+    fcDeck = d.cards;
+    fcIdx = 0; fcFlipped = false;
+    document.getElementById('fc-badge').textContent = `1/${fcDeck.length}`;
+    document.getElementById('fc-actions').style.display = 'block';
+    showScr('flashcards');
+    renderFlashcard();
+    toast(`Generated ${fcDeck.length} new flashcards for ${course} — ${d.creditsCharged} credits used`);
+  }catch(e){
+    clearTimeout(cutoff);
+    body.innerHTML = prevBodyHTML;
+    if(e.name==='AbortError') toast('This took too long and was cancelled. Check your connection and try again.');
+    else toast('Cannot connect to server.');
+  }finally{
+    if(wandBtn) wandBtn.disabled = false;
+  }
+}
+
+async function loadFlashcardDeck(){
+  const body = document.getElementById('fc-body');
+  const actions = document.getElementById('fc-actions');
+  actions.style.display = 'none';
+  body.innerHTML = '<div style="text-align:center;padding:60px 0;color:var(--t3);font-size:13px;">Loading your deck…</div>';
+  const courses = (curUser.selectedCourses||[]).map(k=>COURSES[k]?.code||ALL_COURSES[k]?.code||k);
+  if(!courses.length){
+    body.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--t3);font-size:13.5px;">Register for a course in Settings first — flashcards are built from your course question bank.</div>';
+    return;
+  }
+  try{
+    const r = await PhqAuth.authFetch(`/api/flashcards/due?courses=${encodeURIComponent(courses.join(','))}`, {}, 'student');
+    if(r.status === 403){
+      const d = await r.json();
+      showScr('home');
+      showPaywall(d.error);
+      return;
+    }
+    const d = await r.json();
+    fcDeck = d.cards || [];
+    fcIdx = 0; fcFlipped = false;
+    if(d.aiGenerated){
+      toast(`Generated ${fcDeck.length} new flashcards with AI — ${d.creditsCharged} credits used`);
+    }
+    if(!fcDeck.length){
+      let msg = 'All caught up — no cards due right now.';
+      if(d.aiSkippedReason === 'insufficient_credits') msg = "You've run out of the bank for this course, and don't have enough credits left for AI to generate more today.";
+      else if(d.aiSkippedReason === 'daily_ai_limit') msg = "You've run out of the bank for this course, and hit today's AI generation limit. Try again tomorrow or upgrade.";
+      else if(d.aiSkippedReason === 'ai_error' || d.aiSkippedReason === 'ai_empty') msg = "You've run out of the bank for this course, and AI couldn't generate more right now. Try again shortly.";
+      body.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--t3);font-size:13.5px;"><i class="fa-solid fa-circle-check" style="font-size:28px;display:block;margin-bottom:10px;color:var(--ok);"></i>${msg}</div>`;
+      document.getElementById('fc-badge').textContent = '0/0';
+      return;
+    }
+    document.getElementById('fc-badge').textContent = `1/${fcDeck.length}`;
+    actions.style.display = 'block';
+    renderFlashcard();
+  }catch(e){
+    body.innerHTML = '<div style="text-align:center;padding:60px 0;color:var(--t3);font-size:13px;">Could not load flashcards. Try again.</div>';
+  }
+}
+
+function renderFlashcard(){
+  const card = fcDeck[fcIdx];
+  if(!card) return;
+  fcFlipped = false;
+  document.getElementById('fc-badge').textContent = `${fcIdx+1}/${fcDeck.length}`;
+  document.getElementById('fc-body').innerHTML = `
+    <div class="qcard fade-up" style="min-height:260px;display:flex;flex-direction:column;justify-content:center;padding:28px 22px;cursor:pointer;" onclick="flipFlashcard()">
+      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--brand);margin-bottom:14px;">${card.course}${card.tag?' · '+card.tag:''}</div>
+      <div id="fc-front" style="font-size:var(--qfont);font-weight:700;line-height:1.5;color:var(--t1);font-family:var(--ff-h);">${card.q}</div>
+      <div id="fc-back" style="display:none;margin-top:18px;padding-top:16px;border-top:1px solid var(--sd);">
+        <div style="font-size:11px;font-weight:800;color:var(--ok);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">Answer</div>
+        <div style="font-size:14px;font-weight:700;color:var(--ok);margin-bottom:10px;">${card.opts[card.ans]}</div>
+        ${card.exp?`<div style="font-size:12.5px;color:var(--t3);line-height:1.5;">${card.exp}</div>`:''}
+      </div>
+      <div style="text-align:center;margin-top:18px;font-size:11.5px;color:var(--t4);" id="fc-tap-hint">Tap card to flip</div>
+    </div>`;
+}
+
+function flipFlashcard(){
+  fcFlipped = !fcFlipped;
+  document.getElementById('fc-front').style.display = fcFlipped ? 'none' : 'block';
+  document.getElementById('fc-back').style.display = fcFlipped ? 'block' : 'none';
+  document.getElementById('fc-tap-hint').textContent = fcFlipped ? 'Tap card to flip back' : 'Tap card to flip';
+}
+
+async function rateFlashcard(quality){
+  const card = fcDeck[fcIdx];
+  if(!card) return;
+  if(!fcFlipped){ flipFlashcard(); return; } // force a look at the answer before rating
+  try{
+    await PhqAuth.authFetch('/api/flashcards/review', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ questionId: card.id, course: card.course, quality })
+    }, 'student');
+  }catch(e){}
+  fcIdx++;
+  if(fcIdx >= fcDeck.length){
+    document.getElementById('fc-actions').style.display = 'none';
+    document.getElementById('fc-body').innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--t3);font-size:13.5px;"><i class="fa-solid fa-circle-check" style="font-size:28px;display:block;margin-bottom:10px;color:var(--ok);"></i>Deck complete — nice work!</div>';
+    refreshFlashcardBadge();
+    return;
+  }
+  renderFlashcard();
+}
+
 
 async function renderHistory(){
   const body=document.getElementById('hist-body');
@@ -2857,12 +3224,14 @@ function showScr(id){
   // Skip/Answer buttons). The shared cross-page nav (shared-nav.js)
   // is also fixed to the bottom and was never hidden here, so the two
   // stacked on top of each other and clipped the last answer option.
-  document.body.classList.toggle('quiz-active', id==='quiz');
+  document.body.classList.toggle('quiz-active', id==='quiz' || id==='flashcards');
+  if(id==='flashcards')loadFlashcardDeck();
   if(id==='history')renderHistory();
   if(id==='bookmarks')renderBookmarks();
   if(id==='notes-screen')renderNotes();
   if(id==='performance'){renderPerf();renderAIHistory();}
   if(id==='notifications')renderNotifications();
+  if(id==='saved-quizzes')renderSavedQuizzes();
   if(id==='home'){refreshStats();buildCourseGrid();loadWeakTopics();}
 }
 

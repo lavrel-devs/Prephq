@@ -292,6 +292,10 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
       <div class="nav-item" data-v="analytics" onclick="go('analytics',this)">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>Analytics
       </div>
+      <div class="nav-sec" id="nav-sec-admin" style="display:none">Admin</div>
+      <div class="nav-item" data-v="admins" id="nav-admins" style="display:none" onclick="go('admins',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>Admins
+      </div>
     </div>
 
     <!-- Main content -->
@@ -703,6 +707,21 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
         </div>
       </div>
 
+      <!-- ═══ ADMINS & ACCESS ══════════════════════════════ -->
+      <div id="v-admins" class="view">
+        <div class="ph">
+          <div><div class="ph-title">Admins &amp; Access</div><div class="ph-sub">Add admins and choose exactly what each one can see and change</div></div>
+          <button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;" onclick="openAdminModal()">+ New Admin</button>
+        </div>
+        <div class="tw">
+          <div class="th"><div class="th-title">Admin accounts</div></div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Username</th><th>Access</th><th>Status</th><th>Last active</th><th>Actions</th></tr></thead>
+            <tbody id="adm-body"></tbody>
+          </table></div>
+        </div>
+      </div>
+
       <!-- ═══ v1.2: CREDIT SETTINGS ════════════════════════ -->
       <div id="v-credit-settings" class="view">
         <div class="ph"><div><div class="ph-title">Credit Settings</div><div class="ph-sub">Daily refresh and referral program controls</div></div></div>
@@ -1012,6 +1031,26 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
 </div>
 
 <!-- DELETE CONFIRM -->
+<div class="modal-bg" id="m-admin" onclick="closeMBg(event,'m-admin')">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-title" id="adm-modal-title">New Admin</div>
+    <div class="modal-sub">Limited admins only see the areas you grant. Full access can also manage other admins.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <input class="f-input" id="adm-username" placeholder="Username (letters, numbers, . - _)" autocomplete="off">
+      <input class="f-input" id="adm-password" type="password" placeholder="Password (min 8 characters)" autocomplete="new-password">
+      <label style="display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;cursor:pointer;">
+        <input type="checkbox" id="adm-full" onchange="admFullChanged()"> Full access (everything, including managing admins)
+      </label>
+      <div id="adm-areas" style="display:grid;gap:8px;"></div>
+      <div id="adm-err" style="color:var(--no);font-size:12.5px;font-weight:600;min-height:16px;"></div>
+    </div>
+    <div class="mfooter">
+      <button class="btn-cancel" onclick="closeM('m-admin')">Cancel</button>
+      <button class="btn-confirm" id="adm-save-btn" onclick="saveAdmin()">Save</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-bg" id="m-del" onclick="closeMBg(event,'m-del')">
   <div class="modal">
     <div class="modal-title">Confirm Delete</div>
@@ -1036,7 +1075,11 @@ let generatedCodes = [];
 // adminFetch: attaches the admin JWT and silently refreshes on
 // expiry, via the shared PhqAuth module (same one dashboard.html uses).
 function adminFetch(url, opts = {}) {
-  return PhqAuth.authFetch(url, opts, 'admin');
+  return PhqAuth.authFetch(url, opts, 'admin').then(r => {
+    // Server-side permission check said no — tell the admin instead of failing silently.
+    if (r.status === 403) r.clone().json().then(d => { if (d && d.code === 'FORBIDDEN_AREA') toast("You don't have permission to do that"); }).catch(() => {});
+    return r;
+  });
 }
 
 // window.open() can't attach an Authorization header, so CSV export
@@ -1078,7 +1121,7 @@ async function loadStudentsByCourse(course){
 async function adminSetTier(matric, tier, durationDays, refreshFn){
   if(durationDays === undefined) durationDays = tier === 'free' ? 0 : 30;
   try{
-    const r = await adminFetch(`/api/admin/users/${matric}/tier`, {
+    const r = await adminFetch(`/api/admin/users/${encodeURIComponent(matric)}/tier`, {
       method:'PUT', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ tier, durationDays }),
     });
@@ -1144,8 +1187,7 @@ async function adminLogin() {
     });
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').classList.add('on');
-    loadDashboard();
-    loadCourses(); // populate allCourses early so Questions panel selects are ready
+    bootAdmin();
   } catch(e) {
     err.textContent = 'Cannot connect to server.';
     err.classList.add('on');
@@ -1163,10 +1205,170 @@ document.getElementById('admin-pass-inp').addEventListener('keydown', e => { if(
   if(s && s.accessToken && s.role==='admin'){
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').classList.add('on');
-    window.addEventListener('DOMContentLoaded', ()=>{ loadDashboard(); loadCourses(); });
+    window.addEventListener('DOMContentLoaded', ()=>{ bootAdmin(); });
   }
 })();
 
+
+
+// ══════════════════════════════════════════════════════════════
+//  ADMIN ACCESS (roles & permissions)
+// ══════════════════════════════════════════════════════════════
+let myAccess = { fullAccess: true, permissions: [], areas: [], username: '' };
+let adminAreas = [];
+let adminList = [];
+let editingAdmin = null; // username being edited, or null when creating
+
+// which sidebar / mobile-nav view needs which permission area ('FULL' = full access only)
+const VIEW_AREA = {
+  dashboard:'analytics', analytics:'analytics', students:'students', codes:'codes', payments:'payments',
+  courses:'courses', questions:'questions', 'bulk-upload':'questions', contests:'contests', recurring:'contests',
+  transfers:'credits', announcements:'announcements', 'credit-settings':'settings', admins:'FULL',
+};
+function canView(area){
+  if(myAccess.fullAccess) return true;
+  if(area==='FULL') return false;
+  return myAccess.permissions.includes(area) || myAccess.permissions.includes(area+':view');
+}
+
+async function bootAdmin(){
+  try{
+    const r = await adminFetch('/api/admin/admins/me', { headers: {} });
+    if(r.ok) myAccess = await r.json();
+  }catch(e){}
+  // hide everything this admin can't open
+  document.querySelectorAll('[data-v]').forEach(el => {
+    const area = VIEW_AREA[el.dataset.v];
+    if(area && !canView(area)) el.style.display = 'none';
+    else if(el.dataset.v==='admins') el.style.display = '';
+  });
+  const sec = document.getElementById('nav-sec-admin'); if(sec && myAccess.fullAccess) sec.style.display = '';
+  const who = document.getElementById('nav-admins'); if(who && myAccess.fullAccess) who.style.display = '';
+
+  if(canView('analytics')) loadDashboard();
+  else {
+    const first = Object.keys(VIEW_AREA).find(v => canView(VIEW_AREA[v]));
+    if(first) go(first, document.querySelector(`.nav-item[data-v="${first}"]`));
+  }
+  if(canView('courses') || canView('questions') || canView('contests')) loadCourses();
+}
+
+async function loadAdmins(){
+  const body = document.getElementById('adm-body');
+  body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--t3);padding:20px;">Loading…</td></tr>';
+  try{
+    const r = await adminFetch('/api/admin/admins', { headers: {} });
+    const d = await r.json();
+    if(!r.ok) throw new Error(d.error || 'failed');
+    adminList = d.admins; adminAreas = d.areas;
+    const label = Object.fromEntries(adminAreas.map(a => [a.key, a.label]));
+    body.innerHTML = adminList.map(a => {
+      const chips = a.fullAccess
+        ? '<span class="badge b-ok">Full access</span>'
+        : a.permissions.map(p => {
+            const view = p.endsWith(':view'); const key = view ? p.slice(0,-5) : p;
+            return `<span class="badge ${view?'b-warn':'b-brand'}" style="margin:2px 4px 2px 0;">${escHtml(label[key]||key)}${view?' (view)':''}</span>`;
+          }).join('');
+      const me = a.username === myAccess.username;
+      return `<tr>
+        <td style="font-weight:700">${escHtml(a.username)}${me?' <span style="color:var(--t4);font-weight:600;">(you)</span>':''}</td>
+        <td>${chips}</td>
+        <td><span class="badge ${a.active?'b-ok':'b-no'}">${a.active?'Active':'Deactivated'}</span></td>
+        <td style="font-size:12px;color:var(--t4)">${a.lastActiveAt ? new Date(a.lastActiveAt).toLocaleString() : 'Never'}</td>
+        <td><div class="act-row">
+          <button class="ab ab-edit" onclick="openAdminModal('${escHtml(a.username)}')">Edit</button>
+          ${me ? '' : `<button class="ab ${a.active?'ab-warn':'ab-ok'}" onclick="toggleAdminActive('${escHtml(a.username)}',${!a.active})">${a.active?'Deactivate':'Activate'}</button>
+          <button class="ab ab-del" onclick="deleteAdmin('${escHtml(a.username)}')">Del</button>`}
+        </div></td>
+      </tr>`;
+    }).join('') || '<tr class="empty-row"><td colspan="5">No admins</td></tr>';
+  }catch(e){
+    body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--no);padding:20px;">Could not load admins (full access required)</td></tr>';
+  }
+}
+
+function renderAdminAreas(perms, full){
+  const wrap = document.getElementById('adm-areas');
+  wrap.style.opacity = full ? .4 : 1;
+  wrap.style.pointerEvents = full ? 'none' : 'auto';
+  wrap.innerHTML = adminAreas.map(a => {
+    const level = perms.includes(a.key) ? 'change' : perms.includes(a.key+':view') ? 'view' : 'none';
+    return `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border:1px solid var(--bd);border-radius:10px;">
+      <div style="min-width:0;"><div style="font-size:13px;font-weight:700;">${escHtml(a.label)}</div><div style="font-size:11px;color:var(--t3);">${escHtml(a.desc)}</div></div>
+      <select class="f-input" data-area="${escHtml(a.key)}" style="padding:6px 8px;font-size:12.5px;flex-shrink:0;">
+        <option value="none" ${level==='none'?'selected':''}>No access</option>
+        <option value="view" ${level==='view'?'selected':''}>View only</option>
+        <option value="change" ${level==='change'?'selected':''}>View &amp; change</option>
+      </select>
+    </div>`;
+  }).join('');
+}
+function admFullChanged(){
+  const full = document.getElementById('adm-full').checked;
+  const wrap = document.getElementById('adm-areas');
+  wrap.style.opacity = full ? .4 : 1;
+  wrap.style.pointerEvents = full ? 'none' : 'auto';
+}
+
+async function openAdminModal(username){
+  if(!adminAreas.length){ try{ const r = await adminFetch('/api/admin/admins',{headers:{}}); const d = await r.json(); adminAreas = d.areas; adminList = d.admins; }catch(e){ return toast('Could not load admin areas'); } }
+  editingAdmin = username || null;
+  const a = username ? adminList.find(x => x.username === username) : null;
+  document.getElementById('adm-modal-title').textContent = a ? `Edit ${a.username}` : 'New Admin';
+  const u = document.getElementById('adm-username');
+  u.value = a ? a.username : ''; u.disabled = !!a;
+  const pw = document.getElementById('adm-password');
+  pw.value = ''; pw.placeholder = a ? 'New password (leave blank to keep current)' : 'Password (min 8 characters)';
+  document.getElementById('adm-full').checked = a ? a.fullAccess : false;
+  document.getElementById('adm-full').disabled = !!(a && a.username === myAccess.username); // can't demote yourself
+  document.getElementById('adm-err').textContent = '';
+  renderAdminAreas(a ? a.permissions : [], a ? a.fullAccess : false);
+  document.getElementById('m-admin').classList.add('on');
+}
+
+async function saveAdmin(){
+  const err = document.getElementById('adm-err'); err.textContent = '';
+  const full = document.getElementById('adm-full').checked;
+  const permissions = [];
+  document.querySelectorAll('#adm-areas select').forEach(sel => {
+    if(sel.value==='change') permissions.push(sel.dataset.area);
+    else if(sel.value==='view') permissions.push(sel.dataset.area+':view');
+  });
+  const password = document.getElementById('adm-password').value;
+  if(!full && !permissions.length){ err.textContent = 'Pick at least one area, or turn on full access.'; return; }
+  const btn = document.getElementById('adm-save-btn'); btn.disabled = true;
+  try{
+    let r;
+    if(editingAdmin){
+      const body = { fullAccess: full, permissions };
+      if(password) body.password = password;
+      r = await adminFetch(`/api/admin/admins/${encodeURIComponent(editingAdmin)}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    } else {
+      const username = document.getElementById('adm-username').value.trim();
+      if(!username || password.length < 8){ err.textContent = 'Enter a username and a password of at least 8 characters.'; btn.disabled = false; return; }
+      r = await adminFetch('/api/admin/admins', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ username, password, fullAccess: full, permissions }) });
+    }
+    const d = await r.json();
+    if(!r.ok){ err.textContent = d.error || 'Could not save'; btn.disabled = false; return; }
+    closeM('m-admin'); toast(editingAdmin ? 'Admin updated' : 'Admin created'); loadAdmins();
+  }catch(e){ err.textContent = 'Network error — try again'; }
+  btn.disabled = false;
+}
+
+async function toggleAdminActive(username, active){
+  if(!confirm(`${active?'Activate':'Deactivate'} ${username}?${active?'':' They will be signed out immediately.'}`)) return;
+  const r = await adminFetch(`/api/admin/admins/${encodeURIComponent(username)}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ active }) });
+  const d = await r.json().catch(()=>({}));
+  if(!r.ok) toast(d.error || 'Could not update'); else toast(active?'Admin activated':'Admin deactivated');
+  loadAdmins();
+}
+async function deleteAdmin(username){
+  if(!confirm(`Delete admin "${username}"? This cannot be undone.`)) return;
+  const r = await adminFetch(`/api/admin/admins/${encodeURIComponent(username)}`, { method:'DELETE', headers:{} });
+  const d = await r.json().catch(()=>({}));
+  if(!r.ok) toast(d.error || 'Could not delete'); else toast('Admin deleted');
+  loadAdmins();
+}
 
 // ── NAVIGATION ────────────────────────────────────────────────
 function go(v, el) {
@@ -1187,6 +1389,7 @@ function go(v, el) {
   if(v==='announcements') loadAnnouncements();
   if(v==='credit-settings') loadCreditSettings();
   if(v==='analytics') loadAnalytics();
+  if(v==='admins') loadAdmins();
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────
@@ -1202,8 +1405,8 @@ async function loadDashboard() {
     document.getElementById('dash-top').innerHTML = d.topStudents?.length
       ? d.topStudents.map((s,i) => `<tr>
           <td><span class="badge ${i===0?'b-warn':'b-brand'}">#${i+1}</span></td>
-          <td style="font-weight:700">${s.name}</td>
-          <td style="color:var(--t3)">${s.matric}</td>
+          <td style="font-weight:700">${escHtml(s.name)}</td>
+          <td style="color:var(--t3)">${escHtml(s.matric)}</td>
           <td><span class="badge ${s.avg>=70?'b-ok':s.avg>=50?'b-warn':'b-no'}">${s.avg}%</span></td>
           <td>${s.quizzes}</td>
         </tr>`).join('')
@@ -1211,9 +1414,9 @@ async function loadDashboard() {
 
     document.getElementById('dash-recent').innerHTML = d.recentStudents?.length
       ? d.recentStudents.map(s => `<tr>
-          <td style="font-weight:700">${s.name}</td>
-          <td style="color:var(--t3)">${s.matric}</td>
-          <td>${s.phone||'—'}</td>
+          <td style="font-weight:700">${escHtml(s.name)}</td>
+          <td style="color:var(--t3)">${escHtml(s.matric)}</td>
+          <td>${escHtml(s.phone)||'—'}</td>
           <td style="color:var(--t4);font-size:12px">${fmtDate(s.createdAt)}</td>
         </tr>`).join('')
       : '<tr class="empty-row"><td colspan="4">No students yet</td></tr>';
@@ -1241,28 +1444,28 @@ function renderStudents(list) {
   document.getElementById('st-count').textContent = list.length + ' student' + (list.length!==1?'s':'') + ' registered';
   document.getElementById('st-body').innerHTML = list.length ? list.map(s => `
     <tr>
-      <td><input type="checkbox" class="st-check" value="${s.matric}" ${selectedStudents.has(s.matric)?'checked':''} onchange="toggleSt('${s.matric}',this.checked)"></td>
-      <td style="font-weight:700">${s.name}</td>
-      <td style="font-family:var(--ff-h);font-size:12px">${s.matric}</td>
+      <td><input type="checkbox" class="st-check" value="${escHtml(s.matric)}" ${selectedStudents.has(s.matric)?'checked':''} onchange="toggleSt('${jsq(s.matric)}',this.checked)"></td>
+      <td style="font-weight:700">${escHtml(s.name)}</td>
+      <td style="font-family:var(--ff-h);font-size:12px">${escHtml(s.matric)}</td>
       <td>
         <span class="badge ${s.tier==='pro'?'b-brand':s.tier==='basic'?'b-ok':'b-warn'}" style="text-transform:capitalize;">${s.tier||'free'}</span>
         ${s.tierExpiresAt ? `<div style="font-size:10px;color:var(--t3);margin-top:2px;">until ${new Date(s.tierExpiresAt).toLocaleDateString()}</div>` : ''}
       </td>
-      <td style="font-size:12px;color:var(--t3);">${s.username ? '@'+s.username : '—'}</td>
-      <td>${s.phone||'—'}</td>
-      <td>${s.whatsapp||'—'}</td>
+      <td style="font-size:12px;color:var(--t3);">${s.username ? '@'+escHtml(s.username) : '—'}</td>
+      <td>${escHtml(s.phone)||'—'}</td>
+      <td>${escHtml(s.whatsapp)||'—'}</td>
       <td><span class="badge b-brand"><i class="fa-solid fa-coins" style="margin-right:4px;"></i>${s.credits||0}</span></td>
       <td>${s.quizCount}</td>
       <td><span class="badge ${s.best>=70?'b-ok':s.best>=50?'b-warn':'b-no'}">${s.best}%</span></td>
       <td><span class="badge ${s.active?'b-ok':'b-no'}">${s.active?'Active':'Suspended'}</span></td>
       <td><div class="act-row">
-        <button class="ab ab-edit" onclick="openPlanPicker('${s.matric}','${s.tier||'free'}')"><i class="fa-solid fa-crown"></i> Plan</button>
-        <button class="ab" onclick="openStudentDetail('${s.matric}')">Detail</button>
-        <button class="ab ab-copy" onclick="revealLogin('${s.matric}','${s.password||s.matric}')">Login</button>
-        <button class="ab ab-edit" onclick="creditStudent('${s.matric}', ${s.credits||0})"><i class="fa-solid fa-coins"></i> Credit</button>
-        <button class="ab ab-edit" onclick="editStudent('${s.matric}')">Edit</button>
-        <button class="ab ${s.active?'ab-warn':'ab-ok'}" onclick="toggleActive('${s.matric}',${!s.active})">${s.active?'Suspend':'Activate'}</button>
-        <button class="ab ab-del" onclick="delStudent('${s.matric}')">Del</button>
+        <button class="ab ab-edit" onclick="openPlanPicker('${jsq(s.matric)}','${s.tier||'free'}')"><i class="fa-solid fa-crown"></i> Plan</button>
+        <button class="ab" onclick="openStudentDetail('${jsq(s.matric)}')">Detail</button>
+        <button class="ab ab-copy" onclick="revealLogin('${jsq(s.matric)}','${jsq(s.password||s.matric)}')">Login</button>
+        <button class="ab ab-edit" onclick="creditStudent('${jsq(s.matric)}', ${s.credits||0})"><i class="fa-solid fa-coins"></i> Credit</button>
+        <button class="ab ab-edit" onclick="editStudent('${jsq(s.matric)}')">Edit</button>
+        <button class="ab ${s.active?'ab-warn':'ab-ok'}" onclick="toggleActive('${jsq(s.matric)}',${!s.active})">${s.active?'Suspend':'Activate'}</button>
+        <button class="ab ab-del" onclick="delStudent('${jsq(s.matric)}')">Del</button>
       </div></td>
     </tr>`).join('')
   : '<tr class="empty-row"><td colspan="11">No students yet</td></tr>';
@@ -1320,7 +1523,7 @@ async function openStudentDetail(matric){
   document.getElementById('sd-body').innerHTML = '<div style="padding:20px;color:var(--t3);">Loading...</div>';
   document.getElementById('m-student-detail').classList.add('on');
   try{
-    const r = await adminFetch(`/api/admin/users/${matric}`, { headers: {} });
+    const r = await adminFetch(`/api/admin/users/${encodeURIComponent(matric)}`, { headers: {} });
     const d = await r.json();
     if(!r.ok){ document.getElementById('sd-body').innerHTML = `<div style="padding:20px;color:var(--no);">${d.error}</div>`; return; }
 
@@ -1333,23 +1536,23 @@ async function openStudentDetail(matric){
         <div style="background:var(--surf2);border-radius:12px;padding:12px;text-align:center;"><div style="font-weight:800;font-size:18px;">${d.contestsJoined.length}</div><div style="font-size:11px;color:var(--t3);">Contests</div></div>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-        <div style="font-size:13px;">Username: <b>${p.username ? '@'+p.username : 'not set'}</b></div>
-        <button class="ab ab-edit" onclick="forceResetUsername('${p.matric}')">Reset Username</button>
+        <div style="font-size:13px;">Username: <b>${p.username ? '@'+escHtml(p.username) : 'not set'}</b></div>
+        <button class="ab ab-edit" onclick="forceResetUsername('${jsq(p.matric)}')">Reset Username</button>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;background:var(--surf2);border-radius:12px;padding:10px 12px;">
         <div style="font-size:13px;">Plan: <b style="text-transform:capitalize;">${p.tier || 'free'}</b>${p.tierExpiresAt ? ` (until ${new Date(p.tierExpiresAt).toLocaleDateString()})` : ''}</div>
-        <button class="ab ab-edit" onclick="openPlanPicker('${p.matric}','${p.tier||'free'}',()=>openStudentDetail('${p.matric}'))"><i class="fa-solid fa-crown"></i> Change Plan</button>
+        <button class="ab ab-edit" onclick="openPlanPicker('${jsq(p.matric)}','${p.tier||'free'}',()=>openStudentDetail('${jsq(p.matric)}'))"><i class="fa-solid fa-crown"></i> Change Plan</button>
       </div>
-      <button class="ab ab-edit" style="margin-bottom:14px;" onclick="downloadCsv('/api/admin/users/${p.matric}/report.pdf', '${p.matric}-performance-report.pdf')"><i class="fa-solid fa-file-pdf"></i> Download Performance Report (PDF)</button>
+      <button class="ab ab-edit" style="margin-bottom:14px;" onclick="downloadCsv('/api/admin/users/${encodeURIComponent(jsq(p.matric))}/report.pdf', '${jsq(p.matric).replace(/[^A-Za-z0-9._-]/g,'_')}-performance-report.pdf')"><i class="fa-solid fa-file-pdf"></i> Download Performance Report (PDF)</button>
       <div style="font-weight:700;font-size:13px;margin-bottom:6px;">Recent Credit Transactions</div>
       <div style="max-height:140px;overflow-y:auto;margin-bottom:14px;">
-        ${d.credits.recentTransactions.slice(0,10).map(t => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd);font-size:12.5px;"><span>${t.reason}${t.note?' — '+escHtml(t.note):''}</span><span style="font-weight:700;color:${t.delta>0?'var(--ok)':'var(--no)'};">${t.delta>0?'+':''}${t.delta}</span></div>`).join('') || '<div style="color:var(--t3);font-size:12px;">None yet</div>'}
+        ${d.credits.recentTransactions.slice(0,10).map(t => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd);font-size:12.5px;"><span>${escHtml(t.reason)}${t.note?' — '+escHtml(t.note):''}</span><span style="font-weight:700;color:${t.delta>0?'var(--ok)':'var(--no)'};">${t.delta>0?'+':''}${t.delta}</span></div>`).join('') || '<div style="color:var(--t3);font-size:12px;">None yet</div>'}
       </div>
       <div style="font-weight:700;font-size:13px;margin-bottom:6px;">Transfers</div>
       <div style="max-height:120px;overflow-y:auto;margin-bottom:14px;">
         ${[...d.transfers.sent.map(t=>({...t,dir:'Sent to '+t.toMatric,amt:-t.totalDebited})), ...d.transfers.received.map(t=>({...t,dir:'From '+t.fromMatric,amt:t.amount}))]
           .sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).slice(0,10)
-          .map(t => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd);font-size:12.5px;"><span>${t.dir}</span><span style="font-weight:700;">${t.amt>0?'+':''}${t.amt}</span></div>`).join('') || '<div style="color:var(--t3);font-size:12px;">None yet</div>'}
+          .map(t => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd);font-size:12.5px;"><span>${escHtml(t.dir)}</span><span style="font-weight:700;">${t.amt>0?'+':''}${t.amt}</span></div>`).join('') || '<div style="color:var(--t3);font-size:12px;">None yet</div>'}
       </div>
       <div style="font-weight:700;font-size:13px;margin-bottom:6px;">Activity Log</div>
       <div style="max-height:120px;overflow-y:auto;">
@@ -1363,7 +1566,7 @@ async function forceResetUsername(matric){
   const newUsername = prompt('New username for ' + matric + ' (leave blank to clear it):');
   if(newUsername === null) return;
   try{
-    const r = await adminFetch(`/api/admin/students/${matric}/username`, {
+    const r = await adminFetch(`/api/admin/students/${encodeURIComponent(matric)}/username`, {
       method: 'PUT', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ username: newUsername || null }),
     });
@@ -1383,7 +1586,7 @@ async function creditStudent(matric, currentBalance) {
   if (!amount || isNaN(amount)) { toast('Enter a non-zero whole number'); return; }
   const note = prompt('Optional note for this transaction:', '') || '';
   try {
-    const r = await adminFetch(`/api/admin/students/${matric}/credits`, {
+    const r = await adminFetch(`/api/admin/students/${encodeURIComponent(matric)}/credits`, {
       method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ amount, note })
     });
@@ -1533,7 +1736,7 @@ async function saveStudent() {
 }
 
 async function toggleActive(matric, active) {
-  await adminFetch(`/api/admin/students/${matric}`, {
+  await adminFetch(`/api/admin/students/${encodeURIComponent(matric)}`, {
     method: 'PUT', headers: {'Content-Type':'application/json'},
     body: JSON.stringify({ active })
   });
@@ -1544,7 +1747,7 @@ async function toggleActive(matric, active) {
 function delStudent(matric) {
   document.getElementById('m-del-sub').textContent = `Delete student ${matric} and all their scores? This cannot be undone.`;
   delFn = async () => {
-    await adminFetch(`/api/admin/students/${matric}`, { method:'DELETE', headers:{} });
+    await adminFetch(`/api/admin/students/${encodeURIComponent(matric)}`, { method:'DELETE', headers:{} });
     toast('Student deleted');
     loadStudents();
     closeM('m-del');
@@ -1598,9 +1801,9 @@ function renderCodes(list) {
     const badge = c.status==='unused'?'b-purple':c.status==='used'?'b-ok':'b-no';
     return `<tr>
       <td><span style="font-family:var(--ff-h);font-size:14px;font-weight:800;letter-spacing:.05em">${c.code}</span></td>
-      <td style="color:var(--t3);font-size:12px">${c.batch||'—'}</td>
+      <td style="color:var(--t3);font-size:12px">${escHtml(c.batch)||'—'}</td>
       <td><span class="badge ${badge}">${c.status}</span></td>
-      <td>${c.usedBy||'—'}</td>
+      <td>${escHtml(c.usedBy)||'—'}</td>
       <td style="color:var(--t4);font-size:12px">${c.usedAt?fmtDate(c.usedAt):'—'}</td>
       <td><div class="act-row">
         ${c.status==='unused'?`<button class="ab ab-warn" onclick="expireCode('${c._id}')">Expire</button>`:''}
@@ -1686,12 +1889,12 @@ function renderPayments(list) {
   document.getElementById('pay-total-lbl').textContent = 'Total: ₦' + total.toLocaleString();
   document.getElementById('pay-body').innerHTML = list.length ? list.map(p => `
     <tr>
-      <td style="font-weight:700">${p.name||'—'}</td>
-      <td style="color:var(--t3)">${p.matric||'—'}</td>
+      <td style="font-weight:700">${escHtml(p.name)||'—'}</td>
+      <td style="color:var(--t3)">${escHtml(p.matric)||'—'}</td>
       <td style="font-weight:800;color:var(--ok)">₦${(p.amount||0).toLocaleString()}</td>
       <td><span class="badge b-brand" style="text-transform:capitalize">${(p.method||'').replace('_',' ')}</span></td>
-      <td style="font-size:12px;color:var(--t3)">${p.reference||'—'}</td>
-      <td style="font-size:12px;color:var(--t3)">${p.note||'—'}</td>
+      <td style="font-size:12px;color:var(--t3)">${escHtml(p.reference)||'—'}</td>
+      <td style="font-size:12px;color:var(--t3)">${escHtml(p.note)||'—'}</td>
       <td style="font-size:12px;color:var(--t4)">${fmtDate(p.createdAt)}</td>
       <td><button class="ab ab-del" onclick="delPayment('${p._id}')">Del</button></td>
     </tr>`).join('')
@@ -1783,10 +1986,10 @@ function renderCourses(list) {
   document.getElementById('course-body').innerHTML = list.length ? list.map(c => `
     <tr>
       <td><span class="badge" style="background:${c.color}22;color:${c.color}">${c.courseCode}</span></td>
-      <td style="font-size:13px">${c.courseTitle}</td>
-      <td style="font-size:12px;color:var(--t3)">${c.department||'—'}</td>
+      <td style="font-size:13px">${escHtml(c.courseTitle)}</td>
+      <td style="font-size:12px;color:var(--t3)">${escHtml(c.department)||'—'}</td>
       <td style="font-size:12px;color:var(--t3)">${c.level||'—'}</td>
-      <td style="max-width:220px;font-size:11px;color:var(--t3)">${(c.topics||[]).join(', ')||'—'}</td>
+      <td style="max-width:220px;font-size:11px;color:var(--t3)">${escHtml((c.topics||[]).join(', '))||'—'}</td>
       <td><div class="act-row">
         <button class="ab ab-edit" onclick="editCourse('${c._id}')">Edit</button>
         <button class="ab ab-del" onclick="delCourse('${c._id}')">Del</button>
@@ -2540,6 +2743,9 @@ async function deleteTemplate(id){
   }catch(e){}
 }
 
+// jsq: value for use inside an inline onclick='...' string — strips everything but the
+// characters a matric can legally contain, so a hostile value can't break out of the handler.
+function jsq(s){ return String(s ?? '').replace(/[^A-Za-z0-9 _\-\/.]/g, ''); }
 function escHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 // ══════════════════════════════════════════════════════════════

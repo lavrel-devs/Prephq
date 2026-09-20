@@ -9,6 +9,12 @@ const AdminSchema = new mongoose.Schema({
   passwordHash: { type: String, required: true },
   role:         { type: String, default: 'admin' },
   active:       { type: Boolean, default: true },
+  // Access control. Every pre-existing admin (no field stored) counts as
+  // full access, so nothing changes for them. Limited admins have
+  // fullAccess=false plus a list of areas — see utils/adminAccess.js.
+  fullAccess:   { type: Boolean, default: true },
+  permissions:  { type: [String], default: [] },
+  createdBy:    { type: String, default: '' },
   createdAt:    { type: Date, default: Date.now },
 });
 

@@ -78,10 +78,15 @@ SettingsSchema.pre('save', function (next) {
 });
 
 // Fetches the singleton settings doc, creating it with defaults on first use.
+// Upsert (rather than findOne-then-create) so two requests hitting a
+// brand-new database at the same moment can't both try to create the
+// singleton and have one die on the unique `key` index.
 SettingsSchema.statics.getGlobal = async function () {
-  let doc = await this.findOne({ key: 'global' });
-  if (!doc) doc = await this.create({ key: 'global' });
-  return doc;
+  return this.findOneAndUpdate(
+    { key: 'global' },
+    { $setOnInsert: { key: 'global' } },
+    { new: true, upsert: true, setDefaultsOnInsert: true },
+  );
 };
 
 module.exports = mongoose.model('Settings', SettingsSchema);

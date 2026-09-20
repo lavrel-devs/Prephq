@@ -10,6 +10,10 @@ const QuestionAttempt = require('../../models/QuestionAttempt');
 const { requireAdmin } = require('../../middleware/auth');
 const { applyCreditDelta } = require('../../utils/credits');
 const { generatePerformanceReportPDF } = require('../../services/report.service');
+const Course = require('../../models/Course');
+const { csvRow } = require('../../utils/csv');
+const { escapeRegex } = require('../../utils/validate');
+const { forgetSubject } = require('../../middleware/auth');
 
 const router = express.Router();
 router.use(requireAdmin);
@@ -70,6 +74,33 @@ router.get('/users/search', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// (course-list and tier-distribution are declared above: Express matches in order and
+// '/users/:matric' would otherwise swallow them as if they were matric numbers.)
+// GET /api/admin/users/course-list — every distinct course at least
+// one student has registered for, with a headcount — powers the
+// dropdown/filter for the endpoint above.
+router.get('/users/course-list', async (req, res) => {
+  try {
+    const rows = await Student.aggregate([
+      { $unwind: '$selectedCourses' },
+      { $group: { _id: '$selectedCourses', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+    ]);
+    res.json(rows.map(r => ({ course: r._id, students: r.count })));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// GET /api/admin/users/tier-distribution — counts per tier, for the
+// admin dashboard's monetization overview.
+router.get('/users/tier-distribution', async (req, res) => {
+  try {
+    const rows = await Student.aggregate([{ $group: { _id: '$tier', count: { $sum: 1 } } }]);
+    const dist = { free: 0, basic: 0, pro: 0 };
+    rows.forEach(r => { dist[r._id || 'free'] = r.count; });
+    res.json(dist);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // GET /api/admin/users/:matric — full detail view: credits, transactions,
 // quizzes, contests joined, activity log (session-derived).
 router.get('/users/:matric', async (req, res) => {
@@ -88,7 +119,7 @@ router.get('/users/:matric', async (req, res) => {
     ]);
 
     res.json({
-      profile: { ...student, passwordHash: undefined },
+      profile: { ...student, passwordHash: undefined, password: undefined, devices: undefined },
       quizzes: { count: scores.length, recent: scores },
       credits: { balance: student.credits || 0, recentTransactions: transactions },
       contestsJoined,
@@ -117,6 +148,7 @@ router.put('/users/:matric/status', async (req, res) => {
       { new: true },
     ).lean();
     if (!student) return res.status(404).json({ error: 'Student not found' });
+    forgetSubject('student', student.matric);
 
     // Deactivating also revokes any live sessions so the ban takes
     // effect immediately rather than waiting for their token to expire.
@@ -136,12 +168,18 @@ router.put('/users/:matric/status', async (req, res) => {
 router.get('/users/by-course/:course', async (req, res) => {
   try {
     const course = req.params.course.trim();
-    const students = await Student.find({ selectedCourses: course }).select('matric name username tier').lean();
+    // selectedCourses / attempts hold the course as a key ("chm141") or a code ("CHM141")
+    // depending on which screen wrote them — match every spelling, case-insensitively.
+    const key = course.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const courseDoc = await Course.findOne({ key }).lean();
+    const spellings = [...new Set([course, key, courseDoc?.key, courseDoc?.courseCode].filter(Boolean))];
+    const ci = spellings.map(c => new RegExp(`^${escapeRegex(c)}$`, 'i'));
+    const students = await Student.find({ selectedCourses: { $in: ci } }).select('matric name username tier').lean();
     if (!students.length) return res.json({ course, students: [] });
 
     const matrics = students.map(s => s.matric);
     const agg = await QuestionAttempt.aggregate([
-      { $match: { matric: { $in: matrics }, course } },
+      { $match: { matric: { $in: matrics }, course: { $in: ci } } },
       { $group: { _id: '$matric', attempts: { $sum: 1 }, correct: { $sum: { $cond: ['$correct', 1, 0] } } } },
     ]);
     const statsByMatric = {};
@@ -158,20 +196,6 @@ router.get('/users/by-course/:course', async (req, res) => {
         accuracy: statsByMatric[s.matric]?.accuracy ?? null,
       })).sort((a, b) => b.attempts - a.attempts),
     });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-// GET /api/admin/users/course-list — every distinct course at least
-// one student has registered for, with a headcount — powers the
-// dropdown/filter for the endpoint above.
-router.get('/users/course-list', async (req, res) => {
-  try {
-    const rows = await Student.aggregate([
-      { $unwind: '$selectedCourses' },
-      { $group: { _id: '$selectedCourses', count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
-    ]);
-    res.json(rows.map(r => ({ course: r._id, students: r.count })));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -202,8 +226,11 @@ router.put('/users/:matric/tier', async (req, res) => {
     if (!['free', 'basic', 'pro'].includes(tier))
       return res.status(400).json({ error: 'tier must be free, basic, or pro' });
 
-    const tierExpiresAt = (tier !== 'free' && durationDays > 0)
-      ? new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000)
+    const days = Number(durationDays);
+    if (durationDays !== undefined && durationDays !== null && durationDays !== '' && (!Number.isFinite(days) || days < 0 || days > 3650))
+      return res.status(400).json({ error: 'durationDays must be a number between 0 and 3650' });
+    const tierExpiresAt = (tier !== 'free' && days > 0)
+      ? new Date(Date.now() + days * 24 * 60 * 60 * 1000)
       : null;
 
     const student = await Student.findOneAndUpdate(
@@ -215,11 +242,11 @@ router.put('/users/:matric/tier', async (req, res) => {
 
     // Optional: log the payment that justified this grant, so it shows
     // up alongside every other payment in the admin's records.
-    if (logPayment && logPayment.amount > 0) {
+    if (logPayment && Number(logPayment.amount) > 0) {
       await Payment.create({
         matric: student.matric,
         name: student.name,
-        amount: logPayment.amount,
+        amount: Number(logPayment.amount),
         method: logPayment.method || 'bank_transfer',
         reference: logPayment.reference || '',
         note: logPayment.note || `${tier} tier${durationDays ? ` — ${durationDays} days` : ''}`,
@@ -231,30 +258,20 @@ router.put('/users/:matric/tier', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// GET /api/admin/users/tier-distribution — counts per tier, for the
-// admin dashboard's monetization overview.
-router.get('/users/tier-distribution', async (req, res) => {
-  try {
-    const rows = await Student.aggregate([{ $group: { _id: '$tier', count: { $sum: 1 } } }]);
-    const dist = { free: 0, basic: 0, pro: 0 };
-    rows.forEach(r => { dist[r._id || 'free'] = r.count; });
-    res.json(dist);
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
 // POST /api/admin/users/bulk-grant — grant/deduct credits across many
 // matrics at once, one CreditTransaction each for a clean audit trail.
 router.post('/users/bulk-grant', async (req, res) => {
   try {
     const { matrics, amount, note } = req.body;
     if (!Array.isArray(matrics) || matrics.length === 0) return res.status(400).json({ error: 'matrics must be a non-empty array' });
-    if (!Number.isFinite(amount) || amount === 0) return res.status(400).json({ error: 'amount must be a non-zero number' });
+    if (!Number.isInteger(amount) || amount === 0 || Math.abs(amount) > 1000000) return res.status(400).json({ error: 'amount must be a non-zero whole number' });
+    if (matrics.length > 500) return res.status(400).json({ error: 'At most 500 students per bulk action' });
 
     const results = [];
     for (const matric of matrics) {
       try {
         const { balance } = await applyCreditDelta({
-          matric: matric.toUpperCase(),
+          matric: String(matric).toUpperCase(),
           delta: amount,
           reason: amount > 0 ? 'admin_grant' : 'admin_deduct',
           note: note || 'Bulk admin adjustment',
@@ -274,7 +291,8 @@ router.post('/users/bulk-grant', async (req, res) => {
 router.get('/credits/leaderboard', async (req, res) => {
   try {
     const filter = {};
-    if (req.query.minCredits) filter.credits = { $gte: parseInt(req.query.minCredits, 10) };
+    const minCredits = parseInt(req.query.minCredits, 10);
+    if (Number.isFinite(minCredits)) filter.credits = { $gte: minCredits };
     const students = await Student.find(filter).sort({ credits: -1 }).limit(200).lean();
     res.json(students.map(s => ({ matric: s.matric, username: s.username, name: s.name, credits: s.credits || 0 })));
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -289,9 +307,7 @@ router.get('/export/users', async (req, res) => {
   try {
     const students = await Student.find().sort({ createdAt: -1 }).lean();
     const rows = ['matric,name,username,credits,active,createdAt'];
-    students.forEach(s => {
-      rows.push([s.matric, s.name, s.username || '', s.credits || 0, s.active !== false, s.createdAt?.toISOString?.() || ''].join(','));
-    });
+    students.forEach(s => rows.push(csvRow([s.matric, s.name, s.username || '', s.credits || 0, s.active !== false, s.createdAt])));
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', 'attachment; filename="prephq-users.csv"');
     res.send(rows.join('\n'));
@@ -303,9 +319,7 @@ router.get('/export/transactions', async (req, res) => {
   try {
     const txs = await CreditTransaction.find().sort({ createdAt: -1 }).limit(5000).lean();
     const rows = ['matric,delta,balanceAfter,reason,note,actor,createdAt'];
-    txs.forEach(t => {
-      rows.push([t.matric, t.delta, t.balanceAfter, t.reason, `"${(t.note || '').replace(/"/g, '""')}"`, t.actor, t.createdAt?.toISOString?.() || ''].join(','));
-    });
+    txs.forEach(t => rows.push(csvRow([t.matric, t.delta, t.balanceAfter, t.reason, t.note || '', t.actor, t.createdAt])));
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', 'attachment; filename="prephq-transactions.csv"');
     res.send(rows.join('\n'));
@@ -317,9 +331,7 @@ router.get('/export/transfers', async (req, res) => {
   try {
     const transfers = await Transfer.find().sort({ createdAt: -1 }).limit(5000).lean();
     const rows = ['fromMatric,toMatric,amount,fee,totalDebited,status,createdAt'];
-    transfers.forEach(t => {
-      rows.push([t.fromMatric, t.toMatric, t.amount, t.fee, t.totalDebited, t.status, t.createdAt?.toISOString?.() || ''].join(','));
-    });
+    transfers.forEach(t => rows.push(csvRow([t.fromMatric, t.toMatric, t.amount, t.fee, t.totalDebited, t.status, t.createdAt])));
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', 'attachment; filename="prephq-transfers.csv"');
     res.send(rows.join('\n'));
@@ -330,14 +342,17 @@ router.get('/export/transfers', async (req, res) => {
 router.get('/transfers', async (req, res) => {
   try {
     const filter = {};
-    if (req.query.matric) {
+    if (typeof req.query.matric === 'string' && req.query.matric) {
       const m = req.query.matric.toUpperCase();
       filter.$or = [{ fromMatric: m }, { toMatric: m }];
     }
     if (req.query.from || req.query.to) {
       filter.createdAt = {};
-      if (req.query.from) filter.createdAt.$gte = new Date(req.query.from);
-      if (req.query.to) filter.createdAt.$lte = new Date(req.query.to);
+      const from = req.query.from ? new Date(req.query.from) : null;
+      const to = req.query.to ? new Date(req.query.to) : null;
+      if ((from && Number.isNaN(from.getTime())) || (to && Number.isNaN(to.getTime()))) return res.status(400).json({ error: 'from/to must be valid dates' });
+      if (from) filter.createdAt.$gte = from;
+      if (to) filter.createdAt.$lte = to;
     }
     const transfers = await Transfer.find(filter).sort({ createdAt: -1 }).limit(200).lean();
     res.json(transfers);

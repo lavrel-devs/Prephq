@@ -5,8 +5,11 @@ const { requireStudent } = require('../middleware/auth');
 const { contestJoinLimiter } = require('../middleware/rateLimit');
 const {
   joinContest, updateParticipantScore, computeLeaderboard,
-  createTeam, joinTeam, updateTeamScore, computeTeamLeaderboard, findStudentTeam,
+  createTeam, joinTeam, updateTeamScore, computeTeamLeaderboard, findStudentTeam, submitQuizScore,
 } = require('../services/contest.service');
+const { isObjectId } = require('../utils/validate');
+
+const VISIBLE_STATUSES = ['upcoming', 'live', 'paused', 'ended', 'cancelled']; // never 'draft'
 
 const router = express.Router();
 
@@ -26,8 +29,10 @@ function summarize(contest, matric) {
 // GET /api/contests — list, filterable by status via ?status=upcoming|live|ended
 router.get('/contests', requireStudent, async (req, res) => {
   try {
+    // `?status[$ne]=x` parses into an object in Express; only accept a plain known status,
+    // otherwise students could list unpublished drafts.
     const filter = {};
-    if (req.query.status) filter.status = req.query.status;
+    if (typeof req.query.status === 'string' && VISIBLE_STATUSES.includes(req.query.status)) filter.status = req.query.status;
     else filter.status = { $in: ['upcoming', 'live', 'paused'] }; // default: only active-ish contests
 
     const contests = await Contest.find(filter).sort({ startTime: 1 }).lean();
@@ -47,8 +52,9 @@ router.get('/contests/past', requireStudent, async (req, res) => {
 // returns `myTeam` (with teamCode to share) instead of `myEntry`.
 router.get('/contests/:id', requireStudent, async (req, res) => {
   try {
+    if (!isObjectId(req.params.id)) return res.status(404).json({ error: 'Contest not found' });
     const contest = await Contest.findById(req.params.id).lean();
-    if (!contest) return res.status(404).json({ error: 'Contest not found' });
+    if (!contest || contest.status === 'draft') return res.status(404).json({ error: 'Contest not found' });
 
     if (contest.teamBased) {
       const myTeam = (contest.teams || []).find(t => t.members.some(m => m.matric === req.student.sub)) || null;
@@ -62,11 +68,12 @@ router.get('/contests/:id', requireStudent, async (req, res) => {
 // POST /api/contests/:id/join — individual (non-team) contests only.
 router.post('/contests/:id/join', requireStudent, contestJoinLimiter, async (req, res) => {
   try {
+    if (!isObjectId(req.params.id)) return res.status(404).json({ error: 'Contest not found' });
     const [contest, student] = await Promise.all([
       Contest.findById(req.params.id),
       Student.findOne({ matric: req.student.sub }),
     ]);
-    if (!contest) return res.status(404).json({ error: 'Contest not found' });
+    if (!contest || contest.status === 'draft') return res.status(404).json({ error: 'Contest not found' });
     if (!student) return res.status(404).json({ error: 'Student not found' });
     if (contest.teamBased) return res.status(400).json({ error: 'This is a team-based contest — use /team/create or /team/join' });
 
@@ -82,11 +89,12 @@ router.post('/contests/:id/join', requireStudent, contestJoinLimiter, async (req
 router.post('/contests/:id/team/create', requireStudent, contestJoinLimiter, async (req, res) => {
   try {
     const { teamName } = req.body;
+    if (!isObjectId(req.params.id)) return res.status(404).json({ error: 'Contest not found' });
     const [contest, student] = await Promise.all([
       Contest.findById(req.params.id),
       Student.findOne({ matric: req.student.sub }),
     ]);
-    if (!contest) return res.status(404).json({ error: 'Contest not found' });
+    if (!contest || contest.status === 'draft') return res.status(404).json({ error: 'Contest not found' });
     if (!student) return res.status(404).json({ error: 'Student not found' });
 
     const team = await createTeam(contest, student, teamName);
@@ -101,11 +109,12 @@ router.post('/contests/:id/team/create', requireStudent, contestJoinLimiter, asy
 router.post('/contests/:id/team/join', requireStudent, contestJoinLimiter, async (req, res) => {
   try {
     const { teamCode } = req.body;
+    if (!isObjectId(req.params.id)) return res.status(404).json({ error: 'Contest not found' });
     const [contest, student] = await Promise.all([
       Contest.findById(req.params.id),
       Student.findOne({ matric: req.student.sub }),
     ]);
-    if (!contest) return res.status(404).json({ error: 'Contest not found' });
+    if (!contest || contest.status === 'draft') return res.status(404).json({ error: 'Contest not found' });
     if (!student) return res.status(404).json({ error: 'Student not found' });
 
     const team = await joinTeam(contest, student, teamCode);
@@ -120,8 +129,9 @@ router.post('/contests/:id/team/join', requireStudent, contestJoinLimiter, async
 // team-based contests, individual leaderboard otherwise.
 router.get('/contests/:id/leaderboard', requireStudent, async (req, res) => {
   try {
+    if (!isObjectId(req.params.id)) return res.status(404).json({ error: 'Contest not found' });
     const contest = await Contest.findById(req.params.id).lean();
-    if (!contest) return res.status(404).json({ error: 'Contest not found' });
+    if (!contest || contest.status === 'draft') return res.status(404).json({ error: 'Contest not found' });
     res.json(contest.teamBased ? computeTeamLeaderboard(contest) : computeLeaderboard(contest));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -131,6 +141,7 @@ router.get('/contests/:id/leaderboard', requireStudent, async (req, res) => {
 // answer field so it can't be inspected client-side before submitting.
 router.get('/contests/:id/quiz-questions', requireStudent, async (req, res) => {
   try {
+    if (!isObjectId(req.params.id)) return res.status(404).json({ error: 'Contest not found' });
     const contest = await Contest.findById(req.params.id).populate('questions').lean();
     if (!contest) return res.status(404).json({ error: 'Contest not found' });
     if (contest.type !== 'quiz') return res.status(400).json({ error: 'This is not a quiz-type contest' });
@@ -139,14 +150,14 @@ router.get('/contests/:id/quiz-questions', requireStudent, async (req, res) => {
     if (contest.teamBased) {
       const team = (contest.teams || []).find(t => t.members.some(m => m.matric === req.student.sub));
       if (!team) return res.status(403).json({ error: 'Join or create a team first' });
-      if (team.score > 0) return res.status(400).json({ error: 'Your team has already submitted this quiz' });
+      if (team.submittedAt || team.score > 0) return res.status(400).json({ error: 'Your team has already submitted this quiz' });
     } else {
       const already = contest.participants.find(p => p.matric === req.student.sub);
       if (!already) return res.status(403).json({ error: 'Join the contest first' });
-      if (already.score > 0) return res.status(400).json({ error: 'You have already submitted your quiz for this contest' });
+      if (already.submittedAt || already.score > 0) return res.status(400).json({ error: 'You have already submitted your quiz for this contest' });
     }
 
-    const questions = (contest.questions || []).map(q => ({ _id: q._id, course: q.course, q: q.q, opts: q.opts }));
+    const questions = (contest.questions || []).filter(Boolean).map(q => ({ _id: q._id, course: q.course, q: q.q, opts: q.opts }));
     res.json({ questions, contestTitle: contest.title });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -158,7 +169,8 @@ router.get('/contests/:id/quiz-questions', requireStudent, async (req, res) => {
 router.post('/contests/:id/submit-quiz', requireStudent, async (req, res) => {
   try {
     const { answers } = req.body;
-    if (!answers || typeof answers !== 'object') return res.status(400).json({ error: 'answers object is required' });
+    if (!answers || typeof answers !== 'object' || Array.isArray(answers)) return res.status(400).json({ error: 'answers object is required' });
+    if (!isObjectId(req.params.id)) return res.status(404).json({ error: 'Contest not found' });
 
     const contest = await Contest.findById(req.params.id).populate('questions');
     if (!contest) return res.status(404).json({ error: 'Contest not found' });
@@ -168,26 +180,27 @@ router.post('/contests/:id/submit-quiz', requireStudent, async (req, res) => {
     if (contest.teamBased) {
       const team = findStudentTeam(contest, req.student.sub);
       if (!team) return res.status(403).json({ error: 'Join or create a team first' });
-      if (team.score > 0) return res.status(400).json({ error: 'Your team has already submitted this quiz' });
+      if (team.submittedAt || team.score > 0) return res.status(400).json({ error: 'Your team has already submitted this quiz' });
     } else {
       const participant = contest.participants.find(p => p.matric === req.student.sub);
       if (!participant) return res.status(403).json({ error: 'Join the contest first' });
-      if (participant.score > 0) return res.status(400).json({ error: 'You have already submitted your quiz for this contest' });
+      if (participant.submittedAt || participant.score > 0) return res.status(400).json({ error: 'You have already submitted your quiz for this contest' });
     }
 
+    // Questions deleted from the bank after the contest was built come back as null.
+    const questions = (contest.questions || []).filter(Boolean);
     let correct = 0;
-    for (const q of contest.questions) {
+    for (const q of questions) {
       const picked = answers[String(q._id)];
       if (Number.isInteger(picked) && picked === q.ans) correct++;
     }
-    const score = contest.questions.length ? Math.round((correct / contest.questions.length) * 100) : 0;
+    const score = questions.length ? Math.round((correct / questions.length) * 100) : 0;
 
-    if (contest.teamBased) await updateTeamScore(contest, req.student.sub, score);
-    else await updateParticipantScore(contest, req.student.sub, score);
+    await submitQuizScore(contest._id, req.student.sub, score);
 
-    res.json({ success: true, score, correct, total: contest.questions.length });
+    res.json({ success: true, score, correct, total: questions.length });
   } catch (e) {
-    const status = { NOT_PARTICIPANT: 403 }[e.code] || 500;
+    const status = { NOT_PARTICIPANT: 403, ALREADY_SUBMITTED: 409 }[e.code] || 500;
     res.status(status).json({ error: e.message, code: e.code || 'SERVER_ERROR' });
   }
 });
@@ -198,12 +211,22 @@ router.post('/contests/:id/submit-quiz', requireStudent, async (req, res) => {
 router.post('/contests/:id/score', requireStudent, async (req, res) => {
   try {
     const { score } = req.body;
-    if (!Number.isFinite(score)) return res.status(400).json({ error: 'A numeric score is required' });
+    if (!Number.isFinite(score) || score < 0 || score > 100000) return res.status(400).json({ error: 'A score between 0 and 100000 is required' });
+    if (!isObjectId(req.params.id)) return res.status(404).json({ error: 'Contest not found' });
 
     const contest = await Contest.findById(req.params.id);
     if (!contest) return res.status(404).json({ error: 'Contest not found' });
     if (contest.type === 'quiz') return res.status(400).json({ error: 'Use /submit-quiz for quiz-type contests' });
     if (contest.status !== 'live') return res.status(400).json({ error: 'This contest is not live' });
+
+    if (contest.type === 'raffle') return res.status(400).json({ error: 'Raffle contests are not scored' });
+
+    // Client-reported scores can only go UP (a submitted result can't be quietly rewritten).
+    // NOTE: this is still client-reported — see README "known limitations".
+    const mine = contest.teamBased
+      ? findStudentTeam(contest, req.student.sub)
+      : contest.participants.find(p => p.matric === req.student.sub);
+    if (mine && score <= (mine.score || 0)) return res.json({ success: true, unchanged: true });
 
     if (contest.teamBased) await updateTeamScore(contest, req.student.sub, score);
     else await updateParticipantScore(contest, req.student.sub, score);
