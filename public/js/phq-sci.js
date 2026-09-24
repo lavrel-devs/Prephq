@@ -97,8 +97,20 @@
     fig.textContent = ''; const s = document.createElement('code'); s.textContent = smiles; s.title = 'Could not draw this structure'; fig.appendChild(s);
   }
 
+  // AI text that has LaTeX but forgot the $…$ (e.g. "\\frac{2}{5}" on its own) — wrap it so it renders.
+  function fixBare(root) {
+    const F = window.PhqLatexFix; if (!F || !F.hasCmd(root.textContent || '')) return;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode: (n) => F.hasCmd(n.nodeValue) && !n.parentElement.closest('.katex,.phq-mol,[data-nosci],textarea,script,style,code,pre')
+        ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT,
+    });
+    const nodes = []; while (walker.nextNode()) nodes.push(walker.currentNode);
+    for (const n of nodes) { const fixed = F.fixBareLatex(n.nodeValue); if (fixed !== n.nodeValue) n.nodeValue = fixed; }
+  }
+
   function process(root) {
     if (!root || root.nodeType !== 1 || root.closest('[data-nosci]')) return;
+    fixBare(root);
     const text = root.textContent || '';
     if (/\[\[\s*smiles/i.test(text)) renderStructures(root);
     if (MATH_HINT.test(text)) renderMath(root);

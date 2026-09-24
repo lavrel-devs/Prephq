@@ -111,3 +111,7 @@ Added `/api/version` and a clear message when the browser has newer files than t
 - "✓ Mark followed up" on every row (expiring plans and inactive students), showing who and when, with Undo and a "Hide already followed up" switch. WhatsApp asks for confirmation if the student was already followed up. A mark is tied to that situation (the plan's expiry date / last-seen time), so renewed or returning-then-lapsed students appear fresh again.
 
 Not run against a live MongoDB or a real Groq key: queue, charge/refund flow and rendering were tested with stubs and jsdom. Molecule drawing needs a real browser canvas — try one SMILES on staging.
+
+## v1.6.1
+- Fixed maths showing as raw text (`\frac{…}`, `\text{moles Fe^{2+}} = …`): the AI sometimes wrote LaTeX without `$…$`. New `public/js/phq-latexfix.js` wraps such lines in `$…$` and turns ions/formulas inside `\text{…}` into `\ce{…}` (`\text{Fe^{2+}}` → `\ce{Fe^{2+}}`, `mol·L^{-1}` → `mol·L` with a real superscript). It runs in the browser (so notes/questions already saved get fixed on screen) and on the server for all new AI output (notes, quizzes, chat, answer explanations).
+- AI prompts now insist every LaTeX command sits inside `$…$`, ions go in `\ce{}`, one calculation step per line. Chat replies allow longer worked answers (500 → 900 tokens); explanations 220 → 420.

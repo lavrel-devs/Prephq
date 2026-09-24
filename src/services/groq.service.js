@@ -1,6 +1,7 @@
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const DEFAULT_MODEL = 'openai/gpt-oss-120b';
 const aiQueue = require('./aiQueue.service');
+const { fixBareLatex } = require('../../public/js/phq-latexfix.js');
 
 // Shared fetch wrapper for every Groq call in this file. Centralizes
 // the 30s hard timeout — without it, a slow/unreachable Groq endpoint
@@ -80,17 +81,17 @@ function cleanAiText(v) {
 }
 
 // Science formatting the app can draw: LaTeX (KaTeX + mhchem) and skeletal structures from SMILES.
-const SCI_FORMAT = `MATHS/SCIENCE FORMATTING (the app renders these): write maths in LaTeX between single dollar signs, e.g. $E = mc^2$, $\\frac{a}{b}$, $x^2 + 3x - 4 = 0$; put an important equation on its own line as $$ ... $$ (keep each $$...$$ on ONE line). Write chemical formulas and reactions with mhchem: $\\ce{H2SO4}$, $\\ce{2H2 + O2 -> 2H2O}$, $\\ce{Fe^{3+}}$. To show an organic or molecular structure, put its SMILES on its own line as [[smiles: CC(=O)O]] and the app draws the skeletal structure. Only give a SMILES you are certain is valid; never invent one. Never use a bare $ for money (write naira or ₦).`;
+const SCI_FORMAT = `MATHS/SCIENCE FORMATTING (the app renders these): write maths in LaTeX between single dollar signs, e.g. $E = mc^2$, $\\frac{a}{b}$, $x^2 + 3x - 4 = 0$; put an important equation on its own line as $$ ... $$ (keep each $$...$$ on ONE line). Write chemical formulas and reactions with mhchem: $\\ce{H2SO4}$, $\\ce{2H2 + O2 -> 2H2O}$, $\\ce{Fe^{3+}}$. To show an organic or molecular structure, put its SMILES on its own line as [[smiles: CC(=O)O]] and the app draws the skeletal structure. Only give a SMILES you are certain is valid; never invent one. Every LaTeX command MUST sit inside $…$ — never write a bare \\frac, \\text or \\times on its own. Put each calculation step on its own line, fully wrapped in $…$. Write ions and formulas with \\ce{} (e.g. $\\ce{Fe^{2+}}$, $\\ce{MnO4^-}$), never inside \\text{}; use \\text{} only for plain words and units, and write units like $\\text{mol L}^{-1}$. Never use a bare $ for money (write naira or ₦).`;
 
 // The model sometimes writes a single backslash inside a JSON string ("\\frac"), which JSON.parse silently turns
 // into a control character (form feed + "rac"). Put the backslash back so LaTeX survives.
 function fixLatexEscapes(v) {
-  return String(v)
+  return fixBareLatex(String(v)
     .replace(/\f(?=rac|orall|lat|box)/g, '\\f').replace(/\x0c/g, '\\f')
     .replace(/\x08(?=eta|ar|oldsymbol|ig|ullet|inom)/g, '\\b')
     .replace(/\t(?=heta|imes|au|ext|o\b|an|ilde|riangle|herefore)/g, '\\t')
     .replace(/\r(?=ightarrow|ho|ight|m\{|angle)/g, '\\r')
-    .replace(/\n(?=eq|abla|u\b|ot|eg|less|geq|parallel|i\b)/g, '\\n');
+    .replace(/\n(?=eq|abla|u\b|ot|eg|less|geq|parallel|i\b)/g, '\\n'));
 }
 
 function requireGroqKey() {
@@ -198,7 +199,7 @@ async function explainAnswer({ course, question, opts, correctIndex, chosenIndex
       ? 'The student answered correctly and wants to understand why.'
       : `The student chose "${String.fromCharCode(65 + chosenIndex)}. ${opts[chosenIndex]}", which is wrong.`;
 
-  const systemPrompt = `You are a patient tutor helping a Nigerian university student understand a quiz question they got wrong. Explain in 2-3 short sentences, plain language, no markdown headers or bullet lists — just prose. Explain why the correct answer is right, and briefly why the option they picked (if any) is a common misconception, without being condescending.`;
+  const systemPrompt = `You are a patient tutor helping a Nigerian university student understand a quiz question they got wrong. Explain in 2-3 short sentences, plain language, no markdown headers or bullet lists — just prose. Explain why the correct answer is right, and briefly why the option they picked (if any) is a common misconception, without being condescending. ${SCI_FORMAT}`;
   const userPrompt = `Course: ${course}\nQuestion: ${question}\nOptions:\n${lettered}\nCorrect answer: ${String.fromCharCode(65 + correctIndex)}. ${opts[correctIndex]}\n${chosenLine}\n\nExplain.`;
 
   const data = await callGroq({
@@ -208,7 +209,7 @@ async function explainAnswer({ course, question, opts, correctIndex, chosenIndex
       { role: 'user', content: userPrompt },
     ],
     temperature: 0.4,
-    max_tokens: tokenBudget(model, 220),
+    max_tokens: tokenBudget(model, 420),
     ...extraParams(model),
   });
 
@@ -218,7 +219,7 @@ async function explainAnswer({ course, question, opts, correctIndex, chosenIndex
     err.code = 'GROQ_EMPTY_RESPONSE';
     throw err;
   }
-  return explanation;
+  return fixBareLatex(explanation);
 }
 
 // Academic chatbot reply. `history` is the recent conversation
@@ -234,7 +235,7 @@ async function chatReply(history) {
     ...history.map(m => ({ role: m.role, content: m.content })),
   ];
 
-  const data = await callGroq({ model, messages, temperature: 0.5, max_tokens: tokenBudget(model, 500), ...extraParams(model) });
+  const data = await callGroq({ model, messages, temperature: 0.5, max_tokens: tokenBudget(model, 900), ...extraParams(model) });
 
   const reply = data?.choices?.[0]?.message?.content?.trim();
   if (!reply) {
@@ -242,7 +243,7 @@ async function chatReply(history) {
     err.code = 'GROQ_EMPTY_RESPONSE';
     throw err;
   }
-  return reply;
+  return fixBareLatex(reply);
 }
 
 // v1.4. Generates a structured, actionable study plan for a student
@@ -414,7 +415,7 @@ function cleanNoteText(raw) {
     .replace(/\n{3,}/g, '\n\n')
     .trim();
   if (t.length > 11500) { t = t.slice(0, 11500); t = t.slice(0, Math.max(t.lastIndexOf('\n'), 6000)).trim(); }
-  return t;
+  return fixBareLatex(t);
 }
 
 module.exports = { generateQuiz, explainAnswer, chatReply, generateStudyGuide, generateCourseOutline, generateCourseNote, generateStudentNote, cleanNoteText, fixLatexEscapes, SCI_FORMAT };
