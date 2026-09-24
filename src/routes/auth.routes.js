@@ -13,6 +13,10 @@ const { activateNewStudent } = require('../services/credit.service');
 const { checkAvailability } = require('../utils/username');
 const { usernameCheckLimiter } = require('../middleware/rateLimit');
 const { cleanMatric, cleanName, cleanPhone } = require('../utils/validate');
+const SupportRequest = require('../models/SupportRequest');
+const Settings = require('../models/Settings');
+const { requireStudent, forgetSubject } = require('../middleware/auth');
+const { uniqueCode, pickAdminContact, waUrl } = require('../services/support.service');
 
 const router = express.Router();
 
@@ -155,6 +159,66 @@ router.post('/register', async (req, res) => {
   } catch (e) { console.error('[auth] register', e); res.status(500).json({ error: 'Could not create the account. Please try again.' }); }
 });
 
+// ── Account recovery (no email, no automated reset) ───────────
+// POST /api/auth/recovery  { matric, name }
+// Files a request and returns a WhatsApp link to one of the admins, who verifies the student and issues a
+// temporary password from the Support inbox. The response is IDENTICAL whether or not the matric exists, so
+// this can't be used to find out who has an account.
+const recoveryLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, max: 8, standardHeaders: true, legacyHeaders: false,
+  message: { error: 'Too many requests from this device. Please try again in a while.' },
+});
+router.post('/recovery', recoveryLimiter, async (req, res) => {
+  try {
+    const matric = cleanMatric(req.body.matric);
+    const name = cleanName(req.body.name) || '';
+    if (!matric) return res.status(400).json({ error: 'Enter your matric number exactly as you registered it' });
+
+    const student = await Student.findOne({ matric }).select('name').lean();
+    let reqDoc = await SupportRequest.findOne({ type: 'recovery', matric, status: 'open', createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } });
+    let contact = await pickAdminContact();
+    if (!reqDoc) {
+      reqDoc = await SupportRequest.create({
+        type: 'recovery', code: await uniqueCode(), matric, name, studentFound: !!student,
+        assignedAdmin: contact ? contact.username : '',
+      });
+    }
+    const msg = `Hi PrepHQ support, I can't log in and need help with my password.\nRequest: ${reqDoc.code}\nMatric: ${matric}${name ? '\nName: ' + name : ''}`;
+    res.status(201).json({
+      code: reqDoc.code,
+      whatsappUrl: contact ? waUrl(contact.number, msg) : '',
+      hasContact: !!contact,
+      message: msg,
+    });
+  } catch (e) { res.status(500).json({ error: 'Could not send your request. Please try again.' }); }
+});
+
+// POST /api/auth/change-password  { currentPassword, newPassword }
+// Used for the forced change after an admin-issued temporary password, and for changing it any time.
+router.post('/change-password', requireStudent, rateLimit({ windowMs: 15 * 60 * 1000, max: 10, standardHeaders: true, legacyHeaders: false, message: { error: 'Too many attempts. Try again in a few minutes.' } }), async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (typeof currentPassword !== 'string' || typeof newPassword !== 'string') return res.status(400).json({ error: 'Enter your current and new password' });
+    if (newPassword.length < 8 || newPassword.length > 72) return res.status(400).json({ error: 'Choose a password of 8–72 characters' });
+
+    const student = await Student.findOne({ matric: req.student.sub });
+    if (!student) return res.status(404).json({ error: 'Student not found' });
+    if (!student.passwordHash || !(await bcrypt.compare(currentPassword, student.passwordHash)))
+      return res.status(401).json({ error: 'Your current password is incorrect' });
+    if (newPassword === currentPassword) return res.status(400).json({ error: 'Your new password must be different from the current one' });
+    if (newPassword.trim().toUpperCase() === student.matric) return res.status(400).json({ error: "Your password can't be the same as your matric number" });
+
+    student.passwordHash = await bcrypt.hash(newPassword, 10);
+    student.password = '';
+    student.mustChangePassword = false;
+    await student.save();
+    // Every other device is signed out; this one stays.
+    await Session.updateMany({ subjectId: student.matric, role: 'student', _id: { $ne: req.student.sid }, revoked: { $ne: true } }, { revoked: true, revokedAt: new Date() });
+    forgetSubject('student', student.matric);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: 'Could not change your password. Please try again.' }); }
+});
+
 // GET /api/auth/username-check/:username — public availability check for
 // the signup form and the admin "Add Student" form, both of which run
 // before any login session exists. Read-only, rate-limited; same check
@@ -219,6 +283,7 @@ router.post('/login', loginLimiter, async (req, res) => {
     });
 
     res.json({
+      mustChangePassword: !!student.mustChangePassword,
       matric: student.matric,
       name: student.name,
       role: student.role,

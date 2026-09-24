@@ -66,3 +66,48 @@ Fixes/improvements made in this pass:
 - **Exam countdown:** pick the course from your registered courses, optional exam time; shows "PHY102 - Exam in 12 days", "tomorrow", "today" with hours/minutes remaining when a time is set, and hides once the exam has passed. No date = no banner.
 - Saved-quiz course names are escaped; AI-quiz inputs no longer overflow on narrow phones.
 Not done / limits: no online payment gateway exists, so Premium is granted by an admin (weekly/monthly/yearly/lifetime); no password-reset flow exists in the app; no file/image/voice AI.
+
+## v1.5.0 — ten new features (no payment gateway, no email/API dependencies)
+1. **WhatsApp account recovery.** Login page -> "Forgot password?" -> matric + name -> request code + a WhatsApp link to an admin (admins with a saved number take turns, fewest open requests first; falls back to the support number in Settings). The reply is identical whether or not the matric exists. Admin -> Support -> "Temp password" issues a one-time password, signs the student out everywhere and forces a new password at next login (`/change-password`; other APIs return PASSWORD_CHANGE_REQUIRED until done).
+2. **Upgrade requests.** "Message admin to upgrade" (paywall + profile) now files a request and opens WhatsApp; Support -> "Grant plan" activates the plan and logs the payment.
+3. **Exam history & readiness** (dashboard menu): per-course readiness (accuracy x confidence, shown transparently) and mock-exam history with topic breakdowns.
+4. **Study plan & progress tracker**: today's checklist built from real data (goal, weak topic, due flashcards, exam countdown, least-practised course), streak and 14-day activity.
+5. **Weak-topic revision queue**: active topics with Drill / AI drill buttons, and topics you've turned around.
+6. **"Ask AI why"** on wrong answers opens the AI tutor with the question pre-filled (nothing is sent until the student presses send).
+7. **Admin WhatsApp follow-ups**: plans expiring/just ended, and inactive students, each with a ready-made WhatsApp message.
+8. **Course notes & outlines**: admins write notes per course/topic; students read them and jump to practice questions for the topic.
+9. **Report a question**: students report wrong/unclear questions; Support -> fix the answer key, resolve or reject.
+10. **Achievements**: 10 earned badges (first quiz, 100/500/1000 questions, 7/30-day streaks, first mock exam, perfect score, weakness conquered, contest win); equip one on the leaderboard.
+New admin permission area **Support requests**; feature switches added for Exam history, Study plan and Course notes. Login no longer trims passwords. Tested: pure logic units, stubbed server tests (recovery routing/no-leak, permissions, temp password, forced-change gate) and browser rendering of every new screen. Not tested against a live database.
+
+## v1.5.1 — Course Notes: notes-only reader + AI note builder
+- **Student Course Notes is now reading only.** The "Practise" buttons and the topic list built from question tags are gone. Students see a list of the published notes for a course (with read time), open one in a reader, and move Previous/Next. Practice questions stay in the rest of the app. Only approved notes are ever returned by the API.
+- **Admin AI note builder** (Admin -> Course Notes): "Build topic outline" reads the past questions already uploaded for the course, merges spelling variants of tags, groups untagged questions, and arranges the topics in teaching order. "Write note" (or "Write all missing notes") has the AI write simple, thorough notes per topic using those past questions as evidence of what is examined. Every note is saved as an **AI draft** — students see nothing until an admin clicks Approve (per note or "Approve all drafts"). Drafts can be reviewed/edited with a student-view preview before approving, regenerated while still a draft, and a published or hand-written note is never overwritten.
+- Needs GROQ_API_KEY (same as the AI quiz). Notes use a small markup: `## Heading`, `- bullet`, `**bold**`.
+
+## v1.5.1 (hotfix note)
+Added `/api/version` and a clear message when the browser has newer files than the running server ("Not found" on Build topic outline / "Could not connect" on Course Notes = the server process is still the old version — restart it).
+
+## v1.5.2
+`.env.example` now uses GROQ_MODEL=openai/gpt-oss-120b (the old llama-3.3-70b-versatile default is no longer available on the account). If GROQ_MODEL names a model Groq can't serve, AI calls retry once with openai/gpt-oss-120b instead of failing.
+
+## v1.6.0
+**Notes you write yourself (credits)**
+- Course Notes screen: "Need a topic that isn't here?" — type any topic, pick Quick / Standard / Detailed, the AI writes the notes now. Default costs 3 / 5 / 8 credits, editable in Admin → Credit Settings → "Student-written study notes" (or switch the feature off).
+- Credits are taken first and refunded automatically if the AI or the save fails. A topic that already has a published PrepHQ note is opened free; asking for the same topic + depth again reopens it free. Students can delete their own notes.
+- New: `PersonalNote` model, `/api/my-notes/*`, ledger reason `note_generation`.
+
+**LaTeX, chemical equations and molecule structures**
+- `phq-sci.js` (already in the project but never loaded) is now included on the dashboard, chat, contests, study rooms and admin, so questions, options, explanations, AI chat and notes render `$x^2$`, `$$…$$`, `\frac`, and `[[smiles: CC(=O)O]]` skeletal structures with no per-screen wiring.
+- Added mhchem: `$\ce{2H2 + O2 -> 2H2O}$` renders as a proper reaction. SMILES containing brackets (`[C@H]`, `[O-]`) now parse correctly.
+- AI notes, quizzes and chat are told to write maths in LaTeX and structures as `[[smiles: …]]`. Single-backslash LaTeX that breaks AI JSON (`\frac` → form feed) is repaired. HTML stripping no longer eats `$a<b$`. Note size cap raised to 12,000 characters.
+- Question uploader no longer flattens LaTeX to plain symbols (`KEEP_LATEX = true` at the top of `cleanLatex`; set false for the old behaviour).
+
+**"Write all notes" now works, and AI rate limits handled**
+- Old button ran in the admin's browser tab, needed an outline first and stopped at the first "wait a few seconds". Now a server-side background job: "This course only" or "ALL courses" — builds each course's topics, writes every missing note as a draft, shows live progress, can be stopped, retried (failed only), and resumes after a server restart. Nothing reaches students until approved ("Approve every draft" added).
+- Every AI call now goes through a queue (`aiQueue.service.js`): requests start at least 2.2 s apart (`GROQ_MIN_GAP_MS`), a rate-limit reply pauses the queue for the time Groq asks and retries automatically. Students' quizzes/chat go ahead of bulk jobs; a student only sees an error if the wait would exceed ~30 s.
+
+**Follow-ups**
+- "✓ Mark followed up" on every row (expiring plans and inactive students), showing who and when, with Undo and a "Hide already followed up" switch. WhatsApp asks for confirmation if the student was already followed up. A mark is tied to that situation (the plan's expiry date / last-seen time), so renewed or returning-then-lapsed students appear fresh again.
+
+Not run against a live MongoDB or a real Groq key: queue, charge/refund flow and rendering were tested with stubs and jsdom. Molecule drawing needs a real browser canvas — try one SMILES on staging.

@@ -26,7 +26,7 @@ router.get('/credit-settings', async (req, res) => {
 router.put('/credit-settings', async (req, res) => {
   try {
     const settings = await Settings.getGlobal();
-    const { dailyRefresh, referral, welcomeBonus, streakBonus, aiChatbot, tiers, support } = req.body;
+    const { dailyRefresh, referral, welcomeBonus, streakBonus, aiChatbot, tiers, support, notes } = req.body;
 
     if (dailyRefresh) {
       if (typeof dailyRefresh.enabled === 'boolean') settings.dailyRefresh.enabled = dailyRefresh.enabled;
@@ -43,6 +43,12 @@ router.put('/credit-settings', async (req, res) => {
       if (Number.isFinite(streakBonus.amount) && streakBonus.amount >= 0) settings.streakBonus.amount = streakBonus.amount;
     }
     if (Number.isFinite(welcomeBonus) && welcomeBonus >= 0) settings.welcomeBonus = welcomeBonus;
+    if (notes && typeof notes === 'object') {
+      if (typeof notes.enabled === 'boolean') settings.notes.enabled = notes.enabled;
+      for (const k of ['costQuick', 'costStandard', 'costDetailed']) {
+        if (Number.isFinite(notes[k]) && notes[k] >= 0 && notes[k] <= 1000) settings.notes[k] = Math.round(notes[k]);
+      }
+    }
     if (aiChatbot) {
       if (typeof aiChatbot.enabled === 'boolean') settings.aiChatbot.enabled = aiChatbot.enabled;
       if (Number.isFinite(aiChatbot.dailyLimit) && aiChatbot.dailyLimit >= 0) settings.aiChatbot.dailyLimit = aiChatbot.dailyLimit;

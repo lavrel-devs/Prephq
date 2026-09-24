@@ -21,6 +21,8 @@ const CreditTransactionSchema = new mongoose.Schema({
       // here — every flashcard generation / cosmetic purchase used to
       // charge the student and then fail ledger validation.
       'flashcard_generation', 'cosmetic_purchase',
+      // v1.6: student-written study notes
+      'note_generation',
     ],
     required: true,
   },

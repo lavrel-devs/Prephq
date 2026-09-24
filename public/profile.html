@@ -776,11 +776,15 @@ async function promptUpgrade(planName){
   }
   document.getElementById('plan-card')?.scrollIntoView({ behavior:'smooth', block:'start' });
 
-  const wa = cachedPlans?.support?.whatsapp;
-  if(!wa){ alert('Upgrades are handled manually right now \u2014 please reach out to the PrepHQ admin to upgrade your plan.'); return; }
-  const price = (cachedPlans?.periods || []).find(x => x.key === selPeriod)?.price;
-  const msg = `Hi, I want to upgrade my PrepHQ plan to Premium (${PERIOD_LABEL[selPeriod]}${price!=null?', '+fmtNaira(price):''}) \u2014 my matric is ${profileData?.matric || ''}`;
-  window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, '_blank');
+  // No online payment: file the request, then continue on WhatsApp with an admin.
+  const win = window.open('', '_blank');
+  try{
+    const r = await PhqAuth.authFetch('/api/upgrade-request', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ plan: selPeriod }) }, 'student');
+    const d = await r.json();
+    if(!r.ok){ if(win) win.close(); alert(d.error || 'Could not send your request'); return; }
+    if(d.whatsappUrl && win) win.location.href = d.whatsappUrl;
+    else { if(win) win.close(); alert('Your request ' + d.code + ' was saved. No admin WhatsApp is set up yet \u2014 please quote this code to PrepHQ support.'); }
+  }catch(e){ if(win) win.close(); alert('Network error \u2014 please try again.'); }
 }
 
 async function saveGPA(){

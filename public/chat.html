@@ -327,6 +327,18 @@ function scrollToBottom(){
   scr.scrollTop = scr.scrollHeight;
 }
 
+// "Ask AI why" from a wrong answer: the dashboard leaves the question here; we only pre-fill the box
+// (the student presses send, so nothing is spent until they choose to).
+(function(){
+  try{
+    const raw = sessionStorage.getItem('phq_ask_ctx'); if(!raw) return;
+    sessionStorage.removeItem('phq_ask_ctx');
+    const ctx = JSON.parse(raw);
+    const inp = document.getElementById('chat-input');
+    if(ctx && ctx.text && inp){ inp.value = ctx.text; inp.focus(); }
+  }catch(e){}
+})();
+
 async function sendChatMessage(){
   const input = document.getElementById('chat-input');
   const btn = document.getElementById('send-btn');
@@ -377,5 +389,6 @@ async function loadQuota(){
 loadHistory();
 loadQuota();
 </script>
+<script src="/js/phq-sci.js" defer></script>
 </body>
 </html>

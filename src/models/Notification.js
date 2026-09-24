@@ -9,7 +9,7 @@ const NotificationSchema = new mongoose.Schema({
 
   type: {
     type: String,
-    enum: ['transfer_received', 'daily_credit', 'contest_reminder', 'contest_result', 'announcement'],
+    enum: ['transfer_received', 'daily_credit', 'contest_reminder', 'contest_result', 'announcement', 'achievement'],
     required: true,
   },
 

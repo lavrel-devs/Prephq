@@ -53,6 +53,9 @@ const SettingsSchema = new mongoose.Schema({
         aiQuestionGeneration: { type: Boolean, default: true },
         flashcards:           { type: Boolean, default: false }, // paid-only before switches existed
         examMode:             { type: Boolean, default: true },
+        examHistory:          { type: Boolean, default: true },
+        studyPlan:            { type: Boolean, default: true },
+        courseNotes:          { type: Boolean, default: true },
         studyGuide:           { type: Boolean, default: false }, // paid-only before switches existed
         studyRooms:           { type: Boolean, default: true },
         contests:             { type: Boolean, default: true },
@@ -69,6 +72,14 @@ const SettingsSchema = new mongoose.Schema({
       priceYearly:         { type: Number, default: 20000 },
       priceLifetime:       { type: Number, default: null },
     },
+  },
+
+  // v1.6: students can have the AI write their own study notes for a credit fee (by depth).
+  notes: {
+    enabled:        { type: Boolean, default: true },
+    costQuick:      { type: Number, default: 3 },
+    costStandard:   { type: Number, default: 5 },
+    costDetailed:   { type: Number, default: 8 },
   },
 
   // v1.4: contact info surfaced to students (e.g. the upgrade paywall's

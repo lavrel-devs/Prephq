@@ -18,14 +18,14 @@ const RECENT_WINDOW = 8;     // only the last N attempts per tag count — see n
 // how many bad attempts came before. A recent-window average means
 // doing well on a focused practice quiz for a topic can actually clear
 // it from the list, which is the whole point of drilling it.
-async function getWeakTopics(matric, limit = 5) {
-  // Older attempt rows were saved with inconsistent spelling, so course and tag are normalised here
-  // too (lower-case; course also stripped of spaces/punctuation) before grouping.
-  const courseKey = { $let: { vars: { c: { $toLower: { $ifNull: ['$course', ''] } } }, in:
+// Older attempt rows were saved with inconsistent spelling, so course and tag are normalised when read
+// (lower-case; course also stripped of spaces/punctuation). Shared with the readiness/plan queries.
+const courseKey = { $let: { vars: { c: { $toLower: { $ifNull: ['$course', ''] } } }, in:
     { $reduce: { input: [' ', '-', '_', '/', '.', '&', '(', ')', ','], initialValue: '$$c',
         in: { $replaceAll: { input: '$$value', find: '$$this', replacement: '' } } } } } };
-  const tagKey = { $trim: { input: { $toLower: { $ifNull: ['$tag', ''] } } } };
+const tagKey = { $trim: { input: { $toLower: { $ifNull: ['$tag', ''] } } } };
 
+async function getWeakTopics(matric, limit = 5) {
   const rows = await QuestionAttempt.aggregate([
     { $match: { matric: matric.toUpperCase() } },
     { $addFields: { _course: courseKey, _tag: tagKey } },
@@ -65,4 +65,4 @@ async function getWeakTopics(matric, limit = 5) {
   }));
 }
 
-module.exports = { getWeakTopics, MIN_ATTEMPTS, WEAK_THRESHOLD, RECENT_WINDOW };
+module.exports = { courseKey, tagKey, getWeakTopics, MIN_ATTEMPTS, WEAK_THRESHOLD, RECENT_WINDOW };

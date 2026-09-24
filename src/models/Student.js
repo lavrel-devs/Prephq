@@ -163,6 +163,13 @@ const StudentSchema = new mongoose.Schema({
   equippedBadge:  { type: mongoose.Schema.Types.ObjectId, ref: 'CosmeticItem', default: null },
   equippedFrame:  { type: mongoose.Schema.Types.ObjectId, ref: 'CosmeticItem', default: null },
 
+  // Set when an admin issues a temporary password; the student must choose a new one before using the app.
+  mustChangePassword: { type: Boolean, default: false },
+
+  // Earned achievements (services/achievements.service.js) and the one shown next to their name on the leaderboard.
+  achievements:       { type: [{ _id: false, key: String, earnedAt: { type: Date, default: Date.now } }], default: [] },
+  equippedAchievement: { type: String, default: '' },
+
   createdAt: { type: Date, default: Date.now },
 });
 

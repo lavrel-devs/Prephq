@@ -7,6 +7,7 @@ const { notify } = require('./notification.service');
 const { courseMatchFilter } = require('../utils/courseMatch');
 const { withLock } = require('../utils/lock');
 const { logActivity } = require('./activity.service');
+const { award } = require('./achievements.service');
 const { shuffle } = require('../utils/validate');
 
 // WAT (UTC+1, no DST) "now" broken into the pieces recurrence checks
@@ -372,6 +373,7 @@ async function settleContest(contestArg) {
           contestId: contest._id,
         });
         ranked[i].prizeAwarded = tier.amount;
+        if (rank === 1) award(ranked[i].matric, 'contest_winner').catch(() => {});
       } catch (e) {
         // Status is already 'ended', so this is never retried automatically (no double pay).
         console.error(`[contest] PRIZE PAYOUT FAILED contest=${contest._id} matric=${ranked[i].matric} amount=${tier.amount}:`, e.message);
@@ -439,6 +441,7 @@ async function settleTeamContest(contest) {
               actor: 'system',
               contestId: contest._id,
             });
+            if (rank === 1) award(member.matric, 'contest_winner').catch(() => {});
           } catch (e) {
             console.error(`[contest] TEAM PRIZE PAYOUT FAILED contest=${contest._id} matric=${member.matric}:`, e.message);
             continue;

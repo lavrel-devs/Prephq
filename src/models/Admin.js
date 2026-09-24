@@ -18,6 +18,8 @@ const AdminSchema = new mongoose.Schema({
   // The main/owner account: the only one that can open the Activity Log, and it can't be
   // demoted, deactivated or deleted by other admins.
   isOwner:      { type: Boolean, default: false },
+  // Digits only (e.g. 2348012345678). Students needing help are routed to admins who set this.
+  whatsapp:     { type: String, default: '' },
   createdAt:    { type: Date, default: Date.now },
 });
 

@@ -55,14 +55,16 @@ async function isSessionAllowed(payload) {
 
   let ok = true;
   let access = null;
+  let flags = {};
   if (payload.sid) {
     const s = await Session.findById(payload.sid).select('revoked').lean();
     if (!s || s.revoked) ok = false;
   }
   if (ok) {
     if (payload.role === 'student') {
-      const st = await Student.findOne({ matric: payload.sub }).select('active').lean();
+      const st = await Student.findOne({ matric: payload.sub }).select('active mustChangePassword').lean();
       ok = !!st && st.active !== false;
+      if (ok) flags = { mustChange: st.mustChangePassword === true };
     } else if (payload.role === 'admin') {
       const a = await Admin.findOne({ username: payload.sub }).select('active fullAccess permissions isOwner').lean();
       ok = !!a && a.active !== false;
@@ -71,7 +73,7 @@ async function isSessionAllowed(payload) {
     }
   }
 
-  allowCache.set(key, { ok, ts: Date.now(), access });
+  allowCache.set(key, { ok, ts: Date.now(), access, flags });
   if (allowCache.size > 5000) {
     const cutoff = Date.now() - ALLOW_CACHE_MS;
     for (const [k, v] of allowCache) if (v.ts < cutoff) allowCache.delete(k);
@@ -85,6 +87,9 @@ function forgetSubject(role, sub) {
   const prefix = `${role}:${sub}:`;
   for (const k of allowCache.keys()) if (k.startsWith(prefix)) allowCache.delete(k);
 }
+
+// A student holding an admin-issued temporary password may only reach these until they choose a new one.
+const MUST_CHANGE_ALLOWED = new Set(['/api/me', '/api/auth/change-password', '/api/auth/logout']);
 
 // Access level for an admin whose session was just approved by isSessionAllowed.
 function cachedAccess(payload) {
@@ -119,6 +124,11 @@ async function requireStudent(req, res, next) {
   } catch (e) {
     console.error('[auth] session check failed:', e.message);
     return res.status(503).json({ error: 'Service temporarily unavailable' });
+  }
+
+  const hit = allowCache.get(`${payload.role}:${payload.sub}:${payload.sid || ''}`);
+  if (hit && hit.flags && hit.flags.mustChange && !MUST_CHANGE_ALLOWED.has(req.originalUrl.split('?')[0])) {
+    return res.status(403).json({ error: 'Please choose a new password to continue', code: 'PASSWORD_CHANGE_REQUIRED' });
   }
 
   req.student = payload; // { sub: matric, role, sid }

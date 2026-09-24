@@ -3,6 +3,7 @@ const Score = require('../models/Score');
 const Student = require('../models/Student');
 const { requireStudent } = require('../middleware/auth');
 const CosmeticItem = require('../models/CosmeticItem');
+const { BY_KEY } = require('../services/achievements.service');
 const { escapeRegex } = require('../utils/validate');
 
 const router = express.Router();
@@ -15,7 +16,7 @@ const MIN_QUIZZES = 1; // any real quiz history counts — a stricter bar made t
 // is stored as a joined display string, e.g. "GST 101, MTH 201").
 router.get('/leaderboard', requireStudent, async (req, res) => {
   try {
-    const optedIn = await Student.find({ publicLeaderboardOptIn: true, active: { $ne: false } }).select('matric username displayName equippedBadge').lean();
+    const optedIn = await Student.find({ publicLeaderboardOptIn: true, active: { $ne: false } }).select('matric username displayName equippedBadge equippedAchievement').lean();
     if (!optedIn.length) return res.json([]);
 
     const matricSet = optedIn.map(s => s.matric);
@@ -47,7 +48,8 @@ router.get('/leaderboard', requireStudent, async (req, res) => {
         rank: i + 1,
         username: s.username || null,
         displayName: s.displayName || s.username || 'Student',
-        badge: s.equippedBadge ? (badgeValue[String(s.equippedBadge)] || null) : null,
+        badge: (s.equippedAchievement && BY_KEY[s.equippedAchievement] ? BY_KEY[s.equippedAchievement].icon : null)
+          || (s.equippedBadge ? (badgeValue[String(s.equippedBadge)] || null) : null),
         avgScore: Math.round(row.avgPct),
         totalQuizzes: row.totalQuizzes,
         totalCorrect: row.totalCorrect,

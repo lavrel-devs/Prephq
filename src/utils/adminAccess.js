@@ -15,6 +15,7 @@ const AREAS = [
   { key: 'courses',       label: 'Courses',                 desc: 'Add/edit/remove courses' },
   { key: 'questions',     label: 'Question bank',           desc: 'Add/edit/delete questions, bulk upload' },
   { key: 'contests',      label: 'Contests',                desc: 'Create/run contests and recurring templates (can adjust contest prizes)' },
+  { key: 'support',       label: 'Support requests',        desc: 'Password recovery, upgrade and question-report requests from students' },
   { key: 'announcements', label: 'Announcements',           desc: 'Broadcast notifications to students' },
   { key: 'settings',      label: 'Credit & plan settings',  desc: 'Daily refresh, referral, tier limits & pricing' },
   { key: 'cosmetics',     label: 'Shop items',              desc: 'Badges and frames in the cosmetics shop' },
@@ -25,6 +26,9 @@ const AREA_KEYS = AREAS.map(a => a.key);
 // 'ANY' = every admin; 'FULL' = full-access admins only; 'OWNER' = the main admin only. First match wins.
 const RULES = [
   [/^\/admins\/me(\/password)?\/?$/, 'ANY'],
+  [/^\/support(\/|$)/, ['support']],
+  [/^\/followups(\/|$)/, ['students']],
+  [/^\/course-notes(\/|$)/, ['courses']],
   [/^\/admins(\/|$)/, 'FULL'],
   [/^\/activity(\/|$)/, 'OWNER'],
 

@@ -657,6 +657,29 @@ body.quiz-active #shared-glass-nav{display:none;}
   .mode-lbl{ font-size:12.5px; }
   .cg{ gap:10px; padding:0 14px; }
 }
+
+/* v1.5 screens */
+.np-card{background:var(--bg);border-radius:18px;box-shadow:var(--sh);padding:14px 16px;}
+.np-h{font-size:13px;font-weight:800;color:var(--t2);letter-spacing:.04em;text-transform:uppercase;margin:6px 2px 0;}
+.np-empty{text-align:center;color:var(--t3);font-size:13.5px;padding:34px 16px;line-height:1.5;}
+.np-row{display:flex;align-items:center;gap:12px;}
+.np-btn{border:none;cursor:pointer;background:var(--bg);color:var(--brand);font-weight:800;font-size:12.5px;padding:9px 14px;border-radius:12px;box-shadow:var(--sh-sm,var(--sh));font-family:inherit;}
+.np-btn:active{box-shadow:var(--sh-in-sm);}
+.np-bar{height:8px;border-radius:8px;background:var(--bg);box-shadow:var(--sh-in-sm);overflow:hidden;}
+.np-bar>i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,var(--brand),var(--purple));}
+.np-chip{display:inline-block;font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:10px;background:var(--bg);box-shadow:var(--sh-in-sm);color:var(--t2);margin:3px 4px 0 0;}
+.np-check{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;background:var(--bg);box-shadow:var(--sh-in-sm);color:var(--t4);}
+.np-check.on{color:#fff;background:linear-gradient(140deg,var(--brand),var(--purple));box-shadow:none;}
+.np-note{font-size:13.5px;line-height:1.6;color:var(--t2);}
+.np-note ul{margin:6px 0 10px 18px;padding:0;}
+.np-note p{margin:0 0 10px;}
+.np-note h4{font-size:15px;font-weight:800;color:var(--t1);margin:16px 0 6px;}
+.np-note li{margin-bottom:4px;}
+details.np-card>summary{cursor:pointer;font-weight:800;font-size:14px;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+details.np-card>summary::-webkit-details-marker{display:none;}
+.fb-links{margin-top:8px;display:flex;gap:16px;font-size:12px;font-weight:800;}
+.fb-links a{color:var(--brand);cursor:pointer;text-decoration:none;}
+.fb-links a.rep{color:var(--t3);}
 </style>
 </head>
 <body class="fs-md">
@@ -888,6 +911,38 @@ body.quiz-active #shared-glass-nav{display:none;}
 </div>
 
 <!-- ═══ HISTORY ══════════════════════════════════════════════ -->
+<div id="study" class="scr">
+  <div class="sub-topbar">
+    <button class="back-btn" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+    <div class="scr-title">Study Plan</div>
+  </div>
+  <div id="study-body" style="flex:1;display:flex;flex-direction:column;overflow-y:auto;padding:4px 16px 110px;gap:12px;"></div>
+</div>
+
+<div id="exam-overview" class="scr">
+  <div class="sub-topbar">
+    <button class="back-btn" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+    <div class="scr-title">Exam History &amp; Readiness</div>
+  </div>
+  <div id="exam-ov-body" style="flex:1;display:flex;flex-direction:column;overflow-y:auto;padding:4px 16px 110px;gap:12px;"></div>
+</div>
+
+<div id="course-notes" class="scr">
+  <div class="sub-topbar">
+    <button class="back-btn" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+    <div class="scr-title">Course Notes</div>
+  </div>
+  <div id="cn-body" style="flex:1;display:flex;flex-direction:column;overflow-y:auto;padding:4px 16px 110px;gap:12px;"></div>
+</div>
+
+<div id="achievements" class="scr">
+  <div class="sub-topbar">
+    <button class="back-btn" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+    <div class="scr-title">Achievements</div>
+  </div>
+  <div id="ach-body" style="flex:1;display:flex;flex-direction:column;overflow-y:auto;padding:4px 16px 110px;gap:12px;"></div>
+</div>
+
 <div id="history" class="scr">
   <div class="sub-topbar">
     <button class="back-btn" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
@@ -1184,6 +1239,26 @@ body.quiz-active #shared-glass-nav{display:none;}
       <div class="mi-body"><div class="mi-title">Study Notes</div><div class="mi-sub" id="menu-notes-count">0 notes</div></div>
       <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
     </div>
+    <div class="menu-item" onclick="closeSheet('menu-sheet');openStudy()">
+      <div class="mi-icon" style="font-size:19px;">📅</div>
+      <div class="mi-body"><div class="mi-title">Study Plan</div><div class="mi-sub">Today's tasks, revision & progress</div></div>
+      <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>
+    <div class="menu-item" onclick="closeSheet('menu-sheet');openExamOverview()">
+      <div class="mi-icon" style="font-size:19px;">📈</div>
+      <div class="mi-body"><div class="mi-title">Exam History &amp; Readiness</div><div class="mi-sub">Mock exams and how ready you are</div></div>
+      <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>
+    <div class="menu-item" onclick="closeSheet('menu-sheet');openCourseNotes()">
+      <div class="mi-icon" style="font-size:19px;">📖</div>
+      <div class="mi-body"><div class="mi-title">Course Notes</div><div class="mi-sub">Outlines and notes per course</div></div>
+      <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>
+    <div class="menu-item" onclick="closeSheet('menu-sheet');openAchievements()">
+      <div class="mi-icon" style="font-size:19px;">🏅</div>
+      <div class="mi-body"><div class="mi-title">Achievements</div><div class="mi-sub">Badges you've earned</div></div>
+      <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>
     <div class="menu-item" onclick="closeSheet('menu-sheet');window.location.href='/profile'">
       <div class="mi-icon" style="color:var(--purple)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z"/></svg></div>
       <div class="mi-body"><div class="mi-title">Profile</div><div class="mi-sub">Username, referrals, transfer history</div></div>
@@ -1264,12 +1339,28 @@ body.quiz-active #shared-glass-nav{display:none;}
     </div>
     <div id="pw-periods" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:14px;"></div>
     <div class="modal-sub" style="font-size:12px;">To upgrade right now, reach out via WhatsApp — an admin will confirm your payment and activate your plan.</div>
-    <a class="btn-grad" style="width:100%;display:block;box-sizing:border-box;text-decoration:none;margin-top:10px;" id="pw-whatsapp-link" href="#" target="_blank">Message admin to upgrade</a>
+    <a class="btn-grad" style="width:100%;display:block;box-sizing:border-box;text-decoration:none;margin-top:10px;" id="pw-whatsapp-link" href="#" onclick="requestUpgrade(event)">Message admin to upgrade</a>
     <div style="text-align:center;margin-top:10px;font-size:13px;color:var(--t3);cursor:pointer;" onclick="closePaywall()">Maybe later</div>
   </div>
 </div>
 
 <!-- ═══ SEND CREDITS ══════════════════════════════════════════════ -->
+<div class="modal-bg" id="m-report" onclick="if(event.target===this)closeReport()">
+  <div class="modal">
+    <div class="modal-title">Report this question</div>
+    <div class="modal-sub">Spotted a mistake? An admin will check it and fix it if needed.</div>
+    <select class="modal-input" id="report-reason">
+      <option value="wrong_answer">The correct answer is wrong</option>
+      <option value="typo">Typo or formatting problem</option>
+      <option value="unclear">Question is unclear</option>
+      <option value="other">Something else</option>
+    </select>
+    <textarea class="modal-input" id="report-note" rows="3" maxlength="300" placeholder="Tell us what's wrong (optional)" style="resize:none;"></textarea>
+    <div class="modal-hint err" id="report-hint"></div>
+    <button class="btn-grad" style="width:100%;" id="report-btn" onclick="submitReport()">Send report</button>
+  </div>
+</div>
+
 <div class="modal-bg" id="m-transfer" onclick="if(event.target===this)closeTransferModal()">
   <div class="modal">
     <div class="modal-title">Send Credits</div>
@@ -1411,6 +1502,8 @@ async function pushScore(entry){
       if(d.code==='LIMIT_REACHED') showPaywall(d.error);
       return;
     }
+    const saved = await r.json().catch(()=>({}));
+    (saved.achievements||[]).forEach((a,i)=>setTimeout(()=>toast(`${a.icon} Achievement unlocked: ${a.title}`), 600*i));
     if(entry.perQuestion && entry.perQuestion.length) loadWeakTopics();
     loadPlanBanner();
   }catch{}
@@ -1500,6 +1593,7 @@ async function bootFromSession(){
       return;
     }
     const data = await res.json();
+    if(data.mustChangePassword){ window.location.replace('/change-password'); return; }
     curUser = data;
     await syncFromServer();
     await initHome();
@@ -1827,8 +1921,10 @@ async function loadWeakTopics(){
   }catch(e){}
 }
 
-async function startWeakTopicQuiz(){
-  if(!weakTopics.length){ toast('No weak topics identified yet — keep practicing!'); return; }
+async function startWeakTopicQuiz(only){
+  // `only` = {course, tag} to drill one topic (revision queue, course notes); otherwise all weak topics.
+  const topicList = (only && only.tag) ? [only] : weakTopics;
+  if(!topicList.length){ toast('No weak topics identified yet — keep practicing!'); return; }
   let remaining = null;
   try{
     const r = await PhqAuth.authFetch('/api/usage/limits', {}, 'student');
@@ -1845,13 +1941,13 @@ async function startWeakTopicQuiz(){
   }catch(e){}
   curAIQuizId = null;
   let pool = [];
-  weakTopics.forEach(t => {
+  topicList.forEach(t => {
     // t.course is the canonical key; compare tags ignoring case/spacing (bank data isn't consistent).
     const norm = v => String(v||'').trim().toLowerCase();
     const coursePool = BANK[t.course] || [];
     pool.push(...coursePool.filter(q => norm(q.tag) === norm(t.tag)).map(q => ({...q, course: t.course})));
   });
-  if(!pool.length){ toast('No matching questions found in the bank for your weak topics yet'); return; }
+  if(!pool.length){ toast(only ? 'No practice questions for this topic in the bank yet' : 'No matching questions found in the bank for your weak topics yet'); return; }
   for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
   let qty = Math.min(15, pool.length);
   if(remaining != null && qty > remaining){
@@ -1865,7 +1961,7 @@ async function startWeakTopicQuiz(){
   timedOut=new Array(quizQ.length).fill(false);
   cur=0;
   clearAutoAdvance();
-  document.getElementById('qt-title').textContent = 'Weak Topics';
+  document.getElementById('qt-title').textContent = (only && only.tag) ? only.tag : 'Weak Topics';
   showScr('quiz');
   renderQ();
 }
@@ -2050,6 +2146,7 @@ async function buildCourseGrid(){
         if(Array.isArray(data) && data.length > 0){
           counts[key] = data.length;
           BANK[key] = data.map(q=>({
+            id:   q._id,
             q:    q.q,
             opts: q.opts,
             ans:  q.ans,
@@ -2548,7 +2645,7 @@ function renderQ(){
     const ok=answers[cur]===q.ans;
     fbHtml=`<div class="fb-strip ${ok?'ok':'no'} on">
       <div class="fb-icon">${ok?'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>':'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg>'}</div>
-      <div><div class="fb-title">${ok?'Correct!':'Incorrect!'}</div>${q.exp?`<div class="fb-exp">${q.exp}</div>`:''}</div>
+      <div><div class="fb-title">${ok?'Correct!':'Incorrect!'}</div>${q.exp?`<div class="fb-exp">${q.exp}</div>`:''}<div class="fb-links">${ok?'':`<a onclick="askAIAbout(${cur})">✨ Ask AI why</a>`}<a class="rep" onclick="openReport(${cur})">⚑ Report question</a></div></div>
     </div>`;
   }
 
@@ -3325,6 +3422,326 @@ document.getElementById('menu-sheet').addEventListener('click',e=>{
     document.getElementById('menu-sheet').classList.remove('on');
 });
 
+
+// ══════════════════════════════════════════════════════════════
+//  v1.5 — Upgrade requests, reports, Ask AI, Study Plan, Exam History, Course Notes, Achievements
+// ══════════════════════════════════════════════════════════════
+const stripTags = v => String(v==null?'':v).replace(/<[^>]*>/g,'').trim();
+const paywallFeature = (key, msg) => { if(!hasFeature(key)){ showPaywall(msg); return false; } return true; };
+
+// No online payment: file a request, then hand the student to an admin on WhatsApp.
+async function requestUpgrade(ev){
+  ev.preventDefault();
+  const btn = document.getElementById('pw-whatsapp-link'), label = btn.textContent;
+  btn.textContent = 'Sending request…';
+  const win = window.open('', '_blank');           // opened synchronously so mobile popup blockers allow it
+  try{
+    const r = await PhqAuth.authFetch('/api/upgrade-request', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ plan: pwPeriod }) }, 'student');
+    const d = await r.json();
+    if(!r.ok){ if(win) win.close(); toast(d.error || 'Could not send your request'); return; }
+    if(d.whatsappUrl && win){ win.location.href = d.whatsappUrl; toast(`Request ${d.code} sent — finish on WhatsApp`); }
+    else { if(win) win.close(); toast(`Request ${d.code} saved. No admin WhatsApp is set up yet — quote this code to support.`); }
+  }catch(e){ if(win) win.close(); toast('Network error — try again'); }
+  finally{ btn.textContent = label; }
+}
+
+// ── Report a question ─────────────────────────────────────────
+let reportIdx = null;
+function openReport(i){ reportIdx = i; document.getElementById('report-note').value=''; document.getElementById('report-hint').textContent=''; document.getElementById('m-report').classList.add('on'); }
+function closeReport(){ document.getElementById('m-report').classList.remove('on'); }
+async function submitReport(){
+  const q = quizQ[reportIdx]; if(!q) return closeReport();
+  const btn = document.getElementById('report-btn'); btn.disabled = true;
+  const body = { reason: document.getElementById('report-reason').value, note: document.getElementById('report-note').value.trim() };
+  if(q.id) body.questionId = q.id;
+  else body.snapshot = { course: q.course, q: stripTags(q.q), opts: (q.opts||[]).map(stripTags), ans: q.ans, tag: q.tag||'' };
+  try{
+    const r = await PhqAuth.authFetch('/api/questions/report', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) }, 'student');
+    const d = await r.json();
+    if(!r.ok){ document.getElementById('report-hint').textContent = d.error || 'Could not send the report'; btn.disabled=false; return; }
+    closeReport(); toast(d.duplicate ? 'You already reported this one — thanks!' : `Thanks! An admin will review it (ref ${d.code})`);
+  }catch(e){ document.getElementById('report-hint').textContent = 'Network error — try again'; }
+  btn.disabled = false;
+}
+
+// ── Ask AI about a wrong answer ───────────────────────────────
+function askAIAbout(i){
+  if(!paywallFeature('aiTutor', 'The AI tutor is a Premium feature.')) return;
+  const q = quizQ[i]; if(!q) return;
+  const L = n => String.fromCharCode(65+n);
+  const opts = (q.opts||[]).map((o,n)=>`${L(n)}. ${stripTags(o)}`).join('; ');
+  const chosen = answers[i]!=null ? ` I chose ${L(answers[i])}.` : '';
+  const text = `Explain step by step why the answer to this question is ${L(q.ans)}: "${stripTags(q.q)}" Options: ${opts}.${chosen} Please also tell me where I likely went wrong.`;
+  try{ sessionStorage.setItem('phq_ask_ctx', JSON.stringify({ text: text.slice(0, 1500) })); }catch(e){}
+  window.location.href = '/chat';
+}
+
+// ── Study plan ────────────────────────────────────────────────
+let studyItems = [];
+async function openStudy(){
+  if(!paywallFeature('studyPlan', 'Your study plan is a Premium feature.')) return;
+  showScr('study');
+  const box = document.getElementById('study-body');
+  box.innerHTML = '<div class="np-empty">Building your plan…</div>';
+  try{
+    const r = await PhqAuth.authFetch('/api/study-plan', {}, 'student');
+    const d = await r.json();
+    if(!r.ok){ box.innerHTML = `<div class="np-empty">${escapeHtml(d.error || 'Could not load your plan')}</div>`; return; }
+    renderStudy(d);
+  }catch(e){ box.innerHTML = '<div class="np-empty">Could not connect. Please try again.</div>'; }
+}
+function renderStudy(d){
+  studyItems = d.plan;
+  const pct = Math.min(100, Math.round((d.doneToday / Math.max(1, d.goalTarget)) * 100));
+  const examLine = d.exam && d.exam.daysLeft >= 0
+    ? `<div style="font-weight:800;margin-top:10px;">${escapeHtml(d.exam.courseCode ? d.exam.courseCode + ' — ' : '')}Exam ${d.exam.daysLeft===0?'today':d.exam.daysLeft===1?'tomorrow':'in '+d.exam.daysLeft+' days'}</div>`
+    : `<div style="font-size:12.5px;color:var(--t3);margin-top:10px;">Add your exam date in Settings to get a countdown here.</div>`;
+  const top = `<div class="np-card">
+    <div class="np-row" style="justify-content:space-between;"><div><div style="font-size:12px;color:var(--t3);font-weight:700;">TODAY</div><div style="font-size:22px;font-weight:800;">${d.doneToday} <span style="font-size:13px;color:var(--t3);font-weight:700;">/ ${d.goalTarget} questions</span></div></div>
+      <div style="text-align:right;"><div style="font-size:12px;color:var(--t3);font-weight:700;">STREAK</div><div style="font-size:22px;font-weight:800;">🔥 ${d.streak}</div></div></div>
+    <div class="np-bar" style="margin-top:10px;"><i style="width:${pct}%"></i></div>${examLine}</div>`;
+
+  const icon = {questions:'✏️',drill:'🎯',flashcards:'🗂️',exam:'🎓',practice:'📚'};
+  const plan = `<div class="np-h">Today's plan</div>` + d.plan.map((it,i)=>`
+    <div class="np-card np-row">
+      <div class="np-check ${it.done?'on':''}">${it.done?'✓':icon[it.type]||'•'}</div>
+      <div style="flex:1;min-width:0;"><div style="font-weight:800;font-size:14px;${it.done?'text-decoration:line-through;opacity:.6;':''}">${escapeHtml(it.title)}</div><div style="font-size:12px;color:var(--t3);margin-top:2px;">${escapeHtml(it.detail)}</div></div>
+      ${it.done?'':`<button class="np-btn" onclick="studyAction(${i})">Start</button>`}
+    </div>`).join('');
+
+  const rq = d.revision || {active:[],cleared:[]};
+  const revision = `<div class="np-h">Revision queue</div>` + (rq.active.length ? rq.active.map(t=>`
+    <div class="np-card">
+      <div class="np-row" style="justify-content:space-between;"><div style="min-width:0;"><div style="font-weight:800;font-size:14px;">${escapeHtml(t.tag)}</div><div style="font-size:12px;color:var(--t3);">${escapeHtml(t.courseCode)} · ${t.accuracy}% over last ${t.attempts} answers</div></div></div>
+      <div class="np-bar" style="margin:10px 0;"><i style="width:${t.accuracy}%"></i></div>
+      <div class="np-row"><button class="np-btn" data-c="${escapeHtml(t.course)}" data-t="${escapeHtml(t.tag)}" onclick="startWeakTopicQuiz({course:this.dataset.c,tag:this.dataset.t})">Drill</button>
+      <button class="np-btn" data-c="${escapeHtml(t.course)}" data-t="${escapeHtml(t.tag)}" onclick="aiDrill(this.dataset.c,this.dataset.t)">AI drill</button></div>
+    </div>`).join('') : `<div class="np-card np-empty" style="padding:20px;">No weak topics right now — keep practising and they'll show up here.</div>`)
+    + (rq.cleared.length ? `<div class="np-card"><div style="font-weight:800;font-size:13px;margin-bottom:4px;">✅ Turned around</div>${rq.cleared.map(c=>`<span class="np-chip">${escapeHtml(c.tag)} · ${escapeHtml(c.courseCode)}</span>`).join('')}</div>` : '');
+
+  const pg = d.progress, max = Math.max(1, ...pg.days.map(x=>x.questions));
+  const bars = pg.days.map(x=>{
+    const h = Math.max(4, Math.round((x.questions/max)*70));
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="height:${h}px;width:100%;max-width:16px;border-radius:6px;background:${x.questions?'linear-gradient(180deg,var(--brand),var(--purple))':'var(--bg)'};box-shadow:${x.questions?'none':'var(--sh-in-sm)'};" title="${x.date}: ${x.questions} questions"></div><div style="font-size:9.5px;color:var(--t4);">${new Date(x.date+'T00:00:00').toLocaleDateString(undefined,{weekday:'narrow'})}</div></div>`;
+  }).join('');
+  const diff = pg.thisWeek - pg.lastWeek;
+  const progress = `<div class="np-h">Last 14 days</div><div class="np-card">
+    <div style="display:flex;align-items:flex-end;gap:3px;height:92px;">${bars}</div>
+    <div class="np-row" style="justify-content:space-between;margin-top:12px;font-size:12.5px;">
+      <div><b>${pg.consistency}%</b> <span style="color:var(--t3)">consistency (${pg.activeDays}/14 days)</span></div>
+      <div style="color:${diff>=0?'var(--ok)':'var(--no)'};font-weight:800;">${diff>=0?'▲':'▼'} ${Math.abs(diff)} vs last week</div></div></div>`;
+  document.getElementById('study-body').innerHTML = top + plan + revision + progress;
+}
+function studyAction(i){
+  const it = studyItems[i]; if(!it) return;
+  if(it.type==='drill') return startWeakTopicQuiz({ course: it.course, tag: it.tag });
+  if(it.type==='flashcards') return openFlashcards();
+  if(it.type==='practice' && COURSES[it.course]){ selCourses = [it.course]; if(typeof buildCourseGrid==='function') buildCourseGrid(); }
+  showScr('home');
+  toast(it.type==='exam' ? 'Choose Exam mode, then start your mock exam' : 'Pick a mode and start practising');
+}
+function aiDrill(course, tag){
+  showScr('home');
+  const c = document.getElementById('ai-course-input'), t = document.getElementById('ai-topic-input');
+  if(c) c.value = (COURSES[course] && COURSES[course].code) || course.toUpperCase();
+  if(t) t.value = tag;
+  if(c) c.scrollIntoView({ behavior:'smooth', block:'center' });
+  toast('Choose how many questions, then tap Generate');
+}
+
+// ── Exam history & readiness ──────────────────────────────────
+async function openExamOverview(){
+  if(!paywallFeature('examHistory', 'Exam history is a Premium feature.')) return;
+  showScr('exam-overview');
+  const box = document.getElementById('exam-ov-body');
+  box.innerHTML = '<div class="np-empty">Loading…</div>';
+  try{
+    const r = await PhqAuth.authFetch('/api/exams/overview', {}, 'student');
+    const d = await r.json();
+    if(!r.ok){ box.innerHTML = `<div class="np-empty">${escapeHtml(d.error||'Could not load')}</div>`; return; }
+    const band = { 'Ready':'var(--ok)', 'Almost there':'var(--brand)', 'Building':'var(--warn)', 'Needs work':'var(--no)', 'No data':'var(--t4)' };
+    const ready = `<div class="np-h">Readiness by course</div>` + (d.readiness.length ? d.readiness.map(c=>`
+      <div class="np-card"><div class="np-row" style="justify-content:space-between;"><div style="font-weight:800;">${escapeHtml(c.courseCode)}</div><div style="font-weight:800;color:${band[c.band]};">${c.band==='No data'?'No data yet':c.score+'% · '+c.band}</div></div>
+      <div class="np-bar" style="margin-top:8px;"><i style="width:${c.score}%"></i></div>
+      <div style="font-size:11.5px;color:var(--t3);margin-top:6px;">${c.attempts?`${c.accuracy}% correct over your last ${c.attempts} answers${c.attempts<30?' — practise more for a firmer score':''}`:'Answer some questions to see your readiness'}</div></div>`).join('') : '<div class="np-card np-empty">Register for courses to see readiness.</div>');
+    const hist = `<div class="np-h">Mock exams${d.average!=null?` · avg ${d.average}%${d.trend!=null?` (${d.trend>=0?'▲':'▼'} ${Math.abs(d.trend)})`:''}`:''}</div>` + (d.history.length ? d.history.map(e=>`
+      <details class="np-card"><summary><span>${escapeHtml(new Date(e.ts).toLocaleDateString(undefined,{day:'numeric',month:'short'}))} · ${escapeHtml(e.courses||'Exam')}</span><span style="color:${e.pct>=50?'var(--ok)':'var(--no)'};">${e.pct}% <span style="color:var(--t3);font-size:12px;">${e.correct}/${e.total}</span></span></summary>
+      <div style="margin-top:10px;">${e.topics.length ? e.topics.map(t=>`<div style="margin-bottom:8px;"><div class="np-row" style="justify-content:space-between;font-size:12.5px;"><span>${escapeHtml(t.tag)} <span style="color:var(--t4)">${escapeHtml(t.courseCode)}</span></span><b>${t.correct}/${t.total}</b></div><div class="np-bar" style="height:6px;margin-top:4px;"><i style="width:${t.pct}%"></i></div></div>`).join('') : '<div style="font-size:12.5px;color:var(--t3);">No topic breakdown saved for this exam.</div>'}</div></details>`).join('')
+      : '<div class="np-card np-empty">No mock exams yet. Take one in Exam mode and your results will show up here.</div>');
+    box.innerHTML = ready + hist;
+  }catch(e){ box.innerHTML = '<div class="np-empty">Could not connect. Please try again.</div>'; }
+}
+
+// ── Course notes ──────────────────────────────────────────────
+function renderNoteBody(t){
+  // Notes use a tiny markup: "## Heading", "- bullet", **bold**. Everything is escaped first, so nothing else can render.
+  const lines = escapeHtml(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').split('\n');
+  let out = '', inList = false;
+  const closeList = () => { if(inList){ out += '</ul>'; inList = false; } };
+  for(const l of lines){
+    if(/^##\s+/.test(l)){ closeList(); out += `<h4>${l.replace(/^##\s+/,'')}</h4>`; }
+    else if(/^\s*[-•]\s+/.test(l)){ if(!inList){ out += '<ul>'; inList = true; } out += `<li>${l.replace(/^\s*[-•]\s+/,'')}</li>`; }
+    else { closeList(); if(l.trim()) out += `<p>${l}</p>`; }
+  }
+  closeList();
+  return out;
+}
+
+// Course Notes = reading only. A list of the notes for a course, then a reader. (No practice links —
+// practice questions live in the rest of the app.)
+let cnList = [], cnCourseKey = '', myNotes = [], myNoteOpts = null, myNoteBusy = false;
+async function openCourseNotes(key){
+  if(!paywallFeature('courseNotes', 'Course notes are a Premium feature.')) return;
+  showScr('course-notes');
+  const box = document.getElementById('cn-body');
+  const keys = Object.keys(COURSES);
+  const cur = (typeof key==='string' && COURSES[key]) ? key : (cnCourseKey && COURSES[cnCourseKey] ? cnCourseKey : keys[0]);
+  cnCourseKey = cur || '';
+  if(!cur){ box.innerHTML = '<div class="np-empty">Register for courses to see their notes.</div>'; return; }
+  box.innerHTML = '<div class="np-empty">Loading…</div>';
+  try{
+    const [cr, nr, mo, mn] = await Promise.all([
+      PhqAuth.authFetch('/api/course-notes', {}, 'student'),
+      PhqAuth.authFetch(`/api/course-notes/${encodeURIComponent(cur)}`, {}, 'student'),
+      PhqAuth.authFetch('/api/my-notes/options', {}, 'student').catch(()=>null),
+      PhqAuth.authFetch(`/api/my-notes?course=${encodeURIComponent(cur)}`, {}, 'student').catch(()=>null),
+    ]);
+    myNoteOpts = (mo && mo.ok) ? await mo.json() : null;
+    myNotes = (mn && mn.ok) ? ((await mn.json()).notes || []) : [];
+    const counts = cr.ok ? (await cr.json()).counts || {} : {};
+    const chips = `<div>${keys.map(k=>`<button class="np-btn" style="margin:0 6px 8px 0;${k===cur?'box-shadow:var(--sh-in-sm);':''}${counts[k]?'':'opacity:.55;'}" onclick="openCourseNotes('${k}')">${escapeHtml(COURSES[k].code)}${counts[k]?` · ${counts[k]}`:''}</button>`).join('')}</div>`;
+    const d = await nr.json();
+    if(!nr.ok){ box.innerHTML = chips + `<div class="np-empty">${escapeHtml(d.error||'Could not load')}</div>`; return; }
+    if(!Array.isArray(d.notes)){ box.innerHTML = chips + '<div class="np-card np-empty">Course notes are being updated. Please try again in a moment.</div>'; return; }
+    cnList = d.notes;
+    box.innerHTML = chips + (d.notes.length
+      ? `<div class="np-h">${escapeHtml(d.course.code)} — ${d.notes.length} note${d.notes.length===1?'':'s'}</div>` + d.notes.map((n,i)=>`
+        <div class="np-card np-row" style="cursor:pointer;" onclick="openNoteReader(${i})">
+          <div class="np-check on" style="font-size:12px;">${i+1}</div>
+          <div style="flex:1;min-width:0;"><div style="font-weight:800;font-size:14.5px;">${escapeHtml(n.title)}</div><div style="font-size:12px;color:var(--t3);margin-top:2px;">${n.readMinutes} min read</div></div>
+          <div style="color:var(--t4);font-size:18px;">›</div></div>`).join('')
+      : `<div class="np-card np-empty">No notes for ${escapeHtml(d.course.code)} yet — they'll appear here as soon as they're published.</div>`)
+      + myNotesBlock(d.course.code);
+  }catch(e){ box.innerHTML = '<div class="np-empty">Could not connect. Please try again.</div>'; }
+}
+// ── Write-your-own notes (costs credits; the AI writes notes on any topic you type) ──
+function myNotesBlock(code){
+  if(!myNoteOpts || !myNoteOpts.enabled) return myNotes.length ? myNotesList() : '';
+  const c = myNoteOpts.costs || {};
+  return `<div class="np-h">✍️ Need a topic that isn't here?</div>
+    <div class="np-card" data-nosci>
+      <div style="font-size:12.5px;color:var(--t3);line-height:1.5;margin-bottom:10px;">Type any topic in ${escapeHtml(code)} and the AI writes simple study notes for you now — no waiting. Formulas and molecule structures are drawn properly. Credits are returned if it fails.</div>
+      <input id="mn-topic" class="f-input" style="padding-left:14px;margin-bottom:10px;" maxlength="100" placeholder="e.g. Nucleophilic substitution (SN1 and SN2)">
+      <select id="mn-depth" class="f-input" style="padding-left:14px;margin-bottom:10px;" onchange="mnCostLabel()">
+        <option value="quick">Quick summary — ${c.quick} credits</option>
+        <option value="standard" selected>Standard notes — ${c.standard} credits</option>
+        <option value="detailed">Detailed + worked examples + self-test — ${c.detailed} credits</option>
+      </select>
+      <button class="np-btn" id="mn-btn" style="width:100%;padding:12px;" onclick="generateMyNote()">Write my notes (${c.standard} credits)</button>
+    </div>` + (myNotes.length ? myNotesList() : '');
+}
+function mnCostLabel(){
+  const d = document.getElementById('mn-depth').value, c = (myNoteOpts||{}).costs || {};
+  document.getElementById('mn-btn').textContent = `Write my notes (${c[d]} credits)`;
+}
+function myNotesList(){
+  return `<div class="np-h">My notes — ${myNotes.length}</div>` + myNotes.map((n,i)=>`
+    <div class="np-card np-row" style="cursor:pointer;" onclick="openMyNote(${i})">
+      <div style="flex:1;min-width:0;"><div style="font-weight:800;font-size:14.5px;">${escapeHtml(n.title)}</div>
+      <div style="font-size:12px;color:var(--t3);margin-top:2px;">${escapeHtml(n.depth)} · ${n.readMinutes} min read</div></div>
+      <div style="color:var(--t4);font-size:18px;">›</div></div>`).join('');
+}
+async function generateMyNote(){
+  if(myNoteBusy) return;
+  const topic = document.getElementById('mn-topic').value.trim();
+  const depth = document.getElementById('mn-depth').value;
+  if(topic.length < 3){ toast('Type the topic you want notes on'); return; }
+  myNoteBusy = true;
+  const btn = document.getElementById('mn-btn'); const label = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Writing your notes… this can take up to a minute';
+  try{
+    const r = await PhqAuth.authFetch('/api/my-notes/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ course: cnCourseKey, topic, depth }) }, 'student');
+    const d = await r.json().catch(()=>({}));
+    if(r.status === 402){ toast(`Not enough credits — you need ${d.required}, you have ${d.balance}`); }
+    else if(!r.ok){ toast(d.error || 'Could not write the notes'); if(d.code === 'NOTE_EXISTS') openCourseNotes(cnCourseKey); }
+    else {
+      toast(d.cached ? 'You already have these notes — opened for free' : `Notes ready! ${d.charged} credit${d.charged===1?'':'s'} used`);
+      if(typeof refreshStats === 'function') refreshStats();
+      await openCourseNotes(cnCourseKey);
+      const i = myNotes.findIndex(n => String(n.id) === String(d.note.id)); if(i >= 0) openMyNote(i);
+      return;
+    }
+  }catch(e){ toast('Connection problem — please try again'); }
+  finally{ myNoteBusy = false; const b = document.getElementById('mn-btn'); if(b){ b.disabled = false; b.textContent = label; } }
+}
+function openMyNote(i){
+  const n = myNotes[i]; if(!n) return;
+  const box = document.getElementById('cn-body');
+  box.innerHTML = `
+    <div><button class="np-btn" onclick="openCourseNotes('${cnCourseKey}')">‹ All notes</button></div>
+    <div class="np-card">
+      <div style="font-size:12px;color:var(--t3);font-weight:700;">${escapeHtml(COURSES[cnCourseKey]?.code || '')} · your ${escapeHtml(n.depth)} notes · ${n.readMinutes} min read</div>
+      <div style="font-size:20px;font-weight:800;margin:4px 0 12px;line-height:1.25;">${escapeHtml(n.title)}</div>
+      <div class="np-note">${renderNoteBody(n.body)}</div>
+    </div>
+    <div><button class="np-btn" style="color:var(--no);" onclick="deleteMyNote(${i})">Delete these notes</button></div>`;
+  window.scrollTo(0,0); box.scrollTop = 0;
+}
+async function deleteMyNote(i){
+  const n = myNotes[i]; if(!n || !confirm('Delete these notes? Credits are not refunded.')) return;
+  const r = await PhqAuth.authFetch(`/api/my-notes/${n.id}`, { method:'DELETE' }, 'student');
+  toast(r.ok ? 'Deleted' : 'Could not delete'); openCourseNotes(cnCourseKey);
+}
+function openNoteReader(i){
+  const n = cnList[i]; if(!n) return;
+  const box = document.getElementById('cn-body');
+  const code = COURSES[cnCourseKey]?.code || '';
+  box.innerHTML = `
+    <div><button class="np-btn" onclick="openCourseNotes('${cnCourseKey}')">‹ All notes</button></div>
+    <div class="np-card">
+      <div style="font-size:12px;color:var(--t3);font-weight:700;">${escapeHtml(code)} · ${n.readMinutes} min read</div>
+      <div style="font-size:20px;font-weight:800;margin:4px 0 12px;line-height:1.25;">${escapeHtml(n.title)}</div>
+      <div class="np-note">${renderNoteBody(n.body)}</div>
+    </div>
+    <div class="np-row" style="justify-content:space-between;">
+      ${i>0 ? `<button class="np-btn" onclick="openNoteReader(${i-1})">‹ Previous</button>` : '<span></span>'}
+      ${i<cnList.length-1 ? `<button class="np-btn" onclick="openNoteReader(${i+1})">Next ›</button>` : '<span></span>'}
+    </div>`;
+  window.scrollTo(0,0); box.scrollTop = 0;
+}
+
+// ── Achievements ──────────────────────────────────────────────
+async function openAchievements(){
+  showScr('achievements');
+  const box = document.getElementById('ach-body');
+  box.innerHTML = '<div class="np-empty">Loading…</div>';
+  try{
+    const r = await PhqAuth.authFetch('/api/achievements', {}, 'student');
+    const d = await r.json();
+    if(!r.ok){ box.innerHTML = `<div class="np-empty">${escapeHtml(d.error||'Could not load')}</div>`; return; }
+    (d.newlyEarned||[]).forEach((k,i)=>{ const a=d.achievements.find(x=>x.key===k); if(a) setTimeout(()=>toast(`${a.icon} Achievement unlocked: ${a.title}`), 500*i); });
+    const earned = d.achievements.filter(a=>a.earned).length;
+    box.innerHTML = `<div class="np-card np-row" style="justify-content:space-between;"><div><div style="font-size:12px;color:var(--t3);font-weight:700;">EARNED</div><div style="font-size:22px;font-weight:800;">${earned} / ${d.achievements.length}</div></div>
+      <div style="font-size:12px;color:var(--t3);text-align:right;line-height:1.5;">${d.stats.questions} questions<br>${d.stats.quizzes} quizzes · 🔥 ${d.stats.streak}</div></div>
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;">${d.achievements.map(a=>`
+        <div class="np-card" style="text-align:center;${a.earned?'':'opacity:.55;'}">
+          <div style="font-size:34px;${a.earned?'':'filter:grayscale(1);'}">${a.icon}</div>
+          <div style="font-weight:800;font-size:13.5px;margin-top:4px;">${escapeHtml(a.title)}</div>
+          <div style="font-size:11.5px;color:var(--t3);margin:3px 0 8px;line-height:1.4;">${escapeHtml(a.desc)}</div>
+          ${a.earned ? (d.equipped===a.key
+              ? `<button class="np-btn" style="box-shadow:var(--sh-in-sm);" onclick="equipAchievement('')">Showing ✓</button>`
+              : `<button class="np-btn" onclick="equipAchievement('${a.key}')">Show on leaderboard</button>`)
+            : '<div style="font-size:11px;color:var(--t4);">🔒 Locked</div>'}
+        </div>`).join('')}</div>`;
+  }catch(e){ box.innerHTML = '<div class="np-empty">Could not connect. Please try again.</div>'; }
+}
+async function equipAchievement(key){
+  const r = await PhqAuth.authFetch('/api/achievements/equip', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ key: key || null }) }, 'student');
+  const d = await r.json().catch(()=>({}));
+  if(!r.ok) toast(d.error || 'Could not update'); else toast(key ? 'Badge set — it now shows on the leaderboard' : 'Badge removed');
+  openAchievements();
+}
+
 function showScr(id){
   if(id!=='quiz') clearAutoAdvance();
   document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
@@ -3364,5 +3781,6 @@ function toast(msg){
 
 bootFromSession();
 </script>
+<script src="/js/phq-sci.js" defer></script>
 </body>
 </html>

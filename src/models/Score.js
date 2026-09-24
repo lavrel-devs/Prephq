@@ -11,6 +11,8 @@ const ScoreSchema = new mongoose.Schema({
   skip:    Number,
   courses: String,
   mode:    String,
+  // Per-topic breakdown of this quiz/exam (course key + tag), shown in exam history.
+  topics:  { type: [{ _id: false, course: String, tag: String, correct: Number, total: Number }], default: undefined },
   ts:      { type: Date, default: Date.now },
 });
 ScoreSchema.index({ matric: 1, ts: -1 });

@@ -261,7 +261,7 @@ body{
         <i class="fa-solid fa-key f-input-icon"></i>
         <input class="f-input" id="s-pass" type="password" placeholder="Your password" autocomplete="current-password">
       </div>
-      <div class="f-hint">Your password is your matric number, unless you changed it.</div>
+      <div class="f-hint">Use the password you created when you signed up. <a href="/forgot-password" style="color:var(--brand);font-weight:700;text-decoration:none;">Forgot password?</a></div>
     </div>
     <button class="btn-grad" id="s-btn" onclick="studentLogin()"><i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In</button>
     <div class="foot">New student? <a href="/register.html">Create a free account</a></div>
@@ -307,7 +307,7 @@ function clearErr(){ document.getElementById('err').classList.remove('on'); }
 
 async function studentLogin(){
   const matric = document.getElementById('s-matric').value.trim().toUpperCase();
-  const password = document.getElementById('s-pass').value.trim();
+  const password = document.getElementById('s-pass').value; // not trimmed: signup keeps passwords exactly as typed
   const btn = document.getElementById('s-btn');
   clearErr();
   if(!matric||!password){ showErr('Please enter matric and password.'); return; }
@@ -328,7 +328,8 @@ async function studentLogin(){
     if(data.newDeviceFlagged){
       console.info('New device detected for this account.');
     }
-    window.location.href = '/dashboard.html';
+    // An admin-issued temporary password must be replaced before the app can be used.
+    window.location.href = data.mustChangePassword ? '/change-password' : '/dashboard.html';
   }catch(e){
     showErr('Cannot connect to server.');
     btn.disabled = false;

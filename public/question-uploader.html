@@ -308,8 +308,12 @@ function normaliseCourse(raw) {
 // ═══════════════════════════════════════════════════════
 //  LATEX / NOTATION CLEANER
 // ═══════════════════════════════════════════════════════
+// v1.6: the app now RENDERS LaTeX ($...$, \\frac, \\ce{...}) and [[smiles: ...]] structures, so uploaded questions keep
+// their maths intact instead of being flattened to plain text. Set to false to get the old flatten-to-symbols behaviour.
+const KEEP_LATEX = true;
 function cleanLatex(s) {
   if (!s) return s;
+  if (KEEP_LATEX) return s;
 
   // ── Arrows & logical symbols ──
   s = s.replace(/\\rightarrow/g, '→');

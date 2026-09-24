@@ -60,7 +60,7 @@ function logActivity({ source = 'system', actorType = 'system', actor = '', acti
   });
 }
 
-const PAGE_PATHS = new Set(['/', '/login', '/register', '/dashboard', '/admin', '/profile', '/contests', '/leaderboard', '/study-rooms', '/chat']);
+const PAGE_PATHS = new Set(['/', '/login', '/register', '/dashboard', '/admin', '/profile', '/contests', '/leaderboard', '/study-rooms', '/chat', '/forgot-password', '/change-password']);
 
 // Express middleware: logs every /api request and every page view once the response is sent.
 function activityMiddleware(req, res, next) {

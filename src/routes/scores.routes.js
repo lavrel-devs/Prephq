@@ -9,6 +9,8 @@ const { checkDailyLimit, incrementDailyUsage } = require('../services/tier.servi
 const { canUse } = require('../services/entitlements.service');
 const Settings = require('../models/Settings');
 const { normCourseKey, cleanTag } = require('../utils/validate');
+const { syncRevisionQueue } = require('../services/study.service');
+const { evaluateAndAward } = require('../services/achievements.service');
 const router = express.Router();
 
 // GET /api/scores/:matric — a student may only read their own scores
@@ -90,9 +92,19 @@ router.post('/:matric', requireStudent, async (req, res) => {
       }
     }
 
+    // Per-topic breakdown for exam history (course key + tag → correct/total).
+    const topicMap = new Map();
+    for (const a of attemptDocs) {
+      const k = `${a.course}|${a.tag.toLowerCase()}`;
+      const cur = topicMap.get(k) || { course: a.course, tag: a.tag, correct: 0, total: 0 };
+      cur.total++; if (a.correct) cur.correct++;
+      topicMap.set(k, cur);
+    }
+
     await Score.create({
       matric: req.params.matric.toUpperCase(),
       correct, total, pct, wrong, skip, courses, mode,
+      ...(topicMap.size ? { topics: [...topicMap.values()] } : {}),
     });
 
     if (questionCount > 0) await incrementDailyUsage(student, 'questions', questionCount);
@@ -102,7 +114,15 @@ router.post('/:matric', requireStudent, async (req, res) => {
       await QuestionAttempt.insertMany(attemptDocs).catch(e => console.error('[scores] attempt insert failed:', e.message));
     }
 
-    res.status(201).json({ success: true });
+    // Bookkeeping that must never fail the save itself.
+    let achievements = [];
+    try {
+      if (attemptDocs.length) await syncRevisionQueue(req.params.matric.toUpperCase());
+      const fresh = await Student.findOne({ matric: req.params.matric.toUpperCase() });
+      if (fresh) achievements = (await evaluateAndAward(fresh)).fresh.map(a => ({ key: a.key, icon: a.icon, title: a.title, desc: a.desc }));
+    } catch (e) { console.error('[scores] post-save bookkeeping failed:', e.message); }
+
+    res.status(201).json({ success: true, achievements });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 

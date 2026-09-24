@@ -365,6 +365,15 @@ select.f-input option{background:var(--bg);color:var(--t1);}
       <div class="nav-item" data-v="announcements" onclick="go('announcements',this)">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 11V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h9l4 4v-6h1a2 2 0 0 0 2-2z"/></svg>Announcements
       </div>
+      <div class="nav-item" data-v="support" onclick="go('support',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>Support <span id="nav-support-badge" class="badge b-no" style="display:none;margin-left:auto;">0</span>
+      </div>
+      <div class="nav-item" data-v="followups" onclick="go('followups',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>Follow-ups
+      </div>
+      <div class="nav-item" data-v="course-notes" onclick="go('course-notes',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>Course Notes
+      </div>
       <div class="nav-item" data-v="credit-settings" onclick="go('credit-settings',this)">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>Credit Settings
       </div>
@@ -759,6 +768,82 @@ select.f-input option{background:var(--bg);color:var(--t1);}
         </div>
       </div>
 
+      <!-- ═══ SUPPORT INBOX ═════════════════════════════════ -->
+      <div id="v-support" class="view">
+        <div class="ph"><div><div class="ph-title">Support</div><div class="ph-sub">Password recovery, Premium requests and question reports from students</div></div></div>
+        <div class="tw" style="padding:18px;">
+          <div style="font-size:13px;font-weight:800;margin-bottom:8px;">My WhatsApp number <span style="font-weight:600;color:var(--t3)">— students who need help are routed to admins who set this</span></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <input class="f-input" id="sup-wa" placeholder="e.g. 08012345678 or +2348012345678" style="flex:1;min-width:220px;">
+            <button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;" onclick="saveMyWhatsapp()">Save</button>
+          </div>
+        </div>
+        <div class="tw">
+          <div class="th"><div class="th-title" id="sup-title">Open requests</div>
+            <div class="th-right">
+              <select class="f-input" id="sup-status" onchange="loadSupport()" style="padding:7px 10px;font-size:12.5px;"><option value="open">Open</option><option value="resolved">Resolved</option><option value="rejected">Rejected</option></select>
+              <select class="f-input" id="sup-type" onchange="loadSupport()" style="padding:7px 10px;font-size:12.5px;"><option value="">All types</option><option value="recovery">Password recovery</option><option value="upgrade">Premium requests</option><option value="question_report">Question reports</option></select>
+            </div></div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Type</th><th>Student</th><th>Details</th><th>When</th><th>Actions</th></tr></thead>
+            <tbody id="sup-body"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ═══ FOLLOW-UPS ════════════════════════════════════ -->
+      <div id="v-followups" class="view">
+        <div class="ph"><div><div class="ph-title">Follow-ups</div><div class="ph-sub">Reach students on WhatsApp: renewals and win-backs</div></div></div>
+        <div class="tw" style="padding:18px;">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+            <button class="btn-main" id="fu-tab-exp" style="width:auto;padding:9px 16px;font-size:13px;" onclick="fuTab('expiring')">Plans expiring</button>
+            <button class="btn-main" id="fu-tab-ina" style="width:auto;padding:9px 16px;font-size:13px;" onclick="fuTab('inactive')">Inactive students</button>
+            <select class="f-input" id="fu-days" onchange="loadFollowups()" style="padding:8px 10px;font-size:13px;"><option value="3">3 days</option><option value="7" selected>7 days</option><option value="14">14 days</option><option value="30">30 days</option></select>
+            <label style="display:flex;gap:6px;align-items:center;font-size:13px;color:var(--t2);cursor:pointer;"><input type="checkbox" id="fu-hide" checked onchange="fuRender()"> Hide already followed up</label>
+          </div>
+        </div>
+        <div class="tw">
+          <div class="th"><div class="th-title" id="fu-title">Plans expiring</div></div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Student</th><th>Plan</th><th id="fu-col">Ends</th><th>Message</th><th>Followed up?</th></tr></thead>
+            <tbody id="fu-body"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ═══ COURSE NOTES ══════════════════════════════════ -->
+      <div id="v-course-notes" class="view">
+        <div class="ph"><div><div class="ph-title">Course Notes</div><div class="ph-sub">Notes and topic outlines students read inside each course</div></div>
+          <button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;" onclick="openNoteModal()">+ New Note</button></div>
+        <div class="tw" style="padding:14px 18px;"><select class="f-input" id="cn-course" onchange="cnCourseChanged()" style="min-width:220px;"></select></div>
+        <div class="tw" style="padding:18px;">
+          <div style="font-weight:800;font-size:15px;">✨ AI note builder</div>
+          <div style="font-size:12.5px;color:var(--t3);margin:4px 0 12px;line-height:1.5;">Reads the past questions already uploaded for this course, arranges their topics in a sensible order, then writes simple, thorough notes for each topic. Everything it writes is saved as a <b>draft</b> — students only see a note after you approve it.</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+            <button class="btn-main" id="cn-outline-btn" style="width:auto;padding:9px 18px;font-size:13px;" onclick="aiOutline()">Build topic outline</button>
+            <button class="btn-main" id="cn-approve-all" style="width:auto;padding:9px 18px;font-size:13px;display:none;" onclick="approveAllDrafts()">Approve all drafts</button>
+            <span id="cn-ai-status" style="font-size:12.5px;color:var(--t3);"></span>
+          </div>
+          <div style="margin-top:14px;padding:14px;border-radius:14px;box-shadow:var(--press-sm);">
+            <div style="font-weight:800;font-size:13.5px;">⚡ Write ALL notes in one click</div>
+            <div style="font-size:12px;color:var(--t3);margin:3px 0 10px;line-height:1.5;">Runs on the server, so you can close this tab. It builds each course's topic list, writes every missing note as a draft, spaces the AI requests out and waits by itself when the AI says “slow down”.</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn-main" id="job-course-btn" style="width:auto;padding:9px 16px;font-size:12.5px;" onclick="startNoteJob(false)">This course only</button>
+              <button class="btn-main" id="job-all-btn" style="width:auto;padding:9px 16px;font-size:12.5px;" onclick="startNoteJob(true)">ALL courses</button>
+              <button class="btn-main" style="width:auto;padding:9px 16px;font-size:12.5px;background:var(--ok);" onclick="approveEveryDraft()">Approve every draft (all courses)</button>
+            </div>
+            <div id="job-panel" style="margin-top:12px;display:none;"></div>
+          </div>
+          <div id="cn-outline" style="margin-top:14px;"></div>
+        </div>
+        <div class="tw">
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Order</th><th>Title</th><th>Topic</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="cn-body"></tbody>
+          </table></div>
+        </div>
+      </div>
+
       <!-- ═══ ACTIVITY LOG (owner only) ════════════════════ -->
       <div id="v-activity" class="view">
         <div class="ph">
@@ -846,6 +931,18 @@ select.f-input option{background:var(--bg);color:var(--t1);}
           <div style="display:flex;gap:20px;align-items:center;">
             <div><label style="font-size:13px;font-weight:600;">Daily limit (msgs):</label><input type="number" id="cs-chatbot-daily" class="f-input" style="width:100px;" onchange="saveCreditSettings()"></div>
             <div><label style="font-size:13px;font-weight:600;">Monthly limit (msgs):</label><input type="number" id="cs-chatbot-monthly" class="f-input" style="width:100px;" onchange="saveCreditSettings()"></div>
+          </div>
+        </div>
+
+        <div class="tw" style="padding:20px;margin-top:20px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div><b>Student-written study notes</b><div style="font-size:12px;color:var(--t3);">Students can have the AI write notes on any topic for credits. Credits are returned automatically if the AI fails.</div></div>
+            <button class="toggle" id="cs-notes-toggle" onclick="toggleCreditSetting('notes')"></button>
+          </div>
+          <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;">
+            <div><label style="font-size:13px;font-weight:600;">Quick (credits):</label><input type="number" min="0" id="cs-notes-quick" class="f-input" style="width:100px;" onchange="saveCreditSettings()"></div>
+            <div><label style="font-size:13px;font-weight:600;">Standard:</label><input type="number" min="0" id="cs-notes-standard" class="f-input" style="width:100px;" onchange="saveCreditSettings()"></div>
+            <div><label style="font-size:13px;font-weight:600;">Detailed:</label><input type="number" min="0" id="cs-notes-detailed" class="f-input" style="width:100px;" onchange="saveCreditSettings()"></div>
           </div>
         </div>
 
@@ -1082,6 +1179,37 @@ select.f-input option{background:var(--bg);color:var(--t1);}
 </div>
 
 <!-- DELETE CONFIRM -->
+<div class="modal-bg" id="m-temp" onclick="closeMBg(event,'m-temp')">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-title">Temporary password ready</div>
+    <div class="modal-sub" id="temp-sub">Send this to the student. It is shown only once — they must choose their own password when they log in.</div>
+    <div id="temp-pw" style="font-family:monospace;font-size:26px;font-weight:800;text-align:center;letter-spacing:.06em;padding:14px;border-radius:14px;user-select:all;margin:6px 0 4px;"></div>
+    <div class="mfooter">
+      <button class="btn-cancel" onclick="copyTemp()">Copy</button>
+      <a class="btn-confirm" id="temp-wa" href="#" target="_blank" rel="noopener" style="text-align:center;text-decoration:none;display:none;">Open WhatsApp</a>
+      <button class="btn-cancel" onclick="closeM('m-temp')">Done</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="m-note" onclick="closeMBg(event,'m-note')">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-title" id="note-modal-title">New note</div>
+    <div class="modal-sub">Format: "## Heading" for sections, "- " for bullets, **bold** for key terms.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <input class="f-input" id="note-title" maxlength="120" placeholder="Title">
+      <div style="display:flex;gap:10px;"><input class="f-input" id="note-topic" maxlength="100" placeholder="Topic (optional)" style="flex:1;"><input class="f-input" id="note-order" type="number" placeholder="Order" style="width:90px;"></div>
+      <textarea class="f-input" id="note-body" rows="9" maxlength="12000" placeholder="Write the notes here…" style="resize:vertical;"></textarea>
+      <div id="note-ai-flag" class="badge b-warn" style="display:none;text-transform:none;">AI draft — read it through and fix anything wrong before publishing</div>
+      <label style="display:flex;gap:8px;align-items:center;font-size:13px;font-weight:700;"><input type="checkbox" id="note-pub" checked> Published (visible to students)</label>
+      <div><button class="ab ab-gray" type="button" onclick="toggleNotePreview()">Preview as students see it</button></div>
+      <div id="note-preview" class="np-preview" style="display:none;padding:14px;border-radius:14px;box-shadow:var(--press-sm);max-height:260px;overflow:auto;font-size:13.5px;line-height:1.6;"></div>
+      <div id="note-err" style="color:var(--no);font-size:12.5px;font-weight:600;min-height:16px;"></div>
+    </div>
+    <div class="mfooter"><button class="btn-cancel" onclick="closeM('m-note')">Cancel</button><button class="btn-confirm" onclick="saveNote()">Save</button></div>
+  </div>
+</div>
+
 <div class="modal-bg" id="m-admin" onclick="closeMBg(event,'m-admin')">
   <div class="modal" style="max-width:560px;">
     <div class="modal-title" id="adm-modal-title">New Admin</div>
@@ -1271,7 +1399,7 @@ let editingAdmin = null; // username being edited, or null when creating
 const VIEW_AREA = {
   dashboard:'analytics', analytics:'analytics', students:'students', payments:'payments',
   courses:'courses', questions:'questions', 'bulk-upload':'questions', contests:'contests', recurring:'contests',
-  transfers:'credits', announcements:'announcements', 'credit-settings':'settings', admins:'FULL', activity:'OWNER',
+  transfers:'credits', announcements:'announcements', 'credit-settings':'settings', admins:'FULL', activity:'OWNER', support:'support', followups:'students', 'course-notes':'courses',
 };
 function canView(area){
   if(myAccess.fullAccess && area!=='OWNER') return true;
@@ -1295,6 +1423,7 @@ async function bootAdmin(){
   const who = document.getElementById('nav-admins'); if(who && myAccess.fullAccess) who.style.display = '';
   const act = document.getElementById('nav-activity'); if(act) act.style.display = myAccess.owner ? '' : 'none';
 
+  if(canView('support')){ refreshSupportBadge(); setInterval(refreshSupportBadge, 60000); }
   if(canView('analytics')) loadDashboard();
   else {
     const first = Object.keys(VIEW_AREA).find(v => canView(VIEW_AREA[v]));
@@ -1484,6 +1613,342 @@ function actDownload(fmt){
   downloadCsv(`/api/admin/activity/download?date=${encodeURIComponent(date)}&format=${fmt}`, `prephq-activity-${date}.${fmt}`);
 }
 
+
+// ══════════════════════════════════════════════════════════════
+//  SUPPORT INBOX · FOLLOW-UPS · COURSE NOTES  (v1.5)
+// ══════════════════════════════════════════════════════════════
+const fmtWhen = d => new Date(d).toLocaleString(undefined,{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+const waOpen = (num, text) => num ? `https://wa.me/${num}?text=${encodeURIComponent(text)}` : '';
+let supRows = [];
+
+async function refreshSupportBadge(){
+  try{
+    const r = await adminFetch('/api/admin/support/counts', { headers:{} }); if(!r.ok) return;
+    const d = await r.json(); const b = document.getElementById('nav-support-badge');
+    if(b){ b.textContent = d.total; b.style.display = d.total ? '' : 'none'; }
+  }catch(e){}
+}
+
+async function loadSupport(){
+  const body = document.getElementById('sup-body');
+  body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--t3);padding:20px;">Loading…</td></tr>';
+  try{
+    const q = new URLSearchParams({ status: document.getElementById('sup-status').value });
+    const t = document.getElementById('sup-type').value; if(t) q.set('type', t);
+    const [r, me] = await Promise.all([adminFetch('/api/admin/support?'+q, {headers:{}}), adminFetch('/api/admin/support/me', {headers:{}})]);
+    if(me.ok){ const m = await me.json(); const inp = document.getElementById('sup-wa'); if(inp && document.activeElement!==inp) inp.value = m.whatsapp || ''; }
+    supRows = await r.json(); if(!r.ok) throw new Error(supRows.error||'failed');
+    document.getElementById('sup-title').textContent = `${supRows.length} ${document.getElementById('sup-status').value} request${supRows.length===1?'':'s'}`;
+    const typeLbl = { recovery:['Password','b-warn'], upgrade:['Premium','b-purple'], question_report:['Report','b-brand'] };
+    body.innerHTML = supRows.map((x,i)=>{
+      const [lbl,cls] = typeLbl[x.type];
+      const stu = x.matric ? `<div style="font-weight:700">${escHtml(x.student?.name||x.name||'—')}</div><div style="font-size:11.5px;color:var(--t3)">${escHtml(x.matric)}${x.student?` · ${escHtml(x.student.tier)}`:''}</div>` : '<span style="color:var(--t4)">—</span>';
+      let detail='', act='';
+      const open = x.status==='open';
+      if(x.type==='recovery'){
+        const mismatch = x.student && x.name && x.name.trim().toLowerCase()!==String(x.student.name||'').trim().toLowerCase();
+        detail = `<div style="font-size:12px;">Code <b>${escHtml(x.code)}</b></div>`
+          + (x.studentFound===false ? '<div class="badge b-no" style="margin-top:4px;">No account with this matric</div>'
+            : `<div style="font-size:12px;color:var(--t3)">Typed name: ${escHtml(x.name||'—')} ${mismatch?'<span class="badge b-warn">≠ account name</span>':''}</div>`);
+        act = open ? `${x.student&&x.student.contact?`<a class="ab ab-ok" href="${escHtml(waOpen(x.student.contact,'Hi '+(x.student.name||'')+', this is PrepHQ support about request '+x.code+'. '))}" target="_blank" rel="noopener">WhatsApp</a>`:''}
+          ${x.studentFound!==false?`<button class="ab ab-edit" onclick="supTemp('${x._id}')">Temp password</button>`:''}` : '';
+      } else if(x.type==='upgrade'){
+        detail = `<div style="font-size:12px;">Code <b>${escHtml(x.code)}</b></div><div style="font-weight:800;text-transform:capitalize">${escHtml(x.plan)} Premium</div>`;
+        act = open ? `${x.student&&x.student.contact?`<a class="ab ab-ok" href="${escHtml(waOpen(x.student.contact,'Hi '+(x.student.name||'')+', this is PrepHQ about your Premium request '+x.code+'. '))}" target="_blank" rel="noopener">WhatsApp</a>`:''}
+          <button class="ab ab-edit" onclick="supGrant('${x._id}')">Grant plan</button>` : '';
+      } else {
+        const r = x.report||{};
+        const opts = (r.opts||[]).map((o,n)=>`<div style="font-size:11.5px;${n===r.ans?'font-weight:800;color:var(--ok)':''}">${String.fromCharCode(65+n)}. ${escHtml(o)}</div>`).join('');
+        detail = `<div style="font-size:12px;"><b>${escHtml(String(r.reason||'').replace('_',' '))}</b> · ${escHtml(r.course||'')}</div><div style="font-size:12.5px;margin:3px 0;">${escHtml(r.q||'')}</div>${opts}${r.note?`<div style="font-size:11.5px;color:var(--t3);margin-top:3px;">“${escHtml(r.note)}”</div>`:''}`;
+        act = open && r.questionId ? `<button class="ab ab-edit" onclick="supFix('${x._id}')">Fix answer</button>` : '';
+      }
+      if(open) act += ` <button class="ab ab-ok" onclick="supResolve('${x._id}','resolved')">Resolve</button> <button class="ab ab-del" onclick="supResolve('${x._id}','rejected')">Reject</button>`;
+      else act = `<span style="font-size:11.5px;color:var(--t3)">${escHtml(x.resolvedBy||'')}<br>${escHtml(x.resolutionNote||'')}</span>`;
+      return `<tr><td><span class="badge ${cls}">${lbl}</span></td><td>${stu}</td><td>${detail}</td><td style="font-size:12px;color:var(--t3);white-space:nowrap">${fmtWhen(x.createdAt)}</td><td><div class="act-row">${act}</div></td></tr>`;
+    }).join('') || '<tr class="empty-row"><td colspan="5">Nothing here</td></tr>';
+    refreshSupportBadge();
+  }catch(e){ body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--no);padding:20px;">Could not load requests</td></tr>'; }
+}
+async function saveMyWhatsapp(){
+  const r = await adminFetch('/api/admin/support/me/whatsapp', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ whatsapp: document.getElementById('sup-wa').value }) });
+  const d = await r.json().catch(()=>({})); toast(r.ok ? (d.whatsapp ? 'Saved — students can now be routed to you' : 'Number removed') : (d.error||'Could not save'));
+  if(r.ok) document.getElementById('sup-wa').value = d.whatsapp;
+}
+async function supTemp(id){
+  if(!confirm('Issue a temporary password? Only do this after you have confirmed the student on WhatsApp. They will be signed out everywhere.')) return;
+  const r = await adminFetch(`/api/admin/support/${id}/recovery/temp-password`, { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' });
+  const d = await r.json().catch(()=>({}));
+  if(!r.ok) return toast(d.error||'Could not issue a password');
+  document.getElementById('temp-pw').textContent = d.tempPassword;
+  document.getElementById('temp-sub').textContent = `For ${d.name} (${d.matric}). Shown only once — they must choose their own password when they log in.`;
+  const a = document.getElementById('temp-wa'); if(d.whatsappUrl){ a.href = d.whatsappUrl; a.style.display=''; } else a.style.display='none';
+  document.getElementById('m-temp').classList.add('on'); loadSupport();
+}
+function copyTemp(){ navigator.clipboard?.writeText(document.getElementById('temp-pw').textContent).then(()=>toast('Copied')); }
+async function supGrant(id){
+  const amt = prompt('Amount the student paid in ₦ (leave blank to use the listed price):','');
+  if(amt===null) return;
+  const r = await adminFetch(`/api/admin/support/${id}/upgrade/grant`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ amount: amt }) });
+  const d = await r.json().catch(()=>({}));
+  if(!r.ok) return toast(d.error||'Could not grant the plan');
+  toast('Premium activated'); if(d.whatsappUrl && confirm('Premium activated. Tell the student on WhatsApp now?')) window.open(d.whatsappUrl,'_blank');
+  loadSupport();
+}
+async function supFix(id){
+  const x = supRows.find(r=>r._id===id); if(!x) return;
+  const letter = prompt(`Correct option letter for this question (A–${String.fromCharCode(64+(x.report.opts||[]).length)}):`,'');
+  if(!letter) return;
+  const ans = letter.trim().toUpperCase().charCodeAt(0)-65;
+  const r = await adminFetch(`/api/admin/support/${id}/report/fix-answer`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ans }) });
+  const d = await r.json().catch(()=>({})); toast(r.ok ? 'Answer key updated' : (d.error||'Could not update')); loadSupport();
+}
+async function supResolve(id,status){
+  const note = status==='rejected' ? (prompt('Reason (optional):','')||'') : '';
+  const r = await adminFetch(`/api/admin/support/${id}/resolve`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ status, note }) });
+  const d = await r.json().catch(()=>({})); toast(r.ok ? 'Done' : (d.error||'Could not update')); loadSupport();
+}
+
+// ── Follow-ups ────────────────────────────────────────────────
+let fuMode = 'expiring', fuRows = [];
+function fuTab(m){ fuMode = m; loadFollowups(); }
+async function loadFollowups(){
+  document.getElementById('fu-tab-exp').style.opacity = fuMode==='expiring' ? 1 : .55;
+  document.getElementById('fu-tab-ina').style.opacity = fuMode==='inactive' ? 1 : .55;
+  document.getElementById('fu-title').textContent = fuMode==='expiring' ? 'Plans expiring soon (or just ended)' : 'Students not seen recently';
+  document.getElementById('fu-col').textContent = fuMode==='expiring' ? 'Ends' : 'Last seen';
+  const body = document.getElementById('fu-body');
+  body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--t3);padding:20px;">Loading…</td></tr>';
+  try{
+    const r = await adminFetch(`/api/admin/followups/${fuMode}?days=${document.getElementById('fu-days').value}`, { headers:{} });
+    fuRows = await r.json(); if(!r.ok) throw new Error();
+    fuRender();
+  }catch(e){ body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--no);padding:20px;">Could not load</td></tr>'; }
+}
+function fuRender(){
+  const body = document.getElementById('fu-body');
+  const hide = document.getElementById('fu-hide').checked;
+  const shown = fuRows.filter(s => !(hide && s.followedUp));
+  const hidden = fuRows.length - shown.length;
+  body.innerHTML = shown.map(s=>{
+    let when, msg;
+    if(fuMode==='expiring'){
+      const dt = new Date(s.tierExpiresAt).toLocaleDateString(undefined,{day:'numeric',month:'short'});
+      when = s.state==='expired' ? `<span class="badge b-no">Ended ${dt}</span>` : `<span class="badge b-warn">${dt} · ${s.daysLeft}d left</span>`;
+      msg = `Hi ${s.name}, your PrepHQ Premium ${s.state==='expired'?'ended on':'ends on'} ${dt}. Would you like to renew? Reply here and we'll sort it out.`;
+    } else {
+      when = s.inactiveDays==null ? '<span class="badge b-gray">Never</span>' : `<span class="badge b-gray">${s.inactiveDays}d ago</span>`;
+      msg = `Hi ${s.name}, we haven't seen you on PrepHQ ${s.inactiveDays==null?'yet':'for '+s.inactiveDays+' days'}. Your exams are coming — come back and keep practising! Need any help getting started?`;
+    }
+    const m = escHtml(s.matric).replace(/'/g,'&#39;');
+    const fu = s.followedUp
+      ? `<span class="badge b-ok" title="${escHtml(new Date(s.followedUp.at).toLocaleString())}">✓ ${escHtml(s.followedUp.by||'admin')} · ${escHtml(fuAgo(s.followedUp.at))}</span> <a href="#" style="font-size:11.5px;color:var(--t3);" onclick="fuMark('${m}',false);return false;">undo</a>`
+      : `<button class="ab ab-ok" onclick="fuMark('${m}',true)">✓ Mark followed up</button>`;
+    const wa = s.wa ? `<a class="ab ab-ok" href="${escHtml(waOpen(s.wa,msg))}" target="_blank" rel="noopener" ${s.followedUp?`onclick="return confirm('${escHtml(s.name).replace(/'/g,'')} was already followed up. Send another message anyway?')" style="opacity:.55"`:''}>WhatsApp</a>` : '<span style="font-size:12px;color:var(--t4)">No number</span>';
+    return `<tr><td><div style="font-weight:700">${escHtml(s.name)}</div><div style="font-size:11.5px;color:var(--t3)">${escHtml(s.matric)}</div></td>
+      <td style="text-transform:capitalize">${escHtml(s.premiumPlan||s.tier)}</td><td>${when}</td><td>${wa}</td><td>${fu}</td></tr>`;
+  }).join('') || `<tr class="empty-row"><td colspan="5">${hidden ? `Everyone here has been followed up (${hidden}) 🎉` : 'No one matches'}</td></tr>`;
+  if(hidden && shown.length) body.insertAdjacentHTML('beforeend', `<tr><td colspan="5" style="text-align:center;color:var(--t3);font-size:12.5px;padding:10px;">${hidden} already followed up · hidden</td></tr>`);
+}
+function fuAgo(iso){ const m = Math.floor((Date.now()-new Date(iso))/60000); return m<60 ? Math.max(m,1)+'m ago' : m<1440 ? Math.floor(m/60)+'h ago' : Math.floor(m/1440)+'d ago'; }
+async function fuMark(matric, on){
+  try{
+    const r = await adminFetch('/api/admin/followups/mark', { method: on?'POST':'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ matric, kind: fuMode }) });
+    const d = await r.json(); if(!r.ok) throw new Error(d.error||'Failed');
+    const row = fuRows.find(x=>x.matric===matric); if(row) row.followedUp = d.followedUp;
+    fuRender();
+  }catch(e){ alert(e.message||'Could not save'); }
+}
+
+// ── Course notes ──────────────────────────────────────────────
+let cnNotes = [], editingNote = null;
+function renderNoteHtml(t){
+  const lines = escHtml(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').split('\n');
+  let out='', inList=false; const close=()=>{ if(inList){ out+='</ul>'; inList=false; } };
+  for(const l of lines){
+    if(/^##\s+/.test(l)){ close(); out+=`<h4 style="margin:14px 0 6px;font-size:15px;">${l.replace(/^##\s+/,'')}</h4>`; }
+    else if(/^\s*[-•]\s+/.test(l)){ if(!inList){ out+='<ul style="margin:4px 0 8px 18px;padding:0;">'; inList=true; } out+=`<li>${l.replace(/^\s*[-•]\s+/,'')}</li>`; }
+    else { close(); if(l.trim()) out+=`<p style="margin:0 0 8px;">${l}</p>`; }
+  }
+  close(); return out;
+}
+function toggleNotePreview(){
+  const el = document.getElementById('note-preview');
+  if(el.style.display==='none'){ el.innerHTML = renderNoteHtml(document.getElementById('note-body').value) || '<span style="color:var(--t3)">Nothing to preview yet</span>'; el.style.display='block'; }
+  else el.style.display='none';
+}
+function cnCourseChanged(){ document.getElementById('cn-outline').innerHTML=''; document.getElementById('cn-ai-status').textContent=''; loadNotesAdmin(); }
+
+async function loadNotesAdmin(){
+  const sel = document.getElementById('cn-course');
+  if(!allCourses.length){ try{ await loadCourses(); }catch(e){} }
+  if(!sel.options.length) sel.innerHTML = allCourses.map(c=>`<option value="${escHtml(c.key)}">${escHtml(c.courseCode)} — ${escHtml(c.courseTitle)}</option>`).join('');
+  const body = document.getElementById('cn-body');
+  if(!sel.value){ body.innerHTML = '<tr class="empty-row"><td colspan="5">Add a course first</td></tr>'; return; }
+  body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--t3);padding:20px;">Loading…</td></tr>';
+  try{
+    const r = await adminFetch(`/api/admin/course-notes?course=${encodeURIComponent(sel.value)}`, { headers:{} });
+    cnNotes = await r.json(); if(!r.ok) throw new Error();
+    const drafts = cnNotes.filter(n=>n.source==='ai' && !n.published).length;
+    const ab = document.getElementById('cn-approve-all'); ab.style.display = drafts ? '' : 'none'; ab.textContent = `Approve all ${drafts} draft${drafts===1?'':'s'}`;
+    body.innerHTML = cnNotes.map(n=>{
+      const aiDraft = n.source==='ai' && !n.published;
+      const badge = n.published ? '<span class="badge b-ok">Published</span>' : aiDraft ? '<span class="badge b-warn">AI draft · needs review</span>' : '<span class="badge b-gray">Draft</span>';
+      return `<tr><td>${n.order}</td><td style="font-weight:700">${escHtml(n.title)}${n.source==='ai'?' <span style="color:var(--t4);font-size:11px;">✨</span>':''}</td><td>${escHtml(n.topic)||'<span style="color:var(--t4)">general</span>'}</td><td>${badge}</td>
+      <td><div class="act-row"><button class="ab ab-edit" onclick="openNoteModal('${n._id}')">${aiDraft?'Review':'Edit'}</button>${n.published?'':`<button class="ab ab-ok" onclick="approveNote('${n._id}')">Approve</button>`}<button class="ab ab-del" onclick="delNote('${n._id}')">Del</button></div></td></tr>`;
+    }).join('') || '<tr class="empty-row"><td colspan="5">No notes for this course yet — try the AI note builder above</td></tr>';
+  }catch(e){ body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--no);padding:20px;">Could not load</td></tr>'; }
+}
+
+// ── AI note builder ───────────────────────────────────────────
+let cnOutline = null, cnBusy = false;
+async function aiOutline(){
+  if(cnBusy) return;
+  const course = document.getElementById('cn-course').value; if(!course) return;
+  const btn = document.getElementById('cn-outline-btn'), st = document.getElementById('cn-ai-status');
+  btn.disabled = true; cnBusy = true; st.textContent = 'Reading past questions and arranging topics…';
+  try{
+    const r = await adminFetch('/api/admin/course-notes/ai/outline', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ course }) });
+    const d = await r.json();
+    if(!r.ok){ st.textContent = ''; const stale = r.status===404 && d.error==='Not found'; document.getElementById('cn-outline').innerHTML = `<div class="err" style="display:block;padding:10px 12px;border-radius:12px;">${stale ? 'The server is running an older version that doesn\'t have the AI note builder yet. Stop it (Ctrl+C) and start it again with npm start, then retry.' : escHtml(d.error||'Could not build an outline')}</div>`; return; }
+    cnOutline = d; st.textContent = `${d.topics.length} topics found from ${d.totalQuestions} past questions`;
+    renderOutline();
+  }catch(e){ st.textContent = ''; document.getElementById('cn-outline').innerHTML = '<div class="err" style="display:block;padding:10px 12px;border-radius:12px;">Network error — try again</div>'; }
+  finally{ btn.disabled = false; cnBusy = false; }
+}
+function outlineState(t){
+  if(!t.note) return { badge:'<span class="badge b-gray">No note yet</span>', can:true, label:'Write note' };
+  if(t.note.source==='ai' && !t.note.published) return { badge:'<span class="badge b-warn">AI draft</span>', can:true, label:'Regenerate' };
+  return { badge:`<span class="badge b-ok">${t.note.published?'Published':'Has note'}</span>`, can:false, label:'' };
+}
+function renderOutline(){
+  if(!cnOutline) return;
+  const todo = cnOutline.topics.filter(t=>outlineState(t).can && !(t.note)).length;
+  document.getElementById('cn-outline').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
+      <div style="font-weight:800;font-size:13px;">Course outline (teaching order)</div>
+      <button class="btn-main" style="width:auto;padding:8px 16px;font-size:12.5px;" ${todo&&!cnBusy?'':'disabled'} onclick="aiGenerateAll()">Write all ${todo} missing note${todo===1?'':'s'}</button></div>
+    ${cnOutline.topics.map((t,i)=>{ const s = outlineState(t); return `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:8px;border-radius:14px;box-shadow:var(--press-sm);">
+        <div style="width:24px;font-weight:800;color:var(--t3);text-align:center;">${i+1}</div>
+        <div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:13.5px;">${escHtml(t.name)}</div>
+          <div style="font-size:11.5px;color:var(--t3);">${t.questionCount} past question${t.questionCount===1?'':'s'}${t.summary?' · '+escHtml(t.summary):''}</div>
+          <div id="cn-row-msg-${i}" style="font-size:11.5px;color:var(--no);"></div></div>
+        <div id="cn-row-badge-${i}">${s.badge}</div>
+        ${s.can?`<button class="ab ab-edit" id="cn-row-btn-${i}" onclick="aiGenerate(${i})">${s.label}</button>`:''}
+      </div>`; }).join('')}`;
+}
+async function aiGenerate(i, quiet){
+  const t = cnOutline.topics[i]; if(!t) return false;
+  const btn = document.getElementById(`cn-row-btn-${i}`), msg = document.getElementById(`cn-row-msg-${i}`), badge = document.getElementById(`cn-row-badge-${i}`);
+  if(btn){ btn.disabled = true; btn.textContent = 'Writing…'; } if(msg) msg.textContent = '';
+  try{
+    const r = await adminFetch('/api/admin/course-notes/ai/generate', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ course: cnOutline.course.key, topic: t.name, tags: t.tags, questionIds: t.questionIds }) });
+    const d = await r.json();
+    if(!r.ok){ if(msg) msg.textContent = d.error || 'Could not write this note'; if(btn){ btn.disabled=false; btn.textContent='Retry'; } return false; }
+    t.note = { id: d._id, source:'ai', published:false };
+    if(badge) badge.innerHTML = '<span class="badge b-warn">AI draft</span>';
+    if(btn){ btn.disabled = false; btn.textContent = 'Regenerate'; }
+    if(!quiet){ toast('Draft written — review and approve it below'); loadNotesAdmin(); }
+    return true;
+  }catch(e){ if(msg) msg.textContent = 'Network error'; if(btn){ btn.disabled=false; btn.textContent='Retry'; } return false; }
+}
+async function aiGenerateAll(){ startNoteJob(false); }
+
+// ── Bulk background job (runs on the server) ──
+let jobTimer = null, jobLastStatus = null;
+async function startNoteJob(all){
+  const code = document.getElementById('cn-course').selectedOptions[0]?.textContent || 'this course';
+  if(all && !confirm('Write notes for EVERY course that has past questions? This can take a while (it runs in the background) and uses AI credits from your Groq quota.')) return;
+  try{
+    const r = await adminFetch('/api/admin/course-notes/ai/jobs', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(all ? { all:true } : { course: document.getElementById('cn-course').value }) });
+    const d = await r.json(); if(!r.ok) throw new Error(d.error||'Could not start');
+    toast(d.already ? 'A job is already running — showing its progress' : 'Started — you can close this tab if you like');
+    renderJob(d); pollJob();
+  }catch(e){ toast(e.message||'Could not start'); }
+}
+async function loadJob(){
+  try{ const r = await adminFetch('/api/admin/course-notes/ai/jobs/current', { headers:{} }); if(!r.ok) return; const d = await r.json(); if(d){ renderJob(d); if(d.status==='running'||d.status==='queued') pollJob(); } }catch(e){}
+}
+function pollJob(){
+  if(jobTimer) return;
+  jobTimer = setInterval(async ()=>{
+    try{ const r = await adminFetch('/api/admin/course-notes/ai/jobs/current', { headers:{} }); const d = await r.json(); renderJob(d);
+      if(!d || (d.status!=='running' && d.status!=='queued')){ clearInterval(jobTimer); jobTimer=null; loadNotesAdmin(); } }catch(e){}
+  }, 3000);
+}
+function renderJob(j){
+  const el = document.getElementById('job-panel'); if(!el || !j) return;
+  el.style.display = 'block';
+  const active = j.status==='running' || j.status==='queued';
+  const c = j.counts||{}, doneN = (c.done||0)+(c.skipped||0)+(c.failed||0), total = c.total||0;
+  const pct = total ? Math.round(doneN/total*100) : (active ? 3 : 100);
+  const wait = j.waitUntil && new Date(j.waitUntil) > new Date() ? Math.ceil((new Date(j.waitUntil)-new Date())/1000) : 0;
+  const label = {running:'Running', queued:'Starting', done:'Finished', cancelled:'Stopped', failed:'Stopped (error)'}[j.status] || j.status;
+  const bad = (j.courses||[]).filter(x=>x.state==='nodata'||x.state==='failed');
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;gap:8px;font-size:12.5px;font-weight:700;"><span>${label}${j.scope==='all'?' · all courses':''}</span><span>${doneN} / ${total} topics · ${pct}%</span></div>
+    <div style="height:8px;border-radius:99px;background:var(--bg2,#0001);margin:6px 0;overflow:hidden;"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#742FF5,#1B55F5);transition:width .4s;"></div></div>
+    <div style="font-size:12px;color:var(--t3);line-height:1.5;">${escHtml(j.message||'')}${active&&j.current?`<br><b>Now:</b> ${escHtml(j.current)}`:''}${wait?`<br>⏳ AI limit reached — continuing automatically in ${wait}s`:''}</div>
+    <div style="font-size:12px;margin-top:4px;">✅ ${c.done||0} written · ⏭ ${c.skipped||0} already had notes${c.failed?` · <span style="color:var(--no)">❌ ${c.failed} failed</span>`:''}</div>
+    ${bad.length?`<div style="font-size:11.5px;color:var(--t3);margin-top:4px;">${bad.map(x=>escHtml(x.code)+': '+escHtml(x.error||x.state)).join(' · ')}</div>`:''}
+    ${(j.failed||[]).length?`<div style="font-size:11.5px;color:var(--no);margin-top:4px;">${j.failed.map(x=>escHtml(x.topic)+' ('+escHtml(x.error)+')').join('; ')}</div>`:''}
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+      ${active?`<button class="ab ab-no" onclick="jobAction('cancel','${j.id}')">Stop</button>`:''}
+      ${!active&&(c.failed||bad.some(x=>x.state==='failed'))?`<button class="ab ab-ok" onclick="jobAction('retry','${j.id}')">Retry failed</button>`:''}
+    </div>`;
+  document.getElementById('job-course-btn').disabled = document.getElementById('job-all-btn').disabled = active;
+}
+async function jobAction(what, id){
+  try{ const r = await adminFetch(`/api/admin/course-notes/ai/jobs/${id}/${what}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' });
+    const d = await r.json(); if(!r.ok) throw new Error(d.error||'Failed'); if(what==='retry'){ renderJob(d); pollJob(); } else loadJob();
+  }catch(e){ toast(e.message||'Failed'); }
+}
+async function approveEveryDraft(){
+  if(!confirm('Publish EVERY pending AI draft in every course? Students will see them straight away.')) return;
+  const r = await adminFetch('/api/admin/course-notes/approve-drafts', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ all:true }) });
+  const d = await r.json().catch(()=>({})); toast(r.ok ? `${d.approved} note${d.approved===1?'':'s'} published` : 'Could not approve'); loadNotesAdmin();
+}
+async function approveNote(id){
+  const r = await adminFetch(`/api/admin/course-notes/${id}/approve`, { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' });
+  toast(r.ok ? 'Approved — students can now read it' : 'Could not approve'); loadNotesAdmin();
+  if(cnOutline){ const n = cnOutline.topics.find(t=>t.note && String(t.note.id)===String(id)); if(n){ n.note.published = true; renderOutline(); } }
+}
+async function approveAllDrafts(){
+  const drafts = cnNotes.filter(n=>n.source==='ai' && !n.published).length;
+  if(!confirm(`Publish all ${drafts} AI draft${drafts===1?'':'s'} for this course? Students will see them straight away. (You can still edit or delete any note afterwards.)`)) return;
+  const r = await adminFetch('/api/admin/course-notes/approve-drafts', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ course: document.getElementById('cn-course').value }) });
+  const d = await r.json().catch(()=>({})); toast(r.ok ? `${d.approved} note${d.approved===1?'':'s'} published` : 'Could not approve');
+  loadNotesAdmin(); if(cnOutline){ cnOutline.topics.forEach(t=>{ if(t.note && t.note.source==='ai') t.note.published = true; }); renderOutline(); }
+}
+function openNoteModal(id){
+  editingNote = id || null;
+  const n = id ? cnNotes.find(x=>x._id===id) : null;
+  document.getElementById('note-modal-title').textContent = n ? 'Edit note' : 'New note';
+  document.getElementById('note-title').value = n ? n.title : '';
+  document.getElementById('note-topic').value = n ? n.topic : '';
+  document.getElementById('note-order').value = n ? n.order : (cnNotes.length+1);
+  document.getElementById('note-body').value = n ? n.body : '';
+  document.getElementById('note-pub').checked = n ? n.published : true;
+  document.getElementById('note-err').textContent = '';
+  document.getElementById('note-preview').style.display = 'none';
+  document.getElementById('note-ai-flag').style.display = (n && n.source==='ai' && !n.published) ? 'inline-block' : 'none';
+  document.getElementById('m-note').classList.add('on');
+}
+async function saveNote(){
+  const body = { course: document.getElementById('cn-course').value, title: document.getElementById('note-title').value, topic: document.getElementById('note-topic').value,
+    order: document.getElementById('note-order').value, body: document.getElementById('note-body').value, published: document.getElementById('note-pub').checked };
+  const r = await adminFetch(editingNote ? `/api/admin/course-notes/${editingNote}` : '/api/admin/course-notes', { method: editingNote?'PUT':'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const d = await r.json().catch(()=>({}));
+  if(!r.ok){ document.getElementById('note-err').textContent = d.error || 'Could not save'; return; }
+  closeM('m-note'); toast('Note saved'); loadNotesAdmin();
+}
+async function delNote(id){
+  if(!confirm('Delete this note?')) return;
+  const r = await adminFetch(`/api/admin/course-notes/${id}`, { method:'DELETE', headers:{} });
+  toast(r.ok ? 'Deleted' : 'Could not delete'); loadNotesAdmin();
+}
+
 // ── NAVIGATION ────────────────────────────────────────────────
 function go(v, el) {
   document.querySelectorAll('.view').forEach(x => x.classList.remove('on'));
@@ -1504,6 +1969,10 @@ function go(v, el) {
   if(v==='analytics') loadAnalytics();
   if(v==='admins') loadAdmins();
   if(v==='activity') loadActivity();
+  if(v==='support') loadSupport();
+  if(v==='followups') loadFollowups();
+  if(v==='course-notes') loadJob();
+  if(v==='course-notes') loadNotesAdmin();
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────
@@ -2531,6 +3000,11 @@ async function loadCreditSettings(){
     document.getElementById('cs-chatbot-toggle').classList.toggle('on', s.aiChatbot.enabled);
     document.getElementById('cs-chatbot-daily').value = s.aiChatbot.dailyLimit;
     document.getElementById('cs-chatbot-monthly').value = s.aiChatbot.monthlyLimit;
+    const nt = s.notes || {};
+    document.getElementById('cs-notes-toggle').classList.toggle('on', nt.enabled !== false);
+    document.getElementById('cs-notes-quick').value = nt.costQuick ?? 3;
+    document.getElementById('cs-notes-standard').value = nt.costStandard ?? 5;
+    document.getElementById('cs-notes-detailed').value = nt.costDetailed ?? 8;
 
     // v1.4: subscription tiers + support contact
     document.getElementById('ts-free-questions').value = s.tiers.free.dailyQuestions ?? '';
@@ -2549,7 +3023,7 @@ async function loadCreditSettings(){
   }catch(e){}
 }
 function toggleCreditSetting(which){
-  const ids = { daily: 'cs-daily-toggle', referral: 'cs-referral-toggle', streak: 'cs-streak-toggle', chatbot: 'cs-chatbot-toggle' };
+  const ids = { daily: 'cs-daily-toggle', referral: 'cs-referral-toggle', streak: 'cs-streak-toggle', chatbot: 'cs-chatbot-toggle', notes: 'cs-notes-toggle' };
   const el = document.getElementById(ids[which]);
   el.classList.toggle('on');
   saveCreditSettings();
@@ -2575,6 +3049,12 @@ async function saveCreditSettings(){
       enabled: document.getElementById('cs-chatbot-toggle').classList.contains('on'),
       dailyLimit: parseInt(document.getElementById('cs-chatbot-daily').value, 10) || 0,
       monthlyLimit: parseInt(document.getElementById('cs-chatbot-monthly').value, 10) || 0,
+    },
+    notes: {
+      enabled: document.getElementById('cs-notes-toggle').classList.contains('on'),
+      costQuick: parseInt(document.getElementById('cs-notes-quick').value, 10) || 0,
+      costStandard: parseInt(document.getElementById('cs-notes-standard').value, 10) || 0,
+      costDetailed: parseInt(document.getElementById('cs-notes-detailed').value, 10) || 0,
     },
   };
   try{
@@ -2843,5 +3323,6 @@ function renderRetentionTable(rows){
     </tr>`).join('') : '<tr class="empty-row"><td colspan="5">No signups in this window</td></tr>';
 }
 </script>
+<script src="/js/phq-sci.js" defer></script>
 </body>
 </html>

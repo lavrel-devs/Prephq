@@ -57,6 +57,8 @@ connectDB().then(async () => {
   await ensureOwnerAdmin();
   await bootstrapCourses();
   require('./src/services/scheduler.service').startScheduler();
+  // Pick up a bulk note-writing job that was running when the server last restarted.
+  require('./src/services/noteJob.service').resumeInterrupted().then(n => n && console.log(`Resumed ${n} interrupted note job(s).`)).catch(e => console.error('Note job resume failed:', e.message));
 }).catch(e => console.error('Startup tasks failed:', e));
 
 // One stray rejected promise must not take the whole server down.
@@ -153,6 +155,9 @@ app.use('/api/admin', require('./src/routes/admin/admin.users.routes'));
 app.use('/api/admin', require('./src/routes/admin/admin.announcements.routes'));
 app.use('/api/admin', require('./src/routes/admin/admin.contest-templates.routes'));
 app.use('/api/admin', require('./src/routes/admin/admin.analytics.routes'));
+app.use('/api/admin', require('./src/routes/admin/admin.support.routes'));
+app.use('/api/admin', require('./src/routes/admin/admin.followups.routes'));
+app.use('/api/admin', require('./src/routes/admin/admin.notes.routes'));
 app.use('/api/quiz', require('./src/routes/quiz.routes'));
 app.use('/api/flashcards', require('./src/routes/flashcards.routes'));
 app.use('/api', require('./src/routes/transfer.routes'));
@@ -163,8 +168,14 @@ app.use('/api', require('./src/routes/chat.routes'));
 app.use('/api/scores', require('./src/routes/scores.routes'));
 app.use('/api', require('./src/routes/studyguide.routes'));
 app.use('/api', require('./src/routes/cosmetics.routes'));
+app.use('/api', require('./src/routes/support.routes'));   // upgrade requests + question reports
+app.use('/api', require('./src/routes/study.routes'));     // study plan, exam overview, achievements
+app.use('/api', require('./src/routes/notes.routes'));     // course notes
 app.use('/api/admin', require('./src/routes/admin/admin.cosmetics.routes'));
 app.use('/api', require('./src/routes/student.routes')); // /api/questions/:course, /api/me
+
+// Which backend is actually running? (Handy when the browser has newer files than the server process.)
+app.get('/api/version', (req, res) => res.json({ version: require('./package.json').version }));
 
 // Unknown /api paths must answer JSON, not the HTML login page.
 app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));
@@ -186,6 +197,8 @@ const PAGE_ROUTES = {
   '/leaderboard': 'leaderboard.html',
   '/study-rooms': 'study-rooms.html',
   '/chat': 'chat.html',
+  '/forgot-password': 'forgot-password.html',
+  '/change-password': 'change-password.html',
 };
 Object.entries(PAGE_ROUTES).forEach(([route, file]) => {
   app.get(route, (req, res) => res.sendFile(path.join(__dirname, 'public', file)));
@@ -253,7 +266,7 @@ initStudyRoomSockets(io);
 // ══════════════════════════════════════════════════════════════
 httpServer.listen(PORT, () => {
   console.log('\n╔══════════════════════════════════════════════════╗');
-  console.log(`║  PrepHQ v1.4.0 running on http://localhost:${PORT}   ║`);
+  console.log(`║  PrepHQ v1.6.0 running on http://localhost:${PORT}   ║`);
   console.log(`║  Student login: http://localhost:${PORT}/login       ║`);
   console.log(`║  Admin:         http://localhost:${PORT}/login       ║`);
   console.log('╚══════════════════════════════════════════════════╝\n');
