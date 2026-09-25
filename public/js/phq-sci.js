@@ -145,6 +145,10 @@
   style.textContent = '.phq-mol{display:inline-flex;flex-direction:column;align-items:center;margin:6px 4px;vertical-align:middle;}'
     + '.phq-mol canvas{background:#fff;border-radius:12px;border:1px solid rgba(120,120,140,.25);}'
     + '[data-theme=dark] .phq-mol canvas{background:#1a1b26;}'
+    // KaTeX's screen-reader MathML block is visually hidden but stays selectable by default, so copying
+    // rendered maths pastes it twice (once from the visible html, once from this hidden copy). Excluding it
+    // from selection stops that.
+    + '.katex .katex-mathml{-webkit-user-select:none;user-select:none;}'
     + '.phq-mol-cap{font-size:12px;opacity:.7;margin-top:2px;}'
     + '.katex-display{overflow-x:auto;overflow-y:hidden;padding:2px 0;}';
   document.head.appendChild(style);

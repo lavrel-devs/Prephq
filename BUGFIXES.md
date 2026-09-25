@@ -115,3 +115,14 @@ Not run against a live MongoDB or a real Groq key: queue, charge/refund flow and
 ## v1.6.1
 - Fixed maths showing as raw text (`\frac{…}`, `\text{moles Fe^{2+}} = …`): the AI sometimes wrote LaTeX without `$…$`. New `public/js/phq-latexfix.js` wraps such lines in `$…$` and turns ions/formulas inside `\text{…}` into `\ce{…}` (`\text{Fe^{2+}}` → `\ce{Fe^{2+}}`, `mol·L^{-1}` → `mol·L` with a real superscript). It runs in the browser (so notes/questions already saved get fixed on screen) and on the server for all new AI output (notes, quizzes, chat, answer explanations).
 - AI prompts now insist every LaTeX command sits inside `$…$`, ions go in `\ce{}`, one calculation step per line. Chat replies allow longer worked answers (500 → 900 tokens); explanations 220 → 420.
+
+## v1.6.2
+- **Fixed duplicated maths text** (e.g. "Kb=0.512 °C·kg·mol⁻¹Kb=0.512 °C·kg·mol⁻¹"): every KaTeX-rendered equation carries an invisible screen-reader copy (MathML) directly behind the visible one; browsers let you select/copy both at once, doubling anything pasted elsewhere. Made the hidden copy non-selectable (`user-select:none` on `.katex-mathml`) — copying rendered maths now grabs only the visible text.
+- Fixed `\cdotp` glued directly to a unit with no space (`0.512 °C\cdotpkg/mol` from the AI) — now split apart so the dot and the unit both render (`°C·kg/mol`) instead of showing as raw text.
+
+## v1.6.3
+- Rewrote the bare-LaTeX repair to work word-by-word instead of wrapping from the first LaTeX command to the end of the line. A line that mixes plain sentences with maths (e.g. "Given: m=0.5 mol·kg⁻¹, i=2 for NaCl, Kb=0.512 °C·kg·mol⁻¹ (water).") now gets only its two maths clusters wrapped — "for NaCl" and "(water)" are correctly left as plain text instead of being swallowed into math mode.
+- A leading step number ("2. …", "4. …") is recognised as a list marker and left alone instead of being pulled into the equation.
+
+## v1.6.4
+- Fixed the actual bug behind your screenshot: subscript variables with no digit before the underscore (K_b, E_a, C_p) weren't recognised as maths, so the repair cut them off from their own equation — "Given: … K_b" stayed as plain text while "= 0.512 °C…" got wrapped on its own, and the whole thing showed as a KaTeX error. Any token containing `^` or `_` is now treated as maths regardless of whether a digit is next to it.
