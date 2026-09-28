@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<script src="/js/theme.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#e0e5ec">
+<meta name="description" content="PrepHQ — AI-powered exam preparation built for Nigerian university students. Practise past questions, generate AI quizzes, and study smarter.">
+<link rel="manifest" href="/manifest.json">
+<title>PrepHQ — AI-Powered Exam Prep for Nigerian University Students</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="/css/glass.css">
+<style>
+/* NEUMORPHISM / SOFT UI — same tokens as login, register and the dashboard */
+:root{
+  --bg:#e0e5ec;--sd:#b8c0cc;--sl:#ffffff;
+  --sh:6px 6px 14px var(--sd),-6px -6px 14px var(--sl);
+  --sh-md:8px 8px 18px var(--sd),-8px -8px 18px var(--sl);
+  --sh-lg:12px 12px 26px var(--sd),-12px -12px 26px var(--sl);
+  --sh-sm:4px 4px 8px var(--sd),-4px -4px 8px var(--sl);
+  --sh-in:inset 4px 4px 10px var(--sd),inset -4px -4px 10px var(--sl);
+  --sh-in-sm:inset 3px 3px 6px var(--sd),inset -3px -3px 6px var(--sl);
+  --brand:#4a67d1;--brand-dk:#3a54b8;--brand-lt:rgba(74,103,209,.10);--brand-glow:rgba(74,103,209,.20);
+  --ok:#2d9c6e;--ok-lt:rgba(45,156,110,.12);--no:#d14545;--warn:#c67a1e;
+  --purple:#7b52d1;--purple-lt:rgba(123,82,209,.12);--teal:#2d9cb8;
+  --t1:#2a3142;--t2:#4a5568;--t3:#7a8296;--t4:#a8b0c0;
+  --r8:10px;--r12:14px;--r16:18px;--r20:22px;--r24:26px;--rpill:999px;
+  --ff-h:'Bricolage Grotesque',system-ui,sans-serif;--ff-b:'DM Sans',system-ui,sans-serif;
+  --ease-o:cubic-bezier(.22,1,.36,1);
+}
+[data-theme=dark]{
+  --bg:#252932;--sd:#181b21;--sl:#323743;
+  --brand:#7c93ff;--brand-dk:#a5b5ff;--brand-lt:rgba(124,147,255,.12);--brand-glow:rgba(124,147,255,.20);
+  --ok:#3dba86;--ok-lt:rgba(61,186,134,.14);--no:#e56161;--warn:#e09437;
+  --purple:#9d7bea;--purple-lt:rgba(157,123,234,.14);--teal:#4db8d4;
+  --t1:#e8ecf5;--t2:#b8c0d0;--t3:#7a8296;--t4:#4a5060;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--ff-b);background:var(--bg);color:var(--t1);min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased;line-height:1.5;transition:background .3s,color .3s;}
+a{color:inherit;text-decoration:none;} ul{list-style:none;} button{font-family:inherit;}
+.blob{position:fixed;border-radius:50%;filter:blur(90px);opacity:.10;pointer-events:none;z-index:0;}
+.b1{width:380px;height:380px;background:var(--brand);top:-100px;right:-100px;}
+.b2{width:320px;height:320px;background:var(--purple);bottom:-80px;left:-80px;}
+.wrap{max-width:1100px;margin:0 auto;padding:0 22px;position:relative;z-index:1;}
+
+/* nav */
+.nav{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:50;width:min(900px,calc(100vw - 24px));display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 8px 8px 16px;background:var(--bg);border-radius:var(--rpill);box-shadow:var(--sh);}
+.brand{display:flex;align-items:center;gap:9px;font-family:var(--ff-h);font-weight:800;font-size:17px;border:none;background:none;color:var(--t1);cursor:pointer;}
+.brand .ico{width:32px;height:32px;border-radius:11px;display:flex;align-items:center;justify-content:center;box-shadow:var(--sh-sm);color:var(--brand);font-size:14px;}
+.links{display:flex;gap:2px;}
+.links button{font-size:13px;font-weight:700;color:var(--t3);padding:9px 14px;border:none;background:none;border-radius:var(--rpill);cursor:pointer;transition:color .15s;}
+.links button:hover{color:var(--brand);}
+.cta{display:flex;align-items:center;gap:8px;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:var(--ff-h);font-weight:800;font-size:13.5px;padding:11px 20px;border-radius:var(--rpill);border:none;cursor:pointer;white-space:nowrap;transition:box-shadow .18s,transform .18s;}
+.btn.pri{background:linear-gradient(140deg,var(--brand),var(--purple));color:#fff;box-shadow:var(--sh-sm);}
+.btn.pri:hover{transform:translateY(-1px);} .btn.pri:active{transform:none;box-shadow:var(--sh-in-sm);}
+.btn.sec{background:var(--bg);color:var(--t2);box-shadow:var(--sh-sm);}
+.btn.sec:active{box-shadow:var(--sh-in-sm);}
+.btn.lg{font-size:15px;padding:15px 28px;}
+.tbtn{width:38px;height:38px;border-radius:50%;border:none;background:var(--bg);color:var(--t2);box-shadow:var(--sh-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.tbtn:active{box-shadow:var(--sh-in-sm);}
+
+/* hero */
+.hero{padding:150px 0 70px;text-align:center;}
+.badge{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:var(--rpill);box-shadow:var(--sh-in-sm);font-size:12.5px;font-weight:700;color:var(--t2);margin-bottom:26px;}
+.badge i{color:var(--brand);}
+h1{font-family:var(--ff-h);font-size:clamp(34px,6vw,60px);font-weight:800;letter-spacing:-1.5px;line-height:1.07;max-width:880px;margin:0 auto 20px;}
+.grad{background:linear-gradient(120deg,var(--brand),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.sub{font-size:clamp(15px,2vw,18px);color:var(--t3);max-width:580px;margin:0 auto 34px;line-height:1.6;}
+.hero-cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:44px;}
+.chips{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+.chip{display:flex;align-items:center;gap:10px;padding:12px 18px;border-radius:var(--r16);box-shadow:var(--sh-sm);font-size:12.5px;font-weight:700;color:var(--t2);text-align:left;}
+.chip i{font-size:15px;color:var(--brand);}
+
+/* sections */
+section{padding:70px 0;}
+.eyebrow{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--brand);text-align:center;margin-bottom:12px;}
+h2{font-family:var(--ff-h);font-size:clamp(26px,4vw,38px);font-weight:800;letter-spacing:-1px;text-align:center;max-width:640px;margin:0 auto 14px;}
+.lead{font-size:15.5px;color:var(--t3);text-align:center;max-width:540px;margin:0 auto 46px;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
+.card{background:var(--bg);border-radius:var(--r24);box-shadow:var(--sh);padding:28px 24px;}
+.f-ico{width:48px;height:48px;border-radius:15px;box-shadow:var(--sh-in-sm);display:flex;align-items:center;justify-content:center;margin-bottom:18px;font-size:18px;}
+.card h3{font-family:var(--ff-h);font-size:17.5px;font-weight:700;margin-bottom:8px;}
+.card p{font-size:13.8px;color:var(--t3);line-height:1.65;}
+.step-n{width:52px;height:52px;border-radius:50%;box-shadow:var(--sh);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-family:var(--ff-h);font-weight:800;font-size:19px;color:var(--brand);}
+.step{text-align:center;padding:0 14px;} .step h3{font-family:var(--ff-h);font-size:17px;margin-bottom:8px;} .step p{font-size:13.8px;color:var(--t3);max-width:270px;margin:0 auto;}
+
+/* pricing (filled from /api/plans) */
+.price-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;max-width:760px;margin:0 auto;}
+.price-card{position:relative;} .price-card.pop{box-shadow:var(--sh-lg);}
+.tag{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(140deg,var(--brand),var(--purple));color:#fff;font-size:11px;font-weight:800;padding:5px 14px;border-radius:var(--rpill);}
+.p-name{font-family:var(--ff-h);font-weight:700;color:var(--t2);margin-bottom:6px;}
+.p-amt{font-family:var(--ff-h);font-size:34px;font-weight:800;letter-spacing:-1px;} .p-amt small{font-size:14px;font-weight:600;color:var(--t3);}
+.p-alt{font-size:12.5px;color:var(--t3);margin:4px 0 0;}
+.p-list{margin:20px 0 24px;} .p-list li{display:flex;gap:10px;font-size:13.5px;color:var(--t2);padding:6px 0;} .p-list i{color:var(--ok);font-size:12px;margin-top:4px;}
+.price-card .btn{width:100%;}
+
+/* faq */
+.faq{max-width:700px;margin:0 auto;display:flex;flex-direction:column;gap:14px;}
+details{background:var(--bg);border-radius:var(--r20);box-shadow:var(--sh-sm);}
+summary{list-style:none;cursor:pointer;padding:18px 22px;font-size:14.5px;font-weight:700;display:flex;justify-content:space-between;gap:14px;align-items:center;}
+summary::-webkit-details-marker{display:none;} summary::after{content:"\f078";font-family:"Font Awesome 6 Free";font-weight:900;font-size:12px;color:var(--t3);transition:transform .25s;}
+details[open] summary::after{transform:rotate(180deg);color:var(--brand);}
+details[open]{box-shadow:var(--sh-in);} details p{padding:0 22px 20px;font-size:13.8px;color:var(--t3);line-height:1.65;}
+
+.final{border-radius:32px;box-shadow:var(--sh-lg);padding:56px 28px;text-align:center;}
+.final h2{margin-bottom:12px;} .final p{color:var(--t3);margin-bottom:26px;} .fine{font-size:12.5px;color:var(--t4);margin-top:14px;}
+footer{padding:50px 0 60px;}
+.foot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;font-size:13px;color:var(--t3);}
+.foot a{margin-left:18px;font-weight:600;} .foot a:hover{color:var(--brand);}
+
+.fx{opacity:0;transform:translateY(22px);transition:opacity .6s var(--ease-o),transform .6s var(--ease-o);} .fx.in{opacity:1;transform:none;}
+@media(prefers-reduced-motion:reduce){.fx{opacity:1;transform:none;transition:none;} html{scroll-behavior:auto;}}
+@media(max-width:860px){.links{display:none;} .grid3{grid-template-columns:1fr;} .price-grid{grid-template-columns:1fr;max-width:380px;} .cta .btn.sec{display:none;}}
+@media(max-width:520px){.hero{padding:120px 0 50px;} .hero-cta{flex-direction:column;} .hero-cta .btn{width:100%;} section{padding:50px 0;} .foot a:first-of-type{margin-left:0;}}
+</style>
+</head>
+<body>
+<div class="blob b1"></div><div class="blob b2"></div>
+
+<nav class="nav">
+  <button class="brand" onclick="scrollToId('top')"><span class="ico"><i class="fa-solid fa-graduation-cap"></i></span>PrepHQ</button>
+  <div class="links">
+    <button onclick="scrollToId('features')">Features</button>
+    <button onclick="scrollToId('how')">How it works</button>
+    <button onclick="scrollToId('pricing')">Pricing</button>
+    <button onclick="scrollToId('faq')">FAQ</button>
+  </div>
+  <div class="cta">
+    <button class="tbtn" onclick="PhqTheme.toggle()" aria-label="Toggle theme"><svg id="theme-ico" viewBox="0 0 24 24" fill="currentColor" width="17" height="17"></svg></button>
+    <a href="/login" class="btn sec" id="nav-login">Login</a>
+    <a href="/register" class="btn pri" id="nav-main">Get started <i class="fa-solid fa-arrow-right" style="font-size:11px;"></i></a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <div class="badge fx"><i class="fa-solid fa-bolt"></i>Built for Nigerian university courses</div>
+    <h1 class="fx">AI-powered exam prep, <span class="grad">made for Nigerian university students.</span></h1>
+    <p class="sub fx">Past questions run out. Patterns don't. Practise real course questions, generate fresh AI quizzes, and see exactly which topics to fix before the exam.</p>
+    <div class="hero-cta fx">
+      <a href="/register" class="btn pri lg" id="hero-main"><i class="fa-solid fa-wand-magic-sparkles"></i> Start studying free</a>
+      <button class="btn sec lg" onclick="scrollToId('how')">See how it works</button>
+    </div>
+    <div class="chips fx">
+      <div class="chip"><i class="fa-solid fa-wand-magic-sparkles"></i>AI-generated<br>quizzes</div>
+      <div class="chip"><i class="fa-solid fa-bullseye"></i>Weak-topic<br>tracking</div>
+      <div class="chip"><i class="fa-solid fa-mobile-screen"></i>Works on<br>any phone</div>
+    </div>
+  </div>
+</header>
+
+<section id="features">
+  <div class="wrap">
+    <div class="eyebrow">Features</div>
+    <h2 class="fx">Everything you need to walk into the exam hall ready.</h2>
+    <p class="lead fx">Every feature exists to close the gap between “I read it” and “I can answer it under pressure.”</p>
+    <div class="grid3">
+      <div class="card fx"><div class="f-ico" style="color:var(--brand);"><i class="fa-solid fa-list-check"></i></div><h3>Course practice</h3><p>Practise questions for the exact courses you're offering this semester, with instant marking and explanations.</p></div>
+      <div class="card fx"><div class="f-ico" style="color:var(--purple);"><i class="fa-solid fa-wand-magic-sparkles"></i></div><h3>AI quizzes</h3><p>Generate a fresh quiz on any topic, so you're learning the pattern instead of memorising one paper.</p></div>
+      <div class="card fx"><div class="f-ico" style="color:var(--teal);"><i class="fa-solid fa-comments"></i></div><h3>Ask AI</h3><p>Stuck on a concept? Ask and get a clear, step-by-step explanation in plain language.</p></div>
+      <div class="card fx"><div class="f-ico" style="color:var(--ok);"><i class="fa-solid fa-book-open"></i></div><h3>Notes &amp; flashcards</h3><p>Course notes and flashcards to revise from, with your weak topics queued up for review.</p></div>
+      <div class="card fx"><div class="f-ico" style="color:var(--warn);"><i class="fa-solid fa-trophy"></i></div><h3>Contests &amp; study rooms</h3><p>Compete on the leaderboard, join contests, and study live with friends in shared rooms.</p></div>
+      <div class="card fx"><div class="f-ico" style="color:var(--brand);"><i class="fa-solid fa-square-root-variable"></i></div><h3>Maths &amp; chemistry</h3><p>Formulas and molecular structures render properly, with no broken symbols or messy code.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <div class="eyebrow">How it works</div>
+    <h2 class="fx">From sign-up to exam-ready in three steps.</h2>
+    <p class="lead fx">No setup headaches. Just you, your courses, and focused practice.</p>
+    <div class="grid3">
+      <div class="step fx"><div class="step-n">1</div><h3>Create your profile</h3><p>Sign up free, then pick the courses you're offering this semester.</p></div>
+      <div class="step fx"><div class="step-n">2</div><h3>Practise &amp; generate</h3><p>Work through course questions or generate an AI quiz on the topic you're weakest in.</p></div>
+      <div class="step fx"><div class="step-n">3</div><h3>Fix your weak spots</h3><p>See your progress, review what you missed, and watch your scores climb.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="wrap">
+    <div class="eyebrow">Pricing</div>
+    <h2 class="fx">Simple pricing. Start free, upgrade when ready.</h2>
+    <p class="lead fx">No hidden fees and no online card payments. Upgrading is a quick message to us.</p>
+    <div class="price-grid" id="price-grid"></div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="eyebrow">FAQ</div>
+    <h2 class="fx">Questions, answered.</h2>
+    <p class="lead fx">Everything you'd want to know before you start.</p>
+    <div class="faq">
+      <details><summary>What is PrepHQ?</summary><p>PrepHQ is an AI-powered exam preparation platform for Nigerian university students. You practise course questions, generate AI quizzes and see which topics need work.</p></details>
+      <details><summary>Do I need a code to sign up?</summary><p>No. Sign-up is free and open to everyone. Create an account and start practising straight away.</p></details>
+      <details><summary>Is it really free?</summary><p>Yes. The free plan gives you a daily allowance of questions, AI quizzes and AI chat messages. Upgrade only if you want more.</p></details>
+      <details><summary>How do I upgrade?</summary><p>Choose a plan from your profile and message us on WhatsApp. We activate your plan from our side, so there's no card or online payment step.</p></details>
+      <details><summary>I forgot my password. What now?</summary><p>Use “Forgot password” on the login page. Your request goes to an admin on WhatsApp, who resets your access manually.</p></details>
+      <details><summary>Can I use it on my phone?</summary><p>Yes. PrepHQ is built for phones first, and there's nothing to download. Just open it in your browser.</p></details>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="final card fx">
+      <h2>Ready to study smarter?</h2>
+      <p>Free to start, built for your courses, ready whenever you are.</p>
+      <a href="/register" class="btn pri lg" id="final-main"><i class="fa-solid fa-arrow-right-to-bracket"></i> Create free account</a>
+      <div class="fine">No card required.</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <div>&copy; <span id="year"></span> PrepHQ · Made with <i class="fa-solid fa-heart" style="color:var(--no);"></i> in Nigeria</div>
+    <div><a href="/login">Login</a><a href="/register">Get started</a></div>
+  </div>
+</footer>
+
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+function scrollToId(id){ const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior:'smooth', block:'start' }); }
+
+// Already signed in? Point the buttons at the app instead of sign-up.
+(function(){
+  let s = null; try { s = JSON.parse(localStorage.getItem('phq_session')); } catch(e) {}
+  if (!s || !s.accessToken) return;
+  const dest = s.role === 'admin' ? '/admin' : '/dashboard';
+  document.getElementById('nav-login').style.display = 'none';
+  const main = document.getElementById('nav-main'); main.href = dest; main.innerHTML = 'Open app <i class="fa-solid fa-arrow-right" style="font-size:11px;"></i>';
+  ['hero-main','final-main'].forEach(id => { const a = document.getElementById(id); a.href = dest; a.innerHTML = '<i class="fa-solid fa-arrow-right"></i> Open PrepHQ'; });
+})();
+
+// Pricing comes from /api/plans, so it always matches what the admin has configured. Numbers are only ever
+// formatted, never injected as HTML. Falls back to the default plan if the request fails.
+const naira = n => '₦' + Number(n).toLocaleString('en-NG');
+const PER = { weekly:'week', monthly:'month', yearly:'year', lifetime:'once' };
+const lim = n => (n == null ? 'Unlimited' : Number(n));
+function priceCard(name, amt, per, alt, items, cta, pop){
+  return `<div class="card price-card fx ${pop ? 'pop' : ''}">${pop ? '<div class="tag">Most popular</div>' : ''}
+    <div class="p-name">${name}</div><div class="p-amt">${amt}<small>${per}</small></div><div class="p-alt">${alt || '&nbsp;'}</div>
+    <ul class="p-list">${items.map(t => `<li><i class="fa-solid fa-circle-check"></i>${t}</li>`).join('')}</ul>${cta}</div>`;
+}
+function renderPricing(p){
+  const f = p.tiers.free, pr = p.tiers.premium;
+  const offered = (p.periods || []).filter(x => x.price != null);
+  const monthly = offered.find(x => x.key === 'monthly'), yearly = offered.find(x => x.key === 'yearly');
+  const lead = monthly || offered[0];
+  const alts = offered.filter(x => x !== lead).map(x => `${naira(x.price)}/${PER[x.key]}`);
+  let alt = alts.join(' · ');
+  if (monthly && yearly && yearly.price === monthly.price * 10) alt = `${naira(yearly.price)}/year — 2 months free` + (alts.length > 1 ? ' · ' + alts.filter(a => !a.includes('/year')).join(' · ') : '');
+  const wa = p.support && p.support.whatsapp ? `https://wa.me/${String(p.support.whatsapp).replace(/\D/g, '')}?text=${encodeURIComponent('Hi, I want to upgrade my PrepHQ plan.')}` : '/register';
+  const freeCard = priceCard('Free', '₦0', '/forever', 'Great for trying PrepHQ out', [
+    `${lim(f.dailyQuestions)} practice questions a day`, `${lim(f.dailyAIQuizzes)} AI quizzes a day`, `${lim(f.dailyAIChatMessages)} AI chat messages a day`, 'Progress and weak-topic tracking',
+  ], '<a href="/register" class="btn sec">Start free</a>', false);
+  const premCard = priceCard('Premium', lead ? naira(lead.price) : 'Ask us', lead ? '/' + PER[lead.key] : '', alt, [
+    `${lim(pr.dailyQuestions)} practice questions`, `${lim(pr.dailyAIQuizzes)} AI quizzes`, `${lim(pr.dailyAIChatMessages)} AI chat messages`, 'Full access to every feature',
+  ], `<a href="${wa}" class="btn pri" ${wa.startsWith('http') ? 'target="_blank" rel="noopener"' : ''}>Upgrade via WhatsApp</a>`, true);
+  document.getElementById('price-grid').innerHTML = freeCard + premCard;
+  observe();
+}
+fetch('/api/plans').then(r => r.ok ? r.json() : Promise.reject()).then(renderPricing).catch(() => renderPricing({
+  tiers: { free: { dailyQuestions: 20, dailyAIQuizzes: 2, dailyAIChatMessages: 5 }, premium: { dailyQuestions: null, dailyAIQuizzes: null, dailyAIChatMessages: null } },
+  periods: [{ key:'monthly', price:2000 }, { key:'yearly', price:20000 }], support: {},
+}));
+
+// fade-up on scroll
+let io;
+function observe(){
+  document.querySelectorAll('.fx:not(.in)').forEach(el => {
+    if (!('IntersectionObserver' in window)) return el.classList.add('in');
+    io = io || new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .12 });
+    io.observe(el);
+  });
+}
+observe();
+</script>
+</body>
+</html>

@@ -80,7 +80,7 @@ Log in as admin, then **change your admin password** from the panel (Settings �
 ## How auth actually works now
 
 - **Students**: `/login.html` → `POST /api/auth/login` → server returns a short-lived access token + a refresh token. The client (`auth-guard.js`) stores both, attaches the access token as `Authorization: Bearer …` on every API call, and silently calls `POST /api/auth/refresh` before it expires — as long as there's been mouse/keyboard/scroll activity in the last few minutes. If nobody touches the app for 3 hours straight, the session on the server expires and the next refresh attempt fails, bouncing the user back to `/login.html`.
-- **Admins**: same mechanism, separate endpoints (`/api/auth/admin/login`, `/api/auth/admin/refresh`). The legacy `x-admin-key` header still works too — it's what `question-uploader.html` and any of your scripts use, so nothing there breaks.
+- **Admins**: same mechanism, separate endpoints (`/api/auth/admin/login`, `/api/auth/admin/refresh`). The legacy `x-admin-key` header still works too, for any external scripts. (Bulk question upload now lives in the admin panel under Content → Bulk Upload and uses your admin session.)
 - **Dashboard gating**: `dashboard.html` checks for a valid session *before* anything renders (script runs synchronously at the top of `<head>`), and every piece of real data (`/api/me`, `/api/scores/...`, `/api/quiz/...`) is behind `requireStudent` middleware regardless of what the page itself shows — so there's no path to student data without a valid token, even if someone tampers with the client-side check.
 
 ---
@@ -112,8 +112,8 @@ prephq/
     ├── login.html                ← student + admin sign-in (new, separate from the app)
     ├── dashboard.html             ← the student app (was index.html)
     ├── admin.html                 ← admin dashboard (now JWT-based)
+    ├── landing.html               ← public landing page, served at `/`
     ├── register.html
-    ├── question-uploader.html
     ├── questions.js
     ├── manifest.json
     ├── css/glass.css              ← glassmorphism layer

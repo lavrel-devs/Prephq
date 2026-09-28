@@ -139,7 +139,7 @@ async function requireStudent(req, res, next) {
 // Protects admin routes. Accepts EITHER:
 //   a) Authorization: Bearer <admin JWT>   (used by admin.html going forward)
 //   b) x-admin-key: <ADMIN_KEY from .env>  (legacy, kept alive for
-//      question-uploader.html and any external scripts)
+//      external scripts)
 async function requireAdmin(req, res, next) {
   const legacyKey = req.headers['x-admin-key'] || req.body?.adminKey;
   if (legacyKey && process.env.ADMIN_KEY && typeof legacyKey === 'string' && safeEqual(legacyKey, process.env.ADMIN_KEY)) {

@@ -188,6 +188,7 @@ app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));
 // — nothing that already links to *.html breaks — these are additive
 // aliases, checked first.
 const PAGE_ROUTES = {
+  '/':          'landing.html',
   '/login':     'login.html',
   '/register':  'register.html',
   '/dashboard': 'dashboard.html',
@@ -200,6 +201,8 @@ const PAGE_ROUTES = {
   '/forgot-password': 'forgot-password.html',
   '/change-password': 'change-password.html',
 };
+app.get(['/question-uploader', '/question-uploader.html'], (req, res) => res.redirect(301, '/admin'));
+app.get('/landing.html', (req, res) => res.redirect(301, '/'));
 Object.entries(PAGE_ROUTES).forEach(([route, file]) => {
   app.get(route, (req, res) => res.sendFile(path.join(__dirname, 'public', file)));
 });
@@ -216,8 +219,6 @@ Object.entries(PAGE_ROUTES).forEach(([route, file]) => {
 // every data-bearing route requires a verified JWT — the static HTML
 // shell itself has no secrets in it.
 app.use(express.static(path.join(__dirname, 'public')));
-
-app.get('/', (req, res) => res.redirect('/login'));
 
 app.get('/healthz', (req, res) => res.json({ ok: true }));
 

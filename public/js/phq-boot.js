@@ -1,7 +1,6 @@
 /**
  * PrepHQ Boot Kit — v1.2.0 "Liquid Glass"
- * Shared by every page (landing, login, register, dashboard, admin,
- * question-uploader). Pure vanilla JS, no dependencies, no build step.
+ * Shared by every page (landing, login, register, dashboard, admin). Pure vanilla JS, no dependencies, no build step.
  *
  * Responsibilities:
  *  - Apply the saved theme (light/dark) BEFORE first paint, so there's

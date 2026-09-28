@@ -173,6 +173,22 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
 .mn-item svg{width:22px;height:22px;}
 @media(max-width:680px){.content{padding-bottom:80px;}}
 @media(max-width:900px){.bulk-grid{grid-template-columns:1fr !important;}}
+/* bulk upload — paste & parse (moved from the old question-uploader page) */
+.bp-tabs{display:inline-flex;gap:4px;padding:4px;border-radius:var(--rpill);box-shadow:var(--press-sm);margin-bottom:18px;}
+.bp-tab{padding:8px 16px;border:none;border-radius:var(--rpill);background:transparent;color:var(--t3);font:800 12.5px var(--ff-b);cursor:pointer;}
+.bp-tab.on{background:var(--bg);color:var(--brand);box-shadow:var(--raise-sm);}
+.bp-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.bp-btn{width:auto!important;padding:10px 18px!important;font-size:13px!important;}
+.bp-ghost{background:var(--bg)!important;color:var(--t2)!important;box-shadow:var(--raise-sm)!important;}
+.bp-sel{padding:10px 12px;border-radius:var(--r12);border:none;background:var(--bg);box-shadow:var(--press-sm);color:var(--t1);font-weight:600;font-size:13px;max-width:240px;}
+.bp-chk{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--t3);cursor:pointer;}
+.bp-chip{display:inline-flex;align-items:center;padding:5px 11px;border-radius:var(--rpill);box-shadow:var(--press-sm);font-size:12px;font-weight:700;color:var(--t2);}
+.bp-list{display:flex;flex-direction:column;gap:10px;max-height:480px;overflow-y:auto;margin-top:14px;padding:4px;}
+.bp-item{padding:12px 14px;border-radius:var(--r12);box-shadow:var(--press-sm);}
+.bp-item.ok{outline:1.5px solid var(--ok);} .bp-item.fail{outline:1.5px solid var(--no);} .bp-item.skip{outline:1.5px dashed var(--warn);}
+.bp-progw{height:5px;border-radius:99px;box-shadow:var(--press-sm);overflow:hidden;margin:12px 0 0;}
+#bp-prog{height:100%;width:0;background:linear-gradient(90deg,var(--brand),var(--purple));transition:width .25s;}
+.bp-log{max-height:200px;overflow-y:auto;padding:14px 18px;font:12px/1.8 ui-monospace,Menlo,monospace;color:var(--t3);}
 
 /* ── CODE DISPLAY CARD ──────────────────────────────────── */
 .login-reveal{background:var(--ok-lt);border:1.5px solid var(--ok-bd);border-radius:var(--r12);padding:14px;margin-top:14px;}
@@ -542,9 +558,15 @@ select.f-input option{background:var(--bg);color:var(--t1);}
       <!-- ═══ BULK UPLOAD ══════════════════════════════════ -->
       <div id="v-bulk-upload" class="view">
         <div class="ph">
-          <div><div class="ph-title">Bulk Upload Questions</div><div class="ph-sub">Add questions one at a time, fast — no modal, no re-selecting the course each time</div></div>
+          <div><div class="ph-title">Bulk Upload Questions</div><div class="ph-sub">Paste a whole question dump, or add questions one at a time</div></div>
         </div>
 
+        <div class="bp-tabs">
+          <button class="bp-tab on" data-m="paste" onclick="bulkMode('paste')">Paste &amp; parse</button>
+          <button class="bp-tab" data-m="single" onclick="bulkMode('single')">One at a time</button>
+        </div>
+
+        <div id="bulk-single" style="display:none;">
         <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start;" class="bulk-grid">
           <!-- FORM -->
           <div class="tw" style="margin-bottom:0;">
@@ -591,6 +613,41 @@ select.f-input option{background:var(--bg);color:var(--t1);}
           <div class="tw" style="margin-bottom:0;">
             <div class="th"><div class="th-title" id="bulk-recent-title">Recently Added</div></div>
             <div id="bulk-recent-body" style="padding:6px;"></div>
+          </div>
+        </div>
+        </div><!-- /bulk-single -->
+
+        <!-- PASTE & PARSE (moved from the old standalone uploader) -->
+        <div id="bulk-paste">
+          <div class="tw">
+            <div class="th"><div class="th-title">Paste questions</div></div>
+            <div style="padding:18px;">
+              <div class="err" id="bp-err"></div>
+              <div class="field"><textarea id="bp-raw" rows="12" placeholder="Paste the full question text here…\n\nFormat it understands:\nCHM 141\n* Which quantum number defines the main energy level?\n  * A) Magnetic\n  * B) Principal\n  * C) Spin\n  * D) Azimuthal\n  * Correct: B\n  * Rationale: (optional)\n\nCourse headers like “CHM 141” switch the course automatically."></textarea></div>
+              <div class="bp-row">
+                <select id="bp-course" class="bp-sel"><option value="">Auto-detect course</option></select>
+                <label class="bp-chk"><input type="checkbox" id="bp-latex" checked> Keep LaTeX</label>
+                <button class="btn-main bp-btn" onclick="bpParse()"><i class="fa-solid fa-wand-magic-sparkles"></i> Parse &amp; preview</button>
+                <button class="btn-main bp-btn bp-ghost" onclick="bpClear()"><i class="fa-solid fa-xmark"></i> Clear</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="tw" id="bp-preview" style="display:none;">
+            <div class="th"><div class="th-title">Preview</div><div id="bp-stats" class="bp-row"></div></div>
+            <div style="padding:16px 18px;">
+              <div class="bp-row">
+                <button class="btn-main bp-btn" id="bp-upload" onclick="bpUpload()"><i class="fa-solid fa-cloud-arrow-up"></i> Upload all</button>
+                <span id="bp-count" style="font-size:12px;font-weight:700;color:var(--t3);"></span>
+              </div>
+              <div class="bp-progw" id="bp-progw" style="display:none;"><div id="bp-prog"></div></div>
+              <div class="bp-list" id="bp-list"></div>
+            </div>
+          </div>
+
+          <div class="tw" id="bp-logcard" style="display:none;">
+            <div class="th"><div class="th-title">Upload log</div></div>
+            <div class="bp-log" id="bp-log"></div>
           </div>
         </div>
       </div>
@@ -2652,6 +2709,7 @@ function delQ(id) {
 // Question model / /api/admin/questions endpoint as the Questions
 // panel above — this is just a friendlier UI for adding many in a row.
 function initBulkUpload() {
+  bpInitCourses();
   const sel = document.getElementById('bulk-course');
   const cur = sel.value;
   sel.innerHTML = '<option value="">Select course...</option>' +
@@ -2758,6 +2816,201 @@ async function submitBulkQuestion() {
     btn.disabled = false;
     btn.innerHTML = original;
   }
+}
+
+// ── BULK UPLOAD · paste & parse ──────────────────────────────
+// Moved here from the old standalone question-uploader page. Same paste format and parser; the differences:
+// it uses the logged-in admin session (no server URL / key), and course headers are matched against the
+// live Course list instead of a hardcoded one.
+let bpParsed = [], bpBusy = false;
+
+function bulkMode(m) {
+  document.getElementById('bulk-paste').style.display  = m === 'paste'  ? '' : 'none';
+  document.getElementById('bulk-single').style.display = m === 'single' ? '' : 'none';
+  document.querySelectorAll('.bp-tab').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+}
+function bpInitCourses() {
+  const sel = document.getElementById('bp-course'), cur = sel.value;
+  sel.innerHTML = '<option value="">Auto-detect course</option>' +
+    allCourses.map(c => `<option value="${escHtml(c.key)}">${escHtml(c.courseCode)} – ${escHtml(c.courseTitle)}</option>`).join('');
+  sel.value = cur;
+}
+const bpNorm = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+function bpResolve(code) { // "CHM 141" -> { key:'chm141', known:true }
+  const k = bpNorm(code);
+  const c = allCourses.find(x => x.key === k || bpNorm(x.courseCode) === k);
+  return { key: c ? c.key : k, known: !!c };
+}
+
+// Optional: flatten LaTeX to plain unicode (the app renders LaTeX now, so this is off by default).
+const BP_SYM = { rightarrow:'→', leftarrow:'←', Rightarrow:'⇒', leftrightarrow:'↔', to:'→', times:'×', cdot:'·', div:'÷', pm:'±', mp:'∓', leq:'≤', geq:'≥', neq:'≠', approx:'≈', equiv:'≡', infty:'∞', partial:'∂', Delta:'Δ', delta:'δ', alpha:'α', beta:'β', gamma:'γ', lambda:'λ', mu:'μ', pi:'π', sigma:'σ', tau:'τ', omega:'ω', Omega:'Ω', theta:'θ', phi:'φ', psi:'ψ', rho:'ρ', eta:'η', chi:'χ', nu:'ν', xi:'ξ', epsilon:'ε', kappa:'κ', cup:'∪', cap:'∩', subset:'⊂', subseteq:'⊆', in:'∈', notin:'∉', emptyset:'∅' };
+const BP_SUP = { '0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻','+':'⁺' };
+const BP_SUB = { '0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉','-':'₋','+':'₊' };
+function bpFlatten(s) {
+  if (!s) return s;
+  const map = (str, t) => str.split('').map(c => t[c] || c).join('');
+  s = s.replace(/\\mathbb\{([ZQRNC])\}/g, (_, c) => ({ Z:'ℤ', Q:'ℚ', R:'ℝ', N:'ℕ', C:'ℂ' })[c]);
+  s = s.replace(/(\d+)\s*\^\{?\\circ\}?/g, '$1°').replace(/(\d+)\s*\\circ/g, '$1°').replace(/\\circ/g, '°');
+  s = s.replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '($1)/($2)').replace(/\\sqrt\{([^}]+)\}/g, '√($1)').replace(/\\sqrt\s+(\w+)/g, '√$1');
+  s = s.replace(/\\([A-Za-z]+)/g, (m, n) => (n in BP_SYM ? BP_SYM[n] : m));
+  s = s.replace(/\^\{([^}]+)\}/g, (_, p) => map(p, BP_SUP)).replace(/\^(-?\d+)/g, (_, p) => map(p, BP_SUP)).replace(/\^([A-Za-z])\b/g, (_, p) => map(p, BP_SUP));
+  s = s.replace(/_\{([^}]+)\}/g, (_, p) => map(p, BP_SUB)).replace(/_(-?\d+)/g, (_, p) => map(p, BP_SUB)).replace(/_([A-Za-z\d])\b/g, (_, p) => map(p, BP_SUB));
+  s = s.replace(/\\(?:mathbf|vec|hat)\{([^}]+)\}/g, '$1').replace(/\\bar\{([^}]+)\}/g, '$1̄');
+  s = s.replace(/\\(cos|sin|tan|cot|sec|csc|log|ln|exp|lim|max|min|det|mod)\b/g, '$1');
+  s = s.replace(/\{([^{}]+)\}/g, '$1').replace(/\{([^{}]+)\}/g, '$1').replace(/[{}]/g, '');
+  s = s.replace(/\\\\/g, '').replace(/\\(\s)/g, '$1').replace(/\\([a-zA-Z]+)/g, '$1');
+  return s.replace(/\s{2,}/g, ' ').replace(/\(\s+/g, '(').replace(/\s+\)/g, ')').trim();
+}
+
+function bpParse() {
+  const raw = document.getElementById('bp-raw').value.trim();
+  const def = document.getElementById('bp-course').value;
+  const keep = document.getElementById('bp-latex').checked;
+  const clean = s => keep ? s : bpFlatten(s);
+  const errEl = document.getElementById('bp-err');
+  errEl.classList.remove('on');
+  if (!raw) { errEl.textContent = 'Paste some questions first.'; errEl.classList.add('on'); return; }
+
+  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+  const codeRe = /\b([A-Za-z]{3})\s*(\d{3})\b/;
+  const optRe = /^\*?\s*([A-D])[).]\s+(.+)$/;
+  const correctRe = /^\*?\s*[Cc]orrect\s*:\s*([A-D])/;
+  const qStartRe = /^\*\s+(.+)$/;
+  const out = [];
+  let course = def ? bpResolve(def) : { key: '', known: false };
+
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // Course header: a short line that isn't a question/option and contains a course code ("CHM 141")
+    const cm = !line.startsWith('*') && !optRe.test(line) && line.length <= 80 && line.match(codeRe);
+    if (cm) { if (!def) course = bpResolve(cm[1] + cm[2]); i++; continue; }
+    if (/^module\s+\d+/i.test(line) || /^note:/i.test(line) || /^batch\s+\d+/i.test(line)) { i++; continue; }
+
+    const qm = line.match(qStartRe);
+    if (qm && i + 4 < lines.length) {
+      const qText = qm[1].replace(/^\d+[.)]\s*/, '').trim();
+      const opts = [];
+      let j = i + 1;
+      while (j < lines.length && opts.length < 4) {
+        const o = optRe.exec(lines[j]);
+        if (!o) break;
+        opts.push(o[2].trim()); j++;
+      }
+      if (opts.length === 4) {
+        let ans = -1, exp = '';
+        if (j < lines.length && correctRe.test(lines[j])) { ans = 'ABCD'.indexOf(lines[j].match(correctRe)[1].toUpperCase()); j++; }
+        if (j < lines.length && /rationale/i.test(lines[j])) { exp = clean(lines[j].replace(/\*?\s*Rationale:\s*/i, '').trim()); j++; }
+        // Never guess: a question with no course or no answer key is shown but not uploaded.
+        let status = 'pending', why = '';
+        if (!course.key)        { status = 'skip'; why = 'No course detected — pick one above'; }
+        else if (!course.known) { status = 'skip'; why = `Unknown course "${course.key.toUpperCase()}" — add it under Courses first`; }
+        else if (ans < 0)       { status = 'skip'; why = 'No "Correct:" line found'; }
+        out.push({ course: course.key, q: clean(qText), opts: opts.map(clean), ans, exp, tag: '', _status: status, _why: why });
+        i = j; continue;
+      }
+    }
+    i++;
+  }
+
+  bpParsed = out;
+  bpRender();
+}
+
+function bpRender() {
+  const errEl = document.getElementById('bp-err');
+  if (!bpParsed.length) { errEl.textContent = 'No questions found — check the format.'; errEl.classList.add('on'); document.getElementById('bp-preview').style.display = 'none'; return; }
+  document.getElementById('bp-preview').style.display = '';
+  const counts = {};
+  bpParsed.forEach(q => counts[q.course || '?'] = (counts[q.course || '?'] || 0) + 1);
+  const skipped = bpParsed.filter(q => q._status === 'skip').length;
+  document.getElementById('bp-stats').innerHTML =
+    Object.entries(counts).map(([c, n]) => `<span class="bp-chip">${escHtml(c.toUpperCase())}: ${n}</span>`).join('') +
+    `<span class="bp-chip" style="color:var(--brand);">Total: ${bpParsed.length}</span>` +
+    (skipped ? `<span class="bp-chip" style="color:var(--warn);">Will skip: ${skipped}</span>` : '');
+  document.getElementById('bp-count').textContent = `${bpParsed.length - skipped} ready to upload`;
+  document.getElementById('bp-upload').disabled = bpParsed.length === skipped;
+  document.getElementById('bp-logcard').style.display = 'none';
+  document.getElementById('bp-log').innerHTML = '';
+  document.getElementById('bp-progw').style.display = 'none';
+
+  const list = document.getElementById('bp-list');
+  list.innerHTML = bpParsed.map((q, i) => `
+    <div class="bp-item ${q._status === 'skip' ? 'skip' : ''}" id="bp-i-${i}">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;font-size:11px;">
+        <span class="badge b-teal">${escHtml((q.course || '?').toUpperCase())}</span>
+        <span style="color:var(--t4);font-weight:700;">#${i + 1}</span>
+        <span class="bp-st" style="margin-left:auto;font-weight:800;color:${q._status === 'skip' ? 'var(--warn)' : 'var(--t4)'};">${q._status === 'skip' ? escHtml(q._why) : 'PENDING'}</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:var(--t1);margin-bottom:6px;">${escHtml(q.q)}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px 12px;font-size:12px;">
+        ${q.opts.map((o, k) => `<div style="color:${k === q.ans ? 'var(--ok)' : 'var(--t3)'};font-weight:${k === q.ans ? 800 : 500};"><b>${'ABCD'[k]})</b> ${escHtml(o)}</div>`).join('')}
+      </div>
+    </div>`).join('');
+  if (window.PhqSci) PhqSci.render(list); // render LaTeX / [[smiles: …]] in the preview
+  toast(`Parsed ${bpParsed.length} question${bpParsed.length === 1 ? '' : 's'}`);
+}
+
+function bpMark(i, status, text) {
+  bpParsed[i]._status = status;
+  const el = document.getElementById('bp-i-' + i);
+  if (!el) return;
+  el.classList.remove('ok', 'fail');
+  if (status === 'ok' || status === 'fail') el.classList.add(status);
+  const st = el.querySelector('.bp-st');
+  st.textContent = text;
+  st.style.color = status === 'ok' ? 'var(--ok)' : status === 'fail' ? 'var(--no)' : 'var(--t4)';
+}
+function bpLog(msg, color) {
+  const box = document.getElementById('bp-log'), d = document.createElement('div');
+  d.textContent = msg; if (color) d.style.color = color;
+  box.appendChild(d); box.scrollTop = box.scrollHeight;
+}
+
+async function bpUpload() {
+  if (bpBusy) return;
+  const todo = bpParsed.map((q, i) => i).filter(i => bpParsed[i]._status === 'pending' || bpParsed[i]._status === 'fail');
+  if (!todo.length) { toast('Nothing to upload'); return; }
+  bpBusy = true;
+  const btn = document.getElementById('bp-upload'), cnt = document.getElementById('bp-count'), bar = document.getElementById('bp-prog');
+  btn.disabled = true;
+  document.getElementById('bp-logcard').style.display = '';
+  document.getElementById('bp-progw').style.display = '';
+  document.getElementById('bp-log').innerHTML = '';
+  bpLog(`Uploading ${todo.length} question${todo.length === 1 ? '' : 's'}…`, 'var(--brand)');
+
+  let ok = 0, bad = 0;
+  for (let n = 0; n < todo.length; n++) {
+    const i = todo[n], q = bpParsed[i];
+    bar.style.width = Math.round(((n + 1) / todo.length) * 100) + '%';
+    cnt.textContent = `${n + 1}/${todo.length} — ✓ ${ok}  ✗ ${bad}`;
+    try {
+      const r = await adminFetch('/api/admin/questions', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ course: q.course, q: q.q, opts: q.opts, ans: q.ans, tag: q.tag, exp: q.exp }),
+      });
+      if (r.ok) { ok++; bpMark(i, 'ok', '✓ UPLOADED'); bpLog(`✓ [${i + 1}] ${q.course} — ${q.q.slice(0, 55)}…`, 'var(--ok)'); }
+      else {
+        const d = await r.json().catch(() => ({}));
+        bad++; bpMark(i, 'fail', '✗ FAILED'); bpLog(`✗ [${i + 1}] ${r.status}: ${d.error || 'Upload failed'}`, 'var(--no)');
+      }
+    } catch (e) { bad++; bpMark(i, 'fail', '✗ FAILED'); bpLog(`✗ [${i + 1}] Network error`, 'var(--no)'); }
+    await new Promise(r => setTimeout(r, 25));
+  }
+  bpLog(`Done — ✓ ${ok} uploaded, ✗ ${bad} failed${bad ? ' (press Upload again to retry the failed ones)' : ''}`, bad ? 'var(--warn)' : 'var(--ok)');
+  cnt.textContent = `Complete — ✓ ${ok}  ✗ ${bad}`;
+  btn.disabled = bad === 0;
+  bpBusy = false;
+  toast(bad ? `Done: ${ok} ok, ${bad} failed` : `All ${ok} questions uploaded`);
+}
+
+function bpClear() {
+  document.getElementById('bp-raw').value = '';
+  bpParsed = [];
+  document.getElementById('bp-preview').style.display = 'none';
+  document.getElementById('bp-logcard').style.display = 'none';
+  document.getElementById('bp-err').classList.remove('on');
 }
 
 // ── MODAL UTILS ───────────────────────────────────────────────
