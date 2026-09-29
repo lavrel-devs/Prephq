@@ -113,15 +113,35 @@ footer{padding:50px 0 60px;}
 
 .fx{opacity:0;transform:translateY(22px);transition:opacity .6s var(--ease-o),transform .6s var(--ease-o);} .fx.in{opacity:1;transform:none;}
 @media(prefers-reduced-motion:reduce){.fx{opacity:1;transform:none;transition:none;} html{scroll-behavior:auto;}}
-@media(max-width:860px){.links{display:none;} .grid3{grid-template-columns:1fr;} .price-grid{grid-template-columns:1fr;max-width:380px;} .cta .btn.sec{display:none;}}
-@media(max-width:520px){.hero{padding:120px 0 50px;} .hero-cta{flex-direction:column;} .hero-cta .btn{width:100%;} section{padding:50px 0;} .foot a:first-of-type{margin-left:0;}}
+.btn:focus-visible,.tbtn:focus-visible,.links button:focus-visible,summary:focus-visible,a:focus-visible{outline:3px solid var(--brand);outline-offset:3px;}
+.btn.login{background:var(--bg);color:var(--brand);box-shadow:var(--sh-sm);border:2px solid var(--brand);}
+.btn.login:active{box-shadow:var(--sh-in-sm);}
+
+/* "New or returning?" — the first thing under the hero */
+.start-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px;max-width:780px;margin:0 auto;}
+.start-card{text-align:center;padding:30px 24px;}
+.start-card .who{width:56px;height:56px;border-radius:50%;box-shadow:var(--sh-in-sm);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:22px;}
+.start-card h3{font-family:var(--ff-h);font-size:20px;font-weight:800;margin-bottom:6px;}
+.start-card p{font-size:14.5px;color:var(--t3);margin-bottom:20px;line-height:1.55;}
+.start-card .btn{width:100%;font-size:16px;padding:16px 20px;}
+.start-card .small{display:block;margin-top:14px;font-size:13.5px;font-weight:700;color:var(--brand);}
+.hint{font-size:13.5px;color:var(--t3);margin-top:16px;}
+.hint a{color:var(--brand);font-weight:800;text-decoration:underline;text-underline-offset:3px;}
+.theme-link{background:none;border:none;color:var(--t3);font:600 13px var(--ff-b);cursor:pointer;margin-left:18px;text-decoration:underline;text-underline-offset:3px;}
+@media(max-width:860px){.links{display:none;} .grid3{grid-template-columns:1fr;} .price-grid{grid-template-columns:1fr;max-width:380px;} .start-grid{grid-template-columns:1fr;max-width:420px;}}
+@media(max-width:520px){
+  .hero{padding:112px 0 40px;} .hero-cta{flex-direction:column;} .hero-cta .btn{width:100%;} section{padding:46px 0;} .foot a:first-of-type{margin-left:0;}
+  .nav{padding:6px 6px 6px 12px;} .brand{font-size:16px;gap:7px;} .brand .ico{width:30px;height:30px;}
+  .cta{gap:6px;} .cta .tbtn{display:none;} .cta .btn{padding:11px 14px;font-size:14px;min-height:44px;}
+}
+@media(max-width:360px){.brand span.nm{display:none;}}
 </style>
 </head>
 <body>
 <div class="blob b1"></div><div class="blob b2"></div>
 
 <nav class="nav">
-  <button class="brand" onclick="scrollToId('top')"><span class="ico"><i class="fa-solid fa-graduation-cap"></i></span>PrepHQ</button>
+  <button class="brand" onclick="scrollToId('top')"><span class="ico"><i class="fa-solid fa-graduation-cap"></i></span><span class="nm">PrepHQ</span></button>
   <div class="links">
     <button onclick="scrollToId('features')">Features</button>
     <button onclick="scrollToId('how')">How it works</button>
@@ -129,41 +149,64 @@ footer{padding:50px 0 60px;}
     <button onclick="scrollToId('faq')">FAQ</button>
   </div>
   <div class="cta">
-    <button class="tbtn" onclick="PhqTheme.toggle()" aria-label="Toggle theme"><svg id="theme-ico" viewBox="0 0 24 24" fill="currentColor" width="17" height="17"></svg></button>
-    <a href="/login" class="btn sec" id="nav-login">Login</a>
-    <a href="/register" class="btn pri" id="nav-main">Get started <i class="fa-solid fa-arrow-right" style="font-size:11px;"></i></a>
+    <button class="tbtn" onclick="PhqTheme.toggle()" aria-label="Switch between light and dark"><svg id="theme-ico" viewBox="0 0 24 24" fill="currentColor" width="17" height="17"></svg></button>
+    <a href="/login" class="btn login" id="nav-login">Log in</a>
+    <a href="/register" class="btn pri" id="nav-main">Sign up free</a>
   </div>
 </nav>
 
 <header class="hero" id="top">
   <div class="wrap">
-    <div class="badge fx"><i class="fa-solid fa-bolt"></i>Built for Nigerian university courses</div>
-    <h1 class="fx">AI-powered exam prep, <span class="grad">made for Nigerian university students.</span></h1>
-    <p class="sub fx">Past questions run out. Patterns don't. Practise real course questions, generate fresh AI quizzes, and see exactly which topics to fix before the exam.</p>
+    <div class="badge fx"><i class="fa-solid fa-circle-check"></i>Free to start · Made for Nigerian university students</div>
+    <h1 class="fx">Practise your exam questions. <span class="grad">Walk into the hall ready.</span></h1>
+    <p class="sub fx">PrepHQ is a study app that runs on your phone. Practise real questions for your courses, see the right answer with an explanation, and find out which topics you still need to revise.</p>
     <div class="hero-cta fx">
-      <a href="/register" class="btn pri lg" id="hero-main"><i class="fa-solid fa-wand-magic-sparkles"></i> Start studying free</a>
-      <button class="btn sec lg" onclick="scrollToId('how')">See how it works</button>
+      <a href="/register" class="btn pri lg" id="hero-main"><i class="fa-solid fa-user-plus"></i> Create free account</a>
+      <a href="/login" class="btn login lg" id="hero-login"><i class="fa-solid fa-right-to-bracket"></i> Log in</a>
     </div>
-    <div class="chips fx">
-      <div class="chip"><i class="fa-solid fa-wand-magic-sparkles"></i>AI-generated<br>quizzes</div>
-      <div class="chip"><i class="fa-solid fa-bullseye"></i>Weak-topic<br>tracking</div>
+    <p class="hint fx" id="hero-hint">Already signed up? Tap <b>Log in</b>. New here? Tap <b>Create free account</b>. No card needed.</p>
+    <div class="chips fx" style="margin-top:34px;">
+      <div class="chip"><i class="fa-solid fa-list-check"></i>Real questions<br>for your courses</div>
+      <div class="chip"><i class="fa-solid fa-lightbulb"></i>Answers with<br>explanations</div>
       <div class="chip"><i class="fa-solid fa-mobile-screen"></i>Works on<br>any phone</div>
     </div>
   </div>
 </header>
 
+<section id="start" style="padding-top:20px;">
+  <div class="wrap">
+    <div class="eyebrow">Start here</div>
+    <h2 class="fx">Are you new, or do you already have an account?</h2>
+    <div class="start-grid" style="margin-top:34px;">
+      <div class="card start-card fx">
+        <div class="who" style="color:var(--brand);"><i class="fa-solid fa-user-plus"></i></div>
+        <h3>I'm new</h3>
+        <p>Make a free account. It takes about one minute. You'll need your name, matric number and a phone number.</p>
+        <a href="/register" class="btn pri">Create free account</a>
+      </div>
+      <div class="card start-card fx">
+        <div class="who" style="color:var(--ok);"><i class="fa-solid fa-right-to-bracket"></i></div>
+        <h3>I already have an account</h3>
+        <p>Log in with your matric number and the password you chose when you signed up.</p>
+        <a href="/login" class="btn login">Log in</a>
+        <a href="/forgot-password" class="small">Forgot your password?</a>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="features">
   <div class="wrap">
     <div class="eyebrow">Features</div>
-    <h2 class="fx">Everything you need to walk into the exam hall ready.</h2>
-    <p class="lead fx">Every feature exists to close the gap between “I read it” and “I can answer it under pressure.”</p>
+    <h2 class="fx">What you can do with PrepHQ.</h2>
+    <p class="lead fx">Everything is built to help you go from “I read it” to “I can answer it in the exam.”</p>
     <div class="grid3">
-      <div class="card fx"><div class="f-ico" style="color:var(--brand);"><i class="fa-solid fa-list-check"></i></div><h3>Course practice</h3><p>Practise questions for the exact courses you're offering this semester, with instant marking and explanations.</p></div>
-      <div class="card fx"><div class="f-ico" style="color:var(--purple);"><i class="fa-solid fa-wand-magic-sparkles"></i></div><h3>AI quizzes</h3><p>Generate a fresh quiz on any topic, so you're learning the pattern instead of memorising one paper.</p></div>
-      <div class="card fx"><div class="f-ico" style="color:var(--teal);"><i class="fa-solid fa-comments"></i></div><h3>Ask AI</h3><p>Stuck on a concept? Ask and get a clear, step-by-step explanation in plain language.</p></div>
-      <div class="card fx"><div class="f-ico" style="color:var(--ok);"><i class="fa-solid fa-book-open"></i></div><h3>Notes &amp; flashcards</h3><p>Course notes and flashcards to revise from, with your weak topics queued up for review.</p></div>
-      <div class="card fx"><div class="f-ico" style="color:var(--warn);"><i class="fa-solid fa-trophy"></i></div><h3>Contests &amp; study rooms</h3><p>Compete on the leaderboard, join contests, and study live with friends in shared rooms.</p></div>
-      <div class="card fx"><div class="f-ico" style="color:var(--brand);"><i class="fa-solid fa-square-root-variable"></i></div><h3>Maths &amp; chemistry</h3><p>Formulas and molecular structures render properly, with no broken symbols or messy code.</p></div>
+      <div class="card fx"><div class="f-ico" style="color:var(--brand);"><i class="fa-solid fa-list-check"></i></div><h3>Practise your courses</h3><p>Pick the courses you're taking this semester and answer questions. You see straight away if you got it right, and why.</p></div>
+      <div class="card fx"><div class="f-ico" style="color:var(--purple);"><i class="fa-solid fa-wand-magic-sparkles"></i></div><h3>Quizzes made for you</h3><p>Choose any topic and the app makes a new quiz on it, so you learn the idea instead of memorising one paper.</p></div>
+      <div class="card fx"><div class="f-ico" style="color:var(--teal);"><i class="fa-solid fa-comments"></i></div><h3>Ask a question</h3><p>Stuck on something? Type your question and get a clear, step-by-step explanation in simple words.</p></div>
+      <div class="card fx"><div class="f-ico" style="color:var(--ok);"><i class="fa-solid fa-book-open"></i></div><h3>Notes &amp; flashcards</h3><p>Short notes and flashcards to revise from, plus a list of the topics you keep getting wrong.</p></div>
+      <div class="card fx"><div class="f-ico" style="color:var(--warn);"><i class="fa-solid fa-trophy"></i></div><h3>Study with friends</h3><p>Join contests, see the leaderboard, and study together with friends in shared rooms.</p></div>
+      <div class="card fx"><div class="f-ico" style="color:var(--brand);"><i class="fa-solid fa-square-root-variable"></i></div><h3>Maths &amp; chemistry that display properly</h3><p>Formulas and molecule drawings show up clearly on your screen, with no broken symbols.</p></div>
     </div>
   </div>
 </section>
@@ -171,12 +214,12 @@ footer{padding:50px 0 60px;}
 <section id="how">
   <div class="wrap">
     <div class="eyebrow">How it works</div>
-    <h2 class="fx">From sign-up to exam-ready in three steps.</h2>
-    <p class="lead fx">No setup headaches. Just you, your courses, and focused practice.</p>
+    <h2 class="fx">How to get started: 3 easy steps.</h2>
+    <p class="lead fx">No complicated setup. Just you, your courses, and practice.</p>
     <div class="grid3">
-      <div class="step fx"><div class="step-n">1</div><h3>Create your profile</h3><p>Sign up free, then pick the courses you're offering this semester.</p></div>
-      <div class="step fx"><div class="step-n">2</div><h3>Practise &amp; generate</h3><p>Work through course questions or generate an AI quiz on the topic you're weakest in.</p></div>
-      <div class="step fx"><div class="step-n">3</div><h3>Fix your weak spots</h3><p>See your progress, review what you missed, and watch your scores climb.</p></div>
+      <div class="step fx"><div class="step-n">1</div><h3>Create your free account</h3><p>Tap <b>Sign up free</b>. Enter your name, matric number, phone number and a password.</p></div>
+      <div class="step fx"><div class="step-n">2</div><h3>Choose your courses</h3><p>Pick the courses you're taking. Then start answering questions. Nothing to download.</p></div>
+      <div class="step fx"><div class="step-n">3</div><h3>Check your progress</h3><p>See your scores and the topics to revise. Next time, tap <b>Log in</b> to carry on where you stopped.</p></div>
     </div>
   </div>
 </section>
@@ -196,12 +239,14 @@ footer{padding:50px 0 60px;}
     <h2 class="fx">Questions, answered.</h2>
     <p class="lead fx">Everything you'd want to know before you start.</p>
     <div class="faq">
-      <details><summary>What is PrepHQ?</summary><p>PrepHQ is an AI-powered exam preparation platform for Nigerian university students. You practise course questions, generate AI quizzes and see which topics need work.</p></details>
-      <details><summary>Do I need a code to sign up?</summary><p>No. Sign-up is free and open to everyone. Create an account and start practising straight away.</p></details>
+      <details open><summary>How do I log in?</summary><p>Tap <b>Log in</b> at the top of this page. Type your matric number and the password you chose when you signed up, then tap <b>Sign In</b>. If you haven't signed up yet, tap <b>Sign up free</b> first.</p></details>
+      <details><summary>What do I need to sign up?</summary><p>Your full name, your matric number, a phone number, and a password you'll remember. You don't need a card or any payment.</p></details>
+      <details><summary>What is PrepHQ?</summary><p>PrepHQ is a study app for Nigerian university students. You practise questions for your courses, take quizzes, and see which topics need more work.</p></details>
+      <details><summary>Do I need a code or an invitation?</summary><p>No. Sign-up is free and open to everyone. Create an account and start practising straight away.</p></details>
       <details><summary>Is it really free?</summary><p>Yes. The free plan gives you a daily allowance of questions, AI quizzes and AI chat messages. Upgrade only if you want more.</p></details>
       <details><summary>How do I upgrade?</summary><p>Choose a plan from your profile and message us on WhatsApp. We activate your plan from our side, so there's no card or online payment step.</p></details>
-      <details><summary>I forgot my password. What now?</summary><p>Use “Forgot password” on the login page. Your request goes to an admin on WhatsApp, who resets your access manually.</p></details>
-      <details><summary>Can I use it on my phone?</summary><p>Yes. PrepHQ is built for phones first, and there's nothing to download. Just open it in your browser.</p></details>
+      <details><summary>I forgot my password. What now?</summary><p>On the Log in page, tap “Forgot password”. Your request goes to an admin on WhatsApp, who helps you get back in.</p></details>
+      <details><summary>Do I need to download anything?</summary><p>No. PrepHQ works in your phone's browser, the same way you open any website. You can also add it to your home screen if you like.</p></details>
     </div>
   </div>
 </section>
@@ -209,9 +254,12 @@ footer{padding:50px 0 60px;}
 <section>
   <div class="wrap">
     <div class="final card fx">
-      <h2>Ready to study smarter?</h2>
+      <h2>Ready to start practising?</h2>
       <p>Free to start, built for your courses, ready whenever you are.</p>
-      <a href="/register" class="btn pri lg" id="final-main"><i class="fa-solid fa-arrow-right-to-bracket"></i> Create free account</a>
+      <div class="hero-cta" style="margin-bottom:0;">
+        <a href="/register" class="btn pri lg" id="final-main"><i class="fa-solid fa-user-plus"></i> Create free account</a>
+        <a href="/login" class="btn login lg" id="final-login"><i class="fa-solid fa-right-to-bracket"></i> Log in</a>
+      </div>
       <div class="fine">No card required.</div>
     </div>
   </div>
@@ -220,7 +268,7 @@ footer{padding:50px 0 60px;}
 <footer>
   <div class="wrap foot">
     <div>&copy; <span id="year"></span> PrepHQ · Made with <i class="fa-solid fa-heart" style="color:var(--no);"></i> in Nigeria</div>
-    <div><a href="/login">Login</a><a href="/register">Get started</a></div>
+    <div><a href="/login">Log in</a><a href="/register">Sign up free</a><button class="theme-link" onclick="PhqTheme.toggle()">Light / dark</button></div>
   </div>
 </footer>
 
@@ -231,10 +279,14 @@ function scrollToId(id){ const el = document.getElementById(id); if (el) el.scro
 // Already signed in? Point the buttons at the app instead of sign-up.
 (function(){
   let s = null; try { s = JSON.parse(localStorage.getItem('phq_session')); } catch(e) {}
+  // Opened as the installed app: skip the marketing page and go straight in.
+  const installed = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  if (installed) { location.replace(s && s.accessToken ? (s.role === 'admin' ? '/admin' : '/dashboard') : '/login'); return; }
   if (!s || !s.accessToken) return;
   const dest = s.role === 'admin' ? '/admin' : '/dashboard';
-  document.getElementById('nav-login').style.display = 'none';
-  const main = document.getElementById('nav-main'); main.href = dest; main.innerHTML = 'Open app <i class="fa-solid fa-arrow-right" style="font-size:11px;"></i>';
+  // Already logged in: one obvious button that takes them straight in; hide every sign-up / log-in prompt.
+  ['nav-login','hero-login','final-login','hero-hint','start'].forEach(id => { const e = document.getElementById(id); if (e) e.style.display = 'none'; });
+  const main = document.getElementById('nav-main'); main.href = dest; main.textContent = 'Open app';
   ['hero-main','final-main'].forEach(id => { const a = document.getElementById(id); a.href = dest; a.innerHTML = '<i class="fa-solid fa-arrow-right"></i> Open PrepHQ'; });
 })();
 

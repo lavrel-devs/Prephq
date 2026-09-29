@@ -3,6 +3,8 @@ const Question = require('../models/Question');
 const Student = require('../models/Student');
 const Course = require('../models/Course');
 const Score = require('../models/Score');
+const QuestionAttempt = require('../models/QuestionAttempt');
+const { getCourseCounts } = require('../services/questionBank.service');
 const Transfer = require('../models/Transfer');
 const CreditTransaction = require('../models/CreditTransaction');
 const Notification = require('../models/Notification');
@@ -18,6 +20,40 @@ const { entitlementSummary, requireFeature, FEATURES, PREMIUM_PERIODS, PERIOD_PR
 
 const router = express.Router();
 
+// GET /api/questions/counts — { courseKey: number } for every course, in one cheap request. The dashboard's course
+// badges use this instead of downloading each course's full bank; the bank itself loads when a quiz starts.
+router.get('/questions/counts', requireStudent, (req, res, next) =>
+  requireFeature(req.query.mode === 'exam' ? 'examMode' : 'practiceQuestions')(req, res, next),
+async (req, res) => {
+  try { res.json(await getCourseCounts(Question, Course)); }
+  catch (e) { res.status(500).json({ error: 'Could not load question counts' }); }
+});
+
+// GET /api/questions/missed[?course=chm141][&count=1] — bank questions this student got wrong the LAST time they
+// answered them (answering one correctly later drops it off the list). Most recently missed first, max 30.
+// Only attempts recorded with a question id count, so AI-quiz questions and older history don't appear.
+router.get('/questions/missed', requireStudent, requireFeature('practiceQuestions'), async (req, res) => {
+  try {
+    const match = { matric: req.student.sub, qid: { $ne: null } };
+    if (req.query.course) match.course = String(req.query.course).toLowerCase().replace(/[^a-z0-9]/g, '');
+    const latest = await QuestionAttempt.aggregate([
+      { $match: match },
+      { $sort: { ts: -1 } },
+      { $group: { _id: '$qid', correct: { $first: '$correct' }, ts: { $first: '$ts' } } },
+      { $match: { correct: false } },
+      { $sort: { ts: -1 } }, { $limit: 30 },
+    ]);
+    if (req.query.count) return res.json({ count: latest.length }); // the home-screen card only needs the number
+    if (!latest.length) return res.json([]);
+    const docs = await Question.find({ _id: { $in: latest.map(l => l._id) } }).lean();
+    const byId = new Map(docs.map(d => [String(d._id), d]));
+    res.json(latest.map(l => byId.get(String(l._id))).filter(Boolean)); // a question an admin deleted just disappears
+  } catch (e) { res.status(500).json({ error: 'Could not load your missed questions' }); }
+});
+
+// Was fully public; now requires a signed-in student, and honours the Free-plan feature
+// switches: ?mode=exam needs "Exam mode", anything else needs "Practice questions".
+// (Premium always passes.) Admin tools use /api/admin/questions instead.
 // GET /api/questions/:course — public. Different tools have written
 // the `course` field differently over time — old bank data uses the
 // raw uppercase code (e.g. "GST101"), newer admin CRUD writes the
@@ -28,9 +64,6 @@ const router = express.Router();
 // param happens to be formatted.
 function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
-// Was fully public; now requires a signed-in student, and honours the Free-plan feature
-// switches: ?mode=exam needs "Exam mode", anything else needs "Practice questions".
-// (Premium always passes.) Admin tools use /api/admin/questions instead.
 router.get('/questions/:course', requireStudent, (req, res, next) =>
   requireFeature(req.query.mode === 'exam' ? 'examMode' : 'practiceQuestions')(req, res, next),
 async (req, res) => {

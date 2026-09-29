@@ -8,7 +8,7 @@ const { checkDailyLimit, incrementDailyUsage } = require('../services/tier.servi
 
 const { canUse } = require('../services/entitlements.service');
 const Settings = require('../models/Settings');
-const { normCourseKey, cleanTag } = require('../utils/validate');
+const { normCourseKey, cleanTag, isObjectId } = require('../utils/validate');
 const { syncRevisionQueue } = require('../services/study.service');
 const { evaluateAndAward } = require('../services/achievements.service');
 const router = express.Router();
@@ -75,6 +75,7 @@ router.post('/:matric', requireStudent, async (req, res) => {
             course: normCourseKey(p.course).slice(0, 30),
             tag: cleanTag(p.tag),
             correct: p.correct,
+            ...(isObjectId(p.qid) ? { qid: p.qid } : {}),
           }))
       : [];
 

@@ -11,9 +11,11 @@ const QuestionAttemptSchema = new mongoose.Schema({
   course:  { type: String, required: true },
   tag:     { type: String, default: '' }, // Question.tag — the sub-topic label
   correct: { type: Boolean, required: true },
+  qid:     { type: mongoose.Schema.Types.ObjectId, default: null }, // the bank question answered (absent for AI quizzes and older attempts)
   ts:      { type: Date, default: Date.now },
 });
 
 QuestionAttemptSchema.index({ matric: 1, course: 1, tag: 1 });
+QuestionAttemptSchema.index({ qid: 1 }, { sparse: true }); // only attempts that carry a question id are indexed
 
 module.exports = mongoose.model('QuestionAttempt', QuestionAttemptSchema);

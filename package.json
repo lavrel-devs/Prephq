@@ -1,7 +1,7 @@
 {
   "name": "prephq",
-  "version": "1.6.4",
-  "description": "PrepHQ \u2014 Exam Prep Platform",
+  "version": "1.6.7",
+  "description": "PrepHQ — Exam Prep Platform",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "compression": "^1.8.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.18.2",

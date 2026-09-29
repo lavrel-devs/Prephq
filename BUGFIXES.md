@@ -126,3 +126,32 @@ Not run against a live MongoDB or a real Groq key: queue, charge/refund flow and
 
 ## v1.6.4
 - Fixed the actual bug behind your screenshot: subscript variables with no digit before the underscore (K_b, E_a, C_p) weren't recognised as maths, so the repair cut them off from their own equation — "Given: … K_b" stayed as plain text while "= 0.512 °C…" got wrapped on its own, and the whole thing showed as a KaTeX error. Any token containing `^` or `_` is now treated as maths regardless of whether a digit is next to it.
+
+## v1.6.5
+- **Bulk question upload moved into the admin panel** (Content → Bulk Upload); the standalone `question-uploader.html` is gone and its URL redirects to `/admin`. Uses your admin session — no server URL or key to paste.
+- Bulk upload now uses one request per 100 questions (`POST /api/admin/questions/bulk`), **skips duplicates** (same course + same question text, ignoring case and punctuation), and tags every upload with a batch id. **Recent uploads** lists batches with an **Undo** button (`DELETE /api/admin/questions/batch/:id`).
+- Bulk upload no longer guesses: a question with no `Correct:` line or an unknown course is shown but not uploaded. Course codes are matched against your live course list.
+- **Needs attention** panel on the Question Bank: open student reports first, then lowest accuracy (needs 8+ recorded attempts). Quiz answers now record the bank question id (`QuestionAttempt.qid`); older history has none, so accuracy fills in as students practise.
+- **Questions you missed** card on the dashboard (`GET /api/questions/missed`): bank questions whose most recent answer was wrong. Answering one correctly clears it.
+- **Timed mock exams:** Exam mode has an exam clock (45s / 1 min / 90s per question, or no limit). It runs on the wall clock and submits automatically at zero.
+- **Get-started checklist** and **invite card** (WhatsApp / copy link) on the dashboard home.
+- **Share Result** now attaches an image card on devices that can share files (falls back to the old text share).
+- `/` is now the landing page (`public/landing.html`, same design system, live pricing from `/api/plans`). The installed app now starts at `/dashboard` and the landing page skips itself when opened as the installed app.
+- `MANIFEST.json` regenerated (it still listed a `bulk-upload-tool/` folder that was not in the zip).
+
+## v1.6.6 — dashboard speed
+- **Root cause:** opening the dashboard downloaded every course's *entire* question bank (twice, because the home screen builds twice) just to show the little question-count badge — 16+ heavy requests, each a case-insensitive regex scan of the whole Question collection, and each one also written to the activity log. It got slower with every question uploaded. v1.6.5 added four more requests on top.
+- New `GET /api/questions/counts`: one request returns every course's count (single database pass, cached 60 s, cleared immediately when an admin adds/edits/deletes/uploads questions). The badges use it. Dashboard load went from 27 API requests to 12 in a simulated run.
+- A course's full question bank is now loaded **when a quiz starts** (`ensureBank`) and reused for 5 minutes, instead of on every home-screen visit. If it can't load, the student sees a message instead of an empty quiz. If the counts request fails the badge shows a dash instead of a wrong number.
+- Duplicate requests on load are merged (history, weak topics). The "missed questions" card now asks the server for just the number (`?count=1`).
+- gzip compression is switched on (`compression` package). It's optional: if you haven't run `npm install` yet the server still starts and logs a warning. Icons and third-party libraries are cached by the browser for a week.
+- Removed the heavier of the two `QuestionAttempt` indexes added in v1.6.5 (it indexed every existing attempt, which makes the first start-up after updating slow on a big database).
+- **Landing page:** Log in is now visible on every screen size (it was hidden on phones), with a "New, or already have an account?" section right under the top, plain-language wording, a "How do I log in?" answer, and a Log in button in the footer and final call-to-action.
+
+## v1.6.7
+- **Bulk Upload → JSON / CSV file** (new tab in the admin panel). Upload a `.json`, `.csv`, `.tsv` or `.txt` file; it goes through the same preview → duplicate check → upload → undo flow as pasting. Download a CSV or JSON template from the same screen.
+  - CSV/TSV: header row with `course, question, optionA–D, answer` (+ optional `tag`, `explanation`). Handles quoted cells, commas/newlines inside quotes, and comma/tab/semicolon separators.
+  - JSON: a list, `{ "questions": [...] }`, or `{ "chm141": [...], "mth101": [...] }` (course taken from the key).
+  - Answer keys are never guessed: an answer must be a letter A–D or the exact text of one option. A bare number is refused when it could mean two different options. In JSON, numbers are accepted only as `ans`/`answerIndex` (0-based) or `answerNumber` (1-based). Exactly 4 options per question.
+  - A course picker above the preview can force every row into one course.
+- Note: the original zip's `MANIFEST.json` listed a `bulk-upload-tool/` folder (index.html, server.js, README.md) that was not included in the upload, and the bundled `question-uploader.html` was paste-only. If that folder had its own file import with a different format, send it and the format can be matched.

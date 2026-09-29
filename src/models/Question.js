@@ -10,6 +10,7 @@ const QuestionSchema = new mongoose.Schema({
   tag:       { type: String, default: '' },
   exp:       { type: String, default: '' },
   createdBy: { type: String, default: '' }, // admin username, v1.1.5 bulk-upload attribution
+  batchId:   { type: String, default: '', index: true }, // set by bulk upload, so a whole batch can be reviewed or undone
   createdAt: { type: Date, default: Date.now },
 });
 

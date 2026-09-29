@@ -45,6 +45,12 @@ app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false 
 app.use(cors({ origin: '*', methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'] }));
 app.set('trust proxy', 1); // set BEFORE any middleware so req.ip / rate limiting see the real client behind Render's proxy
 // 1mb: the default 100kb made PUT /api/student-data (notes/bookmarks backup) fail for heavy users.
+// gzip for HTML/JS/CSS/JSON. The dashboard used to download whole question banks and a 230 KB admin page
+// uncompressed; this typically shrinks them 5-8x. Optional on purpose: if `npm install` hasn't been run
+// after updating, the server still starts (just without compression) instead of crashing.
+try { app.use(require('compression')()); }
+catch (e) { console.warn('compression not installed — run `npm install` to enable gzip (' + e.code + ')'); }
+
 app.use(express.json({ limit: '1mb' }));
 app.use(activityMiddleware); // logs every API request + page view (see services/activity.service.js)
 
@@ -218,7 +224,13 @@ Object.entries(PAGE_ROUTES).forEach(([route, file]) => {
 // so much as a name or a score) happens at the API layer above, since
 // every data-bearing route requires a verified JWT — the static HTML
 // shell itself has no secrets in it.
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), {
+  // Third-party libraries and icons never change under the same URL, so let browsers keep them for a week.
+  // Everything else (our own pages and scripts) keeps the default revalidate-every-time behaviour.
+  setHeaders(res, filePath) {
+    if (/[\\/]public[\\/](vendor|icons)[\\/]/.test(filePath)) res.setHeader('Cache-Control', 'public, max-age=604800');
+  },
+}));
 
 app.get('/healthz', (req, res) => res.json({ ok: true }));
 
@@ -267,7 +279,7 @@ initStudyRoomSockets(io);
 // ══════════════════════════════════════════════════════════════
 httpServer.listen(PORT, () => {
   console.log('\n╔══════════════════════════════════════════════════╗');
-  console.log(`║  PrepHQ v1.6.4 running on http://localhost:${PORT}   ║`);
+  console.log(`║  PrepHQ v1.6.7 running on http://localhost:${PORT}   ║`);
   console.log(`║  Student login: http://localhost:${PORT}/login       ║`);
   console.log(`║  Admin:         http://localhost:${PORT}/login       ║`);
   console.log('╚══════════════════════════════════════════════════╝\n');

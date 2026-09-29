@@ -538,6 +538,12 @@ select.f-input option{background:var(--bg);color:var(--t1);}
           <button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;" onclick="openAddQ()">+ Add Question</button>
         </div>
 
+        <!-- Needs attention: reported first, then lowest accuracy -->
+        <div class="tw" id="q-quality" style="display:none;">
+          <div class="th"><div class="th-title">Needs attention</div><div style="font-size:12px;color:var(--t3);font-weight:600;">Open reports first, then lowest accuracy (8+ attempts)</div></div>
+          <div id="q-quality-list" style="padding:6px 18px 14px;display:flex;flex-direction:column;gap:8px;"></div>
+        </div>
+
         <!-- Course filter -->
         <div class="field" style="max-width:240px;margin-bottom:16px;">
           <label>Filter by Course</label>
@@ -558,11 +564,12 @@ select.f-input option{background:var(--bg);color:var(--t1);}
       <!-- ═══ BULK UPLOAD ══════════════════════════════════ -->
       <div id="v-bulk-upload" class="view">
         <div class="ph">
-          <div><div class="ph-title">Bulk Upload Questions</div><div class="ph-sub">Paste a whole question dump, or add questions one at a time</div></div>
+          <div><div class="ph-title">Bulk Upload Questions</div><div class="ph-sub">Paste a question dump, upload a JSON or CSV file, or add questions one at a time</div></div>
         </div>
 
         <div class="bp-tabs">
           <button class="bp-tab on" data-m="paste" onclick="bulkMode('paste')">Paste &amp; parse</button>
+          <button class="bp-tab" data-m="file" onclick="bulkMode('file')">JSON / CSV file</button>
           <button class="bp-tab" data-m="single" onclick="bulkMode('single')">One at a time</button>
         </div>
 
@@ -619,7 +626,7 @@ select.f-input option{background:var(--bg);color:var(--t1);}
 
         <!-- PASTE & PARSE (moved from the old standalone uploader) -->
         <div id="bulk-paste">
-          <div class="tw">
+          <div class="tw" id="bp-in-paste">
             <div class="th"><div class="th-title">Paste questions</div></div>
             <div style="padding:18px;">
               <div class="err" id="bp-err"></div>
@@ -629,6 +636,30 @@ select.f-input option{background:var(--bg);color:var(--t1);}
                 <label class="bp-chk"><input type="checkbox" id="bp-latex" checked> Keep LaTeX</label>
                 <button class="btn-main bp-btn" onclick="bpParse()"><i class="fa-solid fa-wand-magic-sparkles"></i> Parse &amp; preview</button>
                 <button class="btn-main bp-btn bp-ghost" onclick="bpClear()"><i class="fa-solid fa-xmark"></i> Clear</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="tw" id="bp-in-file" style="display:none;">
+            <div class="th"><div class="th-title">Upload a JSON or CSV file</div></div>
+            <div style="padding:18px;">
+              <div class="err" id="bpf-err"></div>
+              <div style="font-size:13px;color:var(--t3);line-height:1.6;margin-bottom:14px;">
+                <b style="color:var(--t2);">CSV / TSV columns:</b> <code>course, question, optionA, optionB, optionC, optionD, answer</code> (+ optional <code>tag</code>, <code>explanation</code>).<br>
+                <b style="color:var(--t2);">JSON:</b> a list of questions, <code>{"questions":[…]}</code>, or <code>{"chm141":[…],"mth101":[…]}</code>. Each has <code>question</code>, <code>options</code> (4), <code>answer</code>.<br>
+                <b style="color:var(--t2);">Answer</b> = a letter <code>A–D</code> or the exact text of the correct option. Exactly 4 options per question.
+              </div>
+              <div class="bp-row" style="margin-bottom:14px;">
+                <label class="btn-main bp-btn" style="cursor:pointer;margin:0;"><i class="fa-solid fa-file-arrow-up"></i> Choose file
+                  <input type="file" id="bpf-file" accept=".json,.csv,.tsv,.txt,application/json,text/csv" style="display:none;" onchange="bpFileChosen(this)">
+                </label>
+                <span id="bpf-name" style="font-size:12.5px;font-weight:700;color:var(--t3);">No file chosen</span>
+              </div>
+              <div class="bp-row">
+                <select id="bpf-course" class="bp-sel"><option value="">Course from file</option></select>
+                <label class="bp-chk"><input type="checkbox" id="bpf-latex" checked> Keep LaTeX</label>
+                <button class="btn-main bp-btn bp-ghost" onclick="bpTemplate('csv')"><i class="fa-solid fa-download"></i> CSV template</button>
+                <button class="btn-main bp-btn bp-ghost" onclick="bpTemplate('json')"><i class="fa-solid fa-download"></i> JSON template</button>
               </div>
             </div>
           </div>
@@ -648,6 +679,11 @@ select.f-input option{background:var(--bg);color:var(--t1);}
           <div class="tw" id="bp-logcard" style="display:none;">
             <div class="th"><div class="th-title">Upload log</div></div>
             <div class="bp-log" id="bp-log"></div>
+          </div>
+
+          <div class="tw" id="bp-batches-card" style="display:none;">
+            <div class="th"><div class="th-title">Recent uploads</div><div style="font-size:12px;color:var(--t3);font-weight:600;">Undo removes every question from that upload</div></div>
+            <div id="bp-batches" style="padding:6px 18px 14px;display:flex;flex-direction:column;gap:8px;"></div>
           </div>
         </div>
       </div>
@@ -2016,7 +2052,7 @@ function go(v, el) {
   if(v==='students')  loadStudents();
   if(v==='payments')  loadPayments();
   if(v==='courses')   { loadCourses(); loadCourseList(); }
-  if(v==='questions') loadQuestions();
+  if(v==='questions'){ loadQuestions(); loadQuality(); }
   if(v==='bulk-upload'){ if(!allCourses.length) loadCourses().then(initBulkUpload); else initBulkUpload(); }
   if(v==='contests') loadContests();
   if(v==='recurring') loadTemplates();
@@ -2608,6 +2644,30 @@ function delCourse(id) {
 }
 
 // ── QUESTIONS ─────────────────────────────────────────────────
+async function loadQuality() {
+  const card = document.getElementById('q-quality'), box = document.getElementById('q-quality-list');
+  try {
+    const r = await adminFetch('/api/admin/questions/quality', { headers: {} });
+    if (!r.ok) { card.style.display = 'none'; return; }
+    const rows = await r.json();
+    card.style.display = rows.length ? '' : 'none';
+    box.innerHTML = rows.map(q => `
+      <div class="bp-item">
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;font-size:11px;flex-wrap:wrap;">
+          <span class="badge b-teal">${escHtml(q.course.toUpperCase())}</span>
+          ${q.reports ? `<span class="badge" style="color:var(--no);">${q.reports} open report${q.reports === 1 ? '' : 's'}</span>` : ''}
+          <span style="margin-left:auto;font-weight:800;color:${q.accuracy != null && q.accuracy < 30 ? 'var(--no)' : 'var(--t3)'};">${q.accuracy != null ? q.accuracy + '% correct · ' + q.attempts + ' attempts' : 'no attempts yet'}</span>
+        </div>
+        <div style="font-size:13px;font-weight:600;color:var(--t1);margin-bottom:6px;">${escHtml(q.q)}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px 12px;font-size:12px;">
+          ${q.opts.map((o, k) => `<div style="color:${k === q.ans ? 'var(--ok)' : 'var(--t3)'};font-weight:${k === q.ans ? 800 : 500};"><b>${'ABCD'[k] || k + 1})</b> ${escHtml(o)}</div>`).join('')}
+        </div>
+        <div style="font-size:11.5px;color:var(--t3);margin-top:6px;">Marked answer is highlighted — a very low accuracy often means the key is wrong.</div>
+      </div>`).join('');
+    if (window.PhqSci) PhqSci.render(box);
+  } catch (e) { card.style.display = 'none'; }
+}
+
 async function loadQuestions() {
   try {
     const course = document.getElementById('q-course-filter').value;
@@ -2710,6 +2770,7 @@ function delQ(id) {
 // panel above — this is just a friendlier UI for adding many in a row.
 function initBulkUpload() {
   bpInitCourses();
+  bpLoadBatches();
   const sel = document.getElementById('bulk-course');
   const cur = sel.value;
   sel.innerHTML = '<option value="">Select course...</option>' +
@@ -2825,7 +2886,10 @@ async function submitBulkQuestion() {
 let bpParsed = [], bpBusy = false;
 
 function bulkMode(m) {
-  document.getElementById('bulk-paste').style.display  = m === 'paste'  ? '' : 'none';
+  bpMode = m === 'file' ? 'file' : 'paste';
+  document.getElementById('bulk-paste').style.display  = m === 'single' ? 'none' : '';
+  document.getElementById('bp-in-paste').style.display = m === 'paste'  ? '' : 'none';
+  document.getElementById('bp-in-file').style.display  = m === 'file'   ? '' : 'none';
   document.getElementById('bulk-single').style.display = m === 'single' ? '' : 'none';
   document.querySelectorAll('.bp-tab').forEach(b => b.classList.toggle('on', b.dataset.m === m));
 }
@@ -2834,6 +2898,10 @@ function bpInitCourses() {
   sel.innerHTML = '<option value="">Auto-detect course</option>' +
     allCourses.map(c => `<option value="${escHtml(c.key)}">${escHtml(c.courseCode)} – ${escHtml(c.courseTitle)}</option>`).join('');
   sel.value = cur;
+  const fsel = document.getElementById('bpf-course'), fcur = fsel.value;
+  fsel.innerHTML = '<option value="">Course from file</option>' +
+    allCourses.map(c => `<option value="${escHtml(c.key)}">${escHtml(c.courseCode)} – ${escHtml(c.courseTitle)}</option>`).join('');
+  fsel.value = fcur;
 }
 const bpNorm = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 function bpResolve(code) { // "CHM 141" -> { key:'chm141', known:true }
@@ -2919,7 +2987,7 @@ function bpParse() {
 }
 
 function bpRender() {
-  const errEl = document.getElementById('bp-err');
+  const errEl = document.getElementById(bpMode === 'file' ? 'bpf-err' : 'bp-err');
   if (!bpParsed.length) { errEl.textContent = 'No questions found — check the format.'; errEl.classList.add('on'); document.getElementById('bp-preview').style.display = 'none'; return; }
   document.getElementById('bp-preview').style.display = '';
   const counts = {};
@@ -2956,11 +3024,12 @@ function bpMark(i, status, text) {
   bpParsed[i]._status = status;
   const el = document.getElementById('bp-i-' + i);
   if (!el) return;
-  el.classList.remove('ok', 'fail');
+  el.classList.remove('ok', 'fail', 'skip');
   if (status === 'ok' || status === 'fail') el.classList.add(status);
+  if (status === 'dup') el.classList.add('skip');
   const st = el.querySelector('.bp-st');
   st.textContent = text;
-  st.style.color = status === 'ok' ? 'var(--ok)' : status === 'fail' ? 'var(--no)' : 'var(--t4)';
+  st.style.color = status === 'ok' ? 'var(--ok)' : status === 'fail' ? 'var(--no)' : status === 'dup' ? 'var(--warn)' : 'var(--t4)';
 }
 function bpLog(msg, color) {
   const box = document.getElementById('bp-log'), d = document.createElement('div');
@@ -2980,29 +3049,67 @@ async function bpUpload() {
   document.getElementById('bp-log').innerHTML = '';
   bpLog(`Uploading ${todo.length} question${todo.length === 1 ? '' : 's'}…`, 'var(--brand)');
 
-  let ok = 0, bad = 0;
-  for (let n = 0; n < todo.length; n++) {
-    const i = todo[n], q = bpParsed[i];
-    bar.style.width = Math.round(((n + 1) / todo.length) * 100) + '%';
-    cnt.textContent = `${n + 1}/${todo.length} — ✓ ${ok}  ✗ ${bad}`;
+  // Sent in chunks of 100 so progress is visible; the server skips anything already in the bank.
+  let ok = 0, dup = 0, bad = 0, done = 0;
+  for (let c = 0; c < todo.length; c += 100) {
+    const chunk = todo.slice(c, c + 100);
     try {
-      const r = await adminFetch('/api/admin/questions', {
+      const r = await adminFetch('/api/admin/questions/bulk', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ course: q.course, q: q.q, opts: q.opts, ans: q.ans, tag: q.tag, exp: q.exp }),
+        body: JSON.stringify({ items: chunk.map(i => { const q = bpParsed[i]; return { course: q.course, q: q.q, opts: q.opts, ans: q.ans, tag: q.tag, exp: q.exp }; }) }),
       });
-      if (r.ok) { ok++; bpMark(i, 'ok', '✓ UPLOADED'); bpLog(`✓ [${i + 1}] ${q.course} — ${q.q.slice(0, 55)}…`, 'var(--ok)'); }
-      else {
-        const d = await r.json().catch(() => ({}));
-        bad++; bpMark(i, 'fail', '✗ FAILED'); bpLog(`✗ [${i + 1}] ${r.status}: ${d.error || 'Upload failed'}`, 'var(--no)');
-      }
-    } catch (e) { bad++; bpMark(i, 'fail', '✗ FAILED'); bpLog(`✗ [${i + 1}] Network error`, 'var(--no)'); }
-    await new Promise(r => setTimeout(r, 25));
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.error || 'Upload failed');
+      const rej = new Map((d.rejected || []).map(x => [x.index, x.reason]));
+      chunk.forEach((i, k) => {
+        if (!rej.has(k)) { ok++; bpMark(i, 'ok', '✓ UPLOADED'); return; }
+        const why = rej.get(k);
+        if (/^Duplicate/.test(why)) { dup++; bpMark(i, 'dup', '≡ DUPLICATE — skipped'); }
+        else { bad++; bpMark(i, 'fail', '✗ ' + why); bpLog(`✗ [${i + 1}] ${why}`, 'var(--no)'); }
+      });
+      bpLog(`Batch ${d.batchId || '—'}: ${d.added} added${rej.size ? `, ${rej.size} not added` : ''}`, d.added ? 'var(--ok)' : 'var(--warn)');
+    } catch (e) {
+      chunk.forEach(i => { bad++; bpMark(i, 'fail', '✗ FAILED'); });
+      bpLog(`✗ ${e.message}`, 'var(--no)');
+    }
+    done += chunk.length;
+    bar.style.width = Math.round((done / todo.length) * 100) + '%';
+    cnt.textContent = `${done}/${todo.length} — ✓ ${ok}  ≡ ${dup}  ✗ ${bad}`;
   }
-  bpLog(`Done — ✓ ${ok} uploaded, ✗ ${bad} failed${bad ? ' (press Upload again to retry the failed ones)' : ''}`, bad ? 'var(--warn)' : 'var(--ok)');
-  cnt.textContent = `Complete — ✓ ${ok}  ✗ ${bad}`;
+  bpLog(`Done — ✓ ${ok} added, ≡ ${dup} duplicates skipped, ✗ ${bad} failed${bad ? ' (press Upload again to retry the failed ones)' : ''}`, bad ? 'var(--warn)' : 'var(--ok)');
+  cnt.textContent = `Complete — ✓ ${ok}  ≡ ${dup}  ✗ ${bad}`;
   btn.disabled = bad === 0;
   bpBusy = false;
-  toast(bad ? `Done: ${ok} ok, ${bad} failed` : `All ${ok} questions uploaded`);
+  toast(bad ? `Done: ${ok} added, ${bad} failed` : `${ok} added${dup ? `, ${dup} duplicates skipped` : ''}`);
+  bpLoadBatches();
+}
+
+async function bpLoadBatches() {
+  const card = document.getElementById('bp-batches-card'), box = document.getElementById('bp-batches');
+  try {
+    const r = await adminFetch('/api/admin/questions/batches', { headers: {} });
+    if (!r.ok) return;
+    const rows = await r.json();
+    card.style.display = rows.length ? '' : 'none';
+    box.innerHTML = rows.map(b => `
+      <div class="bp-item" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:180px;">
+          <div style="font-size:13px;font-weight:800;color:var(--t1);">${b.count} question${b.count === 1 ? '' : 's'} · ${b.courses.map(c => escHtml(c.toUpperCase())).join(', ')}</div>
+          <div style="font-size:11.5px;color:var(--t3);">${escHtml(b.by || 'unknown')} · ${new Date(b.at).toLocaleString()}</div>
+        </div>
+        <button class="btn-main bp-btn bp-ghost" style="color:var(--no)!important;" onclick="bpUndoBatch('${escHtml(b.batchId)}', ${b.count})">Undo</button>
+      </div>`).join('');
+  } catch (e) {}
+}
+async function bpUndoBatch(id, n) {
+  if (!confirm(`Delete all ${n} question${n === 1 ? '' : 's'} from this upload? This can't be undone.`)) return;
+  try {
+    const r = await adminFetch('/api/admin/questions/batch/' + encodeURIComponent(id), { method: 'DELETE', headers: {} });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || 'Could not undo');
+    toast(`Removed ${d.deleted} question${d.deleted === 1 ? '' : 's'}`);
+    bpLoadBatches();
+  } catch (e) { toast(e.message); }
 }
 
 function bpClear() {
@@ -3011,6 +3118,149 @@ function bpClear() {
   document.getElementById('bp-preview').style.display = 'none';
   document.getElementById('bp-logcard').style.display = 'none';
   document.getElementById('bp-err').classList.remove('on');
+  document.getElementById('bpf-err').classList.remove('on');
+  document.getElementById('bpf-file').value = '';
+  document.getElementById('bpf-name').textContent = 'No file chosen';
+}
+
+// ── BULK UPLOAD · from a file (JSON / CSV / TSV) ─────────────
+// Same preview → upload pipeline as paste. Rules that keep answer keys safe:
+//  • an answer is a LETTER (A–D) or the exact text of one option — a bare "2" in a CSV is ambiguous, so it's refused
+//  • JSON numbers are accepted only under the app's own field names: ans/answerIndex (0-based), answerNumber (1-based)
+//  • exactly 4 options, like the paste tool
+let bpMode = 'paste';
+
+function bpNormKey(k) { return String(k || '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
+
+// Small RFC-4180 CSV/TSV reader: quoted cells, doubled quotes, commas/tabs/semicolons and newlines inside quotes.
+function bpCsvRows(text) {
+  text = String(text || '').replace(/^\uFEFF/, '');
+  const first = text.split(/\r?\n/, 1)[0] || '';
+  const count = ch => (first.match(new RegExp(ch === '\t' ? '\\t' : '\\' + ch, 'g')) || []).length;
+  const delim = [',', '\t', ';'].sort((a, b) => count(b) - count(a))[0];
+  const rows = []; let row = [], cell = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) {
+      if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; }
+      else cell += c;
+    } else if (c === '"' && cell === '') q = true;
+    else if (c === delim) { row.push(cell); cell = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(cell); cell = ''; if (row.some(x => x.trim() !== '')) rows.push(row); row = []; }
+    else cell += c;
+  }
+  row.push(cell); if (row.some(x => x.trim() !== '')) rows.push(row);
+  return rows;
+}
+
+const BP_LETTER = { a: 0, b: 1, c: 2, d: 3 };
+const BP_KEYS = {
+  course: ['course', 'coursecode', 'coursekey'],
+  q: ['question', 'q', 'questiontext', 'stem'],
+  tag: ['tag', 'topic', 'subtopic'],
+  exp: ['explanation', 'exp', 'rationale', 'reason'],
+  opts: ['options', 'opts', 'choices', 'answers'],
+  text: ['answer', 'correct', 'correctanswer', 'key'],
+  idx0: ['ans', 'answerindex', 'correctindex'],
+  idx1: ['answernumber', 'correctnumber'],
+};
+const bpOptKeys = i => ['option' + 'abcd'[i], 'opt' + 'abcd'[i], 'abcd'[i], 'option' + (i + 1), 'opt' + (i + 1), String(i + 1), 'choice' + 'abcd'[i], 'choice' + (i + 1)];
+
+// One record (already key-normalised) -> { course, q, opts, ans, tag, exp, why }.  ans = -1 and why set when unusable.
+function bpItemFromRecord(nk) {
+  const pick = names => { for (const n of names) if (nk[n] !== undefined && nk[n] !== null && String(nk[n]).trim() !== '') return nk[n]; return undefined; };
+  const item = { course: String(pick(BP_KEYS.course) ?? '').trim(), q: String(pick(BP_KEYS.q) ?? '').trim(), tag: String(pick(BP_KEYS.tag) ?? '').trim(), exp: String(pick(BP_KEYS.exp) ?? '').trim(), opts: [], ans: -1, why: '' };
+  const arr = pick(BP_KEYS.opts);
+  if (Array.isArray(arr)) item.opts = arr.map(x => String(x ?? '').trim());
+  else for (let i = 0; i < 4; i++) { const v = pick(bpOptKeys(i)); if (v !== undefined) item.opts.push(String(v).trim()); }
+  item.opts = item.opts.filter((o, i, a) => o !== '' || i < a.length);          // keep positions; emptiness is checked below
+  if (!item.q) { item.why = 'Empty question'; return item; }
+  if (item.opts.length !== 4 || item.opts.some(o => !o)) { item.why = `Needs exactly 4 non-empty options (found ${item.opts.filter(Boolean).length})`; return item; }
+
+  const i0 = pick(BP_KEYS.idx0), i1 = pick(BP_KEYS.idx1), t = pick(BP_KEYS.text);
+  if (i0 !== undefined && /^\d+$/.test(String(i0).trim())) item.ans = parseInt(i0, 10);
+  else if (i1 !== undefined && /^\d+$/.test(String(i1).trim())) item.ans = parseInt(i1, 10) - 1;
+  else if (t !== undefined) {
+    const s = String(t).trim(), letter = s.match(/^\(?([A-Da-d])[).:]?$/);
+    if (letter) item.ans = BP_LETTER[letter[1].toLowerCase()];
+    else {
+      const hits = item.opts.map((o, k) => o.toLowerCase() === s.toLowerCase() ? k : -1).filter(k => k >= 0);
+      const n = /^\d+$/.test(s) ? parseInt(s, 10) : 0;
+      if (hits.length === 1 && n >= 1 && n <= 4 && n - 1 !== hits[0]) item.why = `Answer "${s}" could mean option number ${n} or the option with that text — use A–D`;
+      else if (hits.length === 1) item.ans = hits[0];
+      else item.why = /^\d+$/.test(s) ? `Answer "${s}" is ambiguous — use A–D or the option text` : 'Answer must be A–D or match one option exactly';
+    }
+  } else item.why = 'No answer given';
+  if (!item.why && !(item.ans >= 0 && item.ans < 4)) { item.ans = -1; item.why = 'Answer points outside the 4 options'; }
+  return item;
+}
+
+// text + filename -> { records:[{...item, _course?}], error? }
+function bpReadFile(text, name) {
+  const isJson = /\.json$/i.test(name || '') || /^\s*[\[{]/.test(text);
+  const norm = o => { const r = {}; for (const k of Object.keys(o || {})) r[bpNormKey(k)] = o[k]; return r; };
+  try {
+    if (isJson) {
+      let data = JSON.parse(text), list = [];
+      if (Array.isArray(data)) list = data.map(norm);
+      else if (data && Array.isArray(data.questions)) list = data.questions.map(norm);
+      else if (data && typeof data === 'object') {            // { "chm141": [ ... ], "mth101": [ ... ] }
+        for (const [course, arr] of Object.entries(data)) if (Array.isArray(arr)) arr.forEach(o => list.push({ course, ...norm(o) }));
+      }
+      if (!list.length) return { records: [], error: 'No questions found. Expected a list, or { "questions": [ ... ] }.' };
+      return { records: list.map(bpItemFromRecord) };
+    }
+    const rows = bpCsvRows(text);
+    if (rows.length < 2) return { records: [], error: 'The file needs a header row and at least one question.' };
+    const head = rows[0].map(bpNormKey);
+    if (!BP_KEYS.q.some(k => head.includes(k))) return { records: [], error: 'No "question" column found in the header row.' };
+    return { records: rows.slice(1).map(r => bpItemFromRecord(Object.fromEntries(head.map((h, i) => [h, r[i]])))) };
+  } catch (e) { return { records: [], error: 'Could not read the file: ' + e.message }; }
+}
+
+function bpFileChosen(input) {
+  const f = input.files && input.files[0], errEl = document.getElementById('bpf-err');
+  errEl.classList.remove('on');
+  if (!f) return;
+  if (f.size > 5 * 1024 * 1024) { errEl.textContent = 'That file is over 5 MB — split it into smaller files.'; errEl.classList.add('on'); return; }
+  document.getElementById('bpf-name').textContent = f.name;
+  const rd = new FileReader();
+  rd.onerror = () => { errEl.textContent = 'Could not read that file.'; errEl.classList.add('on'); };
+  rd.onload = () => {
+    const { records, error } = bpReadFile(String(rd.result), f.name);
+    if (error) { errEl.textContent = error; errEl.classList.add('on'); return; }
+    const def = document.getElementById('bpf-course').value;
+    const keep = document.getElementById('bpf-latex').checked;
+    const clean = s => keep ? s : bpFlatten(s);
+    bpParsed = records.map(r => {
+      const course = def ? bpResolve(def) : (r.course ? bpResolve(r.course) : { key: '', known: false });
+      let status = 'pending', why = '';
+      if (r.why)              { status = 'skip'; why = r.why; }
+      else if (!course.key)   { status = 'skip'; why = 'No course — add a course column or pick one above'; }
+      else if (!course.known) { status = 'skip'; why = `Unknown course "${course.key.toUpperCase()}" — add it under Courses first`; }
+      return { course: course.key, q: clean(r.q || ''), opts: (r.opts || []).map(clean), ans: r.ans, exp: clean(r.exp || ''), tag: r.tag || '', _status: status, _why: why };
+    });
+    bpRender();
+  };
+  rd.readAsText(f);
+}
+
+function bpTemplate(kind) {
+  const rows = [
+    { course: 'CHM141', question: 'Which quantum number defines the main energy level?', optionA: 'Magnetic', optionB: 'Principal', optionC: 'Spin', optionD: 'Azimuthal', answer: 'B', tag: 'Atomic structure', explanation: 'n is the principal quantum number.' },
+    { course: 'MTH101', question: 'Solve $x^2 = 4$ for positive x', optionA: '1', optionB: '2', optionC: '3', optionD: '4', answer: 'B', tag: 'Algebra', explanation: '' },
+  ];
+  let body, type, name;
+  if (kind === 'json') {
+    body = JSON.stringify(rows.map(r => ({ course: r.course, question: r.question, options: [r.optionA, r.optionB, r.optionC, r.optionD], answer: r.answer, tag: r.tag, explanation: r.explanation })), null, 2);
+    type = 'application/json'; name = 'prephq-questions-template.json';
+  } else {
+    const cols = Object.keys(rows[0]), esc = v => /[",\n]/.test(v) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v);
+    body = [cols.join(','), ...rows.map(r => cols.map(c => esc(r[c])).join(','))].join('\n');
+    type = 'text/csv'; name = 'prephq-questions-template.csv';
+  }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([body], { type })); a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
 }
 
 // ── MODAL UTILS ───────────────────────────────────────────────

@@ -23,6 +23,8 @@ const GeneratedQuestion = require('../models/GeneratedQuestion');
 const StudyGuide = require('../models/StudyGuide');
 const { forgetSubject } = require('../middleware/auth');
 const { canChange } = require('../utils/adminAccess');
+const SupportRequest = require('../models/SupportRequest');
+const { planBulk, dupeKey, rankQuality, invalidateCounts } = require('../services/questionBank.service');
 
 const router = express.Router();
 router.use(requireAdmin);
@@ -464,6 +466,85 @@ router.post('/questions', async (req, res) => {
       createdBy: req.admin.sub || '',
     });
     res.status(201).json(question);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Any successful change under /questions (add, edit, delete, bulk, undo) clears the cached course counts.
+router.use('/questions', (req, res, next) => {
+  if (req.method !== 'GET') res.on('finish', () => { if (res.statusCode < 400) invalidateCounts(); });
+  next();
+});
+
+// ── Bulk upload ──────────────────────────────────────────────
+// POST /api/admin/questions/bulk { items:[{course,q,opts,ans,tag?,exp?}] } — up to 500 at once.
+// Skips duplicates (same course + same question text, ignoring case/punctuation) and tags everything it
+// adds with a batchId so the whole upload can be reviewed or undone.
+router.post('/questions/bulk', async (req, res) => {
+  try {
+    const items = req.body && req.body.items;
+    if (!Array.isArray(items) || !items.length) return res.status(400).json({ error: 'items must be a non-empty array' });
+    if (items.length > 500) return res.status(400).json({ error: 'Upload at most 500 questions at a time' });
+
+    const courses = await Course.find().select('key').lean();
+    const courseKeys = new Set(courses.map(c => c.key));
+    const involved = [...new Set(items.map(i => String((i && i.course) || '').toLowerCase().replace(/[^a-z0-9]/g, '')))].filter(k => courseKeys.has(k));
+    const existing = involved.length ? await Question.find({ course: { $in: involved } }).select('course q').lean() : [];
+    const existingKeys = new Set(existing.map(e => dupeKey(String(e.course).toLowerCase().replace(/[^a-z0-9]/g, ''), e.q)));
+
+    const { accepted, rejected } = planBulk(items, courseKeys, existingKeys);
+    const batchId = `b_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+    if (accepted.length) {
+      await Question.insertMany(accepted.map(d => ({ ...d, createdBy: (req.admin && req.admin.sub) || '', batchId })), { ordered: false });
+    }
+    res.status(201).json({ batchId: accepted.length ? batchId : null, added: accepted.length, rejected, total: items.length });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// GET /api/admin/questions/batches — recent bulk uploads, newest first.
+router.get('/questions/batches', async (req, res) => {
+  try {
+    const rows = await Question.aggregate([
+      { $match: { batchId: { $ne: '' } } },
+      { $group: { _id: '$batchId', count: { $sum: 1 }, courses: { $addToSet: '$course' }, by: { $first: '$createdBy' }, at: { $min: '$createdAt' } } },
+      { $sort: { at: -1 } }, { $limit: 30 },
+    ]);
+    res.json(rows.map(r => ({ batchId: r._id, count: r.count, courses: r.courses.sort(), by: r.by, at: r.at })));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// DELETE /api/admin/questions/batch/:batchId — undo one bulk upload.
+router.delete('/questions/batch/:batchId', async (req, res) => {
+  try {
+    if (!/^b_[a-z0-9]{6,30}$/.test(req.params.batchId)) return res.status(400).json({ error: 'Invalid batch id' });
+    const r = await Question.deleteMany({ batchId: req.params.batchId });
+    res.json({ success: true, deleted: r.deletedCount });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// GET /api/admin/questions/quality — questions most worth fixing: open student reports first, then lowest accuracy.
+router.get('/questions/quality', async (req, res) => {
+  try {
+    const [rows, repRows] = await Promise.all([
+      QuestionAttempt.aggregate([
+        { $match: { qid: { $ne: null } } },
+        { $group: { _id: '$qid', attempts: { $sum: 1 }, correct: { $sum: { $cond: ['$correct', 1, 0] } } } },
+      ]),
+      SupportRequest.aggregate([
+        { $match: { type: 'question_report', status: 'open', 'report.questionId': { $ne: null } } },
+        { $group: { _id: '$report.questionId', n: { $sum: 1 } } },
+      ]),
+    ]);
+    const reports = new Map(repRows.map(r => [String(r._id), r.n]));
+    const byId = new Map(rows.map(r => [String(r._id), { _id: String(r._id), attempts: r.attempts, correct: r.correct }]));
+    for (const id of reports.keys()) if (!byId.has(id)) byId.set(id, { _id: id, attempts: 0, correct: 0 });
+
+    const ranked = rankQuality([...byId.values()], reports).slice(0, 30);
+    const docs = await Question.find({ _id: { $in: ranked.map(r => r._id) } }).select('course q opts ans tag').lean();
+    const docMap = new Map(docs.map(d => [String(d._id), d]));
+    res.json(ranked.filter(r => docMap.has(r._id)).map(r => {
+      const d = docMap.get(r._id);
+      return { id: r._id, course: d.course, q: d.q, opts: d.opts, ans: d.ans, tag: d.tag, attempts: r.attempts, accuracy: r.accuracy, reports: r.reports };
+    }));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 

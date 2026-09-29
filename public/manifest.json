@@ -2,7 +2,7 @@
   "name": "PrepHQ",
   "short_name": "PrepHQ",
   "description": "Exam Prep Platform",
-  "start_url": "/",
+  "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#F0F2F8",
   "theme_color": "#0A5CF5",

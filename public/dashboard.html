@@ -717,6 +717,14 @@ details.np-card>summary::-webkit-details-marker{display:none;}
     <div id="plan-banner-cta" style="font-size:11.5px;font-weight:800;flex-shrink:0;"></div>
   </div>
 
+  <div id="onboard-card" style="display:none;margin:14px 18px 0;background:var(--bg);border-radius:var(--r16);padding:16px;box-shadow:var(--sh);">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+      <div style="font-weight:800;font-size:14px;font-family:var(--ff-h);flex:1;">Get started <span id="onb-count" style="color:var(--t3);font-weight:700;font-size:12px;"></span></div>
+      <button onclick="dismissOnboarding()" aria-label="Dismiss" style="background:none;border:none;color:var(--t3);font-size:18px;cursor:pointer;line-height:1;">&times;</button>
+    </div>
+    <div id="onb-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+  </div>
+
   <div class="home-hero fade-up">
     <div class="hero-tag">
       <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
@@ -776,6 +784,16 @@ details.np-card>summary::-webkit-details-marker{display:none;}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
       <div class="mode-lbl">Retry</div><div class="mode-sub">Wrong answers</div>
     </div>
+  </div>
+
+  <div id="exam-pace-row" style="display:none;margin:12px 18px 0;align-items:center;gap:10px;">
+    <label for="exam-pace" style="font-size:12.5px;font-weight:700;color:var(--t3);">Exam clock</label>
+    <select id="exam-pace" onchange="save('examPace',this.value)" style="flex:1;padding:10px 12px;border-radius:12px;border:none;background:var(--bg);box-shadow:var(--sh-in-sm);color:var(--t1);font-weight:700;font-size:13px;font-family:inherit;">
+      <option value="45">45 sec per question</option>
+      <option value="60">1 min per question</option>
+      <option value="90">90 sec per question</option>
+      <option value="0">No time limit</option>
+    </select>
   </div>
 
   <div class="sec-h" style="padding-top:18px;"><div class="sec-title">Questions</div></div>
@@ -849,6 +867,27 @@ details.np-card>summary::-webkit-details-marker{display:none;}
     </div>
     <div style="font-size:12.5px;color:var(--t3);margin-bottom:12px;">Spaced-repetition review of your registered courses — weak cards resurface sooner.</div>
     <button class="btn-grad" style="width:100%;padding:12px;border-radius:11px;color:var(--brand);font-weight:700;font-size:13px;cursor:pointer;" onclick="openFlashcards()">Review Flashcards</button>
+  </div>
+
+  <div id="missed-card" style="display:none;margin:0 18px 16px;background:var(--bg);border-radius:var(--r16);padding:16px;box-shadow:var(--sh);box-shadow:var(--sh),0 0 0 2px var(--no-lt);">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <i class="fa-solid fa-rotate-left" style="color:var(--no);"></i>
+      <div style="font-weight:800;font-size:14px;font-family:var(--ff-h);">Questions you missed</div>
+    </div>
+    <div id="missed-sub" style="font-size:12.5px;color:var(--t3);margin-bottom:12px;"></div>
+    <button class="btn-grad" style="width:100%;padding:12px;border-radius:11px;color:var(--no);font-weight:700;font-size:13px;cursor:pointer;" onclick="startMissedReview()">Review them now</button>
+  </div>
+
+  <div id="invite-card" style="display:none;margin:0 18px 16px;background:var(--bg);border-radius:var(--r16);padding:16px;box-shadow:var(--sh);">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <i class="fa-solid fa-user-plus" style="color:var(--brand);"></i>
+      <div style="font-weight:800;font-size:14px;font-family:var(--ff-h);">Study with friends</div>
+    </div>
+    <div style="font-size:12.5px;color:var(--t3);margin-bottom:12px;">Friends who join with your link earn you bonus credits.</div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn-grad" style="flex:1;padding:11px;border-radius:11px;color:var(--ok);font-weight:700;font-size:13px;cursor:pointer;" onclick="inviteWhatsApp()"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
+      <button class="btn-grad" style="flex:1;padding:11px;border-radius:11px;color:var(--brand);font-weight:700;font-size:13px;cursor:pointer;" onclick="inviteCopy()"><i class="fa-solid fa-link"></i> Copy link</button>
+    </div>
   </div>
 
   <div id="weak-topics-card" style="display:none;margin:0 18px 16px;background:var(--bg);border-radius:var(--r16);padding:16px;box-shadow:var(--sh),0 0 0 2px var(--no-lt);">
@@ -1132,6 +1171,7 @@ details.np-card>summary::-webkit-details-marker{display:none;}
         <span class="qt-title" id="qt-title">Quiz</span>
       </div>
       <div class="qt-right">
+        <div class="timer-pill" id="exam-clock" style="display:none;"><i class="fa-solid fa-hourglass-half" style="font-size:12px;"></i><span id="exam-clock-disp">0:00</span></div>
         <div class="timer-pill" id="timer-pill" style="display:none;">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
           <span id="timer-disp">30</span>
@@ -1410,6 +1450,14 @@ let timerInterval = null, timeLeft = 0;
 let quizQ = [], cur = 0, answers = [], confirmed = [];
 let timedOut = [];
 let lastWrong = [];
+let missedRun = false, missedPrevSel = null, missedPrevMode = 'practice';
+// Home-screen data is cached briefly and shared between simultaneous callers (initHome and showScr('home') both
+// run on first load), so opening the dashboard doesn't repeat the same request.
+const COUNTS = {}, BANK_AT = {};
+let countsAt = 0, countsInflight = null;
+const HOME_MEMO = { missedN: null, missedAt: 0, missedInflight: null };
+const inflight = {};
+function singleFlight(key, fn){ return inflight[key] || (inflight[key] = Promise.resolve().then(fn).finally(() => { delete inflight[key]; })); }
 let logoTapCount = 0, logoTapTimer = null;
 let deferredPrompt = null;
 let autoAdvanceTimer = null;
@@ -1510,10 +1558,12 @@ async function pushScore(entry){
 }
 
 async function pullHistory(){
-  try{
-    const r = await PhqAuth.authFetch(`${API_BASE}/api/scores/${encodeURIComponent(curUser.matric)}`, {}, 'student');
-    return await r.json();
-  }catch{return [];}
+  return singleFlight('history', async () => {
+    try{
+      const r = await PhqAuth.authFetch(`${API_BASE}/api/scores/${encodeURIComponent(curUser.matric)}`, {}, 'student');
+      return await r.json();
+    }catch{return [];}
+  });
 }
 
 async function submitAIQuizResult(quizId, userAnswers, score, totalQuestions){
@@ -1907,9 +1957,12 @@ async function explainAnswer(i){
 let weakTopics = [];
 async function loadWeakTopics(){
   try{
-    const r = await PhqAuth.authFetch(`/api/scores/${encodeURIComponent(curUser.matric)}/weak-topics`, {}, 'student');
-    if(!r.ok) return;
-    weakTopics = await r.json();
+    const data = await singleFlight('weak', async () => {
+      const r = await PhqAuth.authFetch(`/api/scores/${encodeURIComponent(curUser.matric)}/weak-topics`, {}, 'student');
+      return r.ok ? await r.json() : null;
+    });
+    if(!data) return;
+    weakTopics = data;
     const card = document.getElementById('weak-topics-card');
     if(!weakTopics.length){ card.style.display = 'none'; return; }
     card.style.display = 'block';
@@ -1940,6 +1993,9 @@ async function startWeakTopicQuiz(only){
     }
   }catch(e){}
   curAIQuizId = null;
+  { const _b = await ensureBank(topicList.map(t => t.course));
+    if(_b === 'locked') return;
+    if(_b === 'fail'){ toast('Could not load questions. Check your connection and try again.'); return; } }
   let pool = [];
   topicList.forEach(t => {
     // t.course is the canonical key; compare tags ignoring case/spacing (bank data isn't consistent).
@@ -2089,6 +2145,9 @@ async function initHome(){
   buildCourseGrid();
   refreshFlashcardBadge();
   loadWeakTopics();
+  loadMissedCard();
+  renderOnboarding();
+  renderInviteCard();
   refreshStats();
   renderExamBanner();
   renderDailyGoal();
@@ -2116,13 +2175,13 @@ async function buildCourseGrid(){
 
   grid.innerHTML='';
   Object.entries(COURSES).forEach(([key,m])=>{
-    const localCnt = BANK[key]?BANK[key].length:0;
+    const localCnt = (key in COUNTS) ? COUNTS[key] : (BANK[key]?BANK[key].length:0);
     const sel=selCourses.includes(key);
     const d=document.createElement('div');
     d.className='cc'+(sel?' on':'');
     d.dataset.course=key;
     d.id='cc-'+key;
-    d.innerHTML=buildCardHTML(m, key, localCnt, true);
+    d.innerHTML=buildCardHTML(m, key, localCnt, !(key in COUNTS));
     d.onclick=()=>toggleCourse(d,key);
     grid.appendChild(d);
   });
@@ -2136,46 +2195,60 @@ async function buildCourseGrid(){
   addTile.onclick=()=>openCourseEditor();
   grid.appendChild(addTile);
 
-  const counts = {};
-  await Promise.all(
-    Object.entries(COURSES).map(async ([key, m]) => {
-      try {
-        const res = await PhqAuth.authFetch(`/api/questions/${key}?mode=${hasFeature('practiceQuestions') ? 'practice' : 'exam'}`, {}, 'student');
-        if(!res.ok) throw new Error('not ok');
-        const data = await res.json();
-        if(Array.isArray(data) && data.length > 0){
-          counts[key] = data.length;
-          BANK[key] = data.map(q=>({
-            id:   q._id,
-            q:    q.q,
-            opts: q.opts,
-            ans:  q.ans,
-            tag:  q.tag||'',
-            exp:  q.exp||'',
-            course: key
-          }));
-        } else {
-          counts[key] = BANK[key]?.length || 0;
-        }
-      } catch {
-        counts[key] = BANK[key]?.length || 0;
-      }
+  const counts = await loadCourseCounts();
+  Object.keys(COURSES).forEach(key => {
+    const cntEl = document.getElementById('cc-'+key)?.querySelector('.cc-n');
+    if(!cntEl) return;
+    cntEl.classList.remove('loading');
+    cntEl.innerHTML = counts[key] == null ? '—' : `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>${counts[key]}`;
+  });
 
-      const card = document.getElementById('cc-'+key);
-      if(card){
-        const cntEl = card.querySelector('.cc-n');
-        if(cntEl){
-          cntEl.classList.remove('loading');
-          cntEl.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>${counts[key]}`;
-        }
-      }
-    })
-  );
-
+  const known = Object.keys(COURSES).filter(k => counts[k] != null);
+  if(!known.length){ document.getElementById('s-total').textContent = '—'; return; }
   let tot = 0;
-  Object.values(counts).forEach(n => tot += n);
+  known.forEach(k => tot += counts[k]);
   const displayed = Math.max(0, tot - 35);
   document.getElementById('s-total').textContent = displayed + '+';
+}
+
+// One small request for every course's question count (the server counts them). The full question banks are no
+// longer downloaded just to show a number — see ensureBank(), which loads a bank when a quiz actually needs it.
+async function loadCourseCounts(force){
+  if(!force && countsAt && Date.now() - countsAt < 30000) return COUNTS;
+  return singleFlight('counts', async () => {
+    try{
+      const res = await PhqAuth.authFetch(`/api/questions/counts?mode=${hasFeature('practiceQuestions') ? 'practice' : 'exam'}`, {}, 'student');
+      if(!res.ok) throw new Error('not ok');
+      const data = await res.json();
+      Object.keys(COURSES).forEach(k => {
+        const n = Number(data[k]) || 0;
+        COUNTS[k] = n > 0 ? n : (BANK[k] ? BANK[k].length : 0); // courses with no server questions keep the built-in bank's count
+      });
+      countsAt = Date.now();
+    }catch{ /* keep whatever we already had; the badge shows a dash instead of a wrong number */ }
+    return COUNTS;
+  });
+}
+
+// Loads (and briefly caches) the full question bank for the given courses. Called when a quiz starts.
+// Returns 'ok', 'locked' (paywall already shown) or 'fail'.
+async function ensureBank(keys){
+  const mode = hasFeature('practiceQuestions') ? 'practice' : 'exam';
+  const need = [...new Set(keys)].filter(k => !BANK_AT[k] || Date.now() - BANK_AT[k] > 300000);
+  let result = 'ok';
+  await Promise.all(need.map(async key => {
+    try{
+      const res = await PhqAuth.authFetch(`/api/questions/${key}?mode=${mode}`, {}, 'student');
+      if(res.status === 403){ const d = await res.json().catch(()=>({})); if(result === 'ok'){ result = 'locked'; showPaywall(d.error || lockedMsg('Practice questions')); } return; }
+      if(!res.ok) throw new Error('not ok');
+      const data = await res.json();
+      if(Array.isArray(data) && data.length > 0){
+        BANK[key] = data.map(q => ({ id:q._id, q:q.q, opts:q.opts, ans:q.ans, tag:q.tag||'', exp:q.exp||'', course:key }));
+      } // else keep the built-in questions for that course, as before
+      BANK_AT[key] = Date.now();
+    }catch{ if(!BANK[key] && result === 'ok') result = 'fail'; } // a slightly old copy is fine if the refresh fails
+  }));
+  return result;
 }
 
 function buildCardHTML(m, key, cnt, loading=false){
@@ -2214,12 +2287,131 @@ function filterCourseGrid(term){
   });
 }
 
+// ── Timed exam clock ─────────────────────────────────────────
+// One countdown for the whole exam (Exam mode only), separate from the per-question timer. It counts against the
+// wall clock, so a backgrounded tab can't pause it. At zero the exam is submitted with whatever is answered.
+let examClockInt = null, examEndsAt = 0;
+function stopExamClock(){
+  clearInterval(examClockInt); examClockInt = null;
+  const p = document.getElementById('exam-clock'); if(p) p.style.display = 'none';
+}
+function startExamClock(){
+  stopExamClock();
+  if(quizMode !== 'exam') return;
+  const per = parseInt(document.getElementById('exam-pace')?.value, 10) || 0;
+  if(!per || !quizQ.length) return;
+  examEndsAt = Date.now() + quizQ.length * per * 1000;
+  const pill = document.getElementById('exam-clock'), disp = document.getElementById('exam-clock-disp');
+  pill.style.display = 'flex';
+  const tick = () => {
+    const left = Math.max(0, Math.round((examEndsAt - Date.now()) / 1000));
+    disp.textContent = Math.floor(left / 60) + ':' + String(left % 60).padStart(2, '0');
+    pill.className = 'timer-pill' + (left <= 60 ? ' warn' : '') + (left <= 20 ? ' danger' : '');
+    if(left <= 0){ stopExamClock(); toast("Time's up — submitting your exam"); showResults(); }
+  };
+  tick(); examClockInt = setInterval(tick, 1000);
+}
+
+// ── Missed-question review ───────────────────────────────────
+// Bank questions whose most recent answer was wrong. Answer one correctly and it leaves the list.
+async function loadMissedCard(force){
+  const card = document.getElementById('missed-card'); if(!card) return;
+  if(!curUser || !hasFeature('practiceQuestions')){ card.style.display = 'none'; return; }
+  const paint = n => {
+    card.style.display = n ? '' : 'none';
+    if(n) document.getElementById('missed-sub').textContent = `${n}${n === 30 ? '+' : ''} question${n === 1 ? '' : 's'} you got wrong last time. Get them right to clear them.`;
+  };
+  if(!force && HOME_MEMO.missedN != null && Date.now() - HOME_MEMO.missedAt < 20000){ paint(HOME_MEMO.missedN); return; }
+  const n = await singleFlight('missed', async () => {
+    try{
+      const r = await PhqAuth.authFetch('/api/questions/missed?count=1', {}, 'student');
+      const d = r.ok ? await r.json() : null;
+      return d && Number.isFinite(d.count) ? d.count : 0;
+    }catch{ return 0; }
+  });
+  HOME_MEMO.missedN = n; HOME_MEMO.missedAt = Date.now();
+  paint(n);
+}
+async function startMissedReview(){
+  let remaining = null;
+  try{
+    const u = await (await PhqAuth.authFetch('/api/usage/limits', {}, 'student')).json();
+    if(u.questions && u.questions.limit != null){
+      remaining = Math.max(0, u.questions.limit - u.questions.used);
+      if(remaining <= 0){ showPaywall(`You've used all ${u.questions.limit} of your free daily questions. Upgrade to keep practicing today.`); return; }
+    }
+  }catch(e){}
+  let list = [];
+  try{
+    const r = await PhqAuth.authFetch('/api/questions/missed', {}, 'student');
+    if(r.status === 403){ const d = await r.json().catch(()=>({})); showPaywall(d.error || lockedMsg('Practice questions')); return; }
+    if(r.ok) list = await r.json();
+  }catch(e){}
+  if(!Array.isArray(list) || !list.length){ toast('No missed questions to review'); loadMissedCard(); return; }
+  if(remaining != null && list.length > remaining){ list = list.slice(0, remaining); toast(`Capped to ${remaining} questions — that's all that's left in your daily limit today`); }
+
+  clearAutoAdvance(); stopExamClock(); curAIQuizId = null;
+  if(!missedPrevSel){ missedPrevSel = [...selCourses]; missedPrevMode = quizMode; }
+  quizQ = list.map(q => ({ id: q._id, q: q.q, opts: q.opts, ans: q.ans, tag: q.tag || '', exp: q.exp || '', course: String(q.course || '').toLowerCase().replace(/[^a-z0-9]/g, '') }));
+  selCourses = [...new Set(quizQ.map(q => q.course))];
+  quizMode = 'practice'; missedRun = true;
+  answers = new Array(quizQ.length).fill(null);
+  confirmed = new Array(quizQ.length).fill(false);
+  timedOut = new Array(quizQ.length).fill(false);
+  cur = 0;
+  document.getElementById('qt-title').textContent = 'Missed';
+  showScr('quiz');
+  renderQ();
+}
+
+// ── Get-started checklist ────────────────────────────────────
+const onbSeen = { quiz: false, exam: false };
+function dismissOnboarding(){ save('onbDismissed', true); document.getElementById('onboard-card').style.display = 'none'; }
+async function renderOnboarding(){
+  const card = document.getElementById('onboard-card'); if(!card || !curUser) return;
+  if(load('onbDismissed', false)){ card.style.display = 'none'; return; }
+  if(!(onbSeen.quiz && onbSeen.exam) && Date.now() - (onbSeen.at || 0) > 60000){
+    onbSeen.at = Date.now();
+    try{
+      const hist = await pullHistory();
+      if(Array.isArray(hist)){ if(hist.length) onbSeen.quiz = true; if(hist.some(h => h.mode === 'exam')) onbSeen.exam = true; }
+    }catch(e){}
+  }
+  const steps = [
+    { done: (curUser.selectedCourses || []).length > 0, label: 'Pick your courses',    go: "openCourseEditor()" },
+    { done: onbSeen.quiz,                                label: 'Take your first quiz',  go: "document.getElementById('course-grid').scrollIntoView({behavior:'smooth'})" },
+    { done: onbSeen.exam,                                label: 'Try a timed mock exam', go: "document.querySelector('.mode-row').scrollIntoView({behavior:'smooth',block:'center'})" },
+    { done: /^\d{4}-\d{2}-\d{2}$/.test(getSettings().examDate || ''), label: 'Set your exam date', go: "showScr('settings')" },
+  ];
+  const left = steps.filter(x => !x.done).length;
+  if(!left){ card.style.display = 'none'; return; }
+  card.style.display = '';
+  document.getElementById('onb-count').textContent = `${steps.length - left}/${steps.length}`;
+  document.getElementById('onb-list').innerHTML = steps.map(x => x.done
+    ? `<div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--t4);"><i class="fa-solid fa-circle-check" style="color:var(--ok);"></i><span style="text-decoration:line-through;">${x.label}</span></div>`
+    : `<button onclick="${x.go}" style="display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;color:var(--t1);background:none;border:none;padding:0;cursor:pointer;text-align:left;font-family:inherit;"><i class="fa-regular fa-circle" style="color:var(--brand);"></i>${x.label}<i class="fa-solid fa-chevron-right" style="margin-left:auto;font-size:10px;color:var(--t3);"></i></button>`).join('');
+}
+
+// ── Invite card ──────────────────────────────────────────────
+function renderInviteCard(){ const c = document.getElementById('invite-card'); if(c) c.style.display = (curUser && curUser.referralCode) ? '' : 'none'; }
+function inviteWhatsApp(){
+  if(!curUser || !curUser.referralCode) return;
+  const text = `I'm preparing for exams on PrepHQ. Join with my link: ${referralLink(curUser.referralCode)}`;
+  window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener');
+}
+async function inviteCopy(){
+  if(!curUser || !curUser.referralCode) return;
+  try{ await navigator.clipboard.writeText(referralLink(curUser.referralCode)); toast('Link copied'); }catch{ toast('Could not copy'); }
+}
+
 function selMode(el){
   const m = el.dataset.mode;
   if(m === 'exam' && !hasFeature('examMode')){ showPaywall(lockedMsg('Exam mode')); return; }
   if(m !== 'exam' && !hasFeature('practiceQuestions')){ showPaywall(lockedMsg('Practice questions')); return; }
   document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');quizMode=el.dataset.mode;
+  const pr=document.getElementById('exam-pace-row');
+  if(pr){ pr.style.display=quizMode==='exam'?'flex':'none'; if(quizMode==='exam') document.getElementById('exam-pace').value=String(load('examPace','60')); }
 }
 
 function selQty(el){
@@ -2573,6 +2765,11 @@ async function startQuiz(){
       toast(`Capped to ${remaining} questions — that's all that's left in your daily limit today`);
     }
   } else {
+    const _slow = setTimeout(() => toast('Loading questions…'), 600);
+    const _b = await ensureBank(selCourses);
+    clearTimeout(_slow);
+    if(_b === 'locked') return;
+    if(_b === 'fail'){ toast('Could not load questions. Check your connection and try again.'); return; }
     let pool=[];
     selCourses.forEach(c=>{if(BANK[c])pool.push(...BANK[c].map(q=>({...q,course:c})));});
     for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
@@ -2590,8 +2787,10 @@ async function startQuiz(){
   cur=0;
   const names=selCourses.map(c=>COURSES[c]?.code||c);
   document.getElementById('qt-title').textContent=names.length<=2?names.join('+'):'Mixed';
+  missedRun=false;
   showScr('quiz');
   renderQ();
+  startExamClock();
 }
 
 function renderQ(){
@@ -2814,6 +3013,8 @@ function saveNote(qid,val){
 function showResults(){
   clearAutoAdvance();
   stopTimer();
+  stopExamClock();
+  HOME_MEMO.missedAt = 0; onbSeen.quiz = true; if(quizMode === 'exam') onbSeen.exam = true; // so the home screen refreshes after a quiz
   const total=quizQ.length;
   let correct=0,wrong=0,skip=0,timeouts=0;
   lastWrong=[];
@@ -2840,7 +3041,7 @@ function showResults(){
   });
 
   const entry={correct,total,pct,wrong,skip:skip+timeouts,courses:selCourses.map(c=>COURSES[c]?.code||c).join(', '),mode:quizMode};
-  entry.perQuestion = quizQ.map((q,i) => ({ course: q.course, tag: q.tag||'', correct: answers[i]===q.ans && !timedOut[i] }));
+  entry.perQuestion = quizQ.map((q,i) => ({ course: q.course, tag: q.tag||'', correct: answers[i]===q.ans && !timedOut[i], ...(q.id ? { qid: q.id } : {}) }));
   pushScore(entry);
 
   if(curAIQuizId){
@@ -2916,18 +3117,43 @@ function showResults(){
   refreshStats();renderDailyGoal();
 }
 
-function shareResult(){
+async function shareResultCard(text){
+  // 1080x1350 PNG in the app's own look. Returns null if the browser can't draw or share it.
+  try{
+    await (document.fonts && document.fonts.load ? document.fonts.load("800 90px 'Bricolage Grotesque'") : Promise.resolve());
+    const W=1080,H=1350,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+    const css=getComputedStyle(document.documentElement), v=n=>css.getPropertyValue(n).trim();
+    x.fillStyle=v('--bg')||'#e0e5ec';x.fillRect(0,0,W,H);
+    const g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,v('--brand')||'#4a67d1');g.addColorStop(1,v('--purple')||'#7b52d1');
+    x.fillStyle=g;x.beginPath();x.roundRect?x.roundRect(90,170,W-180,760,56):x.rect(90,170,W-180,760);x.fill();
+    const F="'Bricolage Grotesque',system-ui,sans-serif";x.textAlign='center';
+    x.fillStyle=v('--brand')||'#4a67d1';x.font=`800 48px ${F}`;x.fillText('PrepHQ',W/2,120);
+    x.fillStyle='#fff';x.font=`700 34px ${F}`;x.globalAlpha=.85;x.fillText('MY RESULT',W/2,270);x.globalAlpha=1;
+    x.font=`800 260px ${F}`;x.fillText(document.getElementById('r-pct').textContent,W/2,560);
+    x.font=`700 54px ${F}`;x.fillText(document.getElementById('r-score').textContent+' '+document.getElementById('r-denom').textContent+' correct',W/2,660);
+    x.font=`600 40px ${F}`;x.globalAlpha=.9;x.fillText(document.getElementById('res-sub').textContent.slice(0,34),W/2,760);
+    x.font=`600 34px ${F}`;x.fillText(document.getElementById('r-msg').textContent,W/2,850);x.globalAlpha=1;
+    x.fillStyle=v('--t2')||'#4a5568';x.font=`700 40px ${F}`;x.fillText('Can you beat it?',W/2,1050);
+    x.fillStyle=v('--t3')||'#7a8296';x.font=`600 34px ${F}`;x.fillText(location.host,W/2,1110);
+    const blob=await new Promise(r=>c.toBlob(r,'image/png'));if(!blob)return null;
+    const file=new File([blob],'prephq-result.png',{type:'image/png'});
+    return (navigator.canShare && navigator.canShare({files:[file]})) ? file : null;
+  }catch(e){return null;}
+}
+async function shareResult(){
   const score=document.getElementById('r-score').textContent;
   const denom=document.getElementById('r-denom').textContent;
   const pct=document.getElementById('r-pct').textContent;
   const msg=document.getElementById('r-msg').textContent;
   const courses=document.getElementById('res-sub').textContent;
   const text=`PrepHQ Result\n${score}${denom} — ${pct}\n${msg}\nCourses: ${courses}\nDate: ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}`;
+  const file=await shareResultCard(text);
+  if(file){ try{ await navigator.share({title:'PrepHQ Result',text,files:[file]}); return; }catch(e){ if(e&&e.name==='AbortError')return; } }
   if(navigator.share)navigator.share({title:'PrepHQ Result',text}).catch(()=>{});
   else navigator.clipboard.writeText(text).then(()=>toast('Result copied!')).catch(()=>toast('Could not share'));
 }
 
-function retryQuiz(){ clearAutoAdvance(); startQuiz(); }function goHome(){ clearAutoAdvance(); stopTimer(); showScr('home');refreshStats();renderDailyGoal(); }
+function retryQuiz(){ clearAutoAdvance(); if(missedRun) startMissedReview(); else startQuiz(); }function goHome(){ clearAutoAdvance(); stopTimer(); stopExamClock(); if(missedPrevSel){ selCourses=missedPrevSel; quizMode=missedPrevMode; missedPrevSel=null; } showScr('home');refreshStats();renderDailyGoal(); }
 
 async function saveQuizForLater(){
   if(!quizQ.length) return;
@@ -3758,7 +3984,7 @@ function showScr(id){
   if(id==='performance'){renderPerf();renderAIHistory();}
   if(id==='notifications')renderNotifications();
   if(id==='saved-quizzes')renderSavedQuizzes();
-  if(id==='home'){refreshStats();buildCourseGrid();loadWeakTopics();}
+  if(id==='home'){refreshStats();buildCourseGrid();loadWeakTopics();loadMissedCard();renderOnboarding();renderInviteCard();}
 }
 
 window.addEventListener('beforeinstallprompt',e=>{
