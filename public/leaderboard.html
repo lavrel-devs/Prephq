@@ -20,56 +20,8 @@
   if(!s || !s.accessToken || s.role !== 'student'){ window.location.replace('/login.html'); }
 })();
 </script>
+<link rel="stylesheet" href="/css/tokens.css">
 <style>
-/* ══════════════════════════════════════════════════════════
-   NEUMORPHISM / SOFT UI — Leaderboard
-   ══════════════════════════════════════════════════════════ */
-:root{
-  --bg:#e0e5ec;
-  --sd:#b8c0cc;
-  --sl:#ffffff;
-
-  --sh:6px 6px 14px var(--sd), -6px -6px 14px var(--sl);
-  --sh-md:8px 8px 18px var(--sd), -8px -8px 18px var(--sl);
-  --sh-lg:12px 12px 26px var(--sd), -12px -12px 26px var(--sl);
-  --sh-sm:4px 4px 8px var(--sd), -4px -4px 8px var(--sl);
-  --sh-in:inset 4px 4px 10px var(--sd), inset -4px -4px 10px var(--sl);
-  --sh-in-sm:inset 3px 3px 6px var(--sd), inset -3px -3px 6px var(--sl);
-
-  --brand:#4a67d1;--brand-dk:#3a54b8;
-  --brand-lt:rgba(74,103,209,.10);--brand-glow:rgba(74,103,209,.20);
-  --ok:#2d9c6e;--ok-lt:rgba(45,156,110,.12);
-  --no:#d14545;--no-lt:rgba(209,69,69,.12);
-  --warn:#c67a1e;--warn-lt:rgba(198,122,30,.12);
-  --purple:#7b52d1;--purple-lt:rgba(123,82,209,.12);
-
-  /* Medal colors stay vivid — neumorphism shouldn't wash out rank cues */
-  --gold:#c79a1e;
-  --silver:#8a90a4;
-  --bronze:#a86a3a;
-
-  --t1:#2a3142;--t2:#4a5568;--t3:#7a8296;--t4:#a8b0c0;
-
-  --bd:transparent;--bd2:transparent;
-
-  --r16:18px;--r20:22px;
-  --ff-h:'Bricolage Grotesque',system-ui,sans-serif;
-  --ff-b:'DM Sans',system-ui,sans-serif;
-}
-[data-theme=dark]{
-  --bg:#252932;
-  --sd:#181b21;--sl:#323743;
-  --brand:#7c93ff;--brand-dk:#a5b5ff;
-  --brand-lt:rgba(124,147,255,.12);--brand-glow:rgba(124,147,255,.20);
-  --ok:#3dba86;--ok-lt:rgba(61,186,134,.14);
-  --no:#e56161;--no-lt:rgba(229,97,97,.14);
-  --warn:#e09437;--warn-lt:rgba(224,148,55,.14);
-  --purple:#9d7bea;--purple-lt:rgba(157,123,234,.14);
-  --gold:#e8b93a;
-  --silver:#a5abc2;
-  --bronze:#c47e42;
-  --t1:#e8ecf5;--t2:#b8c0d0;--t3:#7a8296;--t4:#4a5060;
-}
 
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 body{

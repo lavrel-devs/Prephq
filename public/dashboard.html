@@ -22,56 +22,8 @@
   }
 })();
 </script>
+<link rel="stylesheet" href="/css/tokens.css">
 <style>
-/* ══════════════════════════════════════════════════════════
-   NEUMORPHISM / SOFT UI — v1.5.5
-   ══════════════════════════════════════════════════════════ */
-:root{
-  --bg:#e0e5ec;
-  --surf:#e0e5ec;
-  --surf2:#e0e5ec;
-  --surf3:#d1d9e6;
-
-  --sd:#b8c0cc;
-  --sl:#ffffff;
-  --sh:6px 6px 14px var(--sd), -6px -6px 14px var(--sl);
-  --sh-md:8px 8px 18px var(--sd), -8px -8px 18px var(--sl);
-  --sh-lg:12px 12px 26px var(--sd), -12px -12px 26px var(--sl);
-  --sh-sm:4px 4px 8px var(--sd), -4px -4px 8px var(--sl);
-  --sh-in:inset 4px 4px 10px var(--sd), inset -4px -4px 10px var(--sl);
-  --sh-in-sm:inset 3px 3px 6px var(--sd), inset -3px -3px 6px var(--sl);
-  --sh-in-lg:inset 6px 6px 14px var(--sd), inset -6px -6px 14px var(--sl);
-
-  --brand:#4a67d1;--brand-dk:#3a54b8;
-  --brand-lt:rgba(74,103,209,.10);--brand-glow:rgba(74,103,209,.20);
-  --ok:#2d9c6e;--ok-lt:rgba(45,156,110,.12);--ok-bd:rgba(45,156,110,.30);
-  --no:#d14545;--no-lt:rgba(209,69,69,.12);--no-bd:rgba(209,69,69,.30);
-  --warn:#c67a1e;--warn-lt:rgba(198,122,30,.12);
-  --purple:#7b52d1;--purple-lt:rgba(123,82,209,.12);
-  --teal:#2d9cb8;--teal-lt:rgba(45,156,184,.12);
-
-  --t1:#2a3142;--t2:#4a5568;--t3:#7a8296;--t4:#a8b0c0;
-
-  --bd:transparent;--bd2:transparent;
-
-  --r8:10px;--r12:14px;--r16:18px;--r20:22px;--r24:26px;--rpill:999px;
-  --ff-h:'Bricolage Grotesque',system-ui,sans-serif;
-  --ff-b:'DM Sans',system-ui,sans-serif;
-  --ease-s:cubic-bezier(.34,1.56,.64,1);--ease-o:cubic-bezier(.22,1,.36,1);
-  --qfont:16px;
-}
-[data-theme=dark]{
-  --bg:#252932;--surf:#252932;--surf2:#252932;--surf3:#1e2229;
-  --sd:#181b21;--sl:#323743;
-  --brand:#7c93ff;--brand-dk:#a5b5ff;
-  --brand-lt:rgba(124,147,255,.12);--brand-glow:rgba(124,147,255,.20);
-  --ok:#3dba86;--ok-lt:rgba(61,186,134,.14);--ok-bd:rgba(61,186,134,.30);
-  --no:#e56161;--no-lt:rgba(229,97,97,.14);--no-bd:rgba(229,97,97,.30);
-  --warn:#e09437;--warn-lt:rgba(224,148,55,.14);
-  --purple:#9d7bea;--purple-lt:rgba(157,123,234,.14);
-  --teal:#4db8d4;--teal-lt:rgba(77,184,212,.14);
-  --t1:#e8ecf5;--t2:#b8c0d0;--t3:#7a8296;--t4:#4a5060;
-}
 
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html{height:100%;-webkit-text-size-adjust:100%;}
@@ -786,16 +738,6 @@ details.np-card>summary::-webkit-details-marker{display:none;}
     </div>
   </div>
 
-  <div id="exam-pace-row" style="display:none;margin:12px 18px 0;align-items:center;gap:10px;">
-    <label for="exam-pace" style="font-size:12.5px;font-weight:700;color:var(--t3);">Exam clock</label>
-    <select id="exam-pace" onchange="save('examPace',this.value)" style="flex:1;padding:10px 12px;border-radius:12px;border:none;background:var(--bg);box-shadow:var(--sh-in-sm);color:var(--t1);font-weight:700;font-size:13px;font-family:inherit;">
-      <option value="45">45 sec per question</option>
-      <option value="60">1 min per question</option>
-      <option value="90">90 sec per question</option>
-      <option value="0">No time limit</option>
-    </select>
-  </div>
-
   <div class="sec-h" style="padding-top:18px;"><div class="sec-title">Questions</div></div>
   <div class="qty-wrap">
     <div class="qty-row">
@@ -905,19 +847,19 @@ details.np-card>summary::-webkit-details-marker{display:none;}
       <div class="oc-left">
         <div class="oc-icon" style="color:var(--teal)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg></div>
         <div>
-          <div class="oc-title">Question Timer</div>
-          <div class="oc-sub" id="timer-sub-lbl">30 seconds per question</div>
+          <div class="oc-title">Session Timer</div>
+          <div class="oc-sub" id="timer-sub-lbl">Off</div>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:6px;">
-        <span style="font-size:12px;font-weight:700;color:var(--brand);background:var(--bg);padding:6px 11px;border-radius:var(--r8);cursor:pointer;box-shadow:var(--sh-sm);" id="timer-sec-btn" onclick="cycleTimer()">30s</span>
-        <button type="button" class="timer-edit-btn" onclick="toggleCustomTimer()" aria-label="Set custom time">
+        <span style="font-size:12px;font-weight:700;color:var(--brand);background:var(--bg);padding:6px 11px;border-radius:var(--r8);cursor:pointer;box-shadow:var(--sh-sm);" id="timer-min-btn" onclick="cycleTimer()">10 min</span>
+        <button type="button" class="timer-edit-btn" onclick="toggleCustomTimer()" aria-label="Set custom minutes">
           <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
         </button>
         <button class="toggle" id="timer-toggle" onclick="toggleTimer()"></button>
       </div>
       <div class="neu-inline-panel" id="custom-timer-wrap">
-        <input type="number" class="neu-inline-input" id="custom-timer-input" min="5" max="600" placeholder="Seconds per question (5–600)" inputmode="numeric">
+        <input type="number" class="neu-inline-input" id="custom-timer-input" min="1" max="180" placeholder="Minutes for the whole session (1–180)" inputmode="numeric">
         <button type="button" class="neu-inline-apply" onclick="applyCustomTimer()">Set</button>
       </div>
     </div>
@@ -1171,11 +1113,7 @@ details.np-card>summary::-webkit-details-marker{display:none;}
         <span class="qt-title" id="qt-title">Quiz</span>
       </div>
       <div class="qt-right">
-        <div class="timer-pill" id="exam-clock" style="display:none;"><i class="fa-solid fa-hourglass-half" style="font-size:12px;"></i><span id="exam-clock-disp">0:00</span></div>
-        <div class="timer-pill" id="timer-pill" style="display:none;">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
-          <span id="timer-disp">30</span>
-        </div>
+        <div class="timer-pill" id="session-clock" style="display:none;" role="timer" aria-label="Time left"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg><span id="session-clock-disp">0:00</span></div>
         <div class="qt-badge" id="qt-badge">1/20</div>
       </div>
     </div>
@@ -1202,6 +1140,7 @@ details.np-card>summary::-webkit-details-marker{display:none;}
     <div>
       <div class="scr-title">Results</div>
       <div style="font-size:12px;color:var(--t3);" id="res-sub">—</div>
+      <div style="font-size:12px;font-weight:800;color:var(--brand);display:none;" id="r-time"></div>
     </div>
     <button class="back-btn" onclick="goHome()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></button>
   </div>
@@ -1445,8 +1384,7 @@ function lockedMsg(label){ return `${label} isn't available on the Free plan. Up
 let selCourses = ['gst101'];
 let quizMode = 'practice';
 let selQtyVal = 20;
-let timerOn = false, timerSecs = 30;
-let timerInterval = null, timeLeft = 0;
+let timerOn = false, timerMins = 10; // one countdown for the WHOLE session, in minutes
 let quizQ = [], cur = 0, answers = [], confirmed = [];
 let timedOut = [];
 let lastWrong = [];
@@ -2287,30 +2225,43 @@ function filterCourseGrid(term){
   });
 }
 
-// ── Timed exam clock ─────────────────────────────────────────
-// One countdown for the whole exam (Exam mode only), separate from the per-question timer. It counts against the
-// wall clock, so a backgrounded tab can't pause it. At zero the exam is submitted with whatever is answered.
-let examClockInt = null, examEndsAt = 0;
-function stopExamClock(){
-  clearInterval(examClockInt); examClockInt = null;
-  const p = document.getElementById('exam-clock'); if(p) p.style.display = 'none';
+// ── Session timer ────────────────────────────────────────────
+// ONE countdown for the whole quiz, set in minutes on the setup screen (any mode, any way a quiz starts).
+// When it hits zero the quiz is submitted automatically: whatever is answered is scored and every question
+// still unanswered is marked "timed out". It runs on the wall clock, so a backgrounded tab can't pause it.
+// A new session is detected by its fresh `answers` array, which every quiz starter creates.
+let clockInt = null, clockEndsAt = 0, clockTotal = 0, clockStartedAt = 0, clockExpired = false, clockFor = null;
+function stopSessionClock(){
+  clearInterval(clockInt); clockInt = null;
+  const p = document.getElementById('session-clock'); if(p) p.style.display = 'none';
 }
-function startExamClock(){
-  stopExamClock();
-  if(quizMode !== 'exam') return;
-  const per = parseInt(document.getElementById('exam-pace')?.value, 10) || 0;
-  if(!per || !quizQ.length) return;
-  examEndsAt = Date.now() + quizQ.length * per * 1000;
-  const pill = document.getElementById('exam-clock'), disp = document.getElementById('exam-clock-disp');
-  pill.style.display = 'flex';
-  const tick = () => {
-    const left = Math.max(0, Math.round((examEndsAt - Date.now()) / 1000));
-    disp.textContent = Math.floor(left / 60) + ':' + String(left % 60).padStart(2, '0');
-    pill.className = 'timer-pill' + (left <= 60 ? ' warn' : '') + (left <= 20 ? ' danger' : '');
-    if(left <= 0){ stopExamClock(); toast("Time's up — submitting your exam"); showResults(); }
-  };
-  tick(); examClockInt = setInterval(tick, 1000);
+function sessionClockTick(){
+  if(!clockInt) return;
+  const left = Math.max(0, Math.ceil((clockEndsAt - Date.now()) / 1000));
+  const pill = document.getElementById('session-clock');
+  document.getElementById('session-clock-disp').textContent = fmtClock(left);
+  const warn = clockTotal < 120 ? 30 : 60, danger = clockTotal < 120 ? 10 : 20;
+  pill.className = 'timer-pill' + (left <= warn ? ' warn' : '') + (left <= danger ? ' danger' : '');
+  if(left === warn && clockTotal >= 120) toast('1 minute left');
+  if(left <= 0) expireSession();
 }
+function beginSessionClock(){
+  stopSessionClock();
+  clockTotal = 0; clockExpired = false;
+  if(!timerOn || !quizQ.length) return;
+  clockTotal = timerMins * 60; clockStartedAt = Date.now(); clockEndsAt = clockStartedAt + clockTotal * 1000;
+  document.getElementById('session-clock').style.display = 'flex';
+  clockInt = setInterval(sessionClockTick, 1000);
+  sessionClockTick();
+}
+function expireSession(){
+  stopSessionClock(); clockExpired = true;
+  answers.forEach((a, i) => { if(a === null) timedOut[i] = true; });
+  document.querySelectorAll('.sheet-bg.on').forEach(e => e.classList.remove('on')); // close any open menu/sheet
+  toast("Time's up — your answers were submitted");
+  showResults();
+}
+document.addEventListener('visibilitychange', () => { if(!document.hidden) sessionClockTick(); });
 
 // ── Missed-question review ───────────────────────────────────
 // Bank questions whose most recent answer was wrong. Answer one correctly and it leaves the list.
@@ -2350,7 +2301,7 @@ async function startMissedReview(){
   if(!Array.isArray(list) || !list.length){ toast('No missed questions to review'); loadMissedCard(); return; }
   if(remaining != null && list.length > remaining){ list = list.slice(0, remaining); toast(`Capped to ${remaining} questions — that's all that's left in your daily limit today`); }
 
-  clearAutoAdvance(); stopExamClock(); curAIQuizId = null;
+  clearAutoAdvance(); stopSessionClock(); curAIQuizId = null;
   if(!missedPrevSel){ missedPrevSel = [...selCourses]; missedPrevMode = quizMode; }
   quizQ = list.map(q => ({ id: q._id, q: q.q, opts: q.opts, ans: q.ans, tag: q.tag || '', exp: q.exp || '', course: String(q.course || '').toLowerCase().replace(/[^a-z0-9]/g, '') }));
   selCourses = [...new Set(quizQ.map(q => q.course))];
@@ -2410,14 +2361,14 @@ function selMode(el){
   if(m !== 'exam' && !hasFeature('practiceQuestions')){ showPaywall(lockedMsg('Practice questions')); return; }
   document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');quizMode=el.dataset.mode;
-  const pr=document.getElementById('exam-pace-row');
-  if(pr){ pr.style.display=quizMode==='exam'?'flex':'none'; if(quizMode==='exam') document.getElementById('exam-pace').value=String(load('examPace','60')); }
+  updateTimerLabel();
 }
 
 function selQty(el){
   document.querySelectorAll('.qp').forEach(p=>p.classList.remove('on'));
   el.classList.add('on');
   selQtyVal = el.dataset.qty==='all' ? 9999 : parseInt(el.dataset.qty);
+  updateTimerLabel();
   const customLabel = document.getElementById('qty-custom-label');
   if(customLabel) customLabel.textContent = 'Custom';
   const wrap = document.getElementById('custom-qty-wrap');
@@ -2443,6 +2394,7 @@ function applyCustomQty(){
   if(!Number.isFinite(n) || n < 1){ toast('Enter a number between 1 and 500'); return; }
   if(n > 500) n = 500;
   selQtyVal = n;
+  updateTimerLabel();
   document.querySelectorAll('.qp').forEach(p=>p.classList.remove('on'));
   const pill = document.getElementById('qty-custom-pill');
   pill.classList.add('on');
@@ -2565,43 +2517,44 @@ function scheduleNotification(){
   },target-now);
 }
 
-const TIMER_OPTS=[15,20,30,45,60];let timerOptIdx=2;
+const TIMER_OPTS=[5,10,15,20,30,45,60];
+const fmtClock = sec => Math.floor(sec/60) + ':' + String(sec%60).padStart(2,'0');
 
+function updateTimerLabel(){
+  const chip=document.getElementById('timer-min-btn'), lbl=document.getElementById('timer-sub-lbl');
+  if(chip) chip.textContent = timerMins+' min';
+  if(!lbl) return;
+  if(!timerOn){ lbl.textContent = quizMode==='exam' ? 'Off · recommended for a mock exam' : 'Off'; return; }
+  const n = selQtyVal < 9999 ? selQtyVal : null;
+  lbl.textContent = n ? `${timerMins} min for ${n} question${n===1?'':'s'} · about ${Math.max(1,Math.round(timerMins*60/n))}s each` : `${timerMins} min for the whole session`;
+}
 function toggleTimer(){
   timerOn=!timerOn;
   document.getElementById('timer-toggle').classList.toggle('on',timerOn);
-  document.getElementById('timer-sub-lbl').textContent = timerOn ? timerSecs+'s per question' : 'Timer off';
+  updateTimerLabel();
 }
-
 function cycleTimer(){
-  const idx = TIMER_OPTS.indexOf(timerSecs);
-  timerOptIdx = idx >= 0 ? (idx+1) % TIMER_OPTS.length : 0;
-  timerSecs = TIMER_OPTS[timerOptIdx];
-  document.getElementById('timer-sec-btn').textContent = timerSecs+'s';
-  document.getElementById('timer-sub-lbl').textContent = timerOn ? timerSecs+'s per question' : 'Timer off';
+  timerMins = TIMER_OPTS.find(m => m > timerMins) || TIMER_OPTS[0];
   document.getElementById('custom-timer-wrap').classList.remove('on');
+  updateTimerLabel();
 }
-
 function toggleCustomTimer(){
   const wrap = document.getElementById('custom-timer-wrap');
   if(!wrap) return;
-  const open = wrap.classList.contains('on');
-  if(open){ wrap.classList.remove('on'); return; }
+  if(wrap.classList.contains('on')){ wrap.classList.remove('on'); return; }
   wrap.classList.add('on');
   const input = document.getElementById('custom-timer-input');
-  if(input){ input.value = timerSecs; setTimeout(()=>input.focus(), 50); }
+  if(input){ input.value = timerMins; setTimeout(()=>input.focus(), 50); }
 }
-
 function applyCustomTimer(){
   const input = document.getElementById('custom-timer-input');
   let n = parseInt(input.value, 10);
-  if(!Number.isFinite(n) || n < 5){ toast('Minimum is 5 seconds'); return; }
-  if(n > 600) n = 600;
-  timerSecs = n;
-  document.getElementById('timer-sec-btn').textContent = n+'s';
-  document.getElementById('timer-sub-lbl').textContent = timerOn ? n+'s per question' : 'Timer off';
+  if(!Number.isFinite(n) || n < 1){ toast('Minimum is 1 minute'); return; }
+  if(n > 180) n = 180;
+  timerMins = n;
   document.getElementById('custom-timer-wrap').classList.remove('on');
-  toast(`Timer set to ${n}s per question`);
+  updateTimerLabel();
+  toast(`Timer set to ${n} minute${n===1?'':'s'} for the whole session`);
 }
 
 function setFontSize(sz){
@@ -2790,11 +2743,10 @@ async function startQuiz(){
   missedRun=false;
   showScr('quiz');
   renderQ();
-  startExamClock();
 }
 
 function renderQ(){
-  stopTimer();
+  if(clockFor !== answers){ clockFor = answers; beginSessionClock(); } // first render of a new quiz starts the timer
   const q=quizQ[cur];
   const total=quizQ.length;
   const locked=confirmed[cur];
@@ -2872,12 +2824,10 @@ function renderQ(){
 
   updateMainBtn();renderDots();
   document.getElementById('quiz-body').scrollTo({top:0,behavior:'smooth'});
-  if(!locked && !isTimedOut) startTimerFn();
 }
 
 function pickOpt(i){
   if(confirmed[cur] || timedOut[cur])return;
-  stopTimer();
   answers[cur]=i;
   if(quizMode==='practice'){
     confirmed[cur]=true;
@@ -2936,7 +2886,7 @@ function mainAct(){
 function skipQ(){
   if(confirmed[cur] || timedOut[cur])return;
   clearAutoAdvance();
-  stopTimer();answers[cur]=null;
+  answers[cur]=null;
   if(cur<quizQ.length-1){cur++;renderQ();}else showResults();
 }
 
@@ -2965,34 +2915,6 @@ function confirmBack(){
   }
 }
 
-function startTimerFn(){
-  if(!timerOn)return;
-  stopTimer();timeLeft=timerSecs;
-  const pill=document.getElementById('timer-pill');
-  const disp=document.getElementById('timer-disp');
-  pill.style.display='flex';pill.className='timer-pill';disp.textContent=timeLeft;
-  timerInterval=setInterval(()=>{
-    timeLeft--;disp.textContent=timeLeft;
-    pill.className='timer-pill'+(timeLeft<=10?' warn':'')+(timeLeft<=5?' danger':'');
-    if(timeLeft<=0){
-      stopTimer();
-      if(!confirmed[cur] && !timedOut[cur]){
-        timedOut[cur] = true;
-        confirmed[cur] = true;
-        answers[cur] = null;
-        renderQ();
-        clearAutoAdvance();
-        autoAdvanceTimer = setTimeout(() => {
-          autoAdvanceTimer = null;
-          if(cur < quizQ.length-1){ cur++; renderQ(); }
-          else showResults();
-        }, 1600);
-      }
-    }
-  },1000);
-}
-function stopTimer(){clearInterval(timerInterval);document.getElementById('timer-pill').style.display='none';}
-
 function toggleBmark(e,qid){
   e.stopPropagation();
   const q=quizQ[cur];
@@ -3012,8 +2934,8 @@ function saveNote(qid,val){
 
 function showResults(){
   clearAutoAdvance();
-  stopTimer();
-  stopExamClock();
+  const wasTimed = clockTotal > 0, usedSecs = wasTimed ? Math.min(clockTotal, Math.round((Date.now() - clockStartedAt) / 1000)) : 0;
+  stopSessionClock();
   HOME_MEMO.missedAt = 0; onbSeen.quiz = true; if(quizMode === 'exam') onbSeen.exam = true; // so the home screen refreshes after a quiz
   const total=quizQ.length;
   let correct=0,wrong=0,skip=0,timeouts=0;
@@ -3066,6 +2988,8 @@ function showResults(){
   document.getElementById('r-wrg').textContent=wrong;
   document.getElementById('r-skp').textContent=skip+timeouts;
   document.getElementById('res-sub').textContent=selCourses.map(c=>COURSES[c]?.code||c).join(', ');
+  const rt=document.getElementById('r-time');
+  if(rt){ rt.style.display = wasTimed ? '' : 'none'; rt.textContent = clockExpired ? `Time's up · ${fmtClock(clockTotal)} limit` : `Time used ${fmtClock(usedSecs)} of ${fmtClock(clockTotal)}`; }
   const msgs=[[100,'Perfect! Outstanding!'],[80,'Excellent work!'],[60,'Good effort!'],[40,'Keep studying!'],[0,'More practice needed']];
   const m=msgs.find(([t])=>pct>=t);
   document.getElementById('r-msg').textContent=m[1];
@@ -3153,7 +3077,7 @@ async function shareResult(){
   else navigator.clipboard.writeText(text).then(()=>toast('Result copied!')).catch(()=>toast('Could not share'));
 }
 
-function retryQuiz(){ clearAutoAdvance(); if(missedRun) startMissedReview(); else startQuiz(); }function goHome(){ clearAutoAdvance(); stopTimer(); stopExamClock(); if(missedPrevSel){ selCourses=missedPrevSel; quizMode=missedPrevMode; missedPrevSel=null; } showScr('home');refreshStats();renderDailyGoal(); }
+function retryQuiz(){ clearAutoAdvance(); if(missedRun) startMissedReview(); else startQuiz(); }function goHome(){ clearAutoAdvance(); stopSessionClock(); if(missedPrevSel){ selCourses=missedPrevSel; quizMode=missedPrevMode; missedPrevSel=null; } showScr('home');refreshStats();renderDailyGoal(); }
 
 async function saveQuizForLater(){
   if(!quizQ.length) return;

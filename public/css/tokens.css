@@ -1,0 +1,98 @@
+/* PrepHQ design tokens — the single source of truth for the student-facing pages
+   (dashboard, profile, leaderboard, contests, study rooms, assistant, login, register,
+   forgot/change password, landing). The admin panel keeps its own palette in admin.html.
+
+   To change the look of the whole app (for example the liquid-glass migration), edit this file.
+   A page may still declare a token that only that page uses; it sits in the page's own <style>,
+   which loads after this file. Light values are in :root, dark-mode overrides in [data-theme=dark]. */
+
+:root {
+  /* Colour */
+  --bg: #e0e5ec;
+  --surf: #e0e5ec;
+  --surf2: #e0e5ec;
+  --surf3: #d1d9e6;
+  --sd: #b8c0cc;
+  --sl: #ffffff;
+  --brand: #4a67d1;
+  --brand-dk: #3a54b8;
+  --brand-lt: rgba(74,103,209,.10);
+  --brand-glow: rgba(74,103,209,.20);
+  --ok: #2d9c6e;
+  --ok-lt: rgba(45,156,110,.12);
+  --ok-bd: rgba(45,156,110,.30);
+  --no: #d14545;
+  --no-lt: rgba(209,69,69,.12);
+  --no-bd: rgba(209,69,69,.30);
+  --warn: #c67a1e;
+  --warn-lt: rgba(198,122,30,.12);
+  --purple: #7b52d1;
+  --purple-lt: rgba(123,82,209,.12);
+  --teal: #2d9cb8;
+  --teal-lt: rgba(45,156,184,.12);
+  --t1: #2a3142;
+  --t2: #4a5568;
+  --t3: #7a8296;
+  --t4: #a8b0c0;
+  --bd: transparent;
+  --bd2: transparent;
+  --qfont: 16px;
+  --spring: cubic-bezier(.34,1.56,.64,1);
+  --gold: #c79a1e;
+  --silver: #8a90a4;
+  --bronze: #a86a3a;
+  /* Depth (soft shadows) */
+  --sh: 6px 6px 14px var(--sd), -6px -6px 14px var(--sl);
+  --sh-md: 8px 8px 18px var(--sd), -8px -8px 18px var(--sl);
+  --sh-lg: 12px 12px 26px var(--sd), -12px -12px 26px var(--sl);
+  --sh-sm: 4px 4px 8px var(--sd), -4px -4px 8px var(--sl);
+  --sh-in: inset 4px 4px 10px var(--sd), inset -4px -4px 10px var(--sl);
+  --sh-in-sm: inset 3px 3px 6px var(--sd), inset -3px -3px 6px var(--sl);
+  --sh-in-lg: inset 6px 6px 14px var(--sd), inset -6px -6px 14px var(--sl);
+  /* Corner radius */
+  --r8: 10px;
+  --r12: 14px;
+  --r16: 18px;
+  --r20: 22px;
+  --r24: 26px;
+  --rpill: 999px;
+  /* Type */
+  --ff-h: 'Bricolage Grotesque',system-ui,sans-serif;
+  --ff-b: 'DM Sans',system-ui,sans-serif;
+  /* Motion */
+  --ease-s: cubic-bezier(.34,1.56,.64,1);
+  --ease-o: cubic-bezier(.22,1,.36,1);
+  --ease: cubic-bezier(.22,1,.36,1);
+}
+
+[data-theme=dark] {
+  /* Colour */
+  --bg: #252932;
+  --surf: #252932;
+  --surf2: #252932;
+  --surf3: #1e2229;
+  --sd: #181b21;
+  --sl: #323743;
+  --brand: #7c93ff;
+  --brand-dk: #a5b5ff;
+  --brand-lt: rgba(124,147,255,.12);
+  --brand-glow: rgba(124,147,255,.20);
+  --ok: #3dba86;
+  --ok-lt: rgba(61,186,134,.14);
+  --ok-bd: rgba(61,186,134,.30);
+  --no: #e56161;
+  --no-lt: rgba(229,97,97,.14);
+  --no-bd: rgba(229,97,97,.30);
+  --warn: #e09437;
+  --warn-lt: rgba(224,148,55,.14);
+  --purple: #9d7bea;
+  --purple-lt: rgba(157,123,234,.14);
+  --teal: #4db8d4;
+  --teal-lt: rgba(77,184,212,.14);
+  --t1: #e8ecf5;
+  --t2: #b8c0d0;
+  --t4: #4a5060;
+  --gold: #e8b93a;
+  --silver: #a5abc2;
+  --bronze: #c47e42;
+}

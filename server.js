@@ -279,7 +279,7 @@ initStudyRoomSockets(io);
 // ══════════════════════════════════════════════════════════════
 httpServer.listen(PORT, () => {
   console.log('\n╔══════════════════════════════════════════════════╗');
-  console.log(`║  PrepHQ v1.6.7 running on http://localhost:${PORT}   ║`);
+  console.log(`║  PrepHQ v1.6.9 running on http://localhost:${PORT}   ║`);
   console.log(`║  Student login: http://localhost:${PORT}/login       ║`);
   console.log(`║  Admin:         http://localhost:${PORT}/login       ║`);
   console.log('╚══════════════════════════════════════════════════╝\n');

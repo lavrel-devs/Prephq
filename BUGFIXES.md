@@ -155,3 +155,18 @@ Not run against a live MongoDB or a real Groq key: queue, charge/refund flow and
   - Answer keys are never guessed: an answer must be a letter A–D or the exact text of one option. A bare number is refused when it could mean two different options. In JSON, numbers are accepted only as `ans`/`answerIndex` (0-based) or `answerNumber` (1-based). Exactly 4 options per question.
   - A course picker above the preview can force every row into one course.
 - Note: the original zip's `MANIFEST.json` listed a `bulk-upload-tool/` folder (index.html, server.js, README.md) that was not included in the upload, and the bundled `question-uploader.html` was paste-only. If that folder had its own file import with a different format, send it and the format can be matched.
+
+## v1.6.8
+- **Quiz timer is now one countdown for the whole session, in minutes** (was: seconds per question). On the setup screen, turn on *Session Timer*, pick 5 / 10 / 15 / 20 / 30 / 45 / 60 minutes or type your own (1–180). It shows how that works out per question ("10 min for 20 questions · about 30s each"). The clock sits in the quiz header, turns amber at 1 minute left and red at 20 seconds.
+- **When time runs out the quiz submits itself:** answered questions are scored, unanswered ones are marked *timed out* and count as skipped, any open menu is closed, and the score is saved once. Finishing early shows "Time used 6:12 of 10:00".
+- Works in every mode and every way a quiz starts (course practice, weak-topic drill, AI quiz, saved quiz, bookmarks, missed-question review). It runs on the wall clock, so a backgrounded tab can't pause it. Leaving mid-quiz stops it and nothing auto-submits later.
+- Removed the per-question timer and the exam-only clock added in v1.6.5 (the one timer replaces both). Contests and study rooms keep their own per-question timers because the server controls those.
+- `npm test` now runs automated tests for bulk upload, question counts, JSON/CSV import and the database pipelines (no database needed).
+- Added `ROADMAP.md`.
+
+## v1.6.9 — shared design file (roadmap #2, step 1 of the single-page + liquid-glass work)
+- New `public/css/tokens.css`: the colours, shadows, corner radii and fonts for the 11 student-facing pages (dashboard, profile, leaderboard, contests, study rooms, assistant, login, register, forgot/change password, landing) now live in one file. Each page used to carry its own copy (51 tokens, about 55 declarations per page), so a redesign meant editing 11 files.
+- **No visual change, verified:** every resolved token value and every pixel of every page was compared before and after, in light and dark, on all 12 pages (including admin): 0 differing pixels.
+- Only tokens that every page agreed on were moved (all 51 did). The admin panel is deliberately untouched: it uses a different, more vivid palette (`#0A5CF5` blue, slightly different corner radii) and stays in `admin.html`.
+- `tests/tokens.test.js` fails if a page stops linking `tokens.css`, links it after its own `<style>`, or redefines a shared token with a different value.
+- Size impact is small and is not the point: the pages are about 20 KB smaller in total (under 1 KB gzipped per page), offset by one 3 KB stylesheet that the browser caches across pages. The win is that the liquid-glass migration becomes an edit to this one file.
