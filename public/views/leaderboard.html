@@ -1,0 +1,225 @@
+<!-- View: Leaderboard. Loaded once by js/shell.js into <div class="scr" id="view-leaderboard">, then only shown and hidden.
+     This is the source of truth for this screen (the standalone leaderboard.html page was merged into the dashboard shell).
+     CSS is scoped to #view-leaderboard; the script runs with a scoped `document`. -->
+<style>
+#view-leaderboard *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+#view-leaderboard{
+  font-family:var(--ff-b);
+  
+  color:var(--t1);
+  min-height:calc(100dvh - var(--nav-space,96px));
+  -webkit-font-smoothing:antialiased;
+}
+#view-leaderboard .wrap{max-width:520px;margin:0 auto;padding:18px 18px 120px;}
+
+/* ═══════════════════════════════════════
+   TOPBAR
+═══════════════════════════════════════ */
+#view-leaderboard .v-topbar{
+  display:flex;align-items:center;gap:12px;
+  padding:6px 0 20px;
+}
+#view-leaderboard .v-back-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--bg);border:none;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--brand);flex-shrink:0;
+  box-shadow:var(--sh);
+  transition:box-shadow .15s, transform .15s;
+}
+#view-leaderboard .v-back-btn:active{transform:scale(.93);box-shadow:var(--sh-in);}
+#view-leaderboard .pg-title{
+  font-family:var(--ff-h);font-size:20px;font-weight:800;
+  color:var(--t1);letter-spacing:-.4px;
+}
+
+/* ═══════════════════════════════════════
+   OPT-IN CARD
+═══════════════════════════════════════ */
+#view-leaderboard .optin-card{
+  background:var(--bg);
+  border-radius:var(--r16);
+  padding:16px 18px;
+  box-shadow:var(--sh);
+  border:none;
+  margin-bottom:16px;
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+}
+
+/* Neumorphic toggle — inset track, raised knob */
+#view-leaderboard .v-toggle{
+  width:48px;height:26px;
+  border-radius:var(--rpill, 999px);
+  background:var(--bg);
+  border:none;cursor:pointer;
+  position:relative;
+  transition:box-shadow .2s;
+  flex-shrink:0;
+  box-shadow:var(--sh-in);
+}
+#view-leaderboard .v-toggle::after{
+  content:'';
+  position:absolute;top:3px;left:3px;
+  width:20px;height:20px;border-radius:50%;
+  background:var(--bg);
+  box-shadow:var(--sh-sm);
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1);
+}
+#view-leaderboard .v-toggle.on{
+  box-shadow:var(--sh-in), 0 0 0 2px var(--brand-lt);
+}
+#view-leaderboard .v-toggle.on::after{
+  transform:translateX(22px);
+  box-shadow:var(--sh-sm), 0 0 0 2px var(--brand-lt);
+}
+
+/* ═══════════════════════════════════════
+   LEADERBOARD ROWS
+═══════════════════════════════════════ */
+#view-leaderboard .lb-row{
+  display:flex;align-items:center;gap:14px;
+  background:var(--bg);
+  border-radius:var(--r16);
+  padding:14px 16px;
+  margin-bottom:10px;
+  box-shadow:var(--sh);
+  border:none;
+  transition:box-shadow .18s, transform .18s;
+}
+#view-leaderboard .lb-row:active{transform:scale(.99);}
+
+/* "Me" row — inset with brand ring, so it stands out without a filled background */
+#view-leaderboard .lb-row.me{
+  box-shadow:var(--sh-in), 0 0 0 2px var(--brand-lt);
+}
+
+#view-leaderboard .lb-rank{
+  width:32px;
+  text-align:center;
+  font-family:var(--ff-h);
+  font-weight:800;
+  font-size:16px;
+  color:var(--t3);
+  flex-shrink:0;
+  letter-spacing:-.5px;
+}
+#view-leaderboard .lb-rank.top1{color:var(--gold);}
+#view-leaderboard .lb-rank.top2{color:var(--silver);}
+#view-leaderboard .lb-rank.top3{color:var(--bronze);}
+
+#view-leaderboard .lb-name{
+  flex:1;
+  font-size:13.5px;
+  font-weight:700;
+  color:var(--t1);
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+#view-leaderboard .lb-row.me .lb-name{color:var(--brand);}
+
+#view-leaderboard .lb-stats{text-align:right;flex-shrink:0;}
+#view-leaderboard .lb-score{
+  font-weight:800;
+  font-size:15px;
+  color:var(--brand);
+  font-family:var(--ff-h);
+  letter-spacing:-.3px;
+}
+#view-leaderboard .lb-sub{
+  font-size:10.5px;
+  color:var(--t3);
+  margin-top:1px;
+  font-weight:600;
+}
+
+/* ═══════════════════════════════════════
+   EMPTY
+═══════════════════════════════════════ */
+#view-leaderboard .empty{
+  text-align:center;
+  padding:60px 20px;
+  color:var(--t3);
+  font-size:13px;
+  font-weight:500;
+  line-height:1.55;
+}
+
+/* Responsive */
+@media (max-width: 420px){
+  #view-leaderboard .wrap{padding:16px 16px 100px;}
+  #view-leaderboard .pg-title{font-size:18px;}
+  #view-leaderboard .lb-row{padding:12px 14px;gap:12px;}
+  #view-leaderboard .lb-rank{width:28px;font-size:15px;}
+}
+</style>
+<div class="wrap">
+  <div class="v-topbar">
+    <div class="v-back-btn" onclick="PhqShell.go('/dashboard')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></div>
+    <div class="pg-title">Leaderboard</div>
+  </div>
+
+  <div class="optin-card">
+    <div>
+      <div style="font-size:13px;font-weight:700;color:var(--t1);">Show me on the leaderboard</div>
+      <div style="font-size:11.5px;color:var(--t3);margin-top:3px;line-height:1.5;">Your display name and average score become visible to other students</div>
+    </div>
+    <button class="v-toggle" id="optin-toggle" onclick="toggleOptIn()"></button>
+  </div>
+
+  <div id="lb-list"><div class="empty">Loading…</div></div>
+</div>
+<script>
+const document = PhqShell.scope(root); // every getElementById/querySelector in this view only sees this view
+async function loadOptInState(){
+  try{
+    const r = await PhqAuth.authFetch('/api/profile', {}, 'student');
+    if(!r.ok) return;
+    const d = await r.json();
+    document.getElementById('optin-toggle').classList.toggle('on', !!d.leaderboardOptIn);
+  }catch(e){}
+}
+
+async function toggleOptIn(){
+  const el = document.getElementById('optin-toggle');
+  const next = !el.classList.contains('on');
+  el.classList.toggle('on', next);
+  try{
+    await PhqAuth.authFetch('/api/profile/leaderboard-optin', {
+      method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ optIn: next }),
+    }, 'student');
+    loadLeaderboard();
+  }catch(e){}
+}
+
+async function loadLeaderboard(){
+  try{
+    const r = await PhqAuth.authFetch('/api/leaderboard', {}, 'student');
+    if(!r.ok) return;
+    const rows = await r.json();
+    const list = document.getElementById('lb-list');
+    if(!rows.length){
+      list.innerHTML = '<div class="empty">No one qualifies yet — the leaderboard needs opted-in students with at least 3 quizzes each. Be the first!</div>';
+      return;
+    }
+    list.innerHTML = rows.map(row => `
+      <div class="lb-row ${row.isMe?'me':''}">
+        <div class="lb-rank ${row.rank===1?'top1':row.rank===2?'top2':row.rank===3?'top3':''}">${row.rank}</div>
+        <div class="lb-name">${row.badge?escapeHtml(row.badge)+' ':''}${escapeHtml(row.displayName)}${row.isMe?' (you)':''}</div>
+        <div class="lb-stats"><div class="lb-score">${row.avgScore}%</div><div class="lb-sub">${row.totalQuizzes} quizzes</div></div>
+      </div>`).join('');
+  }catch(e){}
+}
+
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+loadOptInState();
+loadLeaderboard();
+
+// inline onclick="…" handlers run in the global scope, so the functions they call are exposed
+window.toggleOptIn = toggleOptIn;
+
+return { onShow(){ loadOptInState(); loadLeaderboard(); } };
+//# sourceURL=view-leaderboard.js
+</script>

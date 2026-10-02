@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<script src="/js/theme.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#e0e5ec">
+<title>PrepHQ — Register</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/glass.css">
+<style>
+/* ══════════════════════════════════════════════════════════
+   NEUMORPHISM / SOFT UI — Register
+   ══════════════════════════════════════════════════════════ */
+:root{
+  --bg:#e0e5ec;
+  --sd:#b8c0cc;
+  --sl:#ffffff;
+
+  --sh:6px 6px 14px var(--sd), -6px -6px 14px var(--sl);
+  --sh-md:8px 8px 18px var(--sd), -8px -8px 18px var(--sl);
+  --sh-lg:12px 12px 26px var(--sd), -12px -12px 26px var(--sl);
+  --sh-sm:4px 4px 8px var(--sd), -4px -4px 8px var(--sl);
+  --sh-in:inset 4px 4px 10px var(--sd), inset -4px -4px 10px var(--sl);
+  --sh-in-sm:inset 3px 3px 6px var(--sd), inset -3px -3px 6px var(--sl);
+
+  --brand:#4a67d1;--brand-dk:#3a54b8;
+  --brand-lt:rgba(74,103,209,.10);--brand-glow:rgba(74,103,209,.20);
+  --ok:#2d9c6e;--ok-lt:rgba(45,156,110,.12);--ok-bd:rgba(45,156,110,.30);
+  --no:#d14545;--no-lt:rgba(209,69,69,.12);--no-bd:rgba(209,69,69,.30);
+  --purple:#7b52d1;--purple-lt:rgba(123,82,209,.12);
+
+  --t1:#2a3142;--t2:#4a5568;--t3:#7a8296;--t4:#a8b0c0;
+
+  --bd:transparent;--bd2:transparent;
+
+  --r12:14px;--r16:18px;--r20:22px;--rpill:999px;
+  --ff-h:'Bricolage Grotesque',system-ui,sans-serif;
+  --ff-b:'DM Sans',system-ui,sans-serif;
+}
+[data-theme=dark]{
+  --bg:#252932;
+  --sd:#181b21;--sl:#323743;
+  --brand:#7c93ff;--brand-dk:#a5b5ff;
+  --brand-lt:rgba(124,147,255,.12);--brand-glow:rgba(124,147,255,.20);
+  --ok:#3dba86;--ok-lt:rgba(61,186,134,.14);--ok-bd:rgba(61,186,134,.30);
+  --no:#e56161;--no-lt:rgba(229,97,97,.14);--no-bd:rgba(229,97,97,.30);
+  --purple:#9d7bea;--purple-lt:rgba(157,123,234,.14);
+  --t1:#e8ecf5;--t2:#b8c0d0;--t3:#7a8296;--t4:#4a5060;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{
+  font-family:var(--ff-b);
+  background:var(--bg);
+  color:var(--t1);
+  min-height:100dvh;
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+  position:relative;overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* Soft color washes — very low opacity so shadows do the work */
+.blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:.08;pointer-events:none;}
+.b1{width:340px;height:340px;background:var(--brand);top:-80px;right:-80px;}
+.b2{width:280px;height:280px;background:var(--purple);bottom:-60px;left:-60px;}
+
+.card{
+  width:100%;max-width:440px;
+  background:var(--bg);
+  border-radius:28px;
+  padding:38px 26px 30px;
+  box-shadow:var(--sh-lg);
+  position:relative;z-index:1;
+  border:none;
+}
+
+.logo{
+  width:68px;height:68px;
+  border-radius:22px;
+  background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 18px;
+  box-shadow:var(--sh);
+}
+.logo svg{width:28px;height:28px;fill:var(--brand);}
+
+.title{
+  font-family:var(--ff-h);font-size:24px;font-weight:800;
+  text-align:center;letter-spacing:-.5px;
+  color:var(--t1);
+}
+.sub{
+  font-size:13px;color:var(--t3);
+  text-align:center;margin:6px 0 24px;
+  font-weight:500;
+}
+
+/* Divider — groove instead of a printed line */
+.divider{
+  height:2px;
+  background:transparent;
+  box-shadow:var(--sh-in-sm);
+  border-radius:2px;
+  margin:0 0 22px;
+}
+
+/* Referral info box — inset card with brand ring */
+.code-box{
+  background:var(--bg);
+  border:none;
+  border-radius:var(--r16);
+  padding:14px 16px;
+  margin-bottom:22px;
+  display:flex;align-items:center;gap:12px;
+  box-shadow:var(--sh-in-sm), 0 0 0 2px var(--brand-lt);
+}
+.cb-icon{
+  width:42px;height:42px;border-radius:12px;
+  background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  box-shadow:var(--sh-sm);
+}
+.cb-icon svg{width:20px;height:20px;fill:var(--brand);}
+.cb-txt{font-size:13px;font-weight:600;color:var(--t2);line-height:1.45;}
+.cb-txt strong{color:var(--brand);font-weight:800;}
+
+/* Error banner — inset with red ring */
+.err{
+  background:var(--bg);
+  box-shadow:var(--sh-in), 0 0 0 2px var(--no-lt);
+  border-radius:var(--r12);
+  padding:11px 14px;
+  font-size:13px;font-weight:600;
+  color:var(--no);
+  display:none;align-items:center;gap:7px;
+  margin-bottom:14px;
+}
+.err.on{display:flex;}
+.err svg{fill:var(--no);flex-shrink:0;}
+
+/* Form fields */
+.fg{margin-bottom:16px;}
+.fg label{
+  display:block;
+  font-size:11px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.08em;
+  color:var(--t3);
+  margin-bottom:8px;
+}
+.fg input{
+  width:100%;
+  padding:14px 16px;
+  border-radius:var(--r12);
+  border:none;
+  background:var(--bg);
+  font-size:15px;font-weight:600;
+  color:var(--t1);
+  outline:none;
+  transition:box-shadow .18s;
+  letter-spacing:.2px;
+  box-shadow:var(--sh-in);
+  font-family:var(--ff-b);
+}
+.fg input::placeholder{color:var(--t4);font-weight:500;letter-spacing:0;}
+.fg input:focus{box-shadow:var(--sh-in), 0 0 0 2px var(--brand-lt);}
+.fg input.err-inp{box-shadow:var(--sh-in), 0 0 0 2px var(--no-lt);}
+.fg .hint{
+  font-size:11px;color:var(--t4);
+  margin-top:6px;padding-left:2px;
+  font-weight:500;line-height:1.45;
+}
+
+.code-inp{
+  font-family:var(--ff-h) !important;
+  font-size:18px !important;
+  letter-spacing:.15em !important;
+  text-align:center;
+  text-transform:uppercase;
+}
+
+/* Primary button — raised neutral with brand text */
+.btn{
+  width:100%;
+  padding:16px;
+  border-radius:var(--r12);
+  background:var(--bg);
+  color:var(--brand);
+  font-size:16px;font-weight:800;
+  border:none;cursor:pointer;
+  font-family:var(--ff-h);
+  box-shadow:var(--sh);
+  transition:box-shadow .15s, transform .15s, color .15s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  letter-spacing:-.2px;
+  margin-top:6px;
+}
+.btn:active{transform:scale(.98);box-shadow:var(--sh-in);}
+.btn:disabled{
+  color:var(--t4);
+  box-shadow:var(--sh-in);
+  cursor:default;transform:none;
+}
+.btn svg{fill:currentColor;}
+
+.login-link{
+  text-align:center;margin-top:18px;
+  font-size:13px;color:var(--t3);font-weight:500;
+}
+.login-link a{
+  color:var(--brand);font-weight:800;
+  text-decoration:none;
+}
+.login-link a:active{opacity:.7;}
+
+/* ═══════════════════════════════════════
+   SUCCESS SCREEN
+═══════════════════════════════════════ */
+#success{display:none;}
+.success-card{text-align:center;}
+
+.s-icon{
+  width:80px;height:80px;
+  border-radius:50%;
+  background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 20px;
+  box-shadow:var(--sh), 0 0 0 3px var(--ok-lt);
+}
+.s-icon svg{width:38px;height:38px;fill:var(--ok);}
+
+.s-title{
+  font-family:var(--ff-h);font-size:24px;font-weight:800;
+  color:var(--t1);margin-bottom:8px;letter-spacing:-.5px;
+}
+.s-sub{
+  font-size:14px;color:var(--t3);
+  margin-bottom:24px;line-height:1.5;
+  font-weight:500;
+}
+
+.login-details{
+  background:var(--bg);
+  border:none;
+  border-radius:var(--r16);
+  padding:20px 18px;
+  box-shadow:var(--sh-in), 0 0 0 2px var(--ok-lt);
+  text-align:left;
+}
+.ld-title{
+  font-size:11px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.08em;
+  color:var(--ok);
+  margin-bottom:14px;
+  text-align:center;
+}
+.ld-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 0;
+  box-shadow:0 -1px 0 rgba(45,156,110,.15) inset;
+}
+.ld-row:first-of-type{box-shadow:none;}
+.ld-label{font-size:12px;color:var(--t3);font-weight:600;}
+.ld-val{
+  font-family:var(--ff-h);
+  font-size:16px;font-weight:800;
+  color:var(--t1);letter-spacing:-.3px;
+}
+
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(16px);}
+  to{opacity:1;transform:translateY(0);}
+}
+.fade-up{animation:fadeUp .4s cubic-bezier(.34,1.56,.64,1) both;}
+
+/* Responsive */
+@media (max-width: 420px){
+  .card{padding:32px 22px 26px;}
+  .title{font-size:22px;}
+  .s-title{font-size:22px;}
+}
+.pw-wrap{position:relative;display:flex;align-items:center;}
+.pw-wrap input{width:100%;padding-right:74px;box-sizing:border-box;}
+.pw-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:transparent;color:var(--brand,#0A5CF5);font-weight:800;font-size:12px;padding:8px 10px;cursor:pointer;border-radius:10px;font-family:inherit;}
+</style>
+</head>
+<body>
+<div class="glass-backdrop"></div>
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+
+<div class="card fade-up">
+
+  <!-- REGISTER FORM -->
+  <div id="reg-form">
+    <div class="logo"><svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg></div>
+    <div class="title">Create Account</div>
+    <div class="sub">PrepHQ — Exam Prep Platform</div>
+    <div class="divider"></div>
+
+    <div class="err" id="reg-err">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+      <span id="reg-err-msg">Error</span>
+    </div>
+
+    <div class="fg">
+      <label>Full Name *</label>
+      <input id="r-name" type="text" placeholder="e.g. John Doe" autocomplete="off">
+    </div>
+    <div class="fg">
+      <label>Matric Number *</label>
+      <input id="r-matric" type="text" placeholder="e.g. PSC25CHM000" autocapitalize="characters" autocomplete="off">
+      <div class="hint">This will be your login ID (used with your password)</div>
+    </div>
+    <div class="fg">
+      <label>Username *</label>
+      <input id="r-username" type="text" placeholder="e.g. goodnews_23" autocapitalize="none" autocomplete="off" oninput="checkRegUsername()">
+      <div class="hint" id="r-username-hint">3–20 characters: letters, numbers, and underscores only</div>
+    </div>
+    <div class="fg">
+      <label>Phone Number *</label>
+      <input id="r-phone" type="tel" placeholder="e.g. 08012345678">
+    </div>
+    <div class="fg">
+      <label>WhatsApp Number *</label>
+      <input id="r-whatsapp" type="tel" placeholder="e.g. 08012345678">
+      <div class="hint">Must be reachable on WhatsApp</div>
+    </div>
+    <div class="fg">
+      <label>Create Password</label>
+      <div class="pw-wrap">
+        <input id="r-pass" type="password" placeholder="At least 8 characters" autocomplete="new-password" oninput="checkPwMatch()">
+        <button type="button" class="pw-toggle" id="pw-toggle" onclick="togglePw()" aria-label="Show or hide password" aria-pressed="false">Show</button>
+      </div>
+      <div class="hint">Minimum 8 characters. Don't use your matric number.</div>
+    </div>
+    <div class="fg">
+      <label>Confirm Password</label>
+      <div class="pw-wrap">
+        <input id="r-pass2" type="password" placeholder="Type it again" autocomplete="new-password" oninput="checkPwMatch()">
+      </div>
+      <div class="hint" id="pw-match-hint">&nbsp;</div>
+    </div>
+    <div class="fg">
+      <label>Referral Code (optional)</label>
+      <input id="r-referral" type="text" placeholder="e.g. AB12CD3" autocomplete="off" autocapitalize="characters">
+      <div class="hint">Have a friend's referral link or code? Enter it here — you'll both get bonus credits.</div>
+    </div>
+
+    <button class="btn" id="reg-btn" onclick="doRegister()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+      Create Account
+    </button>
+
+    <div class="login-link">Already registered? <a href="/">Sign in here</a></div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div id="success" class="success-card fade-up">
+    <div class="s-icon"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
+    <div class="s-title">Account Created! 🎉</div>
+    <div class="s-sub">Your account is ready. Sign in with your matric number and the password you just created.</div>
+    <div class="login-details">
+      <div class="ld-title">Your Login Details</div>
+      <div class="ld-row"><span class="ld-label">Matric</span><span class="ld-val" id="s-matric">—</span></div>
+      <div class="ld-row"><span class="ld-label">Login URL</span><span class="ld-val" style="font-size:13px" id="s-url">—</span></div>
+    </div>
+    <button class="btn" style="margin-top:18px;" onclick="goLogin()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M11 7L9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5-5-5zm9 12h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z"/></svg>
+      Go to Login
+    </button>
+  </div>
+
+</div>
+
+<script>
+// Auto-fill the referral field when arriving via a shared link, e.g.
+// /register?ref=AB12CD3 — the field stays editable in case they'd
+// rather type a different code.
+(function prefillReferral(){
+  const ref = new URLSearchParams(window.location.search).get('ref');
+  if(ref) document.getElementById('r-referral').value = ref.toUpperCase();
+})();
+
+// Real-time username availability check, debounced as the user types.
+let regUsernameTimer = null;
+let regUsernameOk = false;
+function checkRegUsername() {
+  const val = document.getElementById('r-username').value.trim().toLowerCase();
+  const hint = document.getElementById('r-username-hint');
+  regUsernameOk = false;
+  clearTimeout(regUsernameTimer);
+
+  if (!val) {
+    hint.textContent = '3–20 characters: letters, numbers, and underscores only';
+    hint.style.color = 'var(--t4)';
+    return;
+  }
+
+  regUsernameTimer = setTimeout(async () => {
+    try {
+      const r = await fetch(`/api/auth/username-check/${encodeURIComponent(val)}`);
+      const d = await r.json();
+      if (d.ok) {
+        regUsernameOk = true;
+        hint.textContent = '✅ Available';
+        hint.style.color = 'var(--ok)';
+      } else {
+        hint.textContent = `❌ ${d.reason}`;
+        hint.style.color = 'var(--no)';
+      }
+    } catch (e) {
+      hint.textContent = 'Could not check availability — try again';
+      hint.style.color = 'var(--no)';
+    }
+  }, 400);
+}
+
+async function doRegister() {
+  const name     = document.getElementById('r-name').value.trim();
+  const matric   = document.getElementById('r-matric').value.trim().toUpperCase();
+  const username = document.getElementById('r-username').value.trim().toLowerCase();
+  const phone    = document.getElementById('r-phone').value.trim();
+  const whatsapp = document.getElementById('r-whatsapp').value.trim();
+  const referralCode = document.getElementById('r-referral').value.trim();
+  const password  = document.getElementById('r-pass').value;
+  const password2 = document.getElementById('r-pass2').value;
+  const errEl    = document.getElementById('reg-err');
+  const errMsg   = document.getElementById('reg-err-msg');
+  const btn      = document.getElementById('reg-btn');
+
+  errEl.classList.remove('on');
+
+  if (!name || !matric || !username || !phone || !whatsapp) {
+    errMsg.textContent = 'All fields are required.';
+    errEl.classList.add('on'); return;
+  }
+  if (password.length < 8) {
+    errMsg.textContent = 'Your password must be at least 8 characters.';
+    errEl.classList.add('on'); return;
+  }
+  if (password.trim().toUpperCase() === matric) {
+    errMsg.textContent = "Your password can't be the same as your matric number.";
+    errEl.classList.add('on'); return;
+  }
+  if (password !== password2) {
+    errMsg.textContent = 'The two passwords do not match.';
+    errEl.classList.add('on'); return;
+  }
+  if (!regUsernameOk) {
+    errMsg.textContent = 'Please choose an available username.';
+    errEl.classList.add('on'); return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg> Creating account...';
+
+  try {
+    const r = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, matric, username, phone, whatsapp, password, referralCode: referralCode || undefined }),
+    });
+    const d = await r.json();
+
+    if (!r.ok) {
+      errMsg.textContent = d.error || 'Registration failed.';
+      errEl.classList.add('on');
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Create Account';
+      return;
+    }
+
+    // Show success
+    document.getElementById('s-matric').textContent = d.matric;
+    document.getElementById('s-url').textContent    = window.location.origin;
+    document.getElementById('reg-form').style.display = 'none';
+    document.getElementById('success').style.display  = 'block';
+
+  } catch(e) {
+    errMsg.textContent = 'Cannot connect to server.';
+    errEl.classList.add('on');
+    btn.disabled = false;
+    btn.innerHTML = 'Create Account';
+  }
+}
+
+function togglePw() {
+  const a = document.getElementById('r-pass'), b = document.getElementById('r-pass2'), t = document.getElementById('pw-toggle');
+  const show = a.type === 'password';
+  a.type = b.type = show ? 'text' : 'password';
+  t.textContent = show ? 'Hide' : 'Show';
+  t.setAttribute('aria-pressed', show ? 'true' : 'false');
+}
+function checkPwMatch() {
+  const a = document.getElementById('r-pass').value, b = document.getElementById('r-pass2').value;
+  const h = document.getElementById('pw-match-hint');
+  if (!b) { h.innerHTML = '&nbsp;'; h.style.color = ''; return; }
+  h.textContent = a === b ? 'Passwords match' : 'Passwords do not match';
+  h.style.color = a === b ? 'var(--ok, #00a35a)' : 'var(--no, #F5340A)';
+}
+
+function goLogin() { window.location.href = '/'; }
+
+document.getElementById('r-referral').addEventListener('keydown', e => {
+  if(e.key === 'Enter') doRegister();
+});
+</script>
+</body>
+</html>

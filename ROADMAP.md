@@ -1,6 +1,6 @@
 # PrepHQ Roadmap
 
-Last updated for **v1.6.9**. Effort: **S** = under a day, **M** = a few days, **L** = a week or more.
+Last updated for **v1.7.0**. Effort: **S** = under a day, **M** = a few days, **L** = a week or more.
 Status: **Done**, **Next** (start here), **Planned**, **Idea** (needs a decision first).
 
 ---
@@ -22,6 +22,7 @@ Status: **Done**, **Next** (start here), **Planned**, **Idea** (needs a decision
 | v1.6.7 | Bulk upload from JSON / CSV / TSV files, with templates |
 | v1.6.8 | **Session timer in minutes that auto-submits**, replacing the per-question seconds timer; `npm test`; this roadmap |
 | v1.6.9 | **Shared design file** (`css/tokens.css`) for the 11 student pages, verified pixel-identical; a test that stops the design drifting apart again |
+| v1.7.0 | **Single-page app:** Contests, Study Rooms, Assistant, Profile and Leaderboard are screens inside the dashboard (no reloads); tab switch about 4x faster on first open and near-instant after; pdf.js loads only when needed; socket.io served by your own server |
 
 ---
 
@@ -29,7 +30,7 @@ Status: **Done**, **Next** (start here), **Planned**, **Idea** (needs a decision
 
 **Release A — Foundation** (both of your decisions touch every screen, so do them in this order and restyle only once)
 1. ~~**#2** Shared design file~~ — done in v1.6.9
-2. **#1** Single-page shell, one screen at a time (Contests, Study Rooms, Assistant, Profile, then Leaderboard and Change password)
+2. ~~**#1** Single-page shell~~ — done in v1.7.0 (all five tabs; Change password stays a separate page on purpose)
 3. **#3** Liquid glass skin
 
 **Release B — Consistency and trust**
@@ -46,9 +47,9 @@ Status: **Done**, **Next** (start here), **Planned**, **Idea** (needs a decision
 
 | # | Feature | Effort | Status | Notes |
 |---|---|---|---|---|
-| 1 | Single-page app shell (no reloads) | L | **Next** | Dashboard becomes the shell. See "Design notes". Start with Contests. |
+| 1 | Single-page app shell (no reloads) | L | **Done (v1.7.0)** | `js/shell.js` + `public/views/`. Guarded by `tests/views.test.js`. See "Design notes". |
 | 2 | One shared design-token / CSS file | M | **Done (v1.6.9)** | `css/tokens.css`. Student pages only; admin keeps its own palette (see #27). Guarded by `tests/tokens.test.js`. |
-| 3 | Neumorphic liquid glass | M | Planned | #2 is done, so this starts as an edit to `tokens.css`. Add a low-power mode. |
+| 3 | Neumorphic liquid glass | M | **Next** | #2 and #1 are done, so this is now an edit to `tokens.css` plus the glass layer. Add a low-power mode. |
 | 4 | Service worker (offline shell + push) | M | Planned | Unlocks #14 and #15. |
 | 5 | Tutor grounded in your notes and question bank | M | Planned | Cites its source; says "I don't know" when it doesn't. |
 | 6 | "Explain it my way" levels | S | Planned | Simple / step-by-step / everyday example. Save each explanation so it loads instantly next time. |
@@ -68,7 +69,7 @@ Status: **Done**, **Next** (start here), **Planned**, **Idea** (needs a decision
 | 20 | Students can download or delete their own data | S–M | Planned | You store names, matric and phone numbers. Check Nigeria's data-protection requirements with a lawyer. |
 | 21 | Live "courses covered" section on the landing page | S | Planned | From `/api/courses`. |
 | 22 | Rate-limit the legacy admin key | S | Planned | Login, refresh and recovery have limiters; the admin key does not. Count failed attempts only, so admins can't be locked out by normal use. |
-| 23 | Self-host socket.io, Font Awesome and fonts | S | Planned | Study rooms load socket.io from an outside CDN. Needed for offline too. |
+| 23 | Self-host Font Awesome and fonts | S | Planned | socket.io is already served by your own server (v1.7.0). Font Awesome and Google Fonts still load from CDNs, which blocks first paint and breaks offline. |
 | 24 | Speed follow-ups | S–M | Planned | The activity log writes on every request; the quiz-start question lookup is still a case-insensitive scan (a collation index fixes it). |
 | 25 | Automated tests in the repo | S | **Done (v1.6.8)** | `npm test`. Covers bulk upload, counts, file import and the database pipelines. No database needed. |
 | 26 | Cleanup | S | Planned | Delete `td.html` and `testlatex.html`. If the old `bulk-upload-tool/` folder turns up, match its file format. |

@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<script src="/js/theme.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#e0e5ec">
+<link rel="manifest" href="/manifest.json">
+<title>PrepHQ — Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="/css/glass.css">
+<script src="/js/auth-guard.js"></script>
+<script src="/js/shared-nav.js"></script>
+<script>
+(function(){
+  const s = PhqAuth.getSession();
+  if(!s || !s.accessToken || s.role !== 'student'){ window.location.replace('/login.html'); }
+})();
+</script>
+<style>
+/* ══════════════════════════════════════════════════════════
+   NEUMORPHISM / SOFT UI — Profile  v1.5.6
+   ══════════════════════════════════════════════════════════ */
+:root{
+  --bg:#e0e5ec;
+  --sd:#b8c0cc;
+  --sl:#ffffff;
+
+  --sh:6px 6px 14px var(--sd), -6px -6px 14px var(--sl);
+  --sh-md:8px 8px 18px var(--sd), -8px -8px 18px var(--sl);
+  --sh-lg:12px 12px 26px var(--sd), -12px -12px 26px var(--sl);
+  --sh-sm:4px 4px 8px var(--sd), -4px -4px 8px var(--sl);
+  --sh-in:inset 4px 4px 10px var(--sd), inset -4px -4px 10px var(--sl);
+  --sh-in-sm:inset 3px 3px 6px var(--sd), inset -3px -3px 6px var(--sl);
+
+  --brand:#4a67d1;--brand-dk:#3a54b8;
+  --brand-lt:rgba(74,103,209,.10);--brand-glow:rgba(74,103,209,.20);
+  --ok:#2d9c6e;--ok-lt:rgba(45,156,110,.12);--ok-bd:rgba(45,156,110,.30);
+  --no:#d14545;--no-lt:rgba(209,69,69,.12);--no-bd:rgba(209,69,69,.30);
+  --warn:#c67a1e;--warn-lt:rgba(198,122,30,.12);
+  --purple:#7b52d1;--purple-lt:rgba(123,82,209,.12);
+  --teal:#2d9cb8;--teal-lt:rgba(45,156,184,.12);
+
+  --t1:#2a3142;--t2:#4a5568;--t3:#7a8296;--t4:#a8b0c0;
+
+  --bd:transparent;--bd2:transparent;
+
+  --r8:10px;--r12:14px;--r16:18px;--r20:22px;--r24:26px;--rpill:999px;
+  --ff-h:'Bricolage Grotesque',system-ui,sans-serif;
+  --ff-b:'DM Sans',system-ui,sans-serif;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --spring:cubic-bezier(.34,1.56,.64,1);
+}
+[data-theme=dark]{
+  --bg:#252932;
+  --sd:#181b21;--sl:#323743;
+  --brand:#7c93ff;--brand-dk:#a5b5ff;
+  --brand-lt:rgba(124,147,255,.12);--brand-glow:rgba(124,147,255,.20);
+  --ok:#3dba86;--ok-lt:rgba(61,186,134,.14);--ok-bd:rgba(61,186,134,.30);
+  --no:#e56161;--no-lt:rgba(229,97,97,.14);--no-bd:rgba(229,97,97,.30);
+  --warn:#e09437;--warn-lt:rgba(224,148,55,.14);
+  --purple:#9d7bea;--purple-lt:rgba(157,123,234,.14);
+  --teal:#4db8d4;--teal-lt:rgba(77,184,212,.14);
+  --t1:#e8ecf5;--t2:#b8c0d0;--t3:#7a8296;--t4:#4a5060;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{height:100%;-webkit-text-size-adjust:100%;}
+body{
+  font-family:var(--ff-b);
+  background:var(--bg);
+  color:var(--t1);
+  min-height:100dvh;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+  transition:background .3s var(--ease), color .3s var(--ease);
+}
+.wrap{max-width:520px;margin:0 auto;padding:18px 18px 140px;}
+
+/* ═══════════════════════════════════════
+   TOPBAR
+═══════════════════════════════════════ */
+.topbar{
+  display:flex;align-items:center;gap:12px;
+  padding:6px 0 20px;
+  animation:fadeUp .5s var(--ease) both;
+}
+.back-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--bg);border:none;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--brand);flex-shrink:0;
+  box-shadow:var(--sh);
+  transition:box-shadow .15s var(--ease), transform .15s var(--spring);
+}
+.back-btn:hover{box-shadow:var(--sh-md);}
+.back-btn:active{transform:scale(.93);box-shadow:var(--sh-in);}
+.back-btn svg{width:22px;height:22px;fill:currentColor;stroke:currentColor;}
+.pg-title{
+  font-family:var(--ff-h);font-size:20px;font-weight:800;
+  color:var(--t1);letter-spacing:-.4px;
+}
+
+/* ═══════════════════════════════════════
+   CARDS
+═══════════════════════════════════════ */
+.card{
+  background:var(--bg);
+  border-radius:var(--r20);
+  padding:20px;
+  box-shadow:var(--sh);
+  border:none;
+  margin-bottom:16px;
+  animation:fadeUp .55s var(--ease) both;
+  transition:box-shadow .25s var(--ease);
+}
+.card:hover{box-shadow:var(--sh-md);}
+
+/* Stagger the card entrances */
+.card:nth-of-type(1){animation-delay:.02s;}
+.card:nth-of-type(2){animation-delay:.06s;}
+.card:nth-of-type(3){animation-delay:.10s;}
+.card:nth-of-type(4){animation-delay:.14s;}
+.card:nth-of-type(5){animation-delay:.18s;}
+.card:nth-of-type(6){animation-delay:.22s;}
+
+/* ═══════════════════════════════════════
+   AVATAR
+═══════════════════════════════════════ */
+.avatar-row{display:flex;align-items:center;gap:14px;margin-bottom:8px;}
+.avatar{
+  width:60px;height:60px;border-radius:50%;
+  background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--brand);
+  font-weight:800;font-size:22px;
+  font-family:var(--ff-h);
+  flex-shrink:0;
+  box-shadow:var(--sh);
+  letter-spacing:-.5px;
+  transition:transform .35s var(--spring), box-shadow .25s var(--ease);
+}
+.avatar:hover{transform:scale(1.05);box-shadow:var(--sh-md);}
+.uname{
+  font-family:var(--ff-h);font-weight:800;font-size:17px;
+  color:var(--t1);letter-spacing:-.3px;
+}
+.uhandle{font-size:13px;color:var(--t3);margin-top:2px;font-weight:600;}
+
+/* ═══════════════════════════════════════
+   DISPLAY NAME FIELD
+═══════════════════════════════════════ */
+.field-btn{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--bg);
+  border-radius:var(--r12);
+  padding:14px 16px;
+  margin-top:12px;
+  box-shadow:var(--sh-in);
+  transition:box-shadow .2s var(--ease);
+}
+.field-btn:focus-within{box-shadow:var(--sh-in), 0 0 0 2px var(--brand-lt);}
+.field-btn input{
+  border:none;background:transparent;
+  font-size:14px;font-weight:700;
+  color:var(--t1);outline:none;width:100%;
+  margin-top:4px;
+  font-family:var(--ff-b);
+  transition:color .15s var(--ease);
+}
+.field-btn input::placeholder{color:var(--t4);font-weight:500;}
+
+/* ═══════════════════════════════════════
+   STAT GRID
+═══════════════════════════════════════ */
+.stat-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-top:16px;
+}
+.stat-box{
+  background:var(--bg);
+  border-radius:var(--r12);
+  padding:14px 8px;
+  text-align:center;
+  box-shadow:var(--sh-sm);
+  transition:box-shadow .2s var(--ease), transform .2s var(--spring);
+}
+.stat-box:hover{transform:translateY(-2px);box-shadow:var(--sh);}
+.stat-val{
+  font-family:var(--ff-h);font-weight:800;font-size:19px;
+  color:var(--brand);letter-spacing:-.5px;
+}
+.stat-lbl{
+  font-size:10px;color:var(--t3);font-weight:800;
+  margin-top:4px;text-transform:uppercase;
+  letter-spacing:.08em;
+}
+
+/* ═══════════════════════════════════════
+   SECTION TITLES
+═══════════════════════════════════════ */
+.sec-title{
+  font-size:12px;font-weight:800;
+  color:var(--t3);
+  text-transform:uppercase;
+  letter-spacing:.10em;
+  margin:22px 4px 10px;
+  animation:fadeUp .5s var(--ease) both;
+}
+
+/* ═══════════════════════════════════════
+   TRANSFER ROWS
+═══════════════════════════════════════ */
+.txn-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 0;
+  box-shadow:0 -1px 0 var(--sd) inset;
+  animation:fadeUp .45s var(--ease) both;
+}
+.txn-row:first-child{box-shadow:none;}
+.txn-desc{font-size:13.5px;font-weight:700;color:var(--t1);}
+.txn-date{font-size:11.5px;color:var(--t4);margin-top:3px;font-weight:500;}
+.txn-amt{font-weight:800;font-size:14.5px;font-family:var(--ff-h);letter-spacing:-.3px;}
+.txn-amt.pos{color:var(--ok);}
+.txn-amt.neg{color:var(--no);}
+
+.empty{
+  text-align:center;padding:30px 20px;
+  color:var(--t3);font-size:13px;font-weight:500;
+}
+
+/* ═══════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════ */
+.btn{
+  border:none;
+  border-radius:var(--r12);
+  padding:11px 18px;
+  font-weight:800;
+  font-size:12.5px;
+  cursor:pointer;
+  background:var(--bg);
+  color:var(--brand);
+  box-shadow:var(--sh-sm);
+  transition:box-shadow .18s var(--ease), transform .18s var(--spring), color .18s var(--ease);
+  font-family:var(--ff-h);
+  letter-spacing:-.1px;
+}
+.btn:hover{box-shadow:var(--sh);}
+.btn:active{transform:scale(.96);box-shadow:var(--sh-in-sm);}
+.btn.primary{
+  color:var(--brand);
+  background:var(--bg);
+  box-shadow:var(--sh), 0 0 0 2px var(--brand-lt);
+  font-weight:800;
+}
+.btn.primary:hover{box-shadow:var(--sh-md), 0 0 0 2px var(--brand-lt);}
+
+/* ═══════════════════════════════════════
+   FORM INPUTS
+   ═══════════════════════════════════════ */
+.neu-input{
+  border:none;
+  background:var(--bg);
+  border-radius:var(--r8);
+  padding:9px 11px;
+  font-size:12.5px;
+  font-weight:700;
+  color:var(--t1);
+  outline:none;
+  box-shadow:var(--sh-in-sm);
+  transition:box-shadow .2s var(--ease);
+  font-family:var(--ff-b);
+  width:100%;
+  min-width:0;
+  -moz-appearance:textfield;
+}
+.neu-input::-webkit-outer-spin-button,
+.neu-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.neu-input::placeholder{color:var(--t4);font-weight:500;}
+.neu-input:focus{box-shadow:var(--sh-in-sm), 0 0 0 2px var(--brand-lt);}
+
+/* ═══════════════════════════════════════
+   PLAN CARD
+   ═══════════════════════════════════════ */
+#plan-card{
+  border:none;
+  box-shadow:var(--sh-md), 0 0 0 2px var(--brand-lt);
+}
+#plan-badge{
+  font-size:11px;font-weight:800;
+  padding:6px 13px;
+  border-radius:var(--r8);
+  text-transform:capitalize;
+  box-shadow:var(--sh-sm);
+  background:var(--bg) !important;
+  transition:color .25s var(--ease), box-shadow .25s var(--ease);
+}
+
+.plan-row{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;
+  border-radius:var(--r12);
+  padding:14px 16px;
+  background:var(--bg);
+  box-shadow:var(--sh-sm);
+  transition:box-shadow .22s var(--ease), transform .22s var(--spring);
+}
+.plan-row:hover{transform:translateY(-1px);box-shadow:var(--sh);}
+.plan-row.current{
+  box-shadow:var(--sh-in-sm), 0 0 0 2px var(--brand-lt);
+}
+.plan-row.current:hover{transform:none;}
+.plan-name{font-weight:800;font-size:13.5px;color:var(--t1);font-family:var(--ff-h);letter-spacing:-.2px;}
+.plan-price{font-weight:700;font-size:12px;}
+.plan-desc{font-size:11.5px;color:var(--t3);margin-top:3px;line-height:1.45;}
+
+/* ═══════════════════════════════════════
+   STUDY GUIDE LOCK / RESULT
+   ═══════════════════════════════════════ */
+.lock-card{
+  background:var(--bg);
+  border-radius:var(--r12);
+  padding:18px 16px;
+  text-align:center;
+  box-shadow:var(--sh-in), 0 0 0 2px var(--brand-lt);
+}
+.lock-title{font-weight:800;font-size:13.5px;color:var(--brand);font-family:var(--ff-h);}
+.lock-sub{font-size:12px;color:var(--t3);margin-top:6px;line-height:1.5;}
+
+.guide-week{
+  background:var(--bg);
+  border-radius:var(--r12);
+  padding:14px 16px;
+  margin-bottom:10px;
+  box-shadow:var(--sh-sm);
+  animation:fadeUp .45s var(--ease) both;
+  transition:box-shadow .2s var(--ease), transform .2s var(--spring);
+}
+.guide-week:hover{transform:translateY(-1px);box-shadow:var(--sh);}
+.guide-week:nth-child(1){animation-delay:.05s;}
+.guide-week:nth-child(2){animation-delay:.10s;}
+.guide-week:nth-child(3){animation-delay:.15s;}
+.guide-week:nth-child(4){animation-delay:.20s;}
+.guide-week-title{
+  font-weight:800;font-size:13px;
+  font-family:var(--ff-h);color:var(--t1);
+  letter-spacing:-.2px;
+}
+.guide-week ul{
+  margin:10px 0 0;padding-left:20px;
+  font-size:12.5px;color:var(--t2);line-height:1.7;
+}
+
+.referral-box{
+  background:var(--bg);
+  border-radius:var(--r8);
+  padding:12px 14px;
+  margin-top:14px;
+  font-family:monospace;
+  font-weight:700;
+  font-size:12.5px;
+  word-break:break-all;
+  color:var(--t1);
+  box-shadow:var(--sh-in-sm);
+  transition:box-shadow .2s var(--ease);
+}
+
+/* ═══════════════════════════════════════
+   DYNAMIC ROWS (grading bands + GPA calc)
+   Fixed so it never overflows on mobile.
+   Each row is now a vertical stack of two
+   sub-rows: the fields, then the remove
+   button on its own line. Or — cleaner —
+   we make the row a wrapping flex where
+   inputs shrink and the remove button
+   sits inline without forcing overflow.
+   ═══════════════════════════════════════ */
+.dyn-row{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  margin-bottom:8px;
+  width:100%;
+  min-width:0;
+  animation:fadeUp .35s var(--ease) both;
+  transition:opacity .2s var(--ease);
+}
+
+/* On very narrow screens the row wraps:
+   inputs share the first line, the × button
+   drops to the second line only if it can't fit */
+@media (max-width: 360px){
+  .dyn-row{
+    flex-wrap:wrap;
+  }
+  .dyn-row .dyn-remove{
+    flex-basis:100%;
+    width:100%;
+    height:34px;
+    border-radius:var(--r8);
+    justify-content:center;
+    gap:6px;
+  }
+  .dyn-row .dyn-remove::after{
+    content:'Remove';
+    font-size:11.5px;
+    font-weight:800;
+    font-family:var(--ff-h);
+    letter-spacing:.03em;
+  }
+}
+
+.dyn-remove{
+  width:28px;height:28px;border-radius:var(--r8);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--t3);cursor:pointer;
+  background:var(--bg);
+  box-shadow:var(--sh-sm);
+  flex-shrink:0;
+  transition:box-shadow .15s var(--ease), transform .15s var(--spring), color .15s var(--ease);
+  border:none;
+}
+.dyn-remove:hover{box-shadow:var(--sh);color:var(--no);}
+.dyn-remove:active{transform:scale(.9);box-shadow:var(--sh-in-sm);color:var(--no);}
+.dyn-remove i{font-size:12px;}
+
+/* Grade band row — 3 equal inputs + remove */
+.band-row{display:flex;gap:8px;align-items:center;width:100%;min-width:0;}
+.band-row .neu-input.grade{flex:0 0 60px;text-align:center;padding:9px 6px;}
+.band-row .neu-input.min{flex:1 1 auto;min-width:0;}
+.band-row .neu-input.point{flex:0 0 68px;padding:9px 8px;}
+
+/* GPA calc row — course name grows, units/score fixed */
+.gpa-row{display:flex;gap:8px;align-items:center;width:100%;min-width:0;}
+.gpa-row .neu-input.course{flex:1 1 auto;min-width:0;}
+.gpa-row .neu-input.units{flex:0 0 60px;padding:9px 6px;}
+.gpa-row .neu-input.score{flex:0 0 68px;padding:9px 8px;}
+
+/* ═══════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════ */
+@keyframes fadeUp{
+  from{opacity:0; transform:translateY(12px);}
+  to{opacity:1; transform:translateY(0);}
+}
+@keyframes popIn{
+  0%{opacity:0; transform:scale(.94);}
+  60%{transform:scale(1.02);}
+  100%{opacity:1; transform:scale(1);}
+}
+@keyframes shimmer{
+  0%{background-position:-200% 0;}
+  100%{background-position:200% 0;}
+}
+.pop-in{animation:popIn .4s var(--spring) both;}
+
+/* Row enter animation applied via JS */
+.new-row{
+  animation:popIn .35s var(--spring) both;
+}
+
+/* Toast */
+#toast{
+  position:fixed;bottom:96px;left:50%;
+  transform:translateX(-50%) translateY(16px);
+  background:var(--bg);color:var(--brand);
+  padding:12px 22px;border-radius:var(--rpill);
+  font-size:13px;font-weight:700;
+  opacity:0;transition:all .3s var(--ease);
+  z-index:999;pointer-events:none;white-space:nowrap;
+  box-shadow:var(--sh-md);
+}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* Responsive */
+@media (max-width: 420px){
+  .wrap{padding:16px 16px 130px;}
+  .pg-title{font-size:18px;}
+  .avatar{width:54px;height:54px;font-size:20px;}
+  .stat-val{font-size:17px;}
+  .card{padding:18px;}
+  .sec-title{margin:20px 2px 8px;}
+}
+
+/* Loading shimmer for dynamic content */
+.loading-shimmer{
+  background:linear-gradient(
+    90deg,
+    rgba(74,103,209,.05) 25%,
+    rgba(74,103,209,.14) 37%,
+    rgba(74,103,209,.05) 63%
+  );
+  background-size:400% 100%;
+  animation:shimmer 1.3s ease-in-out infinite;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;
+  }
+}
+</style>
+</head>
+<body>
+<div class="glass-backdrop"></div>
+<div class="wrap">
+  <div class="topbar">
+    <div class="back-btn" onclick="window.location.href='/dashboard'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></div>
+    <div class="pg-title">Profile</div>
+  </div>
+
+  <!-- Plan card -->
+  <div class="card" id="plan-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <div style="font-size:15px;font-weight:800;font-family:var(--ff-h);letter-spacing:-.3px;">Your Plan</div>
+      <div id="plan-badge">—</div>
+    </div>
+    <div id="plan-sub" style="font-size:12.5px;color:var(--t3);margin-top:4px;margin-bottom:16px;line-height:1.5;">Loading your plan…</div>
+    <div id="plan-options" style="display:flex;flex-direction:column;gap:10px;"></div>
+  </div>
+
+  <div class="card">
+    <div class="avatar-row">
+      <div class="avatar" id="avatar">—</div>
+      <div>
+        <div class="uname" id="p-name">—</div>
+        <div class="uhandle">@<span id="p-username">—</span></div>
+      </div>
+    </div>
+    <div class="field-btn">
+      <div style="width:100%;">
+        <div style="font-size:11px;color:var(--t3);font-weight:800;text-transform:uppercase;letter-spacing:.08em;">Display Name</div>
+        <input id="display-name-input" placeholder="Add a display name" onchange="saveDisplayName()">
+      </div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-box"><div class="stat-val" id="p-credits">0</div><div class="stat-lbl">Credits</div></div>
+      <div class="stat-box"><div class="stat-val" id="p-quizzes">0</div><div class="stat-lbl">Quizzes</div></div>
+      <div class="stat-box"><div class="stat-val" id="p-best">0%</div><div class="stat-lbl">Best Score</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <div>
+        <div style="font-size:15px;font-weight:800;font-family:var(--ff-h);letter-spacing:-.3px;">Referral Link</div>
+        <div style="font-size:12.5px;color:var(--t3);margin-top:3px;line-height:1.45;">Earn credits when friends join with your code</div>
+      </div>
+      <button class="btn" onclick="copyReferral()">Copy Link</button>
+    </div>
+    <div class="referral-box" id="referral-code">—</div>
+    <div style="font-size:12px;color:var(--t3);margin-top:10px;line-height:1.5;">Or share just the code: <b style="color:var(--t1);" id="referral-code-only">—</b> · <span id="referral-count">0</span> friends referred</div>
+  </div>
+
+  <div class="sec-title">GPA Goal</div>
+  <div class="card">
+    <div style="display:flex;gap:12px;margin-bottom:16px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:11px;color:var(--t3);font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Current GPA</div>
+        <input id="gpa-current-input" type="number" min="0" max="5" step="0.01" placeholder="e.g. 3.20" class="neu-input" style="padding:11px 12px;font-size:14px;" onchange="saveGPA()">
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:11px;color:var(--t3);font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Target GPA</div>
+        <input id="gpa-target-input" type="number" min="0" max="5" step="0.01" placeholder="e.g. 4.00" class="neu-input" style="padding:11px 12px;font-size:14px;" onchange="saveGPA()">
+      </div>
+    </div>
+
+    <div id="sg-locked" class="lock-card" style="display:none;">
+      <div class="lock-title"><i class="fa-solid fa-lock"></i> AI Study Guide is a Premium feature</div>
+      <div class="lock-sub">Get a personalized 4-week plan built from your GPA goal and courses.</div>
+      <button class="btn primary" style="margin-top:14px;" onclick="promptUpgrade('Premium')">Upgrade to unlock</button>
+    </div>
+
+    <button class="btn primary" id="sg-generate-btn" style="display:none;width:100%;padding:14px;" onclick="generateStudyGuide()">
+      <i class="fa-solid fa-wand-magic-sparkles"></i> Generate AI Study Guide
+    </button>
+
+    <div id="sg-result" style="display:none;margin-top:16px;"></div>
+  </div>
+
+  <div class="sec-title">Grading System <span style="text-transform:none;font-weight:600;color:var(--t4);letter-spacing:0;">— set this to match your school</span></div>
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+      <label style="font-size:12px;color:var(--t3);font-weight:800;text-transform:uppercase;letter-spacing:.06em;">GPA scale:</label>
+      <select id="gpa-scale-select" class="neu-input" style="width:auto;padding:9px 12px;font-size:13px;" onchange="onScalePresetChange()">
+        <option value="5">5.0</option>
+        <option value="4">4.0</option>
+        <option value="custom">Custom…</option>
+      </select>
+      <input id="gpa-scale-custom" type="number" min="1" max="20" step="0.1" placeholder="e.g. 7.0" class="neu-input" style="display:none;width:90px;padding:9px 11px;" onchange="saveGradingSystem()">
+    </div>
+
+    <div style="font-size:11px;color:var(--t3);font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Score → grade bands</div>
+    <div id="grading-bands"></div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+      <button class="btn" onclick="addGradingBand()"><i class="fa-solid fa-plus"></i> Add band</button>
+      <button class="btn primary" onclick="saveGradingSystem()">Save grading system</button>
+    </div>
+  </div>
+
+  <div class="sec-title">Calculate Your GPA</div>
+  <div class="card">
+    <div id="gpa-calc-rows"></div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+      <button class="btn" onclick="addGpaCalcRow()"><i class="fa-solid fa-plus"></i> Add course</button>
+      <button class="btn primary" onclick="calculateGPA()">Calculate</button>
+    </div>
+    <div id="gpa-calc-result" style="display:none;margin-top:14px;"></div>
+  </div>
+
+  <div class="sec-title">Transfer History</div>
+  <div class="card" id="transfer-list" style="padding:8px 20px;">
+    <div class="empty">Loading…</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const API_BASE = '';
+let profileData = null;
+
+async function loadProfile(){
+  try{
+    const r = await PhqAuth.authFetch('/api/profile', {}, 'student');
+    if(!r.ok){
+      try { PhqAuth.logout('student'); } catch(e){}
+      window.location.replace('/login.html');
+      return;
+    }
+    profileData = await r.json();
+    render();
+  }catch(e){
+    try { PhqAuth.logout('student'); } catch(e2){}
+    window.location.replace('/login.html');
+  }
+}
+
+function escHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('on');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=>el.classList.remove('on'), 2200);
+}
+
+function render(){
+  const d = profileData;
+  document.getElementById('avatar').textContent = (d.displayName || d.name || d.username || '?').slice(0,2).toUpperCase();
+  document.getElementById('p-name').textContent = d.displayName || d.name;
+  document.getElementById('p-username').textContent = d.username || 'not set';
+  document.getElementById('display-name-input').value = d.displayName || '';
+  document.getElementById('p-credits').textContent = d.credits ?? 0;
+  document.getElementById('p-quizzes').textContent = d.quizStats?.totalQuizzes ?? 0;
+  document.getElementById('p-best').textContent = (d.quizStats?.bestScore ?? 0) + '%';
+  document.getElementById('referral-code').textContent = d.referral?.code ? `${window.location.origin}/register?ref=${d.referral.code}` : '—';
+  document.getElementById('referral-code-only').textContent = d.referral?.code || '—';
+  document.getElementById('referral-count').textContent = d.referral?.referredCount ?? 0;
+
+  document.getElementById('gpa-current-input').value = d.currentGPA ?? '';
+  document.getElementById('gpa-target-input').value = d.targetGPA ?? '';
+  // Decided by the server's entitlement rules (Premium, or the admin's Free-plan switch for the study guide).
+  const isPaid = !!d.entitlements?.features?.studyGuide;
+  document.getElementById('sg-locked').style.display = isPaid ? 'none' : 'block';
+  document.getElementById('sg-generate-btn').style.display = isPaid ? 'block' : 'none';
+  if(isPaid) loadLatestStudyGuide();
+
+  loadGradingSystem();
+  loadPlanCard(d.tier);
+
+  const list = document.getElementById('transfer-list');
+  const history = d.transferHistory || [];
+  if(history.length === 0){
+    list.innerHTML = '<div class="empty">No transfers yet.</div>';
+    return;
+  }
+  list.innerHTML = history.map((t,i) => {
+    const sent = t.fromMatric === d.matric;
+    const label = sent ? `Sent to @${t.toUsername || t.toMatric}` : `Received from @${t.fromUsername || t.fromMatric}`;
+    const amt = sent ? -(t.totalDebited) : t.amount;
+    return `<div class="txn-row" style="animation-delay:${Math.min(i*0.04, 0.4)}s">
+      <div><div class="txn-desc">${label}</div><div class="txn-date">${new Date(t.createdAt).toLocaleString()}</div></div>
+      <div class="txn-amt ${amt>0?'pos':'neg'}">${amt>0?'+':''}${amt}</div>
+    </div>`;
+  }).join('');
+}
+
+async function saveDisplayName(){
+  const val = document.getElementById('display-name-input').value.trim();
+  try{
+    await PhqAuth.authFetch('/api/profile/display-name', {
+      method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({displayName: val}),
+    }, 'student');
+    toast('Display name saved');
+  }catch(e){}
+}
+
+let cachedPlans = null;
+let selPeriod = 'monthly';
+const PERIOD_LABEL = { weekly:'Weekly', monthly:'Monthly', yearly:'Yearly', lifetime:'Lifetime' };
+const PERIOD_UNIT  = { weekly:'/week', monthly:'/month', yearly:'/year', lifetime:' once' };
+const fmtNaira = n => '\u20A6' + Number(n).toLocaleString();
+const esc = t => String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+async function loadPlanCard(tier){
+  const badge = document.getElementById('plan-badge');
+  const sub = document.getElementById('plan-sub');
+  const opts = document.getElementById('plan-options');
+  const isPremium = tier === 'premium';
+  const ent = profileData?.entitlements || {};
+
+  badge.textContent = isPremium ? 'Premium' + (ent.premiumPlan ? ' \u00B7 ' + PERIOD_LABEL[ent.premiumPlan] : '') : 'Free';
+  badge.style.color = isPremium ? 'var(--purple)' : 'var(--warn)';
+  if(!isPremium) sub.textContent = "You're on the free plan \u2014 limited daily questions, AI quizzes, and AI chat.";
+  else if(ent.lifetime) sub.textContent = "Premium Lifetime \u2014 permanent access, no renewals.";
+  else if(ent.expiresAt) sub.textContent = `Premium \u2014 unlimited access until ${new Date(ent.expiresAt).toLocaleDateString()}.`;
+  else sub.textContent = 'Premium \u2014 unlimited questions, AI quizzes, and AI chat.';
+
+  let plans;
+  try{
+    const r = await PhqAuth.authFetch('/api/plans', {}, 'student');
+    if(r.ok) plans = await r.json();
+  }catch(e){}
+  if(!plans){ opts.innerHTML = '<div style="font-size:12.5px;color:var(--t3);">Could not load plan pricing right now.</div>'; return; }
+  cachedPlans = plans;
+
+  const f = plans.tiers.free;
+  const freeDesc = [
+    f.dailyQuestions != null ? `${f.dailyQuestions} questions/day` : 'Unlimited questions',
+    f.dailyAIQuizzes != null ? `${f.dailyAIQuizzes} AI quizzes/day` : 'Unlimited AI quizzes',
+    f.dailyAIChatMessages != null ? `${f.dailyAIChatMessages} AI chats/day` : 'Unlimited AI chat',
+  ].join(' \u00B7 ');
+
+  const offered = plans.periods.filter(x => x.price != null);
+  if(!offered.find(x => x.key === selPeriod)) selPeriod = offered[0]?.key || 'monthly';
+  const periodBtns = plans.periods.map(x => {
+    const off = x.price == null, on = x.key === selPeriod && !off;
+    return `<button type="button" ${off?'disabled':''} onclick="pickPeriod('${x.key}')" style="border:none;cursor:${off?'not-allowed':'pointer'};text-align:left;padding:10px 12px;border-radius:14px;background:var(--bg);color:var(--t1);font-family:inherit;min-width:0;opacity:${off?.45:1};box-shadow:${on?'var(--sh-in-sm),0 0 0 2px var(--purple)':'var(--sh-sm)'};">
+      <div style="font-weight:800;font-size:12.5px;">${PERIOD_LABEL[x.key]}</div>
+      <div style="font-size:11.5px;font-weight:700;color:${on?'var(--purple)':'var(--t3)'};">${off?'Not available':fmtNaira(x.price)+PERIOD_UNIT[x.key]}</div></button>`;
+  }).join('');
+
+  opts.innerHTML = `
+    <div class="plan-row ${!isPremium?'current':''}">
+      <div style="min-width:0;"><div class="plan-name">Free</div><div class="plan-desc">${esc(freeDesc)}</div></div>
+      ${!isPremium ? '<span style="font-size:11.5px;font-weight:800;color:var(--ok);padding:9px 14px;">Current</span>' : ''}
+    </div>
+    <div class="plan-row ${isPremium?'current':''}" style="flex-direction:column;align-items:stretch;gap:10px;">
+      <div style="display:flex;align-items:center;gap:10px;justify-content:space-between;">
+        <div style="min-width:0;"><div class="plan-name">Premium</div><div class="plan-desc">Unlimited questions, AI quizzes &amp; AI chat, plus every feature</div></div>
+        ${isPremium ? '<span style="font-size:11.5px;font-weight:800;color:var(--ok);padding:9px 14px;">Current</span>' : ''}
+      </div>
+      ${isPremium && ent.lifetime ? '' : `
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;">${periodBtns}</div>
+      <button onclick="promptUpgrade('Premium')" style="border:none;cursor:pointer;font-size:12.5px;font-weight:800;color:#fff;background:linear-gradient(140deg,var(--brand),var(--purple));padding:11px 16px;border-radius:99px;box-shadow:var(--sh-sm);font-family:var(--ff-h);">${isPremium ? 'Renew / change plan' : 'Upgrade to Premium'}</button>`}
+    </div>`;
+}
+function pickPeriod(k){ selPeriod = k; loadPlanCard(profileData?.tier || 'free'); }
+
+async function promptUpgrade(planName){
+  if(!cachedPlans){
+    try{
+      const r = await PhqAuth.authFetch('/api/plans', {}, 'student');
+      if(r.ok) cachedPlans = await r.json();
+    }catch(e){}
+  }
+  document.getElementById('plan-card')?.scrollIntoView({ behavior:'smooth', block:'start' });
+
+  // No online payment: file the request, then continue on WhatsApp with an admin.
+  const win = window.open('', '_blank');
+  try{
+    const r = await PhqAuth.authFetch('/api/upgrade-request', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ plan: selPeriod }) }, 'student');
+    const d = await r.json();
+    if(!r.ok){ if(win) win.close(); alert(d.error || 'Could not send your request'); return; }
+    if(d.whatsappUrl && win) win.location.href = d.whatsappUrl;
+    else { if(win) win.close(); alert('Your request ' + d.code + ' was saved. No admin WhatsApp is set up yet \u2014 please quote this code to PrepHQ support.'); }
+  }catch(e){ if(win) win.close(); alert('Network error \u2014 please try again.'); }
+}
+
+async function saveGPA(){
+  const currentGPA = document.getElementById('gpa-current-input').value;
+  const targetGPA = document.getElementById('gpa-target-input').value;
+  try{
+    await PhqAuth.authFetch('/api/profile/details', {
+      method:'PUT', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ currentGPA: currentGPA===''?null:currentGPA, targetGPA: targetGPA===''?null:targetGPA }),
+    }, 'student');
+  }catch(e){}
+}
+
+// ── Grading system ──
+let gradingBands = [];
+async function loadGradingSystem(){
+  try{
+    const r = await PhqAuth.authFetch('/api/me', {}, 'student');
+    if(!r.ok) return;
+    const d = await r.json();
+    const scale = d.gpaScale ?? 5;
+    const preset = document.getElementById('gpa-scale-select');
+    const customInput = document.getElementById('gpa-scale-custom');
+    if(scale === 5 || scale === 4){
+      preset.value = String(scale);
+      customInput.style.display = 'none';
+    } else {
+      preset.value = 'custom';
+      customInput.style.display = 'inline-block';
+      customInput.value = scale;
+    }
+    gradingBands = Array.isArray(d.gradingScale) && d.gradingScale.length ? d.gradingScale : [
+      {grade:'A',minScore:70,point:5},{grade:'B',minScore:60,point:4},{grade:'C',minScore:50,point:3},
+      {grade:'D',minScore:45,point:2},{grade:'E',minScore:40,point:1},{grade:'F',minScore:0,point:0},
+    ];
+    renderGradingBands();
+    renderGpaCalcRows();
+  }catch(e){}
+}
+
+function renderGradingBands(){
+  const el = document.getElementById('grading-bands');
+  el.innerHTML = gradingBands.map((b,i) => `
+    <div class="dyn-row band-row" data-idx="${i}" style="animation-delay:${Math.min(i*0.04,0.3)}s">
+      <input value="${escHtml(b.grade)}" placeholder="Grade" class="neu-input grade" oninput="gradingBands[${i}].grade=this.value" maxlength="3">
+      <input type="number" value="${b.minScore}" placeholder="Min score" class="neu-input min" oninput="gradingBands[${i}].minScore=parseFloat(this.value)||0" inputmode="numeric">
+      <input type="number" step="0.1" value="${b.point}" placeholder="Point" class="neu-input point" oninput="gradingBands[${i}].point=parseFloat(this.value)||0" inputmode="decimal">
+      <button class="dyn-remove" onclick="removeGradingBand(${i})" aria-label="Remove band">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  `).join('');
+}
+function addGradingBand(){
+  gradingBands.push({grade:'',minScore:0,point:0});
+  renderGradingBands();
+  const rows = document.querySelectorAll('#grading-bands .dyn-row');
+  rows[rows.length-1]?.classList.add('new-row');
+  rows[rows.length-1]?.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function removeGradingBand(i){ gradingBands.splice(i,1); renderGradingBands(); }
+
+function onScalePresetChange(){
+  const v = document.getElementById('gpa-scale-select').value;
+  document.getElementById('gpa-scale-custom').style.display = v==='custom' ? 'inline-block' : 'none';
+  if(v!=='custom') saveGradingSystem();
+}
+
+async function saveGradingSystem(){
+  const preset = document.getElementById('gpa-scale-select').value;
+  const gpaScale = preset==='custom' ? parseFloat(document.getElementById('gpa-scale-custom').value)||5 : parseFloat(preset);
+  const validBands = gradingBands.filter(b=>b.grade && b.grade.trim());
+  if(!validBands.length){ toast('Add at least one grading band with a grade name.'); return; }
+  try{
+    const r = await PhqAuth.authFetch('/api/profile/grading-system', {
+      method:'PUT', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ gpaScale, gradingScale: validBands }),
+    }, 'student');
+    if(!r.ok){ const d = await r.json(); toast(d.error || 'Could not save grading system.'); return; }
+    const d = await r.json();
+    gradingBands = d.gradingScale;
+    renderGradingBands();
+    toast('Grading system saved');
+  }catch(e){ toast('Cannot connect to server.'); }
+}
+
+// ── GPA calculator ──
+let gpaCalcRows = [{name:'',creditUnit:'',score:''}];
+function renderGpaCalcRows(){
+  const el = document.getElementById('gpa-calc-rows');
+  el.innerHTML = gpaCalcRows.map((r,i) => `
+    <div class="dyn-row gpa-row" data-idx="${i}" style="animation-delay:${Math.min(i*0.04,0.3)}s">
+      <input value="${escHtml(r.name)}" placeholder="Course (e.g. CHM201)" class="neu-input course" oninput="gpaCalcRows[${i}].name=this.value">
+      <input type="number" min="1" value="${r.creditUnit}" placeholder="Units" class="neu-input units" oninput="gpaCalcRows[${i}].creditUnit=this.value" inputmode="numeric">
+      <input type="number" min="0" max="100" value="${r.score}" placeholder="Score" class="neu-input score" oninput="gpaCalcRows[${i}].score=this.value" inputmode="numeric">
+      <button class="dyn-remove" onclick="removeGpaCalcRow(${i})" aria-label="Remove course">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  `).join('');
+}
+function addGpaCalcRow(){
+  gpaCalcRows.push({name:'',creditUnit:'',score:''});
+  renderGpaCalcRows();
+  const rows = document.querySelectorAll('#gpa-calc-rows .dyn-row');
+  rows[rows.length-1]?.classList.add('new-row');
+  rows[rows.length-1]?.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function removeGpaCalcRow(i){
+  gpaCalcRows.splice(i,1);
+  if(!gpaCalcRows.length) gpaCalcRows.push({name:'',creditUnit:'',score:''});
+  renderGpaCalcRows();
+}
+
+async function calculateGPA(){
+  const courses = gpaCalcRows
+    .filter(r => r.name && r.creditUnit !== '' && r.score !== '')
+    .map(r => ({ name: r.name, creditUnit: Number(r.creditUnit), score: Number(r.score) }));
+  if(!courses.length){ toast('Add at least one course with units and score.'); return; }
+  try{
+    const r = await PhqAuth.authFetch('/api/gpa/calculate', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ courses }),
+    }, 'student');
+    const d = await r.json();
+    if(!r.ok){ toast(d.error || 'Could not calculate GPA.'); return; }
+    const el = document.getElementById('gpa-calc-result');
+    el.style.display = 'block';
+    el.innerHTML = `
+      <div class="pop-in" style="font-weight:800;font-size:20px;font-family:var(--ff-h);margin-bottom:12px;color:var(--brand);letter-spacing:-.5px;">GPA: ${d.gpa} <span style="font-size:12px;color:var(--t3);font-weight:600;">/ ${d.gpaScale}</span></div>
+      ${d.breakdown.map((b,i) => `<div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--t2);padding:6px 0;box-shadow:0 -1px 0 var(--sd) inset;animation:fadeUp .35s var(--ease) both;animation-delay:${i*0.04}s;"><span>${escHtml(b.name)} (${b.creditUnit}u, ${b.score}%)</span><span style="font-weight:800;color:var(--t1);">${escHtml(b.grade)} · ${b.point}pt</span></div>`).join('')}
+      <button class="btn primary" style="margin-top:14px;width:100%;padding:13px;" onclick="saveCalculatedGPA(${d.gpa})">Save as my current GPA</button>
+    `;
+  }catch(e){ toast('Cannot connect to server.'); }
+}
+
+async function saveCalculatedGPA(gpa){
+  document.getElementById('gpa-current-input').value = gpa;
+  await saveGPA();
+  toast('Saved as your current GPA.');
+}
+
+async function loadLatestStudyGuide(){
+  try{
+    const r = await PhqAuth.authFetch('/api/study-guide/latest', {}, 'student');
+    if(!r.ok) return;
+    const guide = await r.json();
+    if(guide) renderStudyGuide(guide);
+  }catch(e){}
+}
+
+async function generateStudyGuide(){
+  const btn = document.getElementById('sg-generate-btn');
+  const currentGPA = document.getElementById('gpa-current-input').value;
+  const targetGPA = document.getElementById('gpa-target-input').value;
+  if(!currentGPA || !targetGPA){
+    toast('Enter both your current and target GPA first.');
+    return;
+  }
+  btn.disabled = true;
+  const original = btn.innerHTML;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Building your plan…';
+  try{
+    const r = await PhqAuth.authFetch('/api/study-guide/generate', { method:'POST' }, 'student');
+    const d = await r.json();
+    if(!r.ok){
+      if((d.code === 'FEATURE_LOCKED' || d.code === 'TIER_REQUIRED') && typeof showPaywall === 'function') showPaywall(d.error);
+      else toast(d.error || 'Could not generate a study guide. Try again.');
+      return;
+    }
+    renderStudyGuide(d);
+  }catch(e){
+    toast('Cannot connect to server.');
+  }finally{
+    btn.disabled = false;
+    btn.innerHTML = original;
+  }
+}
+
+function renderStudyGuide(guide){
+  const el = document.getElementById('sg-result');
+  el.style.display = 'block';
+  el.innerHTML = `
+    <div style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:16px;">${escHtml(guide.summary)}</div>
+    ${guide.weeks.map((w,i) => `
+      <div class="guide-week" style="animation-delay:${i*0.08}s">
+        <div class="guide-week-title">${escHtml(w.title)} — ${escHtml(w.focus)}</div>
+        <ul>
+          ${w.tasks.map(t => `<li>${escHtml(t)}</li>`).join('')}
+        </ul>
+      </div>
+    `).join('')}
+  `;
+}
+
+function copyReferral(){
+  const link = document.getElementById('referral-code').textContent;
+  if(!link || link === '—') return;
+  navigator.clipboard?.writeText(link);
+  toast('Referral link copied');
+}
+
+loadProfile();
+</script>
+</body>
+</html>

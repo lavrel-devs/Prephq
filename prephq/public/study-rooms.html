@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<script src="/js/theme.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#e0e5ec">
+<link rel="manifest" href="/manifest.json">
+<title>PrepHQ — Study Rooms</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="/css/glass.css">
+<script src="/js/auth-guard.js"></script>
+<script src="/js/shared-nav.js"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script>
+(function(){
+  const s = PhqAuth.getSession();
+  if(!s || !s.accessToken || s.role !== 'student'){ window.location.replace('/login.html'); }
+})();
+</script>
+<style>
+/* ══════════════════════════════════════════════════════════
+   NEUMORPHISM / SOFT UI — Study Rooms
+   ══════════════════════════════════════════════════════════ */
+:root{
+  --bg:#e0e5ec;
+  --sd:#b8c0cc;
+  --sl:#ffffff;
+
+  --sh:6px 6px 14px var(--sd), -6px -6px 14px var(--sl);
+  --sh-md:8px 8px 18px var(--sd), -8px -8px 18px var(--sl);
+  --sh-lg:12px 12px 26px var(--sd), -12px -12px 26px var(--sl);
+  --sh-sm:4px 4px 8px var(--sd), -4px -4px 8px var(--sl);
+  --sh-in:inset 4px 4px 10px var(--sd), inset -4px -4px 10px var(--sl);
+  --sh-in-sm:inset 3px 3px 6px var(--sd), inset -3px -3px 6px var(--sl);
+
+  --brand:#4a67d1;--brand-dk:#3a54b8;
+  --brand-lt:rgba(74,103,209,.10);--brand-glow:rgba(74,103,209,.20);
+  --ok:#2d9c6e;--ok-lt:rgba(45,156,110,.12);--ok-bd:rgba(45,156,110,.30);
+  --no:#d14545;--no-lt:rgba(209,69,69,.12);--no-bd:rgba(209,69,69,.30);
+  --warn:#c67a1e;--warn-lt:rgba(198,122,30,.12);
+  --purple:#7b52d1;--purple-lt:rgba(123,82,209,.12);
+
+  --t1:#2a3142;--t2:#4a5568;--t3:#7a8296;--t4:#a8b0c0;
+
+  --bd:transparent;--bd2:transparent;
+
+  --r16:18px;--r20:22px;--rpill:999px;
+  --ff-h:'Bricolage Grotesque',system-ui,sans-serif;
+  --ff-b:'DM Sans',system-ui,sans-serif;
+}
+[data-theme=dark]{
+  --bg:#252932;
+  --sd:#181b21;--sl:#323743;
+  --brand:#7c93ff;--brand-dk:#a5b5ff;
+  --brand-lt:rgba(124,147,255,.12);--brand-glow:rgba(124,147,255,.20);
+  --ok:#3dba86;--ok-lt:rgba(61,186,134,.14);--ok-bd:rgba(61,186,134,.30);
+  --no:#e56161;--no-lt:rgba(229,97,97,.14);--no-bd:rgba(229,97,97,.30);
+  --warn:#e09437;--warn-lt:rgba(224,148,55,.14);
+  --purple:#9d7bea;--purple-lt:rgba(157,123,234,.14);
+  --t1:#e8ecf5;--t2:#b8c0d0;--t3:#7a8296;--t4:#4a5060;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{
+  font-family:var(--ff-b);
+  background:var(--bg);
+  color:var(--t1);
+  min-height:100dvh;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:520px;margin:0 auto;padding:18px 18px 120px;}
+
+/* ═══════════════════════════════════════
+   TOPBAR
+═══════════════════════════════════════ */
+.topbar{display:flex;align-items:center;gap:12px;padding:6px 0 20px;}
+.back-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--bg);border:none;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--brand);flex-shrink:0;
+  box-shadow:var(--sh);
+  transition:box-shadow .15s, transform .15s;
+}
+.back-btn:active{transform:scale(.93);box-shadow:var(--sh-in);}
+.back-btn svg{stroke:currentColor;}
+.pg-title{
+  font-family:var(--ff-h);font-size:20px;font-weight:800;
+  color:var(--t1);letter-spacing:-.4px;
+}
+
+/* ═══════════════════════════════════════
+   CARDS
+═══════════════════════════════════════ */
+.card{
+  background:var(--bg);
+  border-radius:var(--r20);
+  padding:20px;
+  box-shadow:var(--sh);
+  border:none;
+  margin-bottom:16px;
+}
+
+/* ═══════════════════════════════════════
+   INPUTS — inset wells
+═══════════════════════════════════════ */
+.f-input{
+  width:100%;
+  padding:13px 16px;
+  border-radius:var(--r16);
+  border:none;
+  background:var(--bg);
+  font-size:14px;
+  font-weight:600;
+  color:var(--t1);
+  outline:none;
+  margin-bottom:12px;
+  box-shadow:var(--sh-in);
+  transition:box-shadow .18s;
+  font-family:var(--ff-b);
+}
+.f-input::placeholder{color:var(--t4);font-weight:500;}
+.f-input:focus{box-shadow:var(--sh-in), 0 0 0 2px var(--brand-lt);}
+
+/* Native select — styled to blend in but keep chevron */
+select.f-input{
+  appearance:none;
+  -webkit-appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='%237a8296'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat:no-repeat;
+  background-position:right 14px center;
+  padding-right:38px;
+  cursor:pointer;
+}
+
+/* ═══════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════ */
+.btn{
+  border:none;
+  border-radius:var(--r16);
+  padding:14px;
+  font-weight:800;
+  font-size:14px;
+  cursor:pointer;
+  width:100%;
+  background:var(--bg);
+  color:var(--brand);
+  box-shadow:var(--sh);
+  font-family:var(--ff-h);
+  transition:box-shadow .15s, transform .15s, color .15s;
+  letter-spacing:-.2px;
+}
+.btn:active{transform:scale(.98);box-shadow:var(--sh-in);}
+.btn.ghost{
+  background:var(--bg);
+  color:var(--t2);
+  box-shadow:var(--sh);
+}
+.btn.ghost:active{box-shadow:var(--sh-in);}
+
+/* ═══════════════════════════════════════
+   SECTION TITLES
+═══════════════════════════════════════ */
+.sec-title{
+  font-size:11.5px;
+  font-weight:800;
+  color:var(--t3);
+  text-transform:uppercase;
+  letter-spacing:.10em;
+  margin-bottom:12px;
+}
+
+/* ═══════════════════════════════════════
+   LOBBY CODE
+═══════════════════════════════════════ */
+.lobby-code{
+  font-family:var(--ff-h);
+  font-size:34px;
+  font-weight:800;
+  letter-spacing:6px;
+  text-align:center;
+  color:var(--brand);
+  margin:18px 0;
+  padding:16px 0;
+  border-radius:var(--r16);
+  background:var(--bg);
+  box-shadow:var(--sh-in), 0 0 0 2px var(--brand-lt);
+  letter-spacing:.10em;
+}
+
+/* ═══════════════════════════════════════
+   PARTICIPANT ROWS
+═══════════════════════════════════════ */
+.p-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 0;
+  box-shadow:0 -1px 0 var(--sd) inset;
+  font-size:13.5px;
+  font-weight:700;
+  color:var(--t1);
+}
+.p-row:first-child{box-shadow:none;}
+.p-row span:last-child{
+  font-family:var(--ff-h);
+  font-size:14.5px;
+  color:var(--brand);
+  letter-spacing:-.3px;
+}
+
+/* ═══════════════════════════════════════
+   QUESTION SCREEN
+═══════════════════════════════════════ */
+.q-timer{
+  font-family:var(--ff-h);
+  font-weight:800;
+  font-size:32px;
+  text-align:center;
+  color:var(--brand);
+  margin-bottom:14px;
+  letter-spacing:-1.5px;
+  padding:12px;
+  border-radius:var(--r16);
+  background:var(--bg);
+  box-shadow:var(--sh-in-sm), 0 0 0 2px var(--brand-lt);
+}
+.q-text{
+  font-size:16px;
+  font-weight:700;
+  text-align:center;
+  margin-bottom:20px;
+  color:var(--t1);
+  font-family:var(--ff-h);
+  line-height:1.5;
+  letter-spacing:-.2px;
+}
+
+/* ═══════════════════════════════════════
+   OPTION BUTTONS — raised → inset on state change
+═══════════════════════════════════════ */
+.opt-btn{
+  display:block;
+  width:100%;
+  text-align:left;
+  padding:14px 16px;
+  border-radius:var(--r16);
+  margin-bottom:10px;
+  border:none;
+  background:var(--bg);
+  color:var(--t1);
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  box-shadow:var(--sh);
+  transition:box-shadow .15s, transform .15s, color .15s;
+  font-family:var(--ff-b);
+  line-height:1.4;
+}
+.opt-btn:active:not(:disabled){
+  transform:scale(.99);
+  box-shadow:var(--sh-in);
+}
+
+/* Picked — inset with brand ring, brand text */
+.opt-btn.picked{
+  color:var(--brand);
+  box-shadow:var(--sh-in), 0 0 0 2px var(--brand-lt);
+}
+
+/* Correct — inset with green ring, green text */
+.opt-btn.correct{
+  color:var(--ok);
+  box-shadow:var(--sh-in), 0 0 0 2px var(--ok-lt);
+}
+
+/* Wrong — inset with red ring, red text */
+.opt-btn.wrong{
+  color:var(--no);
+  box-shadow:var(--sh-in), 0 0 0 2px var(--no-lt);
+}
+
+.opt-btn:disabled{cursor:default;}
+
+.hidden{display:none;}
+
+/* Responsive */
+@media (max-width: 420px){
+  .wrap{padding:16px 16px 100px;}
+  .pg-title{font-size:18px;}
+  .lobby-code{font-size:28px;letter-spacing:.08em;}
+  .q-timer{font-size:28px;}
+}
+</style>
+</head>
+<body>
+<div class="glass-backdrop"></div>
+<div class="wrap">
+  <div class="topbar">
+    <div class="back-btn" onclick="leaveAndGoBack()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></div>
+    <div class="pg-title">Study Rooms</div>
+  </div>
+
+  <!-- ═══ SCREEN: BROWSE/CREATE/JOIN ═══ -->
+  <div id="screen-lobby">
+    <div class="card">
+      <div class="sec-title">Create a Room</div>
+      <select class="f-input" id="create-course"><option value="">— select course —</option></select>
+      <div style="display:flex;gap:10px;">
+        <input type="number" class="f-input" id="create-count" placeholder="Questions" value="10" style="flex:1;">
+        <input type="number" class="f-input" id="create-seconds" placeholder="Sec/question" value="20" style="flex:1;">
+      </div>
+      <button class="btn" onclick="createRoom()">Create Room</button>
+    </div>
+    <div class="card">
+      <div class="sec-title">Join a Room</div>
+      <input class="f-input" id="join-code-input" placeholder="Room code" autocapitalize="none" style="text-transform:uppercase;">
+      <button class="btn ghost" onclick="joinRoomByCode()">Join</button>
+    </div>
+
+    <div class="card">
+      <div class="sec-title">🎯 Study Goals — a group that outlives one session</div>
+      <div style="font-size:12px;color:var(--t3);margin:-4px 0 10px;line-height:1.5;">Set a shared goal with friends (e.g. "Finish CHM101 Ch.3 by Friday") and each track your own progress. Free, no time limit.</div>
+      <div id="sg-list"></div>
+      <div style="display:flex;gap:10px;margin-top:10px;">
+        <button class="btn ghost" style="flex:1;" onclick="toggleSgForm(true)">+ New Goal Group</button>
+        <input class="f-input" id="sg-join-code" placeholder="Join code" autocapitalize="none" style="flex:1;text-transform:uppercase;margin:0;">
+      </div>
+      <button class="btn ghost" style="margin-top:8px;" onclick="joinStudyGroup()">Join Group</button>
+      <div id="sg-form" class="hidden" style="margin-top:12px;border-top:1px solid var(--bd,#0002);padding-top:12px;">
+        <input class="f-input" id="sg-name" placeholder="Group name">
+        <input class="f-input" id="sg-goal" placeholder='Goal (e.g. "Finish CHM101 Ch.3 by Friday")'>
+        <input type="date" class="f-input" id="sg-due">
+        <button class="btn" onclick="createStudyGroup()">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN: WAITING ROOM ═══ -->
+  <div id="screen-waiting" class="hidden">
+    <div class="card">
+      <div class="sec-title" style="text-align:center;">Room Code — share with friends</div>
+      <div class="lobby-code" id="waiting-code">—</div>
+      <div id="waiting-course" style="text-align:center;font-size:12.5px;color:var(--t3);margin-bottom:16px;font-weight:600;"></div>
+      <div id="waiting-participants"></div>
+      <button class="btn" id="start-room-btn" style="margin-top:16px;display:none;" onclick="startRoom()">Start Room</button>
+      <div id="waiting-hint" style="text-align:center;font-size:12px;color:var(--t3);margin-top:12px;font-weight:500;">Waiting for the host to start…</div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN: LIVE QUESTION ═══ -->
+  <div id="screen-question" class="hidden">
+    <div class="card">
+      <div style="font-size:11.5px;color:var(--t3);text-align:center;margin-bottom:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;" id="q-progress">Question 1 of 10</div>
+      <div class="q-timer" id="q-timer">20</div>
+      <div class="q-text" id="q-text"></div>
+      <div id="q-options"></div>
+    </div>
+    <div class="card">
+      <div class="sec-title">Live Scores</div>
+      <div id="live-scores"></div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN: RESULTS (final) ═══ -->
+  <div id="screen-ended" class="hidden">
+    <div class="card">
+      <div class="sec-title" style="text-align:center;">Final Results</div>
+      <div id="final-scores"></div>
+      <button class="btn" style="margin-top:16px;" onclick="window.location.href='/study-rooms'">Back to Lobby</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let socket = null;
+let currentRoomCode = null;
+let myMatric = null;
+let hasAnsweredCurrent = false;
+
+function showScreen(id){
+  ['screen-lobby','screen-waiting','screen-question','screen-ended'].forEach(s => {
+    document.getElementById(s).classList.toggle('hidden', s !== id);
+  });
+}
+
+async function loadCourses(){
+  try{
+    const r = await fetch('/api/courses');
+    if(!r.ok) return;
+    const courses = await r.json();
+    document.getElementById('create-course').innerHTML = '<option value="">— select course —</option>' + courses.map(c => `<option value="${c.key}">${c.courseCode}</option>`).join('');
+  }catch(e){}
+}
+
+function connectSocket(){
+  if(socket) return socket;
+  socket = io({ auth: { token: PhqAuth.getSession().accessToken } });
+
+  socket.on('room-state', (state) => {
+    if(state.status === 'waiting') renderWaiting(state);
+  });
+  socket.on('room-error', (d) => { alert(d.error || 'Something went wrong'); });
+  socket.on('question', (d) => renderQuestion(d));
+  socket.on('question-result', (d) => renderQuestionResult(d));
+  socket.on('room-ended', (d) => renderEnded(d));
+
+  return socket;
+}
+
+async function createRoom(){
+  const course = document.getElementById('create-course').value;
+  if(!course){ alert('Select a course'); return; }
+  const questionCount = parseInt(document.getElementById('create-count').value, 10) || 10;
+  const secondsPerQuestion = parseInt(document.getElementById('create-seconds').value, 10) || 20;
+  try{
+    const r = await PhqAuth.authFetch('/api/study-rooms', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ course, questionCount, secondsPerQuestion }),
+    }, 'student');
+    const d = await r.json();
+    if(!r.ok){ alert(d.error || 'Could not create room'); return; }
+    enterRoom(d.code);
+  }catch(e){ alert('Could not create room'); }
+}
+
+function joinRoomByCode(){
+  const code = document.getElementById('join-code-input').value.trim().toUpperCase();
+  if(!code){ alert('Enter a room code'); return; }
+  enterRoom(code);
+}
+
+function enterRoom(code){
+  currentRoomCode = code;
+  connectSocket();
+  socket.emit('join-room', { code });
+  showScreen('screen-waiting');
+  document.getElementById('waiting-code').textContent = code;
+}
+
+function renderWaiting(state){
+  document.getElementById('waiting-course').textContent = state.course;
+  document.getElementById('waiting-participants').innerHTML = state.participants.map(p =>
+    `<div class="p-row"><span>${escapeHtml(p.username || p.matric)}</span><span>${p.score}</span></div>`
+  ).join('');
+  // getSession doesn't carry matric directly — infer host-ness from the room state's hostMatric vs our own /api/me cache.
+  fetchMyMatricOnce().then(matric => {
+    document.getElementById('start-room-btn').style.display = (state.hostMatric === matric) ? 'block' : 'none';
+  });
+}
+
+let cachedMatric = null;
+async function fetchMyMatricOnce(){
+  if(cachedMatric) return cachedMatric;
+  try{
+    const r = await PhqAuth.authFetch('/api/me', {}, 'student');
+    const d = await r.json();
+    cachedMatric = d.matric;
+    myMatric = d.matric;
+    return cachedMatric;
+  }catch(e){ return null; }
+}
+
+function startRoom(){
+  socket.emit('start-room');
+}
+
+let qTimerInterval = null;
+function renderQuestion(d){
+  showScreen('screen-question');
+  hasAnsweredCurrent = false;
+  document.getElementById('q-progress').textContent = `Question ${d.index + 1} of ${d.total}`;
+  document.getElementById('q-text').textContent = d.question.q;
+  document.getElementById('q-options').innerHTML = d.question.opts.map((opt, i) =>
+    `<button class="opt-btn" id="opt-${i}" onclick="pickAnswer(${i})">${escapeHtml(opt)}</button>`
+  ).join('');
+
+  let remaining = d.secondsPerQuestion;
+  document.getElementById('q-timer').textContent = remaining;
+  clearInterval(qTimerInterval);
+  qTimerInterval = setInterval(() => {
+    remaining--;
+    document.getElementById('q-timer').textContent = Math.max(0, remaining);
+    if(remaining <= 0) clearInterval(qTimerInterval);
+  }, 1000);
+}
+
+function pickAnswer(i){
+  if(hasAnsweredCurrent) return;
+  hasAnsweredCurrent = true;
+  document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
+  document.getElementById(`opt-${i}`).classList.add('picked');
+  socket.emit('submit-answer', { answerIndex: i });
+}
+
+function renderQuestionResult(d){
+  clearInterval(qTimerInterval);
+  document.querySelectorAll('.opt-btn').forEach((b, i) => {
+    b.disabled = true;
+    if(i === d.correctIndex) b.classList.add('correct');
+    else if(b.classList.contains('picked')) b.classList.add('wrong');
+  });
+  document.getElementById('live-scores').innerHTML = [...d.participants].sort((a,b)=>b.score-a.score).map(p =>
+    `<div class="p-row"><span>${escapeHtml(p.username || p.matric)}</span><span>${p.score}</span></div>`
+  ).join('');
+}
+
+function renderEnded(d){
+  showScreen('screen-ended');
+  document.getElementById('final-scores').innerHTML = d.participants.map(p =>
+    `<div class="p-row"><span>#${p.rank} ${escapeHtml(p.username || p.matric)}</span><span>${p.score}</span></div>`
+  ).join('');
+}
+
+function leaveAndGoBack(){
+  if(socket && currentRoomCode) socket.emit('leave-room');
+  window.location.href = '/dashboard';
+}
+
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+loadCourses();
+fetchMyMatricOnce();
+
+// If arriving via a shared link like /study-rooms?join=ABCDE, jump straight to joining.
+(function autoJoinFromLink(){
+  const code = new URLSearchParams(window.location.search).get('join');
+  if(code) enterRoom(code.toUpperCase());
+})();
+</script>
+<script src="/js/phq-latexfix.js" defer></script>
+<script src="/js/phq-sci.js" defer></script>
+<script>
+async function loadStudyGroups(){
+  try{
+    const r = await PhqAuth.authFetch('/api/study-groups/mine', {}, 'student');
+    if(!r.ok) return;
+    const groups = await r.json();
+    const box = document.getElementById('sg-list');
+    if(!groups.length){ box.innerHTML = '<div style="font-size:12.5px;color:var(--t3);">No goal groups yet.</div>'; return; }
+    box.innerHTML = groups.map(g => {
+      const due = g.goalDueAt ? new Date(g.goalDueAt).toLocaleDateString(undefined,{day:'numeric',month:'short'}) : '';
+      return `<div style="margin-bottom:12px;padding:10px;border-radius:10px;box-shadow:var(--press-sm,inset 0 0 0 1px rgba(0,0,0,.06));">
+        <div style="display:flex;justify-content:space-between;font-weight:700;font-size:13px;"><span>${escSg(g.name)}</span><span style="font-size:11px;color:var(--t3);">${g.code}</span></div>
+        <div style="font-size:12px;color:var(--t3);margin:2px 0 6px;">${escSg(g.goalText)}${due?' · due '+due:''}</div>
+        <div style="height:6px;border-radius:99px;background:#0001;overflow:hidden;margin-bottom:4px;"><div style="height:100%;width:${g.averageProgress}%;background:linear-gradient(90deg,#742FF5,#1B55F5);"></div></div>
+        <div style="font-size:11px;color:var(--t3);">Group average: ${g.averageProgress}% · ${g.members.length} member${g.members.length===1?'':'s'}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+          <span style="font-size:11.5px;font-weight:700;">My progress:</span>
+          <input type="range" min="0" max="100" value="${g.myProgress}" style="flex:1;" oninput="this.nextElementSibling.textContent=this.value+'%'" onchange="setSgProgress('${g.code}', this.value)">
+          <span style="font-size:11.5px;font-weight:700;min-width:32px;">${g.myProgress}%</span>
+        </div>
+        ${g.isHost ? `<button class="btn ghost" style="margin-top:8px;padding:6px;font-size:11.5px;" onclick="closeStudyGroup('${g.code}')">Close group</button>` : ''}
+      </div>`;
+    }).join('');
+  }catch(e){}
+}
+function escSg(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function toggleSgForm(show){ document.getElementById('sg-form').classList.toggle('hidden', !show); }
+async function createStudyGroup(){
+  const name = document.getElementById('sg-name').value.trim();
+  const goalText = document.getElementById('sg-goal').value.trim();
+  const goalDueAt = document.getElementById('sg-due').value;
+  if(!name || !goalText){ alert('Give the group a name and a goal'); return; }
+  try{
+    const r = await PhqAuth.authFetch('/api/study-groups', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name, goalText, goalDueAt }) }, 'student');
+    const d = await r.json(); if(!r.ok) throw new Error(d.error||'Could not create');
+    document.getElementById('sg-name').value=''; document.getElementById('sg-goal').value=''; document.getElementById('sg-due').value='';
+    toggleSgForm(false); loadStudyGroups();
+  }catch(e){ alert(e.message||'Could not create group'); }
+}
+async function joinStudyGroup(){
+  const code = document.getElementById('sg-join-code').value.trim().toUpperCase();
+  if(!code) return;
+  try{
+    const r = await PhqAuth.authFetch(`/api/study-groups/${encodeURIComponent(code)}/join`, { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' }, 'student');
+    const d = await r.json(); if(!r.ok) throw new Error(d.error||'Could not join');
+    document.getElementById('sg-join-code').value=''; loadStudyGroups();
+  }catch(e){ alert(e.message||'Could not join group'); }
+}
+async function setSgProgress(code, progress){
+  try{ await PhqAuth.authFetch(`/api/study-groups/${encodeURIComponent(code)}/progress`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ progress: parseInt(progress,10) }) }, 'student'); loadStudyGroups(); }catch(e){}
+}
+async function closeStudyGroup(code){
+  if(!confirm('Close this goal group for everyone?')) return;
+  try{ await PhqAuth.authFetch(`/api/study-groups/${encodeURIComponent(code)}/close`, { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' }, 'student'); loadStudyGroups(); }catch(e){}
+}
+loadStudyGroups();
+</script>
+</body>
+</html>

@@ -59,6 +59,9 @@
   /* Type */
   --ff-h: 'Bricolage Grotesque',system-ui,sans-serif;
   --ff-b: 'DM Sans',system-ui,sans-serif;
+  /* Layout */
+  --nav-space: 96px; /* room kept clear at the bottom for the shared tab bar */
+
   /* Motion */
   --ease-s: cubic-bezier(.34,1.56,.64,1);
   --ease-o: cubic-bezier(.22,1,.36,1);

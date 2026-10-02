@@ -10,10 +10,10 @@
 <title>PrepHQ — Exam Prep</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <link rel="stylesheet" href="/css/glass.css">
 <script src="/js/auth-guard.js"></script>
 <script src="/js/shared-nav.js"></script>
+<script src="/js/shell.js"></script>
 <script>
 (function(){
   const s = PhqAuth.getSession();
@@ -34,6 +34,12 @@ button,input,select,textarea{font-family:var(--ff-b);}
 
 .scr{display:none;flex-direction:column;min-height:100dvh;background:var(--bg);}
 .scr.on{display:flex;}
+/* Views from js/shell.js: laid out like the standalone pages were (block flow, so a centred .wrap fills its
+   max-width), see-through so each view's own soft backdrop shows, and NEVER visible unless active, whatever
+   display a view's own CSS asks for. */
+.scr.view{background:transparent;min-height:0;max-width:none;margin:0;box-shadow:none;} /* a view sets its own min-height if it wants one; on wide screens it spans the page and centres its own column, as the standalone pages did (not the dashboard's phone-width panel) */
+.scr.view.on{display:block;padding-bottom:0;} /* the body already keeps the nav clear; glass.css adds another 96px to .scr.on */
+.scr.view:not(.on){display:none !important;}
 
 #toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%) translateY(16px);
   background:var(--bg);color:var(--brand);
@@ -661,7 +667,7 @@ details.np-card>summary::-webkit-details-marker{display:none;}
     </div>
   </div>
 
-  <div id="plan-banner" onclick="window.location.href='/profile'" style="display:none;margin:10px 18px 0;padding:12px 14px;border-radius:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;background:var(--bg);">
+  <div id="plan-banner" onclick="PhqShell.go('/profile')" style="display:none;margin:10px 18px 0;padding:12px 14px;border-radius:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;background:var(--bg);">
     <div style="display:flex;align-items:center;gap:8px;min-width:0;">
       <i id="plan-banner-icon" class="fa-solid fa-bolt" style="font-size:13px;flex-shrink:0;"></i>
       <div id="plan-banner-text" style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Loading plan…</div>
@@ -1002,7 +1008,7 @@ details.np-card>summary::-webkit-details-marker{display:none;}
       <div style="font-size:13px;color:var(--t3);margin-bottom:14px;">@<span id="wallet-username">—</span></div>
       <div style="display:flex;gap:8px;margin-bottom:12px;">
         <button class="btn-grad" style="flex:1;font-size:14px;padding:12px;" onclick="openTransferModal()"><i class="fa-solid fa-paper-plane" style="margin-right:6px;"></i>Send Credits</button>
-        <button class="btn-surf" style="flex:1;font-size:14px;padding:12px;" onclick="window.location.href='/profile'">View Profile</button>
+        <button class="btn-surf" style="flex:1;font-size:14px;padding:12px;" onclick="PhqShell.go('/profile')">View Profile</button>
       </div>
       <div style="background:var(--bg);border-radius:12px;padding:12px;box-shadow:var(--sh-in-sm);">
         <div style="font-size:11.5px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;">Your Referral Link</div>
@@ -1238,22 +1244,22 @@ details.np-card>summary::-webkit-details-marker{display:none;}
       <div class="mi-body"><div class="mi-title">Achievements</div><div class="mi-sub">Badges you've earned</div></div>
       <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
     </div>
-    <div class="menu-item" onclick="closeSheet('menu-sheet');window.location.href='/profile'">
+    <div class="menu-item" onclick="closeSheet('menu-sheet');PhqShell.go('/profile')">
       <div class="mi-icon" style="color:var(--purple)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z"/></svg></div>
       <div class="mi-body"><div class="mi-title">Profile</div><div class="mi-sub">Username, referrals, transfer history</div></div>
       <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
     </div>
-    <div class="menu-item" onclick="closeSheet('menu-sheet');window.location.href='/contests'">
+    <div class="menu-item" onclick="closeSheet('menu-sheet');PhqShell.go('/contests')">
       <div class="mi-icon" style="color:var(--warn)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M5 4v3h5.5v12h3V7H19V4z"/></svg></div>
       <div class="mi-body"><div class="mi-title">Contests</div><div class="mi-sub">Compete and win credits</div></div>
       <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
     </div>
-    <div class="menu-item" onclick="closeSheet('menu-sheet');window.location.href='/leaderboard'">
+    <div class="menu-item" onclick="closeSheet('menu-sheet');PhqShell.go('/leaderboard')">
       <div class="mi-icon" style="color:var(--purple)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div>
       <div class="mi-body"><div class="mi-title">Leaderboard</div><div class="mi-sub">See how you rank, opt-in only</div></div>
       <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
     </div>
-    <div class="menu-item" onclick="closeSheet('menu-sheet');window.location.href='/study-rooms'">
+    <div class="menu-item" onclick="closeSheet('menu-sheet');PhqShell.go('/study-rooms')">
       <div class="mi-icon" style="color:var(--teal)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div>
       <div class="mi-body"><div class="mi-title">Study Rooms</div><div class="mi-sub">Live quiz with friends, free</div></div>
       <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
@@ -1586,6 +1592,7 @@ async function bootFromSession(){
     await syncFromServer();
     await initHome();
     showScr('home');
+    if(window.PhqShell) PhqShell.start(); // opens /contests, /profile, ... if that's the URL
     populateWallet(data);
     loadPlanBanner();
     loadNotifications();
@@ -2225,6 +2232,17 @@ function filterCourseGrid(term){
   });
 }
 
+// pdf.js is big, so it loads only when someone actually imports a PDF
+function loadPdfJs(){
+  if(window.pdfjsLib) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    s.onload = resolve; s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
 // ── Session timer ────────────────────────────────────────────
 // ONE countdown for the whole quiz, set in minutes on the setup screen (any mode, any way a quiz starts).
 // When it hits zero the quiz is submitted automatically: whatever is answered is scored and every question
@@ -2586,6 +2604,7 @@ async function handleMaterialFile(evt){
   try{
     let text = '';
     if(file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')){
+      try{ await loadPdfJs(); }catch(e){}
       if(typeof pdfjsLib === 'undefined'){
         statusEl.textContent = 'PDF reader failed to load. Try pasting the text instead.';
         return;
@@ -3623,7 +3642,7 @@ function askAIAbout(i){
   const chosen = answers[i]!=null ? ` I chose ${L(answers[i])}.` : '';
   const text = `Explain step by step why the answer to this question is ${L(q.ans)}: "${stripTags(q.q)}" Options: ${opts}.${chosen} Please also tell me where I likely went wrong.`;
   try{ sessionStorage.setItem('phq_ask_ctx', JSON.stringify({ text: text.slice(0, 1500) })); }catch(e){}
-  window.location.href = '/chat';
+  PhqShell.go('/chat');
 }
 
 // ── Study plan ────────────────────────────────────────────────

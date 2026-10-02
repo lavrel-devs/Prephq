@@ -61,6 +61,13 @@
     } catch (e) {}
   }
 
+  // The shell (js/shell.js) changes tabs without reloading, so keep the highlighted tab in step.
+  window.addEventListener('phq:route', function (e) {
+    document.querySelectorAll('#shared-glass-nav .glass-nav-item').forEach(function (a) {
+      a.classList.toggle('on', a.getAttribute('href') === e.detail.path);
+    });
+  });
+
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', render);
   else render();
 })();

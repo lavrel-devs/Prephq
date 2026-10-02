@@ -199,16 +199,19 @@ const PAGE_ROUTES = {
   '/register':  'register.html',
   '/dashboard': 'dashboard.html',
   '/admin':     'admin.html',
-  '/profile':   'profile.html',
-  '/contests':  'contests.html',
-  '/leaderboard': 'leaderboard.html',
-  '/study-rooms': 'study-rooms.html',
-  '/chat': 'chat.html',
   '/forgot-password': 'forgot-password.html',
   '/change-password': 'change-password.html',
 };
 app.get(['/question-uploader', '/question-uploader.html'], (req, res) => res.redirect(301, '/admin'));
 app.get('/landing.html', (req, res) => res.redirect(301, '/'));
+
+// The signed-in tabs are one single-page app: every one of these URLs serves the dashboard (the shell), and
+// js/shell.js opens the matching view from the path. Old .html links keep working.
+const SHELL_ROUTES = ['/contests', '/study-rooms', '/chat', '/profile', '/leaderboard'];
+SHELL_ROUTES.forEach(r => {
+  app.get(r, (req, res) => res.sendFile(path.join(__dirname, 'public', 'dashboard.html')));
+  app.get(r + '.html', (req, res) => res.redirect(301, r + req.url.slice(req.path.length)));
+});
 Object.entries(PAGE_ROUTES).forEach(([route, file]) => {
   app.get(route, (req, res) => res.sendFile(path.join(__dirname, 'public', file)));
 });
@@ -279,7 +282,7 @@ initStudyRoomSockets(io);
 // ══════════════════════════════════════════════════════════════
 httpServer.listen(PORT, () => {
   console.log('\n╔══════════════════════════════════════════════════╗');
-  console.log(`║  PrepHQ v1.6.9 running on http://localhost:${PORT}   ║`);
+  console.log(`║  PrepHQ v1.7.0 running on http://localhost:${PORT}   ║`);
   console.log(`║  Student login: http://localhost:${PORT}/login       ║`);
   console.log(`║  Admin:         http://localhost:${PORT}/login       ║`);
   console.log('╚══════════════════════════════════════════════════╝\n');

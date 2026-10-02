@@ -138,7 +138,7 @@
    any inline `background:var(--surf)` usage that isn't captured by a
    named class at all. This is what makes the blur genuinely "full"
    across the app rather than limited to a few hand-picked surfaces. */
-.card, .tw, .modal, .stat-pill, .stat-box, .sc, .code-card, .contest-card,
+.card, .tw, .modal, .v-modal, .stat-pill, .stat-box, .sc, .code-card, .contest-card,
 .optin-card, .bcard, .hcard, .cc, .pcard, .qcard, .rcard, .sbox, .note-card,
 .opt-card, .msg.assistant, .lb-row, .p-row, .glass-card,
 [style*="background:var(--surf)"], [style*="background: var(--surf)"] {
@@ -148,7 +148,7 @@
 
 /* Keeps content from sitting underneath the floating pill nav on every screen */
 .scr.on{padding-bottom:96px;}
-body.has-glass-nav{padding-bottom:96px;}
+body.has-glass-nav{padding-bottom:var(--nav-space,96px);}
 
 
 /* Font Awesome icon sizing helpers used across the redesigned UI */

@@ -110,7 +110,7 @@ prephq/
 │   └── routes/                  ← auth, admin, quiz, scores, student(misc)
 └── public/
     ├── login.html                ← student + admin sign-in (new, separate from the app)
-    ├── dashboard.html             ← the student app (was index.html)
+    ├── dashboard.html             ← the student app and the single-page SHELL: its screens are hidden <div class="scr"> blocks
     ├── admin.html                 ← admin dashboard (now JWT-based)
     ├── landing.html               ← public landing page, served at `/`
     ├── register.html
@@ -118,6 +118,8 @@ prephq/
     ├── manifest.json
     ├── css/tokens.css             ← design tokens (colours, shadows, radii, fonts) shared by the student pages
     ├── css/glass.css              ← glassmorphism layer
+    ├── views/*.html               ← the tab screens (contests, study-rooms, chat, profile, leaderboard): scoped CSS + markup + script, loaded once by the shell
+    ├── js/shell.js                ← router: shows/hides views, history API, lazy-loads a view the first time it's opened
     └── js/auth-guard.js           ← shared token storage / silent refresh / fingerprinting
 ```
 
@@ -157,3 +159,18 @@ prephq/
 | PUT | /api/admin/admins/me/password | admin | Change your own admin password |
 
 All `admin` routes also accept the legacy `x-admin-key: <ADMIN_KEY>` header instead of a JWT, for scripts/tools.
+
+---
+
+## How the signed-in app is put together (single-page shell)
+
+`/dashboard`, `/contests`, `/study-rooms`, `/chat`, `/profile` and `/leaderboard` all serve `dashboard.html`. The dashboard is the shell: its own screens and the tab screens are all `<div class="scr">` blocks, and `js/shell.js` shows one and hides the rest, so switching tabs never reloads the page. The URL and back button follow along (`history.pushState`), and a link such as `/contests` still works when opened directly.
+
+A tab screen lives in `public/views/<name>.html` (CSS scoped to `#view-<name>`, markup, script). The shell downloads it the first time it's opened (it also warms them while the phone is idle, unless Data Saver is on), adds it to the page once, and from then on only shows and hides it.
+
+Rules for editing a view (`npm test` enforces them in `tests/views.test.js`):
+- every CSS selector starts with `#view-<name>`;
+- do not reuse a class name that `dashboard.html` also styles (use a `v-` prefix, e.g. `v-modal`), or the dashboard's rules leak into the view;
+- the view script runs with a scoped `document`, so `getElementById` / `querySelector` only see this view. Functions called from inline `onclick="…"` must be exported (`window.name = name;`);
+- go to another tab with `PhqShell.go('/chat')`, never `location.href`;
+- to add a tab: add the file in `public/views/`, then one line each in `js/shell.js` (`VIEWS`) and `server.js` (`SHELL_ROUTES`), and a nav item in `js/shared-nav.js`.

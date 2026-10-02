@@ -1,0 +1,333 @@
+<!-- View: Study Assistant. Loaded once by js/shell.js into <div class="scr" id="view-chat">, then only shown and hidden.
+     This is the source of truth for this screen (the standalone chat.html page was merged into the dashboard shell).
+     CSS is scoped to #view-chat; the script runs with a scoped `document`. -->
+<style>
+#view-chat *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+#view-chat, #view-chat{height:calc(100dvh - var(--nav-space,96px));}
+#view-chat{
+  font-family:var(--ff-b);
+  
+  color:var(--t1);
+  -webkit-font-smoothing:antialiased;
+  display:flex;flex-direction:column;
+}
+
+/* ═══════════════════════════════════════
+   TOPBAR
+═══════════════════════════════════════ */
+#view-chat .v-topbar{
+  display:flex;align-items:center;gap:12px;
+  padding:calc(env(safe-area-inset-top,0px) + 14px) 18px 14px;
+  flex-shrink:0;
+  background:var(--bg);
+  box-shadow:0 4px 12px -8px var(--sd);
+}
+#view-chat .v-back-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--bg);border:none;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--brand);flex-shrink:0;
+  box-shadow:var(--sh);
+  transition:box-shadow .15s, transform .15s;
+}
+#view-chat .v-back-btn:active{transform:scale(.93);box-shadow:var(--sh-in);}
+#view-chat .pg-title{
+  font-family:var(--ff-h);font-size:18px;font-weight:800;
+  flex:1;color:var(--t1);letter-spacing:-.4px;
+}
+#view-chat .quota{
+  font-size:11px;font-weight:700;
+  color:var(--brand);
+  text-align:right;
+  padding:7px 12px;
+  border-radius:10px;
+  background:var(--bg);
+  box-shadow:var(--sh-sm);
+  white-space:nowrap;
+}
+
+/* ═══════════════════════════════════════
+   CHAT
+═══════════════════════════════════════ */
+#view-chat .chat-scroll{
+  flex:1;overflow-y:auto;
+  padding:8px 18px 8px;
+  max-width:600px;margin:0 auto;width:100%;
+  -webkit-overflow-scrolling:touch;
+}
+#view-chat .chat-scroll::-webkit-scrollbar{display:none;}
+#view-chat .chat-scroll{scrollbar-width:none;}
+
+#view-chat .msg{
+  max-width:80%;
+  padding:13px 16px;
+  border-radius:18px;
+  margin-bottom:12px;
+  font-size:13.5px;line-height:1.55;
+  white-space:pre-wrap;
+  word-wrap:break-word;
+  animation:vchat-msgIn .3s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes vchat-msgIn{
+  from{opacity:0;transform:translateY(10px) scale(.96);}
+  to{opacity:1;transform:translateY(0) scale(1);}
+}
+
+/* User bubble — raised with brand text (not a filled gradient) */
+#view-chat .msg.user{
+  background:var(--bg);
+  color:var(--brand);
+  font-weight:600;
+  margin-left:auto;
+  border-bottom-right-radius:6px;
+  box-shadow:var(--sh-md), 0 0 0 2px var(--brand-lt);
+}
+
+/* Assistant bubble — raised neutral with inset feel */
+#view-chat .msg.assistant{
+  background:var(--bg);
+  color:var(--t1);
+  font-weight:500;
+  margin-right:auto;
+  border-bottom-left-radius:6px;
+  box-shadow:var(--sh-md);
+}
+
+#view-chat .msg.pending{opacity:.7;}
+
+/* Typing indicator — three soft dots that bounce */
+#view-chat .typing-dots{
+  display:inline-flex;gap:5px;align-items:center;
+  padding:3px 0;
+}
+#view-chat .typing-dots span{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--brand);
+  opacity:.4;
+  display:inline-block;
+  animation:vchat-typingBounce 1.2s infinite ease-in-out;
+}
+#view-chat .typing-dots span:nth-child(2){animation-delay:.15s;}
+#view-chat .typing-dots span:nth-child(3){animation-delay:.3s;}
+@keyframes vchat-typingBounce{
+  0%,60%,100%{transform:translateY(0);opacity:.4;}
+  30%{transform:translateY(-6px);opacity:1;}
+}
+
+/* Empty state */
+#view-chat .empty-state{
+  text-align:center;
+  padding:60px 30px;
+  color:var(--t3);
+  animation:vchat-msgIn .5s cubic-bezier(.34,1.56,.64,1) both;
+}
+#view-chat .empty-icon{
+  width:72px;height:72px;
+  border-radius:22px;
+  background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 18px;
+  box-shadow:var(--sh);
+}
+#view-chat .empty-icon i{
+  font-size:28px;
+  color:var(--brand);
+}
+#view-chat .v-empty-title{
+  font-weight:800;
+  color:var(--t2);
+  font-family:var(--ff-h);
+  font-size:15px;
+  margin-bottom:6px;
+  letter-spacing:-.2px;
+}
+#view-chat .v-empty-sub{
+  font-size:12.5px;
+  color:var(--t4);
+  line-height:1.5;
+  max-width:260px;
+  margin:0 auto;
+}
+
+/* ═══════════════════════════════════════
+   INPUT BAR
+═══════════════════════════════════════ */
+#view-chat .input-bar{
+  display:flex;gap:10px;
+  padding:12px 18px calc(12px + env(safe-area-inset-bottom));
+  max-width:600px;margin:0 auto;width:100%;flex-shrink:0;
+  background:var(--bg);
+  box-shadow:0 -6px 16px -8px var(--sd);
+}
+#view-chat .input-bar input{
+  flex:1;
+  padding:13px 18px;
+  border-radius:16px;
+  border:none;
+  background:var(--bg);
+  font-size:14px;
+  font-weight:600;
+  color:var(--t1);
+  outline:none;
+  box-shadow:var(--sh-in);
+  transition:box-shadow .18s;
+  font-family:var(--ff-b);
+}
+#view-chat .input-bar input::placeholder{color:var(--t4);font-weight:500;}
+#view-chat .input-bar input:focus{
+  box-shadow:var(--sh-in), 0 0 0 2px var(--brand-lt);
+}
+
+#view-chat .send-btn{
+  width:48px;height:48px;
+  border-radius:16px;
+  border:none;
+  background:var(--bg);
+  color:var(--brand);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;flex-shrink:0;
+  box-shadow:var(--sh);
+  transition:box-shadow .15s, transform .15s, color .15s;
+}
+#view-chat .send-btn:active{transform:scale(.94);box-shadow:var(--sh-in);}
+#view-chat .send-btn:disabled{
+  opacity:.5;cursor:default;
+  box-shadow:var(--sh-in);
+  color:var(--t4);
+  transform:none;
+}
+#view-chat .send-btn i{font-size:15px;}
+
+/* Responsive */
+@media (min-width: 640px){
+  #view-chat .v-topbar, #view-chat .input-bar, #view-chat .chat-scroll{
+    max-width:560px;
+  }
+}
+</style>
+<div class="v-topbar">
+  <div class="v-back-btn" onclick="PhqShell.go('/dashboard')">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+  </div>
+  <div class="pg-title">Study Assistant</div>
+  <div class="quota" id="quota-txt"></div>
+</div>
+
+<div class="chat-scroll" id="chat-scroll">
+  <div class="empty-state" id="empty-state">
+    <div class="empty-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+    <div class="v-empty-title">Ask me anything academic</div>
+    <div class="v-empty-sub">Explanations, worked examples, study help — I'm here for it.</div>
+  </div>
+</div>
+
+<div class="input-bar">
+  <input type="text" id="chat-input" placeholder="Ask a study question..." onkeydown="if(event.key==='Enter')sendChatMessage()">
+  <button class="send-btn" id="send-btn" onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+</div>
+<script>
+const document = PhqShell.scope(root); // every getElementById/querySelector in this view only sees this view
+async function loadHistory(){
+  try{
+    const r = await PhqAuth.authFetch('/api/chat/history', {}, 'student');
+    if(!r.ok) return;
+    const messages = await r.json();
+    if(messages.length){
+      const empty = document.getElementById('empty-state');
+      if(empty) empty.remove();
+      messages.forEach(m => appendMessage(m.role, m.content));
+    }
+    scrollToBottom();
+  }catch(e){}
+}
+
+function appendMessage(role, content){
+  const el = document.createElement('div');
+  el.className = `msg ${role}`;
+  el.textContent = content;
+  document.getElementById('chat-scroll').appendChild(el);
+  return el;
+}
+
+function appendTypingIndicator(){
+  const el = document.createElement('div');
+  el.className = 'msg assistant pending';
+  el.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+  document.getElementById('chat-scroll').appendChild(el);
+  return el;
+}
+
+function scrollToBottom(){
+  const scr = document.getElementById('chat-scroll');
+  scr.scrollTop = scr.scrollHeight;
+}
+
+// "Ask AI why" from a wrong answer: the dashboard leaves the question here; we only pre-fill the box
+// (the student presses send, so nothing is spent until they choose to).
+function applyAskCtx(){
+  try{
+    const raw = sessionStorage.getItem('phq_ask_ctx'); if(!raw) return;
+    sessionStorage.removeItem('phq_ask_ctx');
+    const ctx = JSON.parse(raw);
+    const inp = document.getElementById('chat-input');
+    if(ctx && ctx.text && inp){ inp.value = ctx.text; inp.focus(); }
+  }catch(e){}
+}
+applyAskCtx();
+
+async function sendChatMessage(){
+  const input = document.getElementById('chat-input');
+  const btn = document.getElementById('send-btn');
+  const text = input.value.trim();
+  if(!text) return;
+
+  const emptyState = document.getElementById('empty-state');
+  if(emptyState) emptyState.remove();
+
+  appendMessage('user', text);
+  input.value = '';
+  scrollToBottom();
+
+  btn.disabled = true;
+  const pending = appendTypingIndicator();
+  scrollToBottom();
+
+  try{
+    const r = await PhqAuth.authFetch('/api/chat/message', {
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ message: text }),
+    }, 'student');
+    const d = await r.json();
+    pending.remove();
+    if(!r.ok){
+      if(d.code === 'LIMIT_REACHED' && typeof showPaywall === 'function') showPaywall(d.error);
+      appendMessage('assistant', d.error || 'Something went wrong. Try again.');
+    } else {
+      appendMessage('assistant', d.reply);
+      document.getElementById('quota-txt').textContent = d.dailyRemaining==null ? 'Unlimited' : `${d.dailyRemaining} left today`;
+    }
+  }catch(e){
+    pending.remove();
+    appendMessage('assistant', 'Something went wrong. Try again.');
+  }
+  btn.disabled = false;
+  scrollToBottom();
+}
+
+async function loadQuota(){
+  try{
+    const r = await PhqAuth.authFetch('/api/chat/quota', {}, 'student');
+    if(!r.ok) return;
+    const d = await r.json();
+    document.getElementById('quota-txt').textContent = d.dailyRemaining==null ? 'Unlimited' : `${d.dailyRemaining} left today`;
+  }catch(e){}
+}
+
+loadHistory();
+loadQuota();
+
+// inline onclick="…" handlers run in the global scope, so the functions they call are exposed
+window.sendChatMessage = sendChatMessage;
+
+return { onShow(){ applyAskCtx(); loadQuota(); scrollToBottom(); } };
+//# sourceURL=view-chat.js
+</script>

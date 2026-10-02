@@ -3,7 +3,9 @@
 // re-declares a shared token with a different value (which would fork the design).
 const fs = require('fs'), path = require('path'), assert = require('assert');
 const PUB = path.join(__dirname, '..', 'public');
-const PAGES = ['dashboard', 'profile', 'leaderboard', 'contests', 'study-rooms', 'chat', 'change-password', 'login', 'register', 'forgot-password', 'landing'];
+// The tab screens (contests, study rooms, assistant, profile, leaderboard) now live in public/views/ inside the dashboard shell and
+// take their tokens from the dashboard page; tests/views.test.js guards those.
+const PAGES = ['dashboard', 'change-password', 'login', 'register', 'forgot-password', 'landing'];
 
 const mask = s => s.replace(/\/\*[\s\S]*?\*\//g, m => ' '.repeat(m.length));
 const norm = v => v.trim().replace(/\s+/g, ' ').replace(/\s*,\s*/g, ',').toLowerCase();

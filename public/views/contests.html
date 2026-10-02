@@ -1,0 +1,507 @@
+<!-- View: Contests. Loaded once by js/shell.js into <div class="scr" id="view-contests">, then only shown and hidden.
+     This is the source of truth for this screen (the standalone contests.html page was merged into the dashboard shell).
+     CSS is scoped to #view-contests; the script runs with a scoped `document`. -->
+<style>
+#view-contests *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+#view-contests{height:100%;}
+#view-contests{
+  font-family:var(--ff-b);
+  
+  color:var(--t1);
+  min-height:calc(100dvh - var(--nav-space,96px));
+  -webkit-font-smoothing:antialiased;
+}
+#view-contests .wrap{max-width:560px;margin:0 auto;padding:18px 18px 120px;}
+
+/* ═══════════════════════════════════════
+   TOPBAR
+═══════════════════════════════════════ */
+#view-contests .v-topbar{
+  display:flex;align-items:center;gap:12px;
+  padding:6px 0 20px;
+}
+#view-contests .v-back-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--bg);border:none;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--brand);flex-shrink:0;
+  box-shadow:var(--sh);
+  transition:box-shadow .15s, transform .15s;
+}
+#view-contests .v-back-btn:active{transform:scale(.93);box-shadow:var(--sh-in);}
+#view-contests .pg-title{
+  font-family:var(--ff-h);font-size:20px;font-weight:800;
+  color:var(--t1);letter-spacing:-.4px;
+}
+
+/* ═══════════════════════════════════════
+   TABS — inset trough + raised active pill
+═══════════════════════════════════════ */
+#view-contests .tabs{
+  display:flex;gap:5px;
+  margin-bottom:18px;
+  background:var(--bg);
+  border-radius:16px;
+  padding:5px;
+  box-shadow:var(--sh-in-sm);
+}
+#view-contests .tab{
+  flex:1;text-align:center;
+  padding:10px 0;
+  border-radius:12px;
+  font-size:12.5px;font-weight:800;
+  color:var(--t3);
+  cursor:pointer;
+  background:transparent;
+  transition:box-shadow .18s, color .18s;
+}
+#view-contests .tab:active{transform:scale(.98);}
+#view-contests .tab.on{
+  background:var(--bg);
+  color:var(--brand);
+  box-shadow:var(--sh-sm);
+}
+
+/* ═══════════════════════════════════════
+   CONTEST CARDS
+═══════════════════════════════════════ */
+#view-contests .contest-card{
+  background:var(--bg);
+  border-radius:var(--r20);
+  padding:18px;
+  box-shadow:var(--sh);
+  border:none;
+  margin-bottom:14px;
+  cursor:pointer;
+  transition:box-shadow .18s var(--ease-o), transform .18s var(--ease-o);
+}
+#view-contests .contest-card:active{
+  transform:scale(.985);
+  box-shadow:var(--sh-in);
+}
+
+#view-contests .v-cc-top{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;margin-bottom:8px;
+}
+#view-contests .cc-title{
+  font-family:var(--ff-h);font-weight:800;font-size:16px;
+  color:var(--t1);letter-spacing:-.2px;
+  line-height:1.3;
+}
+
+#view-contests .cc-badge{
+  font-size:10.5px;font-weight:800;
+  padding:5px 11px;
+  border-radius:var(--r8);
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  background:var(--bg);
+  box-shadow:var(--sh-sm);
+  flex-shrink:0;
+}
+#view-contests .cc-badge.live{color:var(--no);box-shadow:var(--sh-sm), 0 0 0 2px var(--no-lt);}
+#view-contests .cc-badge.upcoming{color:var(--brand);box-shadow:var(--sh-sm), 0 0 0 2px var(--brand-lt);}
+#view-contests .cc-badge.paused{color:var(--warn);box-shadow:var(--sh-sm), 0 0 0 2px var(--warn-lt);}
+#view-contests .cc-badge.ended{color:var(--t3);}
+
+#view-contests .cc-desc{
+  font-size:12.5px;
+  color:var(--t3);
+  margin-bottom:12px;
+  line-height:1.55;
+}
+#view-contests .cc-meta{
+  display:flex;flex-wrap:wrap;gap:14px;
+  font-size:11.5px;color:var(--t3);font-weight:600;
+}
+#view-contests .cc-meta i{
+  margin-right:4px;
+  color:var(--t4);
+  font-size:11px;
+}
+
+/* ═══════════════════════════════════════
+   EMPTY STATE
+═══════════════════════════════════════ */
+#view-contests .empty{
+  text-align:center;
+  padding:60px 20px;
+  color:var(--t3);
+  font-size:13px;
+  font-weight:500;
+}
+
+/* ═══════════════════════════════════════
+   MODALS
+═══════════════════════════════════════ */
+#view-contests .v-modal-bg{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,.45);
+  display:none;
+  align-items:center;justify-content:center;
+  padding:20px;
+}
+#view-contests .v-modal-bg.on{display:flex;}
+
+#view-contests .v-modal{
+  background:var(--bg);
+  border-radius:var(--r24);
+  padding:24px 22px;
+  width:100%;max-width:440px;
+  max-height:88dvh;
+  overflow-y:auto;
+  box-shadow:var(--sh-lg);
+  animation:vcontests-modalPop .28s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes vcontests-modalPop{
+  from{opacity:0;transform:scale(.94) translateY(14px);}
+  to{opacity:1;transform:scale(1) translateY(0);}
+}
+
+/* Leaderboard rows */
+#view-contests .lb-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 4px;
+  box-shadow:0 -1px 0 var(--sd) inset;
+  font-size:13px;
+}
+#view-contests .lb-row:first-child{box-shadow:none;}
+#view-contests .lb-row:last-child{}
+#view-contests .lb-row span:first-child{color:var(--t1);}
+#view-contests .lb-row span:last-child{color:var(--brand);font-family:var(--ff-h);font-size:14px;}
+
+/* ═══════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════ */
+#view-contests .btn{
+  border:none;
+  border-radius:var(--r12);
+  padding:14px;
+  font-weight:800;
+  font-size:14px;
+  cursor:pointer;
+  width:100%;
+  background:var(--bg);
+  color:var(--brand);
+  box-shadow:var(--sh);
+  font-family:var(--ff-h);
+  transition:box-shadow .15s, transform .15s;
+  letter-spacing:-.2px;
+}
+#view-contests .btn:active{transform:scale(.98);box-shadow:var(--sh-in);}
+#view-contests .btn.ghost{
+  background:var(--bg);
+  color:var(--t2);
+  box-shadow:var(--sh);
+}
+#view-contests .btn.ghost:active{box-shadow:var(--sh-in);}
+
+/* ═══════════════════════════════════════
+   INPUTS (team forms)
+═══════════════════════════════════════ */
+#view-contests .v-modal-input{
+  width:100%;
+  padding:13px 16px;
+  border-radius:var(--r12);
+  border:none;
+  background:var(--bg);
+  font-size:14px;
+  font-weight:600;
+  color:var(--t1);
+  outline:none;
+  box-shadow:var(--sh-in);
+  transition:box-shadow .18s;
+  font-family:var(--ff-b);
+}
+#view-contests .v-modal-input::placeholder{color:var(--t4);font-weight:500;}
+#view-contests .v-modal-input:focus{box-shadow:var(--sh-in), 0 0 0 2px var(--brand-lt);}
+
+/* ═══════════════════════════════════════
+   QUIZ MODAL
+═══════════════════════════════════════ */
+#view-contests .quiz-opt{
+  padding:14px 16px;
+  border-radius:var(--r12);
+  margin-bottom:10px;
+  cursor:pointer;
+  font-size:13.5px;
+  font-weight:600;
+  background:var(--bg);
+  color:var(--t1);
+  box-shadow:var(--sh);
+  transition:box-shadow .15s, color .15s, transform .15s;
+}
+#view-contests .quiz-opt:active{transform:scale(.99);}
+#view-contests .quiz-opt.selected{
+  color:var(--brand);
+  box-shadow:var(--sh-in), 0 0 0 2px var(--brand-lt);
+}
+
+/* Responsive */
+@media (max-width: 420px){
+  #view-contests .wrap{padding:16px 16px 100px;}
+  #view-contests .pg-title{font-size:18px;}
+  #view-contests .cc-title{font-size:15px;}
+}
+</style>
+<div class="wrap">
+  <div class="v-topbar">
+    <div class="v-back-btn" onclick="PhqShell.go('/dashboard')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></div>
+    <div class="pg-title">Contests</div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab on" data-tab="active" onclick="switchTab('active')">Active</div>
+    <div class="tab" data-tab="past" onclick="switchTab('past')">Past</div>
+  </div>
+
+  <div id="contest-list"><div class="empty">Loading…</div></div>
+</div>
+
+<div class="v-modal-bg" id="m-detail" onclick="if(event.target===this)closeDetail()">
+  <div class="v-modal" id="detail-body"></div>
+</div>
+
+<div class="v-modal-bg" id="m-quiz">
+  <div class="v-modal" id="c-quiz-body"></div>
+</div>
+<script>
+const document = PhqShell.scope(root); // every getElementById/querySelector in this view only sees this view
+let currentTab = 'active';
+let activeContests = [];
+let pastContests = [];
+
+async function switchTab(tab){
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.tab === tab));
+  render();
+  if(tab === 'past' && pastContests.length === 0) await loadPast();
+}
+
+function statusBadge(status){
+  return `<span class="cc-badge ${status}">${status}</span>`;
+}
+
+function render(){
+  const list = document.getElementById('contest-list');
+  const items = currentTab === 'active' ? activeContests : pastContests;
+  if(items.length === 0){
+    list.innerHTML = `<div class="empty">No ${currentTab === 'active' ? 'active' : 'past'} contests right now.</div>`;
+    return;
+  }
+  list.innerHTML = items.map(c => `
+    <div class="contest-card" onclick="openDetail('${c._id}')">
+      <div class="v-cc-top"><div class="cc-title">${escapeHtml(c.title)}${c.teamBased?' <span style="font-size:9.5px;background:var(--brand-lt);color:var(--brand);padding:2px 7px;border-radius:99px;vertical-align:middle;">TEAMS</span>':''}</div>${statusBadge(c.status)}</div>
+      <div class="cc-desc">${escapeHtml(c.description || '')}</div>
+      <div class="cc-meta">
+        <span><i class="fa-solid fa-users"></i> ${c.teamBased ? `${c.teamCount||0} teams` : `${c.participantCount || 0}${c.maxParticipants ? '/'+c.maxParticipants : ''}`}</span>
+        <span><i class="fa-solid fa-coins"></i> Entry: ${c.entryFee || 0}</span>
+        <span><i class="fa-solid fa-trophy"></i> Pool: ${c.prizePool || 0}</span>
+      </div>
+    </div>`).join('');
+}
+
+async function loadActive(){
+  try{
+    const r = await PhqAuth.authFetch('/api/contests', {}, 'student');
+    if(!r.ok) return;
+    activeContests = await r.json();
+    render();
+  }catch(e){}
+}
+async function loadPast(){
+  try{
+    const r = await PhqAuth.authFetch('/api/contests/past', {}, 'student');
+    if(!r.ok) return;
+    pastContests = await r.json();
+    render();
+  }catch(e){}
+}
+
+async function openDetail(id){
+  try{
+    const r = await PhqAuth.authFetch(`/api/contests/${id}`, {}, 'student');
+    if(!r.ok) return;
+    const c = await r.json();
+    let lb = [];
+    if(c.status === 'live' || c.status === 'ended'){
+      const lr = await PhqAuth.authFetch(`/api/contests/${id}/leaderboard`, {}, 'student');
+      if(lr.ok) lb = await lr.json();
+    }
+    const joinedBlock = c.teamBased ? renderTeamState(c) : (c.myEntry ? renderJoinedState(c) : ((c.status === 'upcoming' || c.status === 'live') ? `<button class="btn" onclick="joinContest('${c._id}')" style="margin-bottom:14px;">Join Contest</button>` : ''));
+    const lbBlock = lb.length > 0 ? `<div style="font-size:12.5px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;margin-top:4px;">${c.teamBased?'Team ':''}Leaderboard</div>
+        ${lb.slice(0,15).map(row => c.teamBased
+          ? `<div class="lb-row"><span style="font-weight:700;">#${row.rank} ${escapeHtml(row.teamName)} <span style="color:var(--t4);font-weight:500;">(${row.memberCount})</span></span><span style="font-weight:800;">${row.score}</span></div>`
+          : `<div class="lb-row"><span style="font-weight:700;">#${row.rank} ${escapeHtml(row.username||row.matric)}</span><span style="font-weight:800;">${row.score}</span></div>`
+        ).join('')}` : '';
+    document.getElementById('detail-body').innerHTML = `
+      <div style="font-family:var(--ff-h);font-weight:800;font-size:18px;margin-bottom:6px;color:var(--t1);letter-spacing:-.3px;">${escapeHtml(c.title)}${c.teamBased?' <span style="font-size:10px;background:var(--brand-lt);color:var(--brand);padding:2px 8px;border-radius:99px;vertical-align:middle;">TEAMS</span>':''}</div>
+      <div style="font-size:12.5px;color:var(--t3);margin-bottom:16px;line-height:1.55;">${escapeHtml(c.description || '')}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--t3);font-weight:600;margin-bottom:18px;">
+        <span>Entry: <b style="color:var(--t1);">${c.entryFee || 0} credits</b></span>
+        <span>Pool: <b style="color:var(--t1);">${c.prizePool || 0} credits</b></span>
+        <span>${c.teamBased ? `${c.teamCount||0} teams` : `${c.participantCount || 0} joined`}</span>
+      </div>
+      ${joinedBlock}
+      ${lbBlock}
+      <button class="btn ghost" style="margin-top:16px;" onclick="closeDetail()">Close</button>
+    `;
+    document.getElementById('m-detail').classList.add('on');
+  }catch(e){}
+}
+
+function renderJoinedState(c){
+  const alreadyScored = c.myEntry.score > 0;
+  let inner = `<div style="background:var(--bg);color:var(--ok);padding:12px 16px;border-radius:var(--r12);font-size:13px;font-weight:700;margin-bottom:12px;box-shadow:var(--sh-in-sm), 0 0 0 2px var(--ok-lt);">You're in!${alreadyScored ? ' Score: '+c.myEntry.score : ''}${c.myEntry.prizeAwarded ? ' · Won '+c.myEntry.prizeAwarded+' credits' : ''}</div>`;
+  if(c.type === 'quiz' && c.status === 'live' && !alreadyScored){
+    inner += `<button class="btn" style="margin-bottom:14px;" onclick="startContestQuiz('${c._id}')"><i class="fa-solid fa-pen"></i> Start Quiz</button>`;
+  }
+  return inner;
+}
+
+function renderTeamState(c){
+  if(!c.myTeam){
+    if(!['upcoming','live'].includes(c.status)) return '';
+    return `
+      <div style="display:flex;gap:10px;margin-bottom:14px;">
+        <button class="btn" style="flex:1;" onclick="showCreateTeamForm('${c._id}')">Create Team</button>
+        <button class="btn ghost" style="flex:1;" onclick="showJoinTeamForm('${c._id}')">Join with Code</button>
+      </div>
+      <div id="team-form-area"></div>
+    `;
+  }
+  const alreadyScored = c.myTeam.score > 0;
+  let inner = `<div style="background:var(--bg);color:var(--ok);padding:12px 16px;border-radius:var(--r12);font-size:13px;font-weight:700;margin-bottom:10px;box-shadow:var(--sh-in-sm), 0 0 0 2px var(--ok-lt);">
+    Team "${escapeHtml(c.myTeam.teamName)}" · ${c.myTeam.members.length} member${c.myTeam.members.length!==1?'s':''}${alreadyScored ? ' · Score: '+c.myTeam.score : ''}${c.myTeam.prizeAwarded ? ' · Won '+c.myTeam.prizeAwarded+' credits (split)' : ''}
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:12px;color:var(--t3);">
+    <span>Invite code: <b style="font-family:monospace;color:var(--t1);">${c.myTeam.teamCode}</b></span>
+    <button style="border:none;background:var(--bg);padding:5px 10px;border-radius:var(--r8);font-size:11px;font-weight:700;cursor:pointer;color:var(--brand);box-shadow:var(--sh-sm);" onclick="navigator.clipboard?.writeText('${c.myTeam.teamCode}')">Copy</button>
+  </div>`;
+  if(c.type === 'quiz' && c.status === 'live' && !alreadyScored){
+    inner += `<button class="btn" style="margin-bottom:14px;" onclick="startContestQuiz('${c._id}')"><i class="fa-solid fa-pen"></i> Start Quiz (for your team)</button>`;
+  }
+  return inner;
+}
+
+function showCreateTeamForm(id){
+  document.getElementById('team-form-area').innerHTML = `
+    <input class="v-modal-input" id="team-name-input" placeholder="Team name" style="margin-bottom:10px;">
+    <button class="btn" style="width:100%;" onclick="submitCreateTeam('${id}')">Create</button>
+  `;
+}
+function showJoinTeamForm(id){
+  document.getElementById('team-form-area').innerHTML = `
+    <input class="v-modal-input" id="team-code-input" placeholder="Team code" style="margin-bottom:10px;text-transform:uppercase;">
+    <button class="btn" style="width:100%;" onclick="submitJoinTeam('${id}')">Join</button>
+  `;
+}
+async function submitCreateTeam(id){
+  const teamName = document.getElementById('team-name-input').value.trim();
+  if(!teamName){ alert('Enter a team name'); return; }
+  try{
+    const r = await PhqAuth.authFetch(`/api/contests/${id}/team/create`, {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ teamName }),
+    }, 'student');
+    const d = await r.json();
+    if(!r.ok){ alert(d.error || 'Could not create team'); return; }
+    openDetail(id);
+  }catch(e){}
+}
+async function submitJoinTeam(id){
+  const teamCode = document.getElementById('team-code-input').value.trim();
+  if(!teamCode){ alert('Enter a team code'); return; }
+  try{
+    const r = await PhqAuth.authFetch(`/api/contests/${id}/team/join`, {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ teamCode }),
+    }, 'student');
+    const d = await r.json();
+    if(!r.ok){ alert(d.error || 'Could not join team'); return; }
+    openDetail(id);
+  }catch(e){}
+}
+
+
+async function startContestQuiz(id){
+  try{
+    const r = await PhqAuth.authFetch(`/api/contests/${id}/quiz-questions`, {}, 'student');
+    const d = await r.json();
+    if(!r.ok){ alert(d.error || 'Could not load quiz'); return; }
+    if(d.questions.length === 0){ alert('This contest has no questions set up yet.'); return; }
+    quizState = { contestId: id, questions: d.questions, answers: {}, idx: 0 };
+    closeDetail();
+    renderQuizStep();
+    document.getElementById('m-quiz').classList.add('on');
+  }catch(e){}
+}
+
+let quizState = null;
+function renderQuizStep(){
+  const { questions, idx, answers } = quizState;
+  const q = questions[idx];
+  document.getElementById('c-quiz-body').innerHTML = `
+    <div style="font-size:11.5px;color:var(--brand);font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Question ${idx+1} of ${questions.length}</div>
+    <div style="font-size:15px;font-weight:700;margin-bottom:18px;color:var(--t1);font-family:var(--ff-h);line-height:1.5;letter-spacing:-.2px;">${escapeHtml(q.q)}</div>
+    ${q.opts.map((opt,i) => `<div onclick="selectAnswer(${i})" class="quiz-opt${answers[q._id]===i?' selected':''}">${escapeHtml(opt)}</div>`).join('')}
+    <div style="display:flex;gap:10px;margin-top:18px;">
+      ${idx>0 ? `<button class="btn ghost" style="flex:1;" onclick="quizNav(-1)">Back</button>` : ''}
+      ${idx<questions.length-1
+        ? `<button class="btn" style="flex:1;" onclick="quizNav(1)">Next</button>`
+        : `<button class="btn" style="flex:1;" onclick="submitContestQuiz()">Submit Quiz</button>`}
+    </div>
+  `;
+}
+function selectAnswer(i){
+  quizState.answers[quizState.questions[quizState.idx]._id] = i;
+  renderQuizStep();
+}
+function quizNav(dir){
+  quizState.idx = Math.max(0, Math.min(quizState.questions.length-1, quizState.idx+dir));
+  renderQuizStep();
+}
+async function submitContestQuiz(){
+  try{
+    const r = await PhqAuth.authFetch(`/api/contests/${quizState.contestId}/submit-quiz`, {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({answers: quizState.answers}),
+    }, 'student');
+    const d = await r.json();
+    document.getElementById('m-quiz').classList.remove('on');
+    if(!r.ok){ alert(d.error || 'Could not submit quiz'); return; }
+    alert(`Scored ${d.correct}/${d.total} (${d.score}%)`);
+    loadActive();
+  }catch(e){}
+}
+function closeDetail(){ document.getElementById('m-detail').classList.remove('on'); }
+
+async function joinContest(id){
+  try{
+    const r = await PhqAuth.authFetch(`/api/contests/${id}/join`, {method:'POST'}, 'student');
+    const d = await r.json();
+    if(!r.ok){ alert(d.error || 'Could not join contest'); return; }
+    closeDetail();
+    loadActive();
+  }catch(e){}
+}
+
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+loadActive();
+
+// inline onclick="…" handlers run in the global scope, so the functions they call are exposed
+window.switchTab = switchTab;
+window.openDetail = openDetail;
+window.showCreateTeamForm = showCreateTeamForm;
+window.showJoinTeamForm = showJoinTeamForm;
+window.submitCreateTeam = submitCreateTeam;
+window.submitJoinTeam = submitJoinTeam;
+window.startContestQuiz = startContestQuiz;
+window.selectAnswer = selectAnswer;
+window.quizNav = quizNav;
+window.submitContestQuiz = submitContestQuiz;
+window.closeDetail = closeDetail;
+window.joinContest = joinContest;
+
+return { onShow(){ (currentTab === 'past' ? loadPast : loadActive)(); } };
+//# sourceURL=view-contests.js
+</script>
