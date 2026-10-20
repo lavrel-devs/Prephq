@@ -59,7 +59,7 @@ router.put('/credit-settings', async (req, res) => {
     // Accepts a partial shape, e.g. { premium: { priceWeekly: 500 }, free: { features: { flashcards: true } } }.
     if (tiers) {
       const { FEATURE_KEYS } = require('../../services/entitlements.service');
-      const PRICE_FIELDS = ['priceWeekly', 'priceMonthly', 'priceYearly', 'priceLifetime'];
+      const PRICE_FIELDS = ['priceDaily', 'priceWeekly', 'priceMonthly', 'priceYearly', 'priceLifetime'];
       for (const tierName of ['free', 'premium']) {
         const incoming = tiers[tierName];
         if (!incoming || typeof incoming !== 'object') continue;

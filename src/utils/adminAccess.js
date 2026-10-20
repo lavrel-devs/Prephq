@@ -11,7 +11,7 @@ const AREAS = [
   { key: 'analytics',     label: 'Dashboard & analytics',  desc: 'Overview stats, analytics charts' },
   { key: 'students',      label: 'Students',                desc: 'View/edit accounts, suspend, reset usernames & passwords, reports' },
   { key: 'credits',       label: 'Credits & transfers',     desc: 'Grant/deduct credits, bulk grants, transaction & transfer logs' },
-  { key: 'payments',      label: 'Payments & plans',        desc: 'Payment records, upgrade students to Premium (weekly/monthly/yearly/lifetime)' },
+  { key: 'payments',      label: 'Payments & plans',        desc: 'Payment records, upgrade students to Premium (daily/weekly/monthly/yearly/lifetime/custom days), activation codes' },
   { key: 'courses',       label: 'Courses',                 desc: 'Add/edit/remove courses' },
   { key: 'questions',     label: 'Question bank',           desc: 'Add/edit/delete questions, bulk upload' },
   { key: 'contests',      label: 'Contests',                desc: 'Create/run contests and recurring templates (can adjust contest prizes)' },
@@ -39,6 +39,7 @@ const RULES = [
   [/^\/users\/bulk-grant\/?$/, ['credits']],
 
   [/^\/payments(\/|$)/, ['payments']],
+  [/^\/plan-codes(\/|$)/, ['payments']],
   [/^\/users\/tier-distribution\/?$/, ['payments', 'analytics']],
   [/^\/users\/[^/]+\/tier\/?$/, ['payments']],
 

@@ -139,7 +139,7 @@ const StudentSchema = new mongoose.Schema({
   tier:          { type: String, enum: ['free', 'premium'], default: 'free' },
   // Which Premium billing period is active. 'lifetime' is a permanent entitlement (tierExpiresAt is
   // ignored); null on a premium account = manual/legacy grant.
-  premiumPlan:   { type: String, enum: ['weekly', 'monthly', 'yearly', 'lifetime', null], default: null },
+  premiumPlan:   { type: String, enum: ['daily', 'weekly', 'monthly', 'yearly', 'lifetime', 'custom', null], default: null },
   tierExpiresAt: { type: Date, default: null },
 
   // Daily practice-question usage (free tier: 20/day). Mirrors the

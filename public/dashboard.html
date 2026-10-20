@@ -1172,6 +1172,10 @@ details.np-card>summary::-webkit-details-marker{display:none;}
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
       Save Quiz for Later
     </button>
+    <button class="btn-surf" onclick="shareCurrentQuiz()" id="share-quiz-btn">
+      <i class="fa-solid fa-share-nodes"></i>
+      Share Quiz with Friends
+    </button>
     <button class="btn-grad" onclick="retryQuiz()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
       Try Again
@@ -1277,6 +1281,25 @@ details.np-card>summary::-webkit-details-marker{display:none;}
   </div>
 </div>
 
+<!-- ═══ SHARE QUIZ LINK (v1.7.1) ═════════════════════════════════ -->
+<div class="sheet-bg" id="share-sheet" onclick="closeSheet('share-sheet',event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Share this quiz</div>
+    <div class="sheet-sub" id="share-sub">Friends who open the link can take this quiz in PrepHQ.</div>
+    <div style="padding:0 20px;">
+      <input id="share-link-input" type="text" readonly onclick="this.select()" style="width:100%;padding:13px 14px;border:none;border-radius:var(--r12);background:var(--bg);box-shadow:var(--sh-in-sm);color:var(--t1);font-size:13px;font-weight:600;outline:none;">
+      <div style="display:flex;gap:10px;margin-top:12px;">
+        <button class="btn-grad" style="flex:1;" onclick="copyShareLink()"><i class="fa-solid fa-link"></i>&nbsp; Copy link</button>
+        <button class="btn-surf" style="flex:1;" onclick="shareLinkWhatsApp()"><i class="fa-brands fa-whatsapp"></i>&nbsp; WhatsApp</button>
+      </div>
+      <button class="btn-surf" id="share-native-btn" style="margin-top:10px;display:none;" onclick="shareLinkNative()"><i class="fa-solid fa-share-nodes"></i>&nbsp; More apps…</button>
+      <div style="font-size:11.5px;color:var(--t3);margin:14px 2px 6px;line-height:1.5;">Taking it uses your friend's own daily question limit — it never costs them credits or touches your score.</div>
+      <button class="btn-surf" style="margin-top:6px;color:var(--no);font-size:13px;padding:11px;" onclick="stopSharingQuiz()"><i class="fa-solid fa-link-slash"></i>&nbsp; Stop sharing (disable link)</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ USERNAME SETUP ═══════════════════════════════════════════ -->
 <div class="modal-bg" id="m-username" style="z-index:300;">
   <div class="modal">
@@ -1325,6 +1348,7 @@ details.np-card>summary::-webkit-details-marker{display:none;}
     <div id="pw-periods" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:14px;"></div>
     <div class="modal-sub" style="font-size:12px;">To upgrade right now, reach out via WhatsApp — an admin will confirm your payment and activate your plan.</div>
     <a class="btn-grad" style="width:100%;display:block;box-sizing:border-box;text-decoration:none;margin-top:10px;" id="pw-whatsapp-link" href="#" onclick="requestUpgrade(event)">Message admin to upgrade</a>
+    <div style="text-align:center;margin-top:12px;font-size:12.5px;color:var(--t3);">Already have an activation code? <a href="/profile" style="color:var(--brand);font-weight:800;text-decoration:none;" onclick="closePaywall()">Enter it in Profile</a></div>
     <div style="text-align:center;margin-top:10px;font-size:13px;color:var(--t3);cursor:pointer;" onclick="closePaywall()">Maybe later</div>
   </div>
 </div>
@@ -1578,10 +1602,11 @@ function doLogout(){
 
 async function bootFromSession(){
   const session = PhqAuth.getSession();
-  if(!session){ window.location.replace('/login.html'); return; }
+  if(!session){ PhqAuth.stashShareLink(); window.location.replace('/login.html'); return; }
   try{
     const res = await PhqAuth.authFetch('/api/me', {}, 'student');
     if(!res.ok){
+      PhqAuth.stashShareLink();
       try { PhqAuth.logout('student'); } catch(e){}
       window.location.replace('/login.html');
       return;
@@ -1598,6 +1623,12 @@ async function bootFromSession(){
     loadNotifications();
     if(data.needsUsername) openUsernameModal();
     else if(data.needsProfileCompletion) openProfileSetupModal();
+    else {
+      // A friend's shared quiz link (/q/<token>). Skipped while a blocking setup modal is showing; the
+      // address bar still says /q/<token>, so reloading once setup is done opens the quiz.
+      const m = location.pathname.match(/^\/q\/([A-Za-z0-9_-]{8,32})$/);
+      if(m) openSharedQuiz(m[1]);
+    }
   }catch(e){
     try { PhqAuth.logout('student'); } catch(e2){}
     window.location.replace('/login.html');
@@ -1777,8 +1808,8 @@ async function loadPlans(){
   return cachedPlans;
 }
 let pwPeriod = 'monthly';
-const PERIOD_LABEL = { weekly:'Weekly', monthly:'Monthly', yearly:'Yearly', lifetime:'Lifetime' };
-const PERIOD_UNIT  = { weekly:'/week', monthly:'/month', yearly:'/year', lifetime:' once' };
+const PERIOD_LABEL = { daily:'Daily', weekly:'Weekly', monthly:'Monthly', yearly:'Yearly', lifetime:'Lifetime', custom:'Custom' };
+const PERIOD_UNIT  = { daily:'/day', weekly:'/week', monthly:'/month', yearly:'/year', lifetime:' once', custom:'' };
 function fmtNaira(n){ return '\u20A6' + Number(n).toLocaleString(); }
 
 function renderPaywallPeriods(plans){
@@ -2987,6 +3018,7 @@ function showResults(){
 
   if(curAIQuizId){
     submitAIQuizResult(curAIQuizId, answers.slice(), correct, total);
+    shareCache = { arr: quizQ, id: curAIQuizId };
     curAIQuizId = null;
   }
 
@@ -3136,6 +3168,7 @@ async function renderSavedQuizzes(){
           <div style="font-weight:700;font-size:13.5px;">${escapeHtml(h.course)}${h.source==='ai'?' · AI':''}</div>
           <div style="font-size:11.5px;color:var(--t3);">${h.questions.length} questions · saved ${new Date(h.createdAt).toLocaleDateString()}</div>
         </div>
+        <button class="btn-surf btn-play" onclick="shareQuizById('${h._id}')" aria-label="Share quiz link" title="Share link"><i class="fa-solid fa-share-nodes"></i></button>
         <button class="btn-surf btn-play" onclick="playSavedQuiz('${h._id}')">Play</button>
       </div>`).join('');
   }catch(e){
@@ -3169,6 +3202,7 @@ async function playSavedQuiz(id){
     }
     curAIQuizId = null;
     quizQ = qs;
+    shareCache = { arr: quizQ, id };
     selCourses = [...new Set(qs.map(q=>q.course))];
     answers=new Array(quizQ.length).fill(null);
     confirmed=new Array(quizQ.length).fill(false);
@@ -3178,6 +3212,103 @@ async function playSavedQuiz(id){
     showScr('quiz');
     renderQ();
   }catch(e){ toast('Could not load this saved quiz'); }
+}
+
+// ── Shareable quiz links (v1.7.1) ────────────────────────────
+// Owner side: turn a quiz of mine into /q/<token>, copy it, send it. Friend side: openSharedQuiz() below.
+let shareCache = { arr: null, id: null };   // which saved record the quiz on the results screen came from
+let curShareId = null, curShareUrl = '';
+
+async function shareQuizById(id){
+  try{
+    const r = await PhqAuth.authFetch(`/api/quiz/history/${id}/share`, { method:'POST' }, 'student');
+    const d = await r.json().catch(()=>({}));
+    if(!r.ok){ toast(d.error || 'Could not create a link. Try again.'); return; }
+    curShareId = id;
+    curShareUrl = location.origin + d.path;
+    document.getElementById('share-link-input').value = curShareUrl;
+    document.getElementById('share-native-btn').style.display = navigator.share ? 'flex' : 'none';
+    document.getElementById('share-sheet').classList.add('on');
+    copyShareLink(true);   // copy straight away — most people just want the link on their clipboard
+  }catch(e){ toast('Could not create a link. Try again.'); }
+}
+
+// Results screen: reuse the record this quiz already lives in, or bank it first (once per quiz).
+async function shareCurrentQuiz(){
+  if(!quizQ.length) return;
+  const btn = document.getElementById('share-quiz-btn');
+  btn.disabled = true;
+  try{
+    if(shareCache.arr !== quizQ || !shareCache.id){
+      const names = selCourses.map(c=>COURSES[c]?.code||ALL_COURSES[c]?.code||c);
+      const r = await PhqAuth.authFetch('/api/quiz/save-for-later', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          course: names.length<=2 ? names.join('+') : 'Mixed',
+          questions: quizQ.map(q=>({ q:q.q||q.question||'', opts:q.opts, ans:q.ans, exp:q.exp||'', tag:q.tag||'', course:q.course })),
+        })
+      }, 'student');
+      if(!r.ok){ toast('Could not prepare this quiz for sharing. Try again.'); return; }
+      shareCache = { arr: quizQ, id: (await r.json()).id };
+    }
+    await shareQuizById(shareCache.id);
+  }catch(e){ toast('Could not prepare this quiz for sharing. Try again.'); }
+  finally{ btn.disabled = false; }
+}
+
+async function copyShareLink(quiet){
+  const url = curShareUrl; if(!url) return;
+  let ok = false;
+  try{ await navigator.clipboard.writeText(url); ok = true; }catch(e){}
+  if(!ok){   // older WebViews: fall back to selecting the text field and execCommand
+    try{ const el = document.getElementById('share-link-input'); el.focus(); el.select(); el.setSelectionRange(0, url.length); ok = document.execCommand('copy'); }catch(e){}
+  }
+  toast(ok ? 'Link copied — send it to your friends' : (quiet ? 'Tap the link to select it, then copy' : 'Could not copy. Tap the link and copy it manually.'));
+}
+function shareLinkText(){ return `Try this quiz on PrepHQ 📚\n${curShareUrl}`; }
+function shareLinkWhatsApp(){ if(curShareUrl) window.open('https://wa.me/?text=' + encodeURIComponent(shareLinkText()), '_blank', 'noopener'); }
+function shareLinkNative(){ if(curShareUrl && navigator.share) navigator.share({ title:'PrepHQ quiz', text:'Try this quiz on PrepHQ', url:curShareUrl }).catch(()=>{}); }
+
+async function stopSharingQuiz(){
+  if(!curShareId) return;
+  if(!confirm('Disable this link? Anyone who has it will no longer be able to open the quiz.')) return;
+  try{
+    const r = await PhqAuth.authFetch(`/api/quiz/history/${curShareId}/share`, { method:'DELETE' }, 'student');
+    if(!r.ok){ toast('Could not disable the link. Try again.'); return; }
+    closeSheet('share-sheet');
+    curShareId = null; curShareUrl = '';
+    toast('Link disabled');
+  }catch(e){ toast('Could not disable the link. Try again.'); }
+}
+
+// Friend side: /q/<token> → check the friend's daily limit (server-side) → play.
+async function openSharedQuiz(token){
+  try{ history.replaceState({phq:1}, '', '/dashboard'); }catch(e){}
+  try{
+    const r = await PhqAuth.authFetch(`/api/quiz/shared/${encodeURIComponent(token)}`, {}, 'student');
+    const d = await r.json().catch(()=>({}));
+    if(!r.ok){
+      if(d.code === 'LIMIT_REACHED') showPaywall(`You've used all ${d.limit} of your daily questions, so you can't start this shared quiz today. Upgrade to keep going, or open the link again tomorrow.`);
+      else if(d.code === 'FEATURE_LOCKED') showPaywall(d.error);
+      else toast(d.error || 'Could not open this quiz link');
+      return;
+    }
+    if(d.capped) toast(`Only ${d.questions.length} of ${d.total} questions fit in your daily limit today`);
+    else if(d.sharedBy && !d.isOwner) toast(`Quiz shared by ${d.sharedBy}`);
+    clearAutoAdvance();
+    curAIQuizId = null;
+    quizMode = 'practice';
+    quizQ = d.questions.map(q=>({ ...q, course: q.course || d.course }));
+    shareCache = { arr: null, id: null };
+    selCourses = [...new Set(quizQ.map(q=>q.course))];
+    answers = new Array(quizQ.length).fill(null);
+    confirmed = new Array(quizQ.length).fill(false);
+    timedOut = new Array(quizQ.length).fill(false);
+    cur = 0;
+    document.getElementById('qt-title').textContent = d.course;
+    showScr('quiz');
+    renderQ();
+  }catch(e){ toast('Could not open this quiz link. Check your connection and try again.'); }
 }
 
 // ── Flashcards ───────────────────────────────────────────────
@@ -3543,6 +3674,7 @@ async function renderAIHistory(){
         <div style="font-size:11.5px;color:var(--t3);">${h.totalQuestions||h.questions.length} questions · ${new Date(h.createdAt).toLocaleDateString()}</div>
       </div>
       <div style="font-weight:800;font-size:15px;color:${pctClr};">${done?pct+'%':'—'}</div>
+      <button class="btn-surf btn-play" style="padding:9px 12px;" onclick="shareQuizById('${h._id}')" aria-label="Share quiz link" title="Share link"><i class="fa-solid fa-share-nodes"></i></button>
     </div>`;
   }).join('');
 

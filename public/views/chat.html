@@ -198,6 +198,33 @@
 }
 #view-chat .send-btn i{font-size:15px;}
 
+/* ═══ Voice tutor (v1.7.3) ═══ */
+#view-chat .mic-btn{
+  width:48px;height:48px;border-radius:16px;border:none;background:var(--bg);color:var(--purple);
+  display:none;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;
+  box-shadow:var(--sh);transition:box-shadow .15s, transform .15s, color .15s;
+}
+#view-chat .mic-btn.avail{display:flex;}
+#view-chat .mic-btn:active{transform:scale(.94);box-shadow:var(--sh-in);}
+#view-chat .mic-btn i{font-size:16px;}
+#view-chat .mic-btn.live{color:#fff;background:linear-gradient(140deg,#ef4444,#f97316);box-shadow:var(--sh-in-sm),0 0 0 4px rgba(239,68,68,.22);animation:vchat-mic 1.1s ease-in-out infinite;}
+@keyframes vchat-mic{0%,100%{transform:scale(1);}50%{transform:scale(1.07);}}
+#view-chat .voice-bar{max-width:600px;margin:0 auto;width:100%;padding:0 18px 6px;flex-shrink:0;display:none;}
+#view-chat .voice-bar.avail{display:block;}
+#view-chat .voice-row{display:flex;align-items:center;gap:8px;min-height:22px;}
+#view-chat #voice-status{flex:1;font-size:12px;font-weight:700;color:var(--t3);min-width:0;}
+#view-chat #voice-status.err{color:var(--no);}
+#view-chat #voice-status.live{color:var(--no);}
+#view-chat .voice-gear{border:none;background:transparent;color:var(--t3);cursor:pointer;font-size:13px;padding:4px 6px;border-radius:8px;}
+#view-chat .voice-opts{display:none;margin:6px 0 2px;padding:12px 14px;border-radius:16px;background:var(--bg);box-shadow:var(--sh-in-sm);font-size:12.5px;color:var(--t2);}
+#view-chat .voice-opts.on{display:block;}
+#view-chat .voice-opts label{display:flex;align-items:center;gap:8px;margin-top:9px;font-weight:600;line-height:1.35;}
+#view-chat .voice-opts select{width:100%;margin-top:4px;padding:10px 12px;border:none;border-radius:12px;background:var(--bg);box-shadow:var(--sh-in-sm);color:var(--t1);font-size:13px;font-weight:700;font-family:inherit;outline:none;}
+#view-chat .voice-note{margin-top:10px;font-size:11.5px;color:var(--t3);line-height:1.5;}
+#view-chat .msg-tools{max-width:80%;margin:-6px 0 12px 8px;}
+#view-chat .listen-btn{border:none;cursor:pointer;background:var(--bg);color:var(--purple);font-size:11.5px;font-weight:800;padding:6px 12px;border-radius:99px;box-shadow:var(--sh-sm);font-family:inherit;display:inline-flex;align-items:center;gap:6px;}
+#view-chat .listen-btn.on{color:#fff;background:linear-gradient(140deg,var(--brand),var(--purple));}
+
 /* Responsive */
 @media (min-width: 640px){
   #view-chat .v-topbar, #view-chat .input-bar, #view-chat .chat-scroll{
@@ -217,16 +244,188 @@
   <div class="empty-state" id="empty-state">
     <div class="empty-icon"><i class="fa-solid fa-graduation-cap"></i></div>
     <div class="v-empty-title">Ask me anything academic</div>
-    <div class="v-empty-sub">Explanations, worked examples, study help — I'm here for it.</div>
+    <div class="v-empty-sub">Explanations, worked examples, study help — I'm here for it. <span id="voice-empty-hint"></span></div>
   </div>
 </div>
 
+<div class="voice-bar" id="voice-bar">
+  <div class="voice-row">
+    <div id="voice-status"></div>
+    <button type="button" class="voice-gear" id="voice-gear" onclick="toggleVoiceOpts()" aria-label="Voice settings" title="Voice settings"><i class="fa-solid fa-sliders"></i> Voice</button>
+  </div>
+  <div class="voice-opts" id="voice-opts">
+    <div style="font-weight:800;color:var(--t1);">Speak in</div>
+    <select id="voice-lang" onchange="saveVoiceOpts()">
+      <option value="en-NG">English (Nigeria)</option>
+      <option value="en-GB">English (UK)</option>
+      <option value="en-US">English (US)</option>
+      <option value="en-ZA">English (South Africa)</option>
+    </select>
+    <label><input type="checkbox" id="voice-auto" onchange="saveVoiceOpts()"> Send automatically when I stop talking</label>
+    <label><input type="checkbox" id="voice-all" onchange="saveVoiceOpts()"> Read every answer aloud, not just voice questions</label>
+    <div class="voice-note">If it keeps mishearing you, try another accent above, speak close to the phone in a quiet place, and check the words before sending. Each message counts toward your daily limit.</div>
+  </div>
+</div>
 <div class="input-bar">
   <input type="text" id="chat-input" placeholder="Ask a study question..." onkeydown="if(event.key==='Enter')sendChatMessage()">
+  <button class="mic-btn" id="mic-btn" type="button" onclick="toggleMic()" aria-label="Ask by voice" title="Ask by voice"><i class="fa-solid fa-microphone"></i></button>
   <button class="send-btn" id="send-btn" onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
 </div>
 <script>
 const document = PhqShell.scope(root); // every getElementById/querySelector in this view only sees this view
+// ═══ VOICE TUTOR (v1.7.3) ═══════════════════════════════════
+// Speech-to-text and text-to-speech both come from the BROWSER (Web Speech API) — no extra cost, no audio sent to us.
+// Quality depends on the phone/browser (Chrome on Android is best; some Android WebViews, Firefox and older iPhones
+// have no recognition at all), so every voice feature is optional: the mic only appears when the browser supports it,
+// the heard words land in the text box for the student to fix, and typing always works.
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const TTS = ('speechSynthesis' in window && 'SpeechSynthesisUtterance' in window) ? window.speechSynthesis : null;
+const VKEY = 'phq_voice';
+const vset = { lang:'en-NG', autoSend:false, readAll:false };
+try{ Object.assign(vset, JSON.parse(localStorage.getItem(VKEY) || '{}')); }catch(e){}
+let rec = null, listening = false, voiceDraft = '', speakToken = 0, speakingBtn = null, voices = [];
+
+function setVoiceStatus(t, cls){ const el = document.getElementById('voice-status'); el.textContent = t || ''; el.className = cls || ''; }
+function toggleVoiceOpts(){ document.getElementById('voice-opts').classList.toggle('on'); }
+function saveVoiceOpts(){
+  vset.lang = document.getElementById('voice-lang').value;
+  vset.autoSend = document.getElementById('voice-auto').checked;
+  vset.readAll = document.getElementById('voice-all').checked;
+  try{ localStorage.setItem(VKEY, JSON.stringify(vset)); }catch(e){}
+  if(TTS) loadVoices();
+}
+function initVoiceUI(){
+  document.getElementById('voice-lang').value = vset.lang;
+  document.getElementById('voice-auto').checked = !!vset.autoSend;
+  document.getElementById('voice-all').checked = !!vset.readAll;
+  if(SR) document.getElementById('mic-btn').classList.add('avail');
+  if(SR || TTS) document.getElementById('voice-bar').classList.add('avail');
+  if(!SR) document.getElementById('voice-auto').closest('label').style.display = 'none';
+  const hint = document.getElementById('voice-empty-hint');
+  if(hint) hint.textContent = SR ? 'Tap the mic to ask by voice.' : '';
+  if(!SR && TTS) setVoiceStatus('Voice questions need Chrome on Android — you can still tap Listen on any answer.');
+}
+
+// ── Listening ──
+function stopListening(){ if(rec){ try{ rec.abort(); }catch(e){} } listening = false; syncMic(); }
+function syncMic(){
+  const b = document.getElementById('mic-btn');
+  b.classList.toggle('live', listening);
+  b.innerHTML = listening ? '<i class="fa-solid fa-stop"></i>' : '<i class="fa-solid fa-microphone"></i>';
+}
+function toggleMic(){ listening ? (rec && rec.stop()) : startListening(); }
+
+const VOICE_ERR = {
+  'not-allowed': 'Microphone is blocked. Allow it in your browser’s site settings, then try again.',
+  'service-not-allowed': 'Voice input is blocked on this browser. Type your question instead.',
+  'no-speech': 'I didn’t hear anything — tap the mic and try again.',
+  'audio-capture': 'No microphone found on this device.',
+  'network': 'Voice recognition needs an internet connection. Type your question instead.',
+};
+function startListening(retryLang){
+  if(!SR) return;
+  stopSpeaking();
+  const input = document.getElementById('chat-input');
+  let finalText = '', failed = '', lang = retryLang || vset.lang;
+  rec = new SR();
+  rec.lang = lang; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
+  rec.onstart = () => { listening = true; syncMic(); setVoiceStatus('Listening… speak your question', 'live'); };
+  rec.onresult = (e) => {
+    let interim = '';
+    for(let i = e.resultIndex; i < e.results.length; i++){
+      const t = e.results[i][0].transcript;
+      if(e.results[i].isFinal) finalText += t; else interim += t;
+    }
+    input.value = (finalText + ' ' + interim).replace(/\s+/g, ' ').trim();
+  };
+  rec.onerror = (e) => { failed = e.error || 'error'; };
+  rec.onend = () => {
+    listening = false; syncMic();
+    if(failed === 'language-not-supported' && lang !== 'en-US'){ startListening('en-US'); return; }   // phone has no en-NG model
+    if(failed && failed !== 'aborted'){ setVoiceStatus(VOICE_ERR[failed] || 'Voice input stopped unexpectedly. You can type instead.', 'err'); return; }
+    const text = input.value.trim();
+    if(!text){ if(failed !== 'aborted') setVoiceStatus('I didn’t catch that — tap the mic and try again.', 'err'); return; }
+    voiceDraft = text;
+    if(vset.autoSend){ setVoiceStatus(''); sendChatMessage(); }
+    else { setVoiceStatus('Check the words, fix any mistakes, then tap send.'); input.focus(); }
+  };
+  try{ rec.start(); }catch(e){ setVoiceStatus('Could not start the microphone. Try again.', 'err'); }
+}
+
+// ── Speaking ──
+function loadVoices(){ try{ voices = TTS.getVoices() || []; }catch(e){ voices = []; } }
+function pickVoice(){
+  const norm = l => String(l || '').toLowerCase().replace('_', '-');
+  const want = norm(vset.lang);
+  return voices.find(v => norm(v.lang) === want)
+      || voices.find(v => norm(v.lang) === 'en-gb')
+      || voices.find(v => norm(v.lang).startsWith('en')) || null;
+}
+// Turn a reply into something a voice can read: drop markdown, say simple maths in words, never read out symbols.
+function speakable(raw){
+  let t = String(raw || '');
+  t = t.replace(/\[\[smiles:[^\]]*\]\]/gi, ' ');
+  t = t.replace(/\$\$?([^$]+)\$\$?/g, (m, inner) => ' ' + mathToWords(inner) + ' ');
+  t = t.replace(/\\\(([^)]*?)\\\)|\\\[([^\]]*?)\\\]/g, (m, a, b) => ' ' + mathToWords(a || b) + ' ');
+  t = t.replace(/[*_#`>|~]+/g, ' ').replace(/^\s*[-•]\s+/gm, '').replace(/https?:\/\/\S+/g, ' link ');
+  return t.replace(/\s+/g, ' ').trim();
+}
+function mathToWords(m){
+  return String(m)
+    .replace(/\\ce\{([^}]*)\}/g, '$1').replace(/\\text\{([^}]*)\}/g, '$1')
+    .replace(/\\frac\{([^}]*)\}\{([^}]*)\}/g, '$1 over $2')
+    .replace(/\^\{?2\}?/g, ' squared').replace(/\^\{?3\}?/g, ' cubed').replace(/\^\{([^}]*)\}/g, ' to the power $1').replace(/\^(\w)/g, ' to the power $1')
+    .replace(/_\{([^}]*)\}/g, ' $1').replace(/_(\w)/g, ' $1')
+    .replace(/\\times|\\cdot/g, ' times ').replace(/\\div/g, ' divided by ').replace(/\\pm/g, ' plus or minus ')
+    .replace(/\\(?:rightarrow|to)\b|->/g, ' gives ').replace(/\\sqrt\{([^}]*)\}/g, 'square root of $1')
+    .replace(/\\(?:Delta)\b/g, 'delta ').replace(/\\(?:alpha)\b/g, 'alpha ').replace(/\\(?:beta)\b/g, 'beta ').replace(/\\(?:pi)\b/g, 'pi ').replace(/\\(?:theta)\b/g, 'theta ')
+    .replace(/=/g, ' equals ').replace(/\+/g, ' plus ').replace(/[{}\\]/g, ' ');
+}
+// Speak in sentence-sized chunks: long utterances get cut off on several Android browsers.
+function chunkText(t){
+  const sentences = t.match(/[^.!?\n]+[.!?]*\s*/g) || [t], out = []; let cur = '';
+  for(const s of sentences){ if((cur + s).length > 180 && cur){ out.push(cur.trim()); cur = s; } else cur += s; }
+  if(cur.trim()) out.push(cur.trim());
+  return out;
+}
+function setSpeakingBtn(b){
+  if(speakingBtn){ speakingBtn.classList.remove('on'); speakingBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Listen'; }
+  speakingBtn = b;
+  if(b){ b.classList.add('on'); b.innerHTML = '<i class="fa-solid fa-stop"></i> Stop'; }
+}
+function stopSpeaking(){
+  speakToken++;
+  if(TTS){ try{ TTS.cancel(); }catch(e){} }
+  setSpeakingBtn(null);
+}
+function speak(raw, btn){
+  if(!TTS) return;
+  stopSpeaking();
+  const parts = chunkText(speakable(raw));
+  if(!parts.length) return;
+  const token = ++speakToken;
+  setSpeakingBtn(btn);
+  const next = (i) => {
+    if(token !== speakToken) return;
+    if(i >= parts.length){ setSpeakingBtn(null); return; }
+    const u = new SpeechSynthesisUtterance(parts[i]);
+    const v = pickVoice();
+    if(v){ u.voice = v; u.lang = v.lang; } else u.lang = vset.lang;
+    u.rate = 0.95;
+    u.onend = () => next(i + 1);
+    u.onerror = () => { if(token === speakToken) setSpeakingBtn(null); };
+    TTS.speak(u);
+  };
+  next(0);
+}
+if(TTS){ loadVoices(); try{ TTS.addEventListener('voiceschanged', loadVoices); }catch(e){} }
+// Never keep talking (or listening) after the student leaves this tab or the page.
+window.addEventListener('phq:route', (e) => { if(e.detail && e.detail.path !== '/chat'){ stopSpeaking(); stopListening(); } });
+window.addEventListener('pagehide', () => { stopSpeaking(); stopListening(); });
+initVoiceUI();
+// Clearing the box discards the heard text, so a later typed message isn't counted as a voice question.
+document.getElementById('chat-input').addEventListener('input', (e) => { if(!e.target.value) voiceDraft = ''; });
+
 async function loadHistory(){
   try{
     const r = await PhqAuth.authFetch('/api/chat/history', {}, 'student');
@@ -246,6 +445,18 @@ function appendMessage(role, content){
   el.className = `msg ${role}`;
   el.textContent = content;
   document.getElementById('chat-scroll').appendChild(el);
+  if(role === 'assistant' && TTS && !el.classList.contains('pending') && !/^Something went wrong/.test(content)){
+    // The tools sit BESIDE the bubble, so the maths/chemistry renderer never touches them. Speech uses the raw
+    // reply text (not the rendered DOM, which is full of KaTeX markup).
+    const tools = document.createElement('div');
+    tools.className = 'msg-tools';
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'listen-btn'; b.innerHTML = '<i class="fa-solid fa-volume-high"></i> Listen';
+    b.onclick = () => (speakingBtn === b ? stopSpeaking() : speak(content, b));
+    tools.appendChild(b);
+    document.getElementById('chat-scroll').appendChild(tools);
+    el._listen = b;
+  }
   return el;
 }
 
@@ -284,6 +495,10 @@ async function sendChatMessage(){
   const emptyState = document.getElementById('empty-state');
   if(emptyState) emptyState.remove();
 
+  stopSpeaking(); stopListening();
+  const byVoice = !!voiceDraft;
+  const voiceEdited = byVoice && text !== voiceDraft;
+  voiceDraft = ''; setVoiceStatus('');
   appendMessage('user', text);
   input.value = '';
   scrollToBottom();
@@ -294,7 +509,8 @@ async function sendChatMessage(){
 
   try{
     const r = await PhqAuth.authFetch('/api/chat/message', {
-      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ message: text }),
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(byVoice ? { message: text, voice: true, voiceEdited, voiceLang: vset.lang } : { message: text }),
     }, 'student');
     const d = await r.json();
     pending.remove();
@@ -302,7 +518,8 @@ async function sendChatMessage(){
       if(d.code === 'LIMIT_REACHED' && typeof showPaywall === 'function') showPaywall(d.error);
       appendMessage('assistant', d.error || 'Something went wrong. Try again.');
     } else {
-      appendMessage('assistant', d.reply);
+      const bubble = appendMessage('assistant', d.reply);
+      if((byVoice || vset.readAll) && bubble._listen) speak(d.reply, bubble._listen);
       document.getElementById('quota-txt').textContent = d.dailyRemaining==null ? 'Unlimited' : `${d.dailyRemaining} left today`;
     }
   }catch(e){
@@ -327,6 +544,7 @@ loadQuota();
 
 // inline onclick="…" handlers run in the global scope, so the functions they call are exposed
 window.sendChatMessage = sendChatMessage;
+window.toggleMic = toggleMic; window.toggleVoiceOpts = toggleVoiceOpts; window.saveVoiceOpts = saveVoiceOpts;
 
 return { onShow(){ applyAskCtx(); loadQuota(); scrollToBottom(); } };
 //# sourceURL=view-chat.js

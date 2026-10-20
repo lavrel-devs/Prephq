@@ -457,6 +457,17 @@
     </div>
     <div id="plan-sub" style="font-size:12.5px;color:var(--t3);margin-top:4px;margin-bottom:16px;line-height:1.5;">Loading your plan…</div>
     <div id="plan-options" style="display:flex;flex-direction:column;gap:10px;"></div>
+
+    <!-- Activation code: the last step of the WhatsApp upgrade -->
+    <div id="code-box" style="margin-top:16px;padding-top:14px;border-top:1px solid var(--bd,rgba(127,127,127,.15));">
+      <div style="font-size:13.5px;font-weight:800;font-family:var(--ff-h);"><i class="fa-solid fa-key" style="color:var(--purple);margin-right:6px;"></i>Have an activation code?</div>
+      <div style="font-size:12px;color:var(--t3);margin:4px 0 10px;line-height:1.5;">After you pay on WhatsApp, an admin sends you a code. Enter it here to activate the plan you bought.</div>
+      <div style="display:flex;gap:8px;">
+        <input id="code-input" type="text" class="neu-input" placeholder="XXXX-XXXX-XXXX" maxlength="20" autocomplete="off" autocapitalize="characters" spellcheck="false" style="flex:1;min-width:0;padding:11px 12px;font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;" onkeydown="if(event.key==='Enter')redeemCode()">
+        <button type="button" id="code-btn" onclick="redeemCode()" style="border:none;cursor:pointer;font-size:12.5px;font-weight:800;color:#fff;background:linear-gradient(140deg,var(--brand),var(--purple));padding:0 18px;border-radius:14px;box-shadow:var(--sh-sm);font-family:var(--ff-h);">Activate</button>
+      </div>
+      <div id="code-msg" style="font-size:12px;margin-top:8px;min-height:16px;font-weight:600;"></div>
+    </div>
   </div>
 
   <div class="card">
@@ -639,8 +650,8 @@ async function saveDisplayName(){
 
 let cachedPlans = null;
 let selPeriod = 'monthly';
-const PERIOD_LABEL = { weekly:'Weekly', monthly:'Monthly', yearly:'Yearly', lifetime:'Lifetime' };
-const PERIOD_UNIT  = { weekly:'/week', monthly:'/month', yearly:'/year', lifetime:' once' };
+const PERIOD_LABEL = { daily:'Daily', weekly:'Weekly', monthly:'Monthly', yearly:'Yearly', lifetime:'Lifetime', custom:'Custom' };
+const PERIOD_UNIT  = { daily:'/day', weekly:'/week', monthly:'/month', yearly:'/year', lifetime:' once', custom:'' };
 const fmtNaira = n => '\u20A6' + Number(n).toLocaleString();
 const esc = t => String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -651,7 +662,7 @@ async function loadPlanCard(tier){
   const isPremium = tier === 'premium';
   const ent = profileData?.entitlements || {};
 
-  badge.textContent = isPremium ? 'Premium' + (ent.premiumPlan ? ' \u00B7 ' + PERIOD_LABEL[ent.premiumPlan] : '') : 'Free';
+  badge.textContent = isPremium ? 'Premium' + (ent.premiumPlan && PERIOD_LABEL[ent.premiumPlan] ? ' \u00B7 ' + PERIOD_LABEL[ent.premiumPlan] : '') : 'Free';
   badge.style.color = isPremium ? 'var(--purple)' : 'var(--warn)';
   if(!isPremium) sub.textContent = "You're on the free plan \u2014 limited daily questions, AI quizzes, and AI chat.";
   else if(ent.lifetime) sub.textContent = "Premium Lifetime \u2014 permanent access, no renewals.";
@@ -717,6 +728,25 @@ async function promptUpgrade(planName){
     if(d.whatsappUrl && win) win.location.href = d.whatsappUrl;
     else { if(win) win.close(); alert('Your request ' + d.code + ' was saved. No admin WhatsApp is set up yet \u2014 please quote this code to PrepHQ support.'); }
   }catch(e){ if(win) win.close(); alert('Network error \u2014 please try again.'); }
+}
+
+// Activation code → plan. The server applies the plan the code was issued for; we just refresh the card.
+async function redeemCode(){
+  const input = document.getElementById('code-input'), msg = document.getElementById('code-msg'), btn = document.getElementById('code-btn');
+  const code = input.value.trim();
+  const say = (t, ok) => { msg.textContent = t; msg.style.color = ok ? 'var(--ok)' : 'var(--no)'; };
+  if(!code){ say('Enter the code you were sent.', false); return; }
+  btn.disabled = true; btn.textContent = 'Checking\u2026'; say('', true);
+  try{
+    const r = await PhqAuth.authFetch('/api/redeem-code', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ code }) }, 'student');
+    const d = await r.json().catch(()=>({}));
+    if(!r.ok){ say(d.error || 'Could not activate that code.', false); return; }
+    input.value = '';
+    say(d.lifetime ? 'Premium Lifetime activated \u{1F389}' : `Premium ${d.label} activated \u{1F389} \u2014 valid until ${new Date(d.tierExpiresAt).toLocaleDateString()}`, true);
+    toast('Premium activated!');
+    loadProfile();
+  }catch(e){ say('Network error \u2014 please try again.', false); }
+  finally{ btn.disabled = false; btn.textContent = 'Activate'; }
 }
 
 async function saveGPA(){

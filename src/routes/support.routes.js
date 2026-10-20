@@ -5,7 +5,9 @@ const Question = require('../models/Question');
 const Settings = require('../models/Settings');
 const SupportRequest = require('../models/SupportRequest');
 const { requireStudent } = require('../middleware/auth');
-const { PREMIUM_PERIODS, PERIOD_PRICE_FIELD } = require('../services/entitlements.service');
+const { STUDENT_PERIODS, PERIOD_PRICE_FIELD, PLAN_LABEL } = require('../services/entitlements.service');
+const { redeemCode, CodeError } = require('../services/planCode.service');
+const { forgetSubject } = require('../middleware/auth');
 const { uniqueCode, pickAdminContact, waUrl } = require('../services/support.service');
 const { isObjectId } = require('../utils/validate');
 
@@ -14,7 +16,6 @@ const router = express.Router();
 const limiter = (max) => rateLimit({ windowMs: 60 * 60 * 1000, max, standardHeaders: true, legacyHeaders: false,
   message: { error: 'Too many requests. Please try again later.' } });
 
-const PLAN_LABEL = { weekly: 'Weekly', monthly: 'Monthly', yearly: 'Yearly', lifetime: 'Lifetime' };
 
 // POST /api/upgrade-request  { plan }
 // No online payment: this files a request and hands the student a WhatsApp link to an admin, who confirms
@@ -22,7 +23,7 @@ const PLAN_LABEL = { weekly: 'Weekly', monthly: 'Monthly', yearly: 'Yearly', lif
 router.post('/upgrade-request', requireStudent, limiter(10), async (req, res) => {
   try {
     const plan = String(req.body.plan || '');
-    if (!PREMIUM_PERIODS.includes(plan)) return res.status(400).json({ error: 'Choose Weekly, Monthly, Yearly or Lifetime' });
+    if (!STUDENT_PERIODS.includes(plan)) return res.status(400).json({ error: 'Choose Daily, Weekly, Monthly, Yearly or Lifetime' });
 
     const [student, settings] = await Promise.all([
       Student.findOne({ matric: req.student.sub }).select('matric name').lean(),
@@ -46,6 +47,20 @@ router.post('/upgrade-request', requireStudent, limiter(10), async (req, res) =>
     const msg = `Hi, I'd like to activate PrepHQ Premium (${PLAN_LABEL[plan]} — ₦${Number(price).toLocaleString('en-NG')}). Request ${reqDoc.code}. Matric: ${student.matric}. Name: ${student.name}.`;
     res.status(201).json({ code: reqDoc.code, plan, price, whatsappUrl: waUrl(to, msg), hasContact: !!to });
   } catch (e) { res.status(500).json({ error: 'Could not create your request. Please try again.' }); }
+});
+
+// POST /api/redeem-code  { code }
+// The last step of the WhatsApp upgrade flow: the admin confirms payment and sends an activation code, the
+// student enters it in Profile, and the plan the code was issued for is applied to their own account.
+router.post('/redeem-code', requireStudent, limiter(15), async (req, res) => {
+  try {
+    const r = await redeemCode(req.student.sub, req.body && req.body.code);
+    forgetSubject('student', req.student.sub);   // drop any cached plan so it applies on the very next request
+    res.json({ success: true, ...r });
+  } catch (e) {
+    if (e instanceof CodeError) return res.status(e.status).json({ error: e.message, code: e.code });
+    res.status(500).json({ error: 'Could not activate that code. Please try again.' });
+  }
 });
 
 // POST /api/questions/report  { questionId?, reason, note?, snapshot? }

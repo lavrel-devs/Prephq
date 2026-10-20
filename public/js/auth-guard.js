@@ -159,7 +159,26 @@
     return res;
   }
 
+  // v1.7.1 — a friend who taps a shared quiz link while signed out is sent to login; remember the link so
+  // they land back on the quiz afterwards instead of the plain dashboard. Expires after a day.
+  const NEXT_KEY = 'phq_next';
+  const SHARE_PATH_RE = /^\/q\/[A-Za-z0-9_-]{8,32}$/;
+  function stashShareLink() {
+    try {
+      if (SHARE_PATH_RE.test(location.pathname)) localStorage.setItem(NEXT_KEY, JSON.stringify({ path: location.pathname, at: Date.now() }));
+    } catch { /* storage unavailable — they just land on the dashboard */ }
+  }
+  function postLoginPath() {
+    try {
+      const n = JSON.parse(localStorage.getItem(NEXT_KEY) || 'null');
+      localStorage.removeItem(NEXT_KEY);
+      if (n && SHARE_PATH_RE.test(n.path) && Date.now() - n.at < 24 * 60 * 60 * 1000) return n.path;
+    } catch { /* ignore */ }
+    return '/dashboard.html';
+  }
+
   function redirectToLogin(role) {
+    if (role !== 'admin') stashShareLink();
     clearSession();
     window.location.href = role === 'admin' ? '/login.html?as=admin' : '/login.html';
   }
@@ -192,5 +211,6 @@
     getDeviceFingerprint,
     authFetch, requireSession, logout,
     scheduleRefresh, silentRefresh,
+    stashShareLink, postLoginPath,
   };
 })(window);

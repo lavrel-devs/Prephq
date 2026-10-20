@@ -285,7 +285,7 @@ async function studentLogin(){
       console.info('New device detected for this account.');
     }
     // An admin-issued temporary password must be replaced before the app can be used.
-    window.location.href = data.mustChangePassword ? '/change-password' : '/dashboard.html';
+    window.location.href = data.mustChangePassword ? '/change-password' : PhqAuth.postLoginPath();
   }catch(e){
     showErr('Cannot connect to server.');
     btn.disabled = false;
@@ -325,7 +325,7 @@ document.getElementById('a-pass').addEventListener('keydown', e=>{ if(e.key==='E
 (function(){
   const s = PhqAuth.getSession();
   if(s && s.accessToken){
-    window.location.href = s.role==='admin' ? '/admin.html' : '/dashboard.html';
+    window.location.href = s.role==='admin' ? '/admin.html' : PhqAuth.postLoginPath();
   }
 })();
 </script>

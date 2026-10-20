@@ -7,7 +7,7 @@ const Student = require('../models/Student');
 //
 //      student ─▶ plan (free | premium) ─▶ feature ─▶ allow / deny
 //
-//  • Premium (weekly / monthly / yearly / lifetime) → every feature.
+//  • Premium (daily / weekly / monthly / yearly / lifetime / custom days) → every feature.
 //  • Free → each feature follows an admin ON/OFF switch stored in
 //    Settings.tiers.free.features (Admin ▸ Credit Settings).
 //  Routes use requireFeature('<key>'); the frontend reads the resolved
@@ -32,9 +32,33 @@ const FEATURES = [
 const FEATURE_KEYS = FEATURES.map(f => f.key);
 
 // Premium billing periods. `lifetime` is a distinct entitlement, NOT a very long subscription.
-const PREMIUM_PERIODS = ['weekly', 'monthly', 'yearly', 'lifetime'];
-const PERIOD_DAYS = { weekly: 7, monthly: 30, yearly: 365, lifetime: null };
-const PERIOD_PRICE_FIELD = { weekly: 'priceWeekly', monthly: 'priceMonthly', yearly: 'priceYearly', lifetime: 'priceLifetime' };
+// `custom` is admin-only: the admin picks the number of days (1–3650) each time. It has no listed price and
+// students never see it as a buyable option.
+const PREMIUM_PERIODS = ['daily', 'weekly', 'monthly', 'yearly', 'lifetime', 'custom'];
+const STUDENT_PERIODS = PREMIUM_PERIODS.filter(k => k !== 'custom');
+const PERIOD_DAYS = { daily: 1, weekly: 7, monthly: 30, yearly: 365, lifetime: null, custom: null };
+const PERIOD_PRICE_FIELD = { daily: 'priceDaily', weekly: 'priceWeekly', monthly: 'priceMonthly', yearly: 'priceYearly', lifetime: 'priceLifetime' };
+const PLAN_LABEL = { daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly', yearly: 'Yearly', lifetime: 'Lifetime', custom: 'Custom' };
+
+// How many days a plan lasts. `override` (admin-chosen days) wins for every plan except lifetime and is
+// REQUIRED for custom. Returns { days } (null = never expires) or { error }.
+function resolvePlanDays(plan, override) {
+  if (!PREMIUM_PERIODS.includes(plan)) return { error: `Plan must be one of: ${PREMIUM_PERIODS.join(', ')}` };
+  if (plan === 'lifetime') return { days: null };
+  const given = override !== undefined && override !== null && override !== '';
+  if (!given && plan === 'custom') return { error: 'Enter the number of days for a custom plan' };
+  if (!given) return { days: PERIOD_DAYS[plan] };
+  const n = Number(override);
+  if (!Number.isInteger(n) || n < 1 || n > 3650) return { error: 'Days must be a whole number between 1 and 3650' };
+  return { days: n };
+}
+// "Weekly", "Custom · 14 days", "Daily · 3 days" — for messages and notifications.
+function planText(plan, days) {
+  const base = PLAN_LABEL[plan] || plan;
+  if (plan === 'lifetime') return base;
+  if (plan === 'custom' || (days && days !== PERIOD_DAYS[plan])) return `${base} · ${days} day${days === 1 ? '' : 's'}`;
+  return base;
+}
 
 // 'basic' / 'pro' only exist on records written before the plan cleanup
 // (they're migrated to 'premium' at boot); treat them as premium meanwhile.
@@ -103,6 +127,6 @@ function requireFeature(key) {
 }
 
 module.exports = {
-  FEATURES, FEATURE_KEYS, PREMIUM_PERIODS, PERIOD_DAYS, PERIOD_PRICE_FIELD,
+  FEATURES, FEATURE_KEYS, PREMIUM_PERIODS, STUDENT_PERIODS, PERIOD_DAYS, PERIOD_PRICE_FIELD, PLAN_LABEL, resolvePlanDays, planText,
   isPremiumActive, resolvePlan, canUse, featureMap, entitlementSummary, requireFeature,
 };

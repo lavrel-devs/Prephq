@@ -84,18 +84,18 @@ async function getQuota(student) {
 // Serialized per student: check-then-increment around a multi-second AI
 // call meant a burst of parallel requests all passed the quota check
 // before any of them counted, blowing straight through the daily cap.
-async function sendMessage(student, content) {
-  return withLock(`chat:${student.matric}`, () => sendMessageLocked(student, content));
+async function sendMessage(student, content, opts = {}) {
+  return withLock(`chat:${student.matric}`, () => sendMessageLocked(student, content, opts));
 }
 
-async function sendMessageLocked(student, content) {
+async function sendMessageLocked(student, content, opts = {}) {
   await checkUsageLimit(student); // throws before we touch the DB or call Groq if already over limit
 
   const recentHistory = await ChatMessage.find({ matric: student.matric })
     .sort({ ts: -1 }).limit(12).lean();
   recentHistory.reverse(); // oldest first for the model
 
-  const reply = await chatReply([...recentHistory, { role: 'user', content }]);
+  const reply = await chatReply([...recentHistory, { role: 'user', content }], { voice: !!opts.voice });
 
   await ChatMessage.create({ matric: student.matric, role: 'user', content });
   await ChatMessage.create({ matric: student.matric, role: 'assistant', content: reply });

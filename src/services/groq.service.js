@@ -225,10 +225,14 @@ async function explainAnswer({ course, question, opts, correctIndex, chosenIndex
 // Academic chatbot reply. `history` is the recent conversation
 // (oldest first) so the model has context; kept short (last ~12
 // messages) to control token spend per turn.
-async function chatReply(history) {
+// v1.7.3 voice tutor: the question was SPOKEN (browser speech recognition, often mis-hearing accents and
+// technical terms) and the answer will be READ ALOUD, so it must be short, plain words, and forgiving.
+const VOICE_NOTE = `VOICE MODE: the student asked this by speaking, and your answer will be read aloud by a text-to-speech voice. The question was transcribed automatically and may contain mis-heard words — if a word looks wrong, silently assume the most likely academic term (e.g. "mitosis" not "my toes is"); if you truly cannot tell what was asked, say so in one short sentence and ask them to repeat it. Answer in short, natural spoken sentences (aim for under about 120 words). No lists, tables, headings, markdown or symbols. Do NOT use LaTeX, $ signs, \\ce{} or [[smiles:]] in this answer: say maths and formulas in words (e.g. "x squared plus three x", "H two S O four", "one over two"). If a full worked solution is needed, give the key idea and steps briefly and offer to go through it step by step.`;
+
+async function chatReply(history, opts = {}) {
   requireGroqKey();
   const model = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
-  const systemPrompt = `You are PrepHQ's academic study assistant, helping Nigerian university students. Answer academic/study questions clearly and concisely. Use plain prose, not markdown headers. ${SCI_FORMAT} Keep answers focused — a few sentences to a short paragraph unless the student clearly wants a longer worked explanation (e.g. a multi-step calculation or proof). If asked something entirely unrelated to academics/studying, politely redirect to study topics.`;
+  const systemPrompt = `You are PrepHQ's academic study assistant, helping Nigerian university students. Answer academic/study questions clearly and concisely. Use plain prose, not markdown headers. ${SCI_FORMAT} Keep answers focused — a few sentences to a short paragraph unless the student clearly wants a longer worked explanation (e.g. a multi-step calculation or proof). If asked something entirely unrelated to academics/studying, politely redirect to study topics.${opts.voice ? '\n\n' + VOICE_NOTE : ''}`;
 
   const messages = [
     { role: 'system', content: systemPrompt },

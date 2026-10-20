@@ -67,6 +67,7 @@ const SettingsSchema = new mongoose.Schema({
       dailyQuestions:      { type: Number, default: null }, // unlimited
       dailyAIQuizzes:      { type: Number, default: null },
       dailyAIChatMessages: { type: Number, default: null },
+      priceDaily:          { type: Number, default: null },
       priceWeekly:         { type: Number, default: null },
       priceMonthly:        { type: Number, default: 2000 },
       priceYearly:         { type: Number, default: 20000 },

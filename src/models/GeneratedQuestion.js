@@ -29,9 +29,15 @@ const GeneratedQuestionSchema = new mongoose.Schema({
   score:          { type: Number, default: undefined },
   totalQuestions: { type: Number, default: undefined },
   submittedAt:    { type: Date, default: undefined },
+  // v1.7.1: shareable link. `shareToken` is absent until the owner taps Share (so the sparse unique
+  // index below ignores every quiz that was never shared) and is $unset — never set to null — on revoke.
+  shareToken: { type: String },
+  sharedAt:   { type: Date, default: undefined },
+  shareOpens: { type: Number, default: 0 },   // times someone other than the owner opened the link
   createdAt: { type: Date, default: Date.now },
 });
 
 GeneratedQuestionSchema.index({ matric: 1, createdAt: -1 });
+GeneratedQuestionSchema.index({ shareToken: 1 }, { unique: true, sparse: true });
 
 module.exports = mongoose.model('GeneratedQuestion', GeneratedQuestionSchema);

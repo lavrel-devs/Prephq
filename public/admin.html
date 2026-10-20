@@ -871,6 +871,21 @@ select.f-input option{background:var(--bg);color:var(--t1);}
             <button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;" onclick="saveMyWhatsapp()">Save</button>
           </div>
         </div>
+        <div class="tw" style="padding:16px 18px;margin-bottom:16px;">
+          <div style="font-size:13px;font-weight:800;margin-bottom:4px;">Activation codes <span style="font-weight:600;color:var(--t3)">— generate a one-time code after a student pays; they enter it in Profile to get the plan</span></div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:10px 0;align-items:end;">
+            <div class="field" style="margin:0;"><label>Plan</label><select id="pc-plan" onchange="pcPlanChanged()"></select></div>
+            <div class="field" id="pc-days-wrap" style="margin:0;display:none;"><label>Days</label><input type="number" id="pc-days" min="1" max="3650" placeholder="e.g. 14"></div>
+            <div class="field" style="margin:0;"><label>How many</label><input type="number" id="pc-qty" min="1" max="50" value="1"></div>
+            <div class="field" style="margin:0;"><label>Only for matric <span style="color:var(--t4)">(optional)</span></label><input type="text" id="pc-matric" placeholder="Any student"></div>
+            <div class="field" style="margin:0;"><label>Amount paid ₦ <span style="color:var(--t4)">(optional)</span></label><input type="number" id="pc-amount" min="0" placeholder="0"></div>
+            <button class="btn-main" style="width:auto;padding:11px 18px;font-size:13px;" onclick="genPlanCodes()">Generate</button>
+          </div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Code</th><th>Plan</th><th>Status</th><th>Details</th><th>Actions</th></tr></thead>
+            <tbody id="pc-body"><tr class="empty-row"><td colspan="5">No codes yet</td></tr></tbody>
+          </table></div>
+        </div>
         <div class="tw">
           <div class="th"><div class="th-title" id="sup-title">Open requests</div>
             <div class="th-right">
@@ -1042,7 +1057,7 @@ select.f-input option{background:var(--bg);color:var(--t1);}
         <!-- v1.4: SUBSCRIPTION PLANS ────────────────────────── -->
         <div class="tw" style="padding:20px;margin-top:20px;">
           <div class="th-title" style="margin-bottom:4px;">Subscription Plans</div>
-          <div style="font-size:12px;color:var(--t3);margin-bottom:18px;">Free-plan caps and feature switches, and Premium pricing (weekly / monthly / yearly / lifetime). Changes apply immediately, no redeploy.</div>
+          <div style="font-size:12px;color:var(--t3);margin-bottom:18px;">Free-plan caps and feature switches, and Premium pricing (daily / weekly / monthly / yearly / lifetime). Changes apply immediately, no redeploy.</div>
 
           <div style="margin-bottom:20px;">
             <b style="font-size:13px;">Free tier daily caps</b>
@@ -1062,6 +1077,7 @@ select.f-input option{background:var(--bg);color:var(--t1);}
           <div style="margin-bottom:20px;">
             <b style="font-size:13px;">Premium &mdash; pricing (₦)</b>
             <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-top:8px;max-width:640px;">
+              <div><label style="font-size:12px;color:var(--t3);">Daily:</label><input type="number" min="0" id="ts-premium-daily" class="f-input" style="width:100%;" placeholder="Not offered" onchange="saveTierSettings()"></div>
               <div><label style="font-size:12px;color:var(--t3);">Weekly:</label><input type="number" min="0" id="ts-premium-weekly" class="f-input" style="width:100%;" placeholder="Not offered" onchange="saveTierSettings()"></div>
               <div><label style="font-size:12px;color:var(--t3);">Monthly:</label><input type="number" min="0" id="ts-premium-monthly" class="f-input" style="width:100%;" placeholder="Not offered" onchange="saveTierSettings()"></div>
               <div><label style="font-size:12px;color:var(--t3);">Yearly:</label><input type="number" min="0" id="ts-premium-yearly" class="f-input" style="width:100%;" placeholder="Not offered" onchange="saveTierSettings()"></div>
@@ -1272,6 +1288,29 @@ select.f-input option{background:var(--bg);color:var(--t1);}
 </div>
 
 <!-- DELETE CONFIRM -->
+<!-- Plan picker: used by Students → Plan and by Support → Grant plan (neumorphic dropdown, no browser prompts) -->
+<div class="modal-bg" id="m-plan" onclick="closeMBg(event,'m-plan')">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-title" id="plan-m-title">Set plan</div>
+    <div class="modal-sub" id="plan-m-sub"></div>
+    <div class="field"><label>Plan</label>
+      <select id="plan-m-select" onchange="planModalChanged()"></select>
+    </div>
+    <div class="field" id="plan-m-days-wrap" style="display:none;"><label>Number of days</label>
+      <input type="number" id="plan-m-days" min="1" max="3650" step="1" placeholder="e.g. 14">
+    </div>
+    <div class="field" id="plan-m-amount-wrap" style="display:none;"><label>Amount paid (₦) <span style="font-weight:600;color:var(--t4)">— optional, blank uses the listed price</span></label>
+      <input type="number" id="plan-m-amount" min="0" placeholder="e.g. 2000">
+    </div>
+    <div style="font-size:12px;color:var(--t3);margin:2px 2px 4px;" id="plan-m-hint"></div>
+    <div class="mfooter" style="flex-wrap:wrap;">
+      <button class="btn-cancel" onclick="closeM('m-plan')">Cancel</button>
+      <button class="btn-cancel" id="plan-m-code" style="display:none;" onclick="planModalSubmit('code')">Send activation code</button>
+      <button class="btn-confirm" id="plan-m-ok" onclick="planModalSubmit('apply')">Apply plan</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-bg" id="m-temp" onclick="closeMBg(event,'m-temp')">
   <div class="modal" style="max-width:440px;">
     <div class="modal-title">Temporary password ready</div>
@@ -1396,11 +1435,11 @@ function planLabel(s){
   return 'Premium' + (s.premiumPlan ? ' \u00B7 ' + s.premiumPlan.charAt(0).toUpperCase() + s.premiumPlan.slice(1) : '');
 }
 
-async function adminSetTier(matric, tier, plan, refreshFn){
+async function adminSetTier(matric, tier, plan, refreshFn, durationDays){
   try{
     const r = await adminFetch(`/api/admin/users/${encodeURIComponent(matric)}/tier`, {
       method:'PUT', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(tier === 'free' ? { tier } : { tier, plan }),
+      body: JSON.stringify(tier === 'free' ? { tier } : (durationDays ? { tier, plan, durationDays } : { tier, plan })),
     });
     const d = await r.json().catch(()=>({}));
     if(!r.ok){ toast(d.error || 'Could not update plan'); return; }
@@ -1411,14 +1450,68 @@ async function adminSetTier(matric, tier, plan, refreshFn){
   }catch(e){ toast('Could not update plan'); }
 }
 
-// Quick "Plan" action from the Students table row. Choices: free, or Premium with one of the four
-// billing periods (weekly=7 days, monthly=30, yearly=365, lifetime=permanent, no expiry).
-async function openPlanPicker(matric, currentTier, refreshFn){
-  const choice = prompt(`Set plan for ${matric}\nCurrent: ${currentTier}\n\nType one of:\n  free\n  weekly\n  monthly\n  yearly\n  lifetime`, '')?.trim().toLowerCase();
-  if(!choice) return;
-  if(choice === 'free') return adminSetTier(matric, 'free', null, refreshFn || loadStudents);
-  if(!['weekly','monthly','yearly','lifetime'].includes(choice)){ toast('Choose free, weekly, monthly, yearly or lifetime'); return; }
-  adminSetTier(matric, 'premium', choice, refreshFn || loadStudents);
+// ── Plan picker modal ────────────────────────────────────────
+// One neumorphic dropdown for every plan: Free, Daily, Weekly, Monthly, Yearly, Lifetime or Custom (you type the days).
+const PLAN_CHOICES = [['daily','Daily (1 day)'],['weekly','Weekly (7 days)'],['monthly','Monthly (30 days)'],['yearly','Yearly (365 days)'],['lifetime','Lifetime (never expires)'],['custom','Custom days…']];
+let planModal = null;   // { mode:'student', matric, refreshFn } | { mode:'support', id }
+
+function openPlanModal(cfg){
+  planModal = cfg;
+  const sel = document.getElementById('plan-m-select');
+  const choices = cfg.mode === 'student' ? [['free','Free (remove Premium)'], ...PLAN_CHOICES] : PLAN_CHOICES;
+  sel.innerHTML = choices.map(([v,l]) => `<option value="${v}">${l}</option>`).join('');
+  sel.value = choices.some(c => c[0] === cfg.preselect) ? cfg.preselect : (cfg.mode === 'student' ? 'monthly' : choices[0][0]);
+  document.getElementById('plan-m-title').textContent = cfg.title;
+  document.getElementById('plan-m-sub').textContent = cfg.sub || '';
+  document.getElementById('plan-m-days').value = '';
+  document.getElementById('plan-m-amount').value = '';
+  document.getElementById('plan-m-code').style.display = cfg.mode === 'support' ? '' : 'none';
+  document.getElementById('plan-m-ok').textContent = cfg.mode === 'support' ? 'Activate now' : 'Apply plan';
+  planModalChanged();
+  document.getElementById('m-plan').classList.add('on');
+}
+function planModalChanged(){
+  const v = document.getElementById('plan-m-select').value;
+  document.getElementById('plan-m-days-wrap').style.display = v === 'custom' ? '' : 'none';
+  document.getElementById('plan-m-amount-wrap').style.display = planModal && planModal.mode === 'support' ? '' : 'none';
+  document.getElementById('plan-m-hint').textContent = v === 'free' ? 'The student loses Premium immediately.'
+    : v === 'lifetime' ? 'Permanent Premium — no expiry date.'
+    : v === 'custom' ? 'Premium for exactly the number of days you enter (1–3650).'
+    : (planModal && planModal.mode === 'support' ? '“Activate now” upgrades them straight away; “Send activation code” gives you a code to send on WhatsApp.' : '');
+}
+async function planModalSubmit(action){
+  const cfg = planModal; if(!cfg) return;
+  const plan = document.getElementById('plan-m-select').value;
+  const days = document.getElementById('plan-m-days').value.trim();
+  if(plan === 'custom' && !(parseInt(days,10) >= 1 && parseInt(days,10) <= 3650)){ toast('Enter a number of days between 1 and 3650'); return; }
+  const customDays = plan === 'custom' ? parseInt(days,10) : undefined;
+  if(cfg.mode === 'student'){
+    closeM('m-plan');
+    return plan === 'free' ? adminSetTier(cfg.matric, 'free', null, cfg.refreshFn || loadStudents)
+                           : adminSetTier(cfg.matric, 'premium', plan, cfg.refreshFn || loadStudents, customDays);
+  }
+  // support request: grant now, or issue a code
+  const body = { plan, customDays, amount: document.getElementById('plan-m-amount').value };
+  const url = `/api/admin/support/${cfg.id}/upgrade/${action === 'code' ? 'code' : 'grant'}`;
+  const r = await adminFetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const d = await r.json().catch(()=>({}));
+  if(!r.ok) return toast(d.error || 'Could not complete that');
+  closeM('m-plan');
+  if(action === 'code'){
+    navigator.clipboard?.writeText(d.code).catch(()=>{});
+    toast(`Code ${d.code} ready (copied)`);
+    if(d.whatsappUrl && confirm(`Activation code ${d.code} for Premium ${d.label} is ready and copied.\n\nSend it to the student on WhatsApp now?`)) window.open(d.whatsappUrl,'_blank');
+    loadPlanCodes();
+  } else {
+    toast('Premium activated');
+    if(d.whatsappUrl && confirm('Premium activated. Tell the student on WhatsApp now?')) window.open(d.whatsappUrl,'_blank');
+  }
+  loadSupport();
+}
+
+// Students table / student detail "Plan" button.
+function openPlanPicker(matric, currentTier, refreshFn){
+  openPlanModal({ mode:'student', matric, refreshFn, title:'Set plan', sub:`${matric} · currently ${currentTier === 'premium' ? 'Premium' : 'Free'}` });
 }
 
 async function downloadCsv(url, filename){
@@ -1748,7 +1841,7 @@ async function loadSupport(){
       } else if(x.type==='upgrade'){
         detail = `<div style="font-size:12px;">Code <b>${escHtml(x.code)}</b></div><div style="font-weight:800;text-transform:capitalize">${escHtml(x.plan)} Premium</div>`;
         act = open ? `${x.student&&x.student.contact?`<a class="ab ab-ok" href="${escHtml(waOpen(x.student.contact,'Hi '+(x.student.name||'')+', this is PrepHQ about your Premium request '+x.code+'. '))}" target="_blank" rel="noopener">WhatsApp</a>`:''}
-          <button class="ab ab-edit" onclick="supGrant('${x._id}')">Grant plan</button>` : '';
+          <button class="ab ab-edit" onclick="supGrant('${x._id}')">Grant / send code</button>` : '';
       } else {
         const r = x.report||{};
         const opts = (r.opts||[]).map((o,n)=>`<div style="font-size:11.5px;${n===r.ans?'font-weight:800;color:var(--ok)':''}">${String.fromCharCode(65+n)}. ${escHtml(o)}</div>`).join('');
@@ -1759,7 +1852,7 @@ async function loadSupport(){
       else act = `<span style="font-size:11.5px;color:var(--t3)">${escHtml(x.resolvedBy||'')}<br>${escHtml(x.resolutionNote||'')}</span>`;
       return `<tr><td><span class="badge ${cls}">${lbl}</span></td><td>${stu}</td><td>${detail}</td><td style="font-size:12px;color:var(--t3);white-space:nowrap">${fmtWhen(x.createdAt)}</td><td><div class="act-row">${act}</div></td></tr>`;
     }).join('') || '<tr class="empty-row"><td colspan="5">Nothing here</td></tr>';
-    refreshSupportBadge();
+    refreshSupportBadge(); loadPlanCodes();
   }catch(e){ body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--no);padding:20px;">Could not load requests</td></tr>'; }
 }
 async function saveMyWhatsapp(){
@@ -1778,14 +1871,45 @@ async function supTemp(id){
   document.getElementById('m-temp').classList.add('on'); loadSupport();
 }
 function copyTemp(){ navigator.clipboard?.writeText(document.getElementById('temp-pw').textContent).then(()=>toast('Copied')); }
-async function supGrant(id){
-  const amt = prompt('Amount the student paid in ₦ (leave blank to use the listed price):','');
-  if(amt===null) return;
-  const r = await adminFetch(`/api/admin/support/${id}/upgrade/grant`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ amount: amt }) });
+function supGrant(id){
+  const x = supRows.find(r=>r._id===id); if(!x) return;
+  openPlanModal({ mode:'support', id, preselect:x.plan, title:'Premium request', sub:`${x.student?.name||x.name||x.matric} (${x.matric}) asked for ${x.plan}. Confirm they have paid first.` });
+}
+function pcPlanChanged(){ document.getElementById('pc-days-wrap').style.display = document.getElementById('pc-plan').value === 'custom' ? '' : 'none'; }
+async function loadPlanCodes(){
+  const sel = document.getElementById('pc-plan');
+  if(!sel.options.length){ sel.innerHTML = PLAN_CHOICES.map(([v,l]) => `<option value="${v}">${l}</option>`).join(''); sel.value = 'monthly'; pcPlanChanged(); }
+  const body = document.getElementById('pc-body');
+  try{
+    const r = await adminFetch('/api/admin/plan-codes?limit=40', { headers:{} });
+    if(!r.ok){ body.innerHTML = '<tr class="empty-row"><td colspan="5">'+(r.status===403?'You do not have the Payments permission':'Could not load codes')+'</td></tr>'; return; }
+    const rows = await r.json();
+    body.innerHTML = rows.map(c => {
+      const cls = c.status==='unused' ? 'b-ok' : c.status==='used' ? 'b-warn' : 'b-no';
+      const who = c.status==='used' ? `Used by ${escHtml(c.usedByName||c.usedBy)} · ${fmtWhen(c.usedAt)}`
+        : `${c.forMatric?'For '+escHtml(c.forMatric)+' · ':''}${c.amount?'₦'+Number(c.amount).toLocaleString()+' · ':''}${fmtWhen(c.createdAt)}`;
+      const act = c.status==='unused' ? `<button class="ab ab-edit" onclick="copyPlanCode('${escHtml(c.code)}')">Copy</button> <button class="ab ab-del" onclick="revokePlanCode('${c._id}')">Revoke</button>` : '';
+      return `<tr><td style="font-family:monospace;font-weight:800;letter-spacing:.04em;">${escHtml(c.code)}</td><td>${escHtml(c.label)}</td><td><span class="badge ${cls}">${c.status}</span></td><td style="font-size:12px;color:var(--t3);">${who}</td><td><div class="act-row">${act}</div></td></tr>`;
+    }).join('') || '<tr class="empty-row"><td colspan="5">No codes yet</td></tr>';
+  }catch(e){ body.innerHTML = '<tr class="empty-row"><td colspan="5">Could not load codes</td></tr>'; }
+}
+function copyPlanCode(c){ navigator.clipboard?.writeText(c).then(()=>toast('Copied '+c), ()=>toast(c)); }
+async function genPlanCodes(){
+  const plan = document.getElementById('pc-plan').value;
+  const days = parseInt(document.getElementById('pc-days').value,10);
+  if(plan==='custom' && !(days>=1 && days<=3650)){ toast('Enter a number of days between 1 and 3650'); return; }
+  const body = { plan, customDays: plan==='custom'?days:undefined, quantity: document.getElementById('pc-qty').value, forMatric: document.getElementById('pc-matric').value.trim(), amount: document.getElementById('pc-amount').value };
+  const r = await adminFetch('/api/admin/plan-codes', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
   const d = await r.json().catch(()=>({}));
-  if(!r.ok) return toast(d.error||'Could not grant the plan');
-  toast('Premium activated'); if(d.whatsappUrl && confirm('Premium activated. Tell the student on WhatsApp now?')) window.open(d.whatsappUrl,'_blank');
-  loadSupport();
+  if(!r.ok) return toast(d.error || 'Could not generate codes');
+  navigator.clipboard?.writeText(d.codes.map(c=>c.code).join('\n')).catch(()=>{});
+  toast(d.codes.length===1 ? `Code ${d.codes[0].code} created (copied)` : `${d.codes.length} codes created (copied)`);
+  loadPlanCodes();
+}
+async function revokePlanCode(id){
+  if(!confirm('Revoke this code? It will stop working immediately.')) return;
+  const r = await adminFetch(`/api/admin/plan-codes/${id}/revoke`, { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' });
+  const d = await r.json().catch(()=>({})); toast(r.ok ? 'Code revoked' : (d.error||'Could not revoke')); loadPlanCodes();
 }
 async function supFix(id){
   const x = supRows.find(r=>r._id===id); if(!x) return;
@@ -3514,6 +3638,7 @@ async function loadCreditSettings(){
     document.getElementById('ts-free-aiquiz').value = s.tiers.free.dailyAIQuizzes ?? '';
     document.getElementById('ts-free-aichat').value = s.tiers.free.dailyAIChatMessages ?? '';
     const pr = s.tiers.premium || {};
+    document.getElementById('ts-premium-daily').value = pr.priceDaily ?? '';
     document.getElementById('ts-premium-weekly').value = pr.priceWeekly ?? '';
     document.getElementById('ts-premium-monthly').value = pr.priceMonthly ?? '';
     document.getElementById('ts-premium-yearly').value = pr.priceYearly ?? '';
@@ -3581,6 +3706,7 @@ async function saveTierSettings(){
         features: readFreeFeatureSwitches(),
       },
       premium: {
+        priceDaily: emptyToNull(document.getElementById('ts-premium-daily').value),
         priceWeekly: emptyToNull(document.getElementById('ts-premium-weekly').value),
         priceMonthly: emptyToNull(document.getElementById('ts-premium-monthly').value),
         priceYearly: emptyToNull(document.getElementById('ts-premium-yearly').value),

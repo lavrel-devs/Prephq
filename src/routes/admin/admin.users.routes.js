@@ -96,7 +96,7 @@ router.get('/users/tier-distribution', async (req, res) => {
   try {
     const rows = await Student.aggregate([{ $group: { _id: '$tier', count: { $sum: 1 } } }]);
     const plans = await Student.aggregate([{ $match: { tier: 'premium' } }, { $group: { _id: '$premiumPlan', count: { $sum: 1 } } }]);
-    const dist = { free: 0, premium: 0, premiumByPlan: { weekly: 0, monthly: 0, yearly: 0, lifetime: 0, other: 0 } };
+    const dist = { free: 0, premium: 0, premiumByPlan: { daily: 0, weekly: 0, monthly: 0, yearly: 0, lifetime: 0, custom: 0, other: 0 } };
     rows.forEach(r => { if (r._id === 'free' || r._id === 'premium') dist[r._id] = r.count; });
     plans.forEach(r => { dist.premiumByPlan[r._id in dist.premiumByPlan ? r._id : 'other'] += r.count; });
     res.json(dist);
@@ -224,28 +224,23 @@ router.get('/users/:matric/report.pdf', async (req, res) => {
 // grant or reverting to free).
 router.put('/users/:matric/tier', async (req, res) => {
   try {
-    const { PREMIUM_PERIODS, PERIOD_DAYS } = require('../../services/entitlements.service');
+    const { resolvePlanDays, planText } = require('../../services/entitlements.service');
     const { tier, plan, durationDays, logPayment } = req.body;
     if (!['free', 'premium'].includes(tier))
       return res.status(400).json({ error: 'tier must be free or premium' });
 
-    let update;
+    let update, planLabel = '';
     if (tier === 'free') {
       update = { tier: 'free', premiumPlan: null, tierExpiresAt: null };
     } else {
-      if (!PREMIUM_PERIODS.includes(plan))
-        return res.status(400).json({ error: `Premium needs a plan: ${PREMIUM_PERIODS.join(', ')}` });
-      // Lifetime = permanent entitlement (no expiry date at all). The recurring plans expire after
-      // their period; `durationDays` may override it (e.g. a 14-day promo on a monthly plan).
-      let days = PERIOD_DAYS[plan];
-      if (plan !== 'lifetime' && durationDays !== undefined && durationDays !== null && durationDays !== '') {
-        days = Number(durationDays);
-        if (!Number.isFinite(days) || days <= 0 || days > 3650)
-          return res.status(400).json({ error: 'durationDays must be a number between 1 and 3650' });
-      }
+      // Lifetime = permanent entitlement (no expiry date at all). Daily/weekly/monthly/yearly expire after their
+      // period; `durationDays` may override it (e.g. a 14-day promo on a monthly plan) and is REQUIRED for 'custom'.
+      const { days, error } = resolvePlanDays(plan, durationDays);
+      if (error) return res.status(400).json({ error });
+      planLabel = planText(plan, days);
       update = {
         tier: 'premium', premiumPlan: plan,
-        tierExpiresAt: plan === 'lifetime' ? null : new Date(Date.now() + days * 24 * 60 * 60 * 1000),
+        tierExpiresAt: days == null ? null : new Date(Date.now() + days * 24 * 60 * 60 * 1000),
       };
     }
 
@@ -263,7 +258,7 @@ router.put('/users/:matric/tier', async (req, res) => {
         amount: Number(logPayment.amount),
         method: logPayment.method || 'bank_transfer',
         reference: logPayment.reference || '',
-        note: logPayment.note || (tier === 'premium' ? `Premium ${plan}` : 'Reverted to free'),
+        note: logPayment.note || (tier === 'premium' ? `Premium ${planLabel}` : 'Reverted to free'),
         status: 'confirmed',
       });
     }

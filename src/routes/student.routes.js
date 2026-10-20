@@ -16,7 +16,7 @@ const { checkAvailability, setUsername } = require('../utils/username');
 const { generateUniqueReferralCode } = require('../utils/referral');
 const { usernameCheckLimiter, usernameChangeLimiter } = require('../middleware/rateLimit');
 const { usageSnapshot } = require('../services/tier.service');
-const { entitlementSummary, requireFeature, FEATURES, PREMIUM_PERIODS, PERIOD_PRICE_FIELD, PERIOD_DAYS, resolvePlan } = require('../services/entitlements.service');
+const { entitlementSummary, requireFeature, FEATURES, PREMIUM_PERIODS, STUDENT_PERIODS, PERIOD_PRICE_FIELD, PERIOD_DAYS, resolvePlan } = require('../services/entitlements.service');
 
 const router = express.Router();
 
@@ -121,11 +121,11 @@ router.get('/plans', async (req, res) => {
         },
         premium: {
           dailyQuestions: p.dailyQuestions, dailyAIQuizzes: p.dailyAIQuizzes, dailyAIChatMessages: p.dailyAIChatMessages,
-          priceWeekly: p.priceWeekly, priceMonthly: p.priceMonthly, priceYearly: p.priceYearly, priceLifetime: p.priceLifetime,
+          priceDaily: p.priceDaily, priceWeekly: p.priceWeekly, priceMonthly: p.priceMonthly, priceYearly: p.priceYearly, priceLifetime: p.priceLifetime,
         },
       },
       // Billing options in display order; `price: null` = not offered right now.
-      periods: PREMIUM_PERIODS.map(k => ({ key: k, days: PERIOD_DAYS[k], price: p[PERIOD_PRICE_FIELD[k]] ?? null })),
+      periods: STUDENT_PERIODS.map(k => ({ key: k, days: PERIOD_DAYS[k], price: p[PERIOD_PRICE_FIELD[k]] ?? null })),
       featureLabels: FEATURES.map(x => ({ key: x.key, label: x.label })),
       support: settings.support,
       streakBonus: settings.streakBonus,

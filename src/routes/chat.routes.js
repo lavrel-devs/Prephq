@@ -5,6 +5,7 @@ const ChatMessage = require('../models/ChatMessage');
 const { requireStudent } = require('../middleware/auth');
 const { requireFeature } = require('../services/entitlements.service');
 const { sendMessage, getQuota } = require('../services/chat.service');
+const { logActivity } = require('../services/activity.service');
 
 const router = express.Router();
 
@@ -50,7 +51,14 @@ router.post('/chat/message', requireStudent, requireFeature('aiTutor'), chatLimi
     const student = await Student.findOne({ matric: req.student.sub });
     if (!student) return res.status(404).json({ error: 'Student not found' });
 
-    const result = await sendMessage(student, message.trim());
+    // v1.7.3: `voice` = the question was spoken (the answer comes back short and speakable). `voiceEdited` /
+    // `voiceLang` are just usage signals so we can see how well speech recognition works for real students.
+    const voice = req.body.voice === true;
+    const result = await sendMessage(student, message.trim(), { voice });
+    if (voice) {
+      logActivity({ source: 'chat', actorType: 'student', actor: student.matric, action: 'chat.voice_question',
+        detail: { edited: req.body.voiceEdited === true, lang: String(req.body.voiceLang || '').slice(0, 12) } });
+    }
     res.json(result);
   } catch (e) {
     const status = { CHATBOT_DISABLED: 503, LIMIT_REACHED: 429, GROQ_NOT_CONFIGURED: 503 }[e.code] || 500;

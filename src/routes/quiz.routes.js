@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 const rateLimit = require('express-rate-limit');
 
 const Student = require('../models/Student');
@@ -269,6 +270,122 @@ router.post('/explain', explainLimiter, async (req, res) => {
     const status = e.code === 'GROQ_NOT_CONFIGURED' ? 503 : 500;
     res.status(status).json({ error: e.message, code: e.code || 'SERVER_ERROR' });
   }
+});
+
+// ══════════════════════════════════════════════════════════════
+//  v1.7.1 — SHAREABLE QUIZ LINKS
+//  The owner turns one of their saved/AI quizzes into a link (/q/<token>) and sends it to friends.
+//  A friend must be signed in; opening the link is gated on THEIR daily question limit, and every
+//  answer they submit still goes through POST /api/scores, which enforces the same cap. Taking a
+//  shared quiz costs the friend no credits and no AI-quiz allowance (the quiz already exists) and
+//  never touches the owner's record or score — only `shareOpens` ticks up.
+// ══════════════════════════════════════════════════════════════
+const SHARE_TOKEN_RE = /^[A-Za-z0-9_-]{8,32}$/;
+
+const sharedLookupLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many link lookups. Slow down a little.' },
+});
+
+// POST /api/quiz/history/:id/share — create (or return the existing) share link for one of MY quizzes.
+// Idempotent: tapping Share twice gives the same link, so a link already sent to friends keeps working.
+router.post('/history/:id/share', async (req, res) => {
+  try {
+    const matric = req.student.sub;
+    if (!isObjectId(req.params.id)) return res.status(404).json({ error: 'Quiz not found' });
+    const quiz = await GeneratedQuestion.findOne({ _id: req.params.id, matric }).select('shareToken questions');
+    if (!quiz) return res.status(404).json({ error: 'Quiz not found' });
+    if (!quiz.questions || !quiz.questions.length) return res.status(400).json({ error: 'This quiz has no questions to share' });
+
+    if (!quiz.shareToken) {
+      // 9 random bytes → 12 URL-safe chars (72 bits): unguessable, so the link itself is the capability.
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const token = crypto.randomBytes(9).toString('base64url');
+        try {
+          const r = await GeneratedQuestion.updateOne(
+            { _id: quiz._id, matric, shareToken: { $exists: false } },
+            { $set: { shareToken: token, sharedAt: new Date() } },
+          );
+          if (r.modifiedCount === 1) { quiz.shareToken = token; break; }
+          // Another tap won the race — read back the token it stored.
+          const fresh = await GeneratedQuestion.findById(quiz._id).select('shareToken').lean();
+          if (fresh && fresh.shareToken) { quiz.shareToken = fresh.shareToken; break; }
+        } catch (e) {
+          if (e.code !== 11000) throw e; // 11000 = token collision, try another
+        }
+      }
+      if (!quiz.shareToken) return res.status(500).json({ error: 'Could not create a link. Try again.' });
+    }
+    res.json({ token: quiz.shareToken, path: `/q/${quiz.shareToken}`, questions: quiz.questions.length });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// DELETE /api/quiz/history/:id/share — stop sharing: the old link stops working immediately.
+router.delete('/history/:id/share', async (req, res) => {
+  try {
+    const matric = req.student.sub;
+    if (!isObjectId(req.params.id)) return res.status(404).json({ error: 'Quiz not found' });
+    const r = await GeneratedQuestion.updateOne(
+      { _id: req.params.id, matric },
+      { $unset: { shareToken: '', sharedAt: '' } },
+    );
+    if (!r.matchedCount) return res.status(404).json({ error: 'Quiz not found' });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// GET /api/quiz/shared/:token — a friend opens a shared quiz.
+// The daily-limit check happens HERE, before any question leaves the server: a friend who has used up
+// today's allowance gets 403 LIMIT_REACHED (the dashboard shows the upgrade paywall). A friend with
+// only a few left gets the quiz trimmed to what they have left, so they can't start more than they
+// are allowed to finish.
+router.get('/shared/:token', sharedLookupLimiter, requireFeature('practiceQuestions'), async (req, res) => {
+  try {
+    const token = String(req.params.token || '');
+    if (!SHARE_TOKEN_RE.test(token)) return res.status(404).json({ error: 'This quiz link is not valid', code: 'LINK_NOT_FOUND' });
+
+    const quiz = await GeneratedQuestion.findOne({ shareToken: token }).lean();
+    if (!quiz || !quiz.questions || !quiz.questions.length) {
+      return res.status(404).json({ error: 'This quiz link is no longer available — ask your friend for a new one.', code: 'LINK_NOT_FOUND' });
+    }
+
+    const matric = req.student.sub;
+    const student = await Student.findOne({ matric });
+    if (!student) return res.status(404).json({ error: 'Student not found' });
+
+    let remaining = null;
+    try {
+      ({ remaining } = await checkDailyLimit(student, 'questions'));
+    } catch (e) {
+      if (e.code === 'LIMIT_REACHED') {
+        return res.status(403).json({ error: e.message, code: 'LIMIT_REACHED', tier: e.tier, limit: e.limit, used: e.used });
+      }
+      throw e;
+    }
+
+    const isOwner = quiz.matric === matric;
+    if (!isOwner) await GeneratedQuestion.updateOne({ _id: quiz._id }, { $inc: { shareOpens: 1 } }).catch(() => {});
+
+    const owner = await Student.findOne({ matric: quiz.matric }).select('name username').lean();
+    const sharedBy = owner ? (owner.username ? `@${owner.username}` : String(owner.name || '').split(/\s+/)[0]) : '';
+
+    const all = quiz.questions;
+    const questions = remaining != null && all.length > remaining ? all.slice(0, remaining) : all;
+    res.json({
+      token,
+      course: quiz.course,
+      difficulty: quiz.difficulty,
+      sharedBy,
+      isOwner,
+      total: all.length,
+      capped: questions.length < all.length,
+      remaining,
+      questions: questions.map(q => ({ q: q.q, opts: q.opts, ans: q.ans, exp: q.exp || '', tag: q.tag || '', course: q.course || quiz.course })),
+    });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 module.exports = router;

@@ -270,7 +270,7 @@ function scrollToId(id){ const el = document.getElementById(id); if (el) el.scro
 // Pricing comes from /api/plans, so it always matches what the admin has configured. Numbers are only ever
 // formatted, never injected as HTML. Falls back to the default plan if the request fails.
 const naira = n => '₦' + Number(n).toLocaleString('en-NG');
-const PER = { weekly:'week', monthly:'month', yearly:'year', lifetime:'once' };
+const PER = { daily:'day', weekly:'week', monthly:'month', yearly:'year', lifetime:'once' };
 const lim = n => (n == null ? 'Unlimited' : Number(n));
 function priceCard(name, amt, per, alt, items, cta, pop){
   return `<div class="card price-card fx ${pop ? 'pop' : ''}">${pop ? '<div class="tag">Most popular</div>' : ''}
