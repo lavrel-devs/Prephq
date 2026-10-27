@@ -205,10 +205,10 @@ body{
   <!-- STUDENT FORM -->
   <form id="form-student" onsubmit="return false;">
     <div class="f-group">
-      <div class="f-label"><i class="fa-solid fa-id-card fa-ico"></i> Matric Number</div>
+      <div class="f-label"><i class="fa-solid fa-id-card fa-ico"></i> Matric number or username</div>
       <div class="f-input-wrap">
         <i class="fa-solid fa-user f-input-icon"></i>
-        <input class="f-input" id="s-matric" type="text" placeholder="e.g. PSC25CHM000" autocomplete="username" autocapitalize="characters" spellcheck="false">
+        <input class="f-input" id="s-matric" type="text" placeholder="Matric number or username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false">
       </div>
     </div>
     <div class="f-group">
@@ -262,11 +262,12 @@ function showErr(msg){
 function clearErr(){ document.getElementById('err').classList.remove('on'); }
 
 async function studentLogin(){
-  const matric = document.getElementById('s-matric').value.trim().toUpperCase();
+  // A matric number or a username: the server works out which (and ignores case), so send it as typed.
+  const matric = document.getElementById('s-matric').value.trim();
   const password = document.getElementById('s-pass').value; // not trimmed: signup keeps passwords exactly as typed
   const btn = document.getElementById('s-btn');
   clearErr();
-  if(!matric||!password){ showErr('Please enter matric and password.'); return; }
+  if(!matric||!password){ showErr('Please enter your matric number (or username) and password.'); return; }
   btn.disabled = true;
   try{
     const deviceFingerprint = await PhqAuth.getDeviceFingerprint();
@@ -275,7 +276,12 @@ async function studentLogin(){
       body: JSON.stringify({ matric, password, deviceFingerprint })
     });
     const data = await res.json();
-    if(!res.ok){ showErr(data.error || 'Invalid credentials'); btn.disabled=false; return; }
+    if(!res.ok){
+      showErr(data.error || 'Invalid credentials');
+      // A wrong sign-in is often just someone who never registered — point them at sign-up (not an account check).
+      if(res.status === 401) document.getElementById('err-msg').insertAdjacentHTML('beforeend', ' <a href="/register.html" style="color:var(--brand);font-weight:800;white-space:nowrap;">New here? Create an account</a>');
+      btn.disabled=false; return;
+    }
     PhqAuth.setSession({
       role:'student', matric:data.matric, name:data.name, credits:data.credits,
       accessToken:data.accessToken, refreshToken:data.refreshToken,

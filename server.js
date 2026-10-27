@@ -163,9 +163,11 @@ app.use('/api/admin', require('./src/routes/admin/admin.contest-templates.routes
 app.use('/api/admin', require('./src/routes/admin/admin.analytics.routes'));
 app.use('/api/admin', require('./src/routes/admin/admin.support.routes'));
 app.use('/api/admin', require('./src/routes/admin/admin.plancodes.routes'));
+app.use('/api', require('./src/routes/invite.routes'));   // v1.7.5 public invite preview (no login)
 app.use('/api/admin', require('./src/routes/admin/admin.followups.routes'));
 app.use('/api/admin', require('./src/routes/admin/admin.notes.routes'));
 app.use('/api/quiz', require('./src/routes/quiz.routes'));
+app.use('/api/written', require('./src/routes/written.routes'));   // v1.8.0 written (theory) exams
 app.use('/api/flashcards', require('./src/routes/flashcards.routes'));
 app.use('/api', require('./src/routes/transfer.routes'));
 app.use('/api', require('./src/routes/contest.routes'));
@@ -208,13 +210,15 @@ app.get('/landing.html', (req, res) => res.redirect(301, '/'));
 
 // The signed-in tabs are one single-page app: every one of these URLs serves the dashboard (the shell), and
 // js/shell.js opens the matching view from the path. Old .html links keep working.
-const SHELL_ROUTES = ['/contests', '/study-rooms', '/chat', '/profile', '/leaderboard'];
+const SHELL_ROUTES = ['/contests', '/study-rooms', '/chat', '/profile', '/leaderboard', '/written'];
 SHELL_ROUTES.forEach(r => {
   app.get(r, (req, res) => res.sendFile(path.join(__dirname, 'public', 'dashboard.html')));
   app.get(r + '.html', (req, res) => res.redirect(301, r + req.url.slice(req.path.length)));
 });
 // v1.7.1: shared quiz links (/q/<token>) also open the shell; the dashboard reads the token from the path.
 app.get('/q/:token', (req, res) => res.sendFile(path.join(__dirname, 'public', 'dashboard.html')));
+app.get('/invite/:kind/:token', (req, res) => res.sendFile(path.join(__dirname, 'public', 'invite.html')));   // v1.7.5 logged-out landing for shared links
+app.get('/c/:token', (req, res) => res.sendFile(path.join(__dirname, 'public', 'dashboard.html')));   // v1.7.4 challenge links
 Object.entries(PAGE_ROUTES).forEach(([route, file]) => {
   app.get(route, (req, res) => res.sendFile(path.join(__dirname, 'public', file)));
 });

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>You've been invited — PrepHQ</title>
+<meta name="robots" content="noindex">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="/css/glass.css">
+<link rel="stylesheet" href="/css/tokens.css">
+<script>try{var t=localStorage.getItem('phq_theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{height:100%;}
+body{font-family:var(--ff-b);background:var(--bg);color:var(--t1);min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px;position:relative;overflow:hidden;-webkit-font-smoothing:antialiased;}
+.blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:.10;pointer-events:none;}
+.b1{width:380px;height:380px;background:var(--brand);top:-100px;right:-100px;}
+.b2{width:320px;height:320px;background:var(--purple);bottom:-80px;left:-80px;}
+.card{width:100%;max-width:410px;position:relative;z-index:1;padding:38px 28px 28px;background:var(--bg);border-radius:28px;box-shadow:var(--sh-lg);text-align:center;}
+.logo{width:68px;height:68px;border-radius:22px;background:var(--bg);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;box-shadow:var(--sh);}
+.logo i{font-size:26px;color:var(--brand);}
+.title{font-family:var(--ff-h);font-size:22px;font-weight:800;letter-spacing:-.4px;line-height:1.25;}
+.sub{font-size:13.5px;color:var(--t3);margin-top:6px;}
+.score{margin:20px auto 4px;padding:14px 18px;border-radius:18px;background:var(--bg);box-shadow:var(--sh-in-sm);display:none;}
+.score .big{font-family:var(--ff-h);font-size:30px;font-weight:800;color:var(--brand);}
+.score .lbl{font-size:12px;color:var(--t3);font-weight:700;margin-top:2px;}
+.bonus{margin-top:16px;font-size:12.5px;font-weight:700;color:var(--ok);display:none;}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:none;cursor:pointer;font-family:inherit;font-size:15px;font-weight:800;padding:15px;border-radius:16px;margin-top:12px;text-decoration:none;transition:box-shadow .15s,transform .15s;}
+.btn:active{transform:scale(.97);}
+.btn.pri{color:#fff;background:linear-gradient(140deg,var(--brand),var(--purple));box-shadow:var(--sh-md);}
+.btn.sec{color:var(--t2);background:var(--bg);box-shadow:var(--sh);}
+.fine{margin-top:16px;font-size:11.5px;color:var(--t3);line-height:1.5;}
+</style>
+</head>
+<body>
+<div class="blob b1"></div><div class="blob b2"></div>
+<div class="card">
+  <div class="logo"><i class="fa-solid fa-bolt" id="logo-i"></i></div>
+  <div class="title" id="t">Loading your invite…</div>
+  <div class="sub" id="s"></div>
+  <div class="score" id="score"><div class="big" id="score-big"></div><div class="lbl" id="score-lbl"></div></div>
+  <div class="bonus" id="bonus"></div>
+  <a class="btn pri" id="go-signup" href="/register" style="display:none;"><i class="fa-solid fa-user-plus"></i> Create free account</a>
+  <a class="btn sec" id="go-login" href="/login.html" style="display:none;"><i class="fa-solid fa-right-to-bracket"></i> I already have an account</a>
+  <div class="fine" id="fine"></div>
+</div>
+<script>
+(function(){
+  var m = location.pathname.match(/^\/invite\/([qc])\/([A-Za-z0-9_-]{8,32})\/?$/);
+  var $ = function(id){ return document.getElementById(id); };
+  function show(id){ $(id).style.display = ''; }
+  function fail(){
+    $('t').textContent = 'This link is not available any more';
+    $('s').textContent = 'Ask your friend to send a fresh one — or join PrepHQ and practise on your own.';
+    $('logo-i').className = 'fa-solid fa-link-slash';
+    show('go-signup'); show('go-login');
+  }
+  if(!m){ fail(); return; }
+  // After they sign up and log in, the login page sends them straight back to this quiz / challenge.
+  var next = '/' + m[1] + '/' + m[2];
+  function stash(){ try{ localStorage.setItem('phq_next', JSON.stringify({ path: next, at: Date.now() })); }catch(e){} }
+  $('go-signup').addEventListener('click', stash); $('go-login').addEventListener('click', stash);
+
+  fetch('/api/invite/' + m[1] + '/' + m[2]).then(function(r){ return r.ok ? r.json() : Promise.reject(); }).then(function(d){
+    var who = d.by || 'A friend';
+    if(d.kind === 'c'){
+      $('t').textContent = who + ' challenged you!';
+      $('s').textContent = d.course + ' · ' + d.questions + ' question' + (d.questions === 1 ? '' : 's');
+      $('score-big').textContent = d.score.correct + '/' + d.score.total;
+      $('score-lbl').textContent = 'Their score (' + d.score.pct + '%) — can you beat it?';
+      show('score');
+    } else {
+      $('t').textContent = who + ' shared a quiz with you';
+      $('s').textContent = d.course + ' · ' + d.questions + ' question' + (d.questions === 1 ? '' : 's');
+    }
+    if(d.bonus > 0 && d.ref){ $('bonus').textContent = 'Join through ' + who + ' and get +' + d.bonus + ' bonus credits'; show('bonus'); }
+    $('go-signup').href = '/register' + (d.ref ? '?ref=' + encodeURIComponent(d.ref) : '');
+    show('go-signup'); show('go-login');
+    $('fine').textContent = 'Free to join. Takes about a minute.';
+  }).catch(fail);
+})();
+</script>
+</body>
+</html>

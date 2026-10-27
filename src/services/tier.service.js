@@ -40,6 +40,7 @@ async function getTierLimits(student) {
     dailyQuestions: tier.dailyQuestions ?? null,
     dailyAIQuizzes: tier.dailyAIQuizzes ?? null,
     dailyAIChatMessages: tier.dailyAIChatMessages ?? null,
+    dailyWrittenExams: tier.dailyWrittenExams ?? null,
   };
 }
 
@@ -48,6 +49,7 @@ async function getTierLimits(student) {
 const COUNTER_FIELDS = {
   questions: { countField: 'dailyQuestionCount', dateField: 'dailyQuestionDate', limitKey: 'dailyQuestions', label: 'questions' },
   aiQuiz:    { countField: 'dailyAIQuizCount',    dateField: 'dailyAIQuizDate',    limitKey: 'dailyAIQuizzes', label: 'AI quizzes' },
+  written:   { countField: 'dailyWrittenCount',   dateField: 'dailyWrittenDate',   limitKey: 'dailyWrittenExams', label: 'written exams' },
 };
 
 // Resets the counter if the WAT day has rolled over, then checks it
@@ -123,6 +125,7 @@ async function usageSnapshot(student) {
   const questionsUsed = student.dailyQuestionDate === today ? student.dailyQuestionCount : 0;
   const aiQuizUsed = student.dailyAIQuizDate === today ? student.dailyAIQuizCount : 0;
   const aiChatUsed = student.aiChatDailyDate === today ? student.aiChatDailyCount : 0;
+  const writtenUsed = student.dailyWrittenDate === today ? student.dailyWrittenCount : 0;
 
   return {
     tier: resolvePlan(student),
@@ -131,6 +134,7 @@ async function usageSnapshot(student) {
     questions: { used: questionsUsed, limit: limits.dailyQuestions },
     aiQuizzes: { used: aiQuizUsed, limit: limits.dailyAIQuizzes },
     aiChatMessages: { used: aiChatUsed, limit: limits.dailyAIChatMessages },
+    writtenExams: { used: writtenUsed, limit: limits.dailyWrittenExams },
   };
 }
 

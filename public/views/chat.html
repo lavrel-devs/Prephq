@@ -213,7 +213,7 @@
 #view-chat .voice-bar.avail{display:block;}
 #view-chat .voice-row{display:flex;align-items:center;gap:8px;min-height:22px;}
 #view-chat #voice-status{flex:1;font-size:12px;font-weight:700;color:var(--t3);min-width:0;}
-#view-chat #voice-status.err{color:var(--no);}
+#view-chat #voice-status.v-err{color:var(--no);}
 #view-chat #voice-status.live{color:var(--no);}
 #view-chat .voice-gear{border:none;background:transparent;color:var(--t3);cursor:pointer;font-size:13px;padding:4px 6px;border-radius:8px;}
 #view-chat .voice-opts{display:none;margin:6px 0 2px;padding:12px 14px;border-radius:16px;background:var(--bg);box-shadow:var(--sh-in-sm);font-size:12.5px;color:var(--t2);}
@@ -342,14 +342,14 @@ function startListening(retryLang){
   rec.onend = () => {
     listening = false; syncMic();
     if(failed === 'language-not-supported' && lang !== 'en-US'){ startListening('en-US'); return; }   // phone has no en-NG model
-    if(failed && failed !== 'aborted'){ setVoiceStatus(VOICE_ERR[failed] || 'Voice input stopped unexpectedly. You can type instead.', 'err'); return; }
+    if(failed && failed !== 'aborted'){ setVoiceStatus(VOICE_ERR[failed] || 'Voice input stopped unexpectedly. You can type instead.', 'v-err'); return; }
     const text = input.value.trim();
-    if(!text){ if(failed !== 'aborted') setVoiceStatus('I didn’t catch that — tap the mic and try again.', 'err'); return; }
+    if(!text){ if(failed !== 'aborted') setVoiceStatus('I didn’t catch that — tap the mic and try again.', 'v-err'); return; }
     voiceDraft = text;
     if(vset.autoSend){ setVoiceStatus(''); sendChatMessage(); }
     else { setVoiceStatus('Check the words, fix any mistakes, then tap send.'); input.focus(); }
   };
-  try{ rec.start(); }catch(e){ setVoiceStatus('Could not start the microphone. Try again.', 'err'); }
+  try{ rec.start(); }catch(e){ setVoiceStatus('Could not start the microphone. Try again.', 'v-err'); }
 }
 
 // ── Speaking ──
@@ -544,7 +544,9 @@ loadQuota();
 
 // inline onclick="…" handlers run in the global scope, so the functions they call are exposed
 window.sendChatMessage = sendChatMessage;
-window.toggleMic = toggleMic; window.toggleVoiceOpts = toggleVoiceOpts; window.saveVoiceOpts = saveVoiceOpts;
+window.toggleMic = toggleMic;
+window.toggleVoiceOpts = toggleVoiceOpts;
+window.saveVoiceOpts = saveVoiceOpts;
 
 return { onShow(){ applyAskCtx(); loadQuota(); scrollToBottom(); } };
 //# sourceURL=view-chat.js

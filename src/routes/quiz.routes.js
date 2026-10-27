@@ -1,5 +1,7 @@
 const express = require('express');
 const crypto = require('crypto');
+const Challenge = require('../models/Challenge');
+const { notify } = require('../services/notification.service');
 const rateLimit = require('express-rate-limit');
 
 const Student = require('../models/Student');
@@ -333,6 +335,7 @@ router.delete('/history/:id/share', async (req, res) => {
       { $unset: { shareToken: '', sharedAt: '' } },
     );
     if (!r.matchedCount) return res.status(404).json({ error: 'Quiz not found' });
+    await Challenge.deleteMany({ quizId: req.params.id, owner: matric });   // challenge links for this quiz stop working too
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -342,6 +345,44 @@ router.delete('/history/:id/share', async (req, res) => {
 // today's allowance gets 403 LIMIT_REACHED (the dashboard shows the upgrade paywall). A friend with
 // only a few left gets the quiz trimmed to what they have left, so they can't start more than they
 // are allowed to finish.
+// What a friend gets when they open a shared quiz or a challenge. The daily-limit check happens HERE, before any
+// question leaves the server (see the note above). Returns { status, body } so both routes can reuse it.
+async function friendView(req, quiz) {
+  const matric = req.student.sub;
+  const student = await Student.findOne({ matric });
+  if (!student) return { status: 404, body: { error: 'Student not found' } };
+
+  let remaining = null;
+  try {
+    ({ remaining } = await checkDailyLimit(student, 'questions'));
+  } catch (e) {
+    if (e.code === 'LIMIT_REACHED') return { status: 403, body: { error: e.message, code: 'LIMIT_REACHED', tier: e.tier, limit: e.limit, used: e.used } };
+    throw e;
+  }
+
+  const isOwner = quiz.matric === matric;
+  if (!isOwner) await GeneratedQuestion.updateOne({ _id: quiz._id }, { $inc: { shareOpens: 1 } }).catch(() => {});
+
+  const sharedBy = await handleOf(quiz.matric);
+  const all = quiz.questions;
+  const questions = remaining != null && all.length > remaining ? all.slice(0, remaining) : all;
+  return { status: 200, body: {
+    course: quiz.course,
+    difficulty: quiz.difficulty,
+    sharedBy,
+    isOwner,
+    total: all.length,
+    capped: questions.length < all.length,
+    remaining,
+    questions: questions.map(q => ({ q: q.q, opts: q.opts, ans: q.ans, exp: q.exp || '', tag: q.tag || '', course: q.course || quiz.course })),
+  } };
+}
+// "@username" if they have one, otherwise their first name — never a matric number.
+async function handleOf(matric) {
+  const o = await Student.findOne({ matric }).select('name username').lean();
+  return o ? (o.username ? `@${o.username}` : String(o.name || '').split(/\s+/)[0]) : '';
+}
+
 router.get('/shared/:token', sharedLookupLimiter, requireFeature('practiceQuestions'), async (req, res) => {
   try {
     const token = String(req.params.token || '');
@@ -351,39 +392,116 @@ router.get('/shared/:token', sharedLookupLimiter, requireFeature('practiceQuesti
     if (!quiz || !quiz.questions || !quiz.questions.length) {
       return res.status(404).json({ error: 'This quiz link is no longer available — ask your friend for a new one.', code: 'LINK_NOT_FOUND' });
     }
+    const v = await friendView(req, quiz);
+    res.status(v.status).json(v.status === 200 ? { token, ...v.body } : v.body);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
 
+// ══════════════════════════════════════════════════════════════
+//  v1.7.4 — CHALLENGE A FRIEND
+//  After a quiz the student taps "Challenge a friend": we make a link (/c/<token>) tied to that quiz AND their
+//  score. The friend plays the same questions (gated on THEIR daily limit, exactly like a shared quiz), sees
+//  "you vs them" on the results screen, and the sender gets an in-app notification with the friend's score.
+//  No messages are sent on anyone's behalf — the student chooses where to send the link.
+// ══════════════════════════════════════════════════════════════
+const challengeCreateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, max: 40, standardHeaders: true, legacyHeaders: false,
+  message: { error: 'Too many challenges created. Try again later.' },
+});
+const intIn = (v, lo, hi) => Number.isInteger(v) && v >= lo && v <= hi;
+const pctOf = (c, t) => (t > 0 ? Math.round((c / t) * 100) : 0);
+
+// POST /api/quiz/history/:id/challenge  { correct, total } — challenge link for one of MY quizzes + my score
+router.post('/history/:id/challenge', challengeCreateLimiter, async (req, res) => {
+  try {
     const matric = req.student.sub;
-    const student = await Student.findOne({ matric });
-    if (!student) return res.status(404).json({ error: 'Student not found' });
+    if (!isObjectId(req.params.id)) return res.status(404).json({ error: 'Quiz not found' });
+    const quiz = await GeneratedQuestion.findOne({ _id: req.params.id, matric }).select('questions').lean();
+    if (!quiz) return res.status(404).json({ error: 'Quiz not found' });
+    const n = (quiz.questions || []).length;
+    const { correct, total } = req.body || {};
+    if (!intIn(total, 1, n) || !intIn(correct, 0, total)) return res.status(400).json({ error: 'Invalid score for this quiz' });
 
-    let remaining = null;
-    try {
-      ({ remaining } = await checkDailyLimit(student, 'questions'));
-    } catch (e) {
-      if (e.code === 'LIMIT_REACHED') {
-        return res.status(403).json({ error: e.message, code: 'LIMIT_REACHED', tier: e.tier, limit: e.limit, used: e.used });
+    // Same quiz + same score by the same student = the same link (so a double tap doesn't mint two).
+    let ch = await Challenge.findOne({ quizId: quiz._id, owner: matric, correct, total }).lean();
+    if (!ch) {
+      for (let attempt = 0; attempt < 5 && !ch; attempt++) {
+        try {
+          const doc = await Challenge.create({ token: crypto.randomBytes(9).toString('base64url'), quizId: quiz._id, owner: matric, correct, total });
+          ch = doc.toObject();
+        } catch (e) { if (e.code !== 11000) throw e; }
       }
-      throw e;
+      if (!ch) return res.status(500).json({ error: 'Could not create the challenge. Try again.' });
     }
+    res.json({ token: ch.token, path: `/c/${ch.token}`, correct, total, pct: pctOf(correct, total) });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
 
-    const isOwner = quiz.matric === matric;
-    if (!isOwner) await GeneratedQuestion.updateOne({ _id: quiz._id }, { $inc: { shareOpens: 1 } }).catch(() => {});
+// GET /api/quiz/challenge/:token — a friend opens the challenge (daily-limit gated, like a shared quiz)
+router.get('/challenge/:token', sharedLookupLimiter, requireFeature('practiceQuestions'), async (req, res) => {
+  try {
+    const token = String(req.params.token || '');
+    if (!SHARE_TOKEN_RE.test(token)) return res.status(404).json({ error: 'This challenge link is not valid', code: 'LINK_NOT_FOUND' });
+    const ch = await Challenge.findOne({ token }).lean();
+    const quiz = ch && await GeneratedQuestion.findById(ch.quizId).lean();
+    if (!ch || !quiz || !quiz.questions || !quiz.questions.length) {
+      return res.status(404).json({ error: 'This challenge is no longer available — ask your friend for a new one.', code: 'LINK_NOT_FOUND' });
+    }
+    const v = await friendView(req, quiz);
+    if (v.status !== 200) return res.status(v.status).json(v.body);
 
-    const owner = await Student.findOne({ matric: quiz.matric }).select('name username').lean();
-    const sharedBy = owner ? (owner.username ? `@${owner.username}` : String(owner.name || '').split(/\s+/)[0]) : '';
-
-    const all = quiz.questions;
-    const questions = remaining != null && all.length > remaining ? all.slice(0, remaining) : all;
+    const me = (ch.results || []).find(r => r.matric === req.student.sub);
     res.json({
+      ...v.body,
       token,
-      course: quiz.course,
-      difficulty: quiz.difficulty,
-      sharedBy,
-      isOwner,
-      total: all.length,
-      capped: questions.length < all.length,
-      remaining,
-      questions: questions.map(q => ({ q: q.q, opts: q.opts, ans: q.ans, exp: q.exp || '', tag: q.tag || '', course: q.course || quiz.course })),
+      challenge: {
+        by: v.body.sharedBy, correct: ch.correct, total: ch.total, pct: pctOf(ch.correct, ch.total),
+        friends: (ch.results || []).length,
+        mine: me ? { correct: me.correct, total: me.total, pct: pctOf(me.correct, me.total) } : null,
+      },
+    });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// POST /api/quiz/challenge/:token/result  { correct, total } — the friend finished; keep their best, tell the sender
+router.post('/challenge/:token/result', sharedLookupLimiter, async (req, res) => {
+  try {
+    const token = String(req.params.token || '');
+    if (!SHARE_TOKEN_RE.test(token)) return res.status(404).json({ error: 'This challenge link is not valid', code: 'LINK_NOT_FOUND' });
+    const ch = await Challenge.findOne({ token }).lean();
+    if (!ch) return res.status(404).json({ error: 'This challenge is no longer available', code: 'LINK_NOT_FOUND' });
+    const matric = req.student.sub;
+    if (ch.owner === matric) return res.status(400).json({ error: "You can't answer your own challenge" });
+
+    const quiz = await GeneratedQuestion.findById(ch.quizId).select('questions').lean();
+    const n = quiz && quiz.questions ? quiz.questions.length : 0;
+    const { correct, total } = req.body || {};
+    if (!intIn(total, 1, n) || !intIn(correct, 0, total)) return res.status(400).json({ error: 'Invalid score for this quiz' });
+
+    const prior = (ch.results || []).find(r => r.matric === matric);
+    const name = await handleOf(matric);
+    const entry = { matric, name, correct, total, at: new Date() };
+    let firstTime = false;
+    if (!prior) {
+      // Atomic: only adds me if I'm not already listed; the $slice keeps the newest 100 attempts.
+      const r = await Challenge.updateOne({ token, 'results.matric': { $ne: matric } }, { $push: { results: { $each: [entry], $slice: -100 } } });
+      firstTime = r.modifiedCount === 1;
+    }
+    if (!firstTime && (!prior || pctOf(correct, total) > pctOf(prior.correct, prior.total))) {
+      await Challenge.updateOne({ token, 'results.matric': matric }, { $set: { 'results.$.correct': correct, 'results.$.total': total, 'results.$.at': new Date() } });
+    }
+    if (firstTime) {
+      const mine = pctOf(correct, total), theirs = pctOf(ch.correct, ch.total);
+      const verdict = mine > theirs ? 'and beat your score 🏆' : mine === theirs ? 'and tied with you 🤝' : 'but you still lead 💪';
+      await notify({ matric: ch.owner, type: 'announcement', title: '⚔️ Challenge accepted',
+        message: `${name || 'A friend'} scored ${correct}/${total} on your challenge (you got ${ch.correct}/${ch.total}) ${verdict}` }).catch(() => {});
+    }
+    const best = prior && pctOf(prior.correct, prior.total) > pctOf(correct, total) ? prior : { correct, total };
+    const mine = pctOf(best.correct, best.total), theirs = pctOf(ch.correct, ch.total);
+    res.json({
+      outcome: mine > theirs ? 'win' : mine === theirs ? 'tie' : 'lose',
+      you: { correct: best.correct, total: best.total, pct: mine },
+      challenger: { by: await handleOf(ch.owner), correct: ch.correct, total: ch.total, pct: theirs },
     });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });

@@ -29,6 +29,9 @@ const SettingsSchema = new mongoose.Schema({
 
   // AI chatbot usage limits — admin-configurable so spend on the Groq
   // API stays bounded without a redeploy.
+  // v1.7.8: accounts left out of the Real engagement numbers (e.g. your own testing logins)
+  analyticsExclude: { type: [String], default: [] },
+
   aiChatbot: {
     enabled:      { type: Boolean, default: true },
     dailyLimit:   { type: Number, default: 20 },
@@ -47,6 +50,7 @@ const SettingsSchema = new mongoose.Schema({
       dailyQuestions:      { type: Number, default: 20 },
       dailyAIQuizzes:      { type: Number, default: 2 },
       dailyAIChatMessages: { type: Number, default: 5 },
+      dailyWrittenExams:   { type: Number, default: 1 },    // v1.8.0 Written Exam: free students get this many a day (0 = locked)
       features: {
         aiTutor:              { type: Boolean, default: true },
         practiceQuestions:    { type: Boolean, default: true },
@@ -67,6 +71,7 @@ const SettingsSchema = new mongoose.Schema({
       dailyQuestions:      { type: Number, default: null }, // unlimited
       dailyAIQuizzes:      { type: Number, default: null },
       dailyAIChatMessages: { type: Number, default: null },
+      dailyWrittenExams:   { type: Number, default: null },
       priceDaily:          { type: Number, default: null },
       priceWeekly:         { type: Number, default: null },
       priceMonthly:        { type: Number, default: 2000 },

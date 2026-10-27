@@ -18,6 +18,7 @@
     '/chat':        { id: 'view-chat',        file: '/views/chat.html',        title: 'Study Assistant' },
     '/profile':     { id: 'view-profile',     file: '/views/profile.html',     title: 'Profile' },
     '/leaderboard': { id: 'view-leaderboard', file: '/views/leaderboard.html', title: 'Leaderboard' },
+    '/written':     { id: 'view-written',     file: '/views/written.html',     title: 'Written Exam' },
   };
 
   const state = { current: null, seq: 0, mounted: {}, texts: {}, pending: {}, deps: {} };

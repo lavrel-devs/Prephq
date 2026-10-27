@@ -464,7 +464,8 @@ function checkPwMatch() {
   h.style.color = a === b ? 'var(--ok, #00a35a)' : 'var(--no, #F5340A)';
 }
 
-function goLogin() { window.location.href = '/'; }
+// Someone who came from a friend's quiz link goes straight to sign-in, which then drops them on that quiz.
+function goLogin() { let pending = false; try { pending = !!localStorage.getItem('phq_next'); } catch (e) {} window.location.href = pending ? '/login.html' : '/'; }
 
 document.getElementById('r-referral').addEventListener('keydown', e => {
   if(e.key === 'Enter') doRegister();

@@ -10,7 +10,7 @@ const { signAccessToken, signRefreshToken, verifyRefreshToken, hashToken } = req
 const { getClientIp, isNewDevice } = require('../utils/fingerprint');
 const { applyCreditDelta } = require('../utils/credits');
 const { activateNewStudent } = require('../services/credit.service');
-const { checkAvailability } = require('../utils/username');
+const { checkAvailability, normalizeUsername, isValidFormat } = require('../utils/username');
 const { usernameCheckLimiter } = require('../middleware/rateLimit');
 const { cleanMatric, cleanName, cleanPhone } = require('../utils/validate');
 const SupportRequest = require('../models/SupportRequest');
@@ -30,7 +30,7 @@ const loginLimiter = rateLimit({
   max: 20,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => `${req.ip}|${String(req.body?.matric || req.body?.username || '').toLowerCase().slice(0, 40)}`,
+  keyGenerator: (req) => `${req.ip}|${String(req.body?.identifier || req.body?.matric || req.body?.username || '').toLowerCase().replace(/^@/, '').slice(0, 40)}`,
   message: { error: 'Too many attempts. Try again in a few minutes.' },
 });
 
@@ -231,19 +231,34 @@ router.get('/username-check/:username', usernameCheckLimiter, async (req, res) =
   } catch (e) { res.status(500).json({ error: 'Could not check that username right now' }); }
 });
 
+// v1.7.7: students may sign in with their matric number OR their username (a leading @ is fine). In the real data
+// 59% of failed logins were someone typing a name/username where a matric goes. The matric is tried first, so a
+// username that happens to look like someone's matric can never take over that matric's login.
+async function findStudentForLogin(raw) {
+  const id = String(raw).trim().replace(/\s+/g, ' ');
+  if (!id) return null;
+  const byMatric = await Student.findOne({ matric: id.toUpperCase() });
+  if (byMatric) return byMatric;
+  const username = normalizeUsername(id.replace(/^@/, ''));
+  return isValidFormat(username) ? Student.findOne({ username }) : null;
+}
+
 // POST /api/auth/login — student login, issues JWT access + refresh tokens
+//   body: { matric, password }  — `matric` carries a matric number or a username (`identifier` is accepted too)
 router.post('/login', loginLimiter, async (req, res) => {
   try {
-    const { matric, password, deviceFingerprint } = req.body;
+    const { password, deviceFingerprint } = req.body;
+    const matric = req.body.identifier !== undefined ? req.body.identifier : req.body.matric;
     if (!matric || !password)
-      return res.status(400).json({ error: 'Matric and password required' });
+      return res.status(400).json({ error: 'Matric number (or username) and password required' });
     // A JSON body can carry objects/arrays here; only plain strings are
     // valid credentials (and keep objects out of the Mongo query).
     if (typeof matric !== 'string' || typeof password !== 'string')
-      return res.status(400).json({ error: 'Matric and password required' });
+      return res.status(400).json({ error: 'Matric number (or username) and password required' });
 
-    const student = await Student.findOne({ matric: matric.trim().replace(/\s+/g, ' ').toUpperCase() });
-    if (!student) return res.status(401).json({ error: 'Invalid matric number or password' });
+    const student = await findStudentForLogin(matric);
+    // Same message whether the account exists or not, so this can't be used to probe for accounts.
+    if (!student) return res.status(401).json({ error: 'Incorrect matric number, username or password' });
 
     let valid = false;
     if (student.passwordHash) {
@@ -259,7 +274,7 @@ router.post('/login', loginLimiter, async (req, res) => {
       }
     }
 
-    if (!valid) return res.status(401).json({ error: 'Invalid matric number or password' });
+    if (!valid) return res.status(401).json({ error: 'Incorrect matric number, username or password' });
     if (!student.active) return res.status(403).json({ error: 'Account suspended. Contact admin.' });
 
     const fp = typeof deviceFingerprint === 'string' ? deviceFingerprint.slice(0, 128) : '';

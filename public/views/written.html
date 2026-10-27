@@ -1,0 +1,307 @@
+<!-- View: Written Exam. Loaded once by js/shell.js into <div class="scr" id="view-written">, then only shown and hidden.
+     Theory/essay mode: the AI sets questions, the student types answers against a timer, the AI marks each answer
+     against a hidden marking scheme. CSS is scoped to #view-written; the script runs with a scoped `document`. -->
+<style>
+#view-written *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+#view-written{font-family:var(--ff-b);color:var(--t1);-webkit-font-smoothing:antialiased;min-height:calc(100dvh - var(--nav-space,96px));padding-bottom:28px;}
+#view-written .wx-top{display:flex;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top,0px) + 14px) 18px 14px;background:var(--bg);box-shadow:0 4px 12px -8px var(--sd);position:sticky;top:0;z-index:5;}
+#view-written .wx-back{width:38px;height:38px;border-radius:50%;background:var(--bg);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--brand);flex-shrink:0;box-shadow:var(--sh);}
+#view-written .wx-back:active{transform:scale(.93);box-shadow:var(--sh-in);}
+#view-written .wx-title{font-family:var(--ff-h);font-size:18px;font-weight:800;flex:1;letter-spacing:-.4px;}
+#view-written .wx-pill{font-size:11px;font-weight:800;color:var(--brand);padding:7px 12px;border-radius:10px;background:var(--bg);box-shadow:var(--sh-sm);white-space:nowrap;}
+#view-written .wx-pill.wx-warn{color:var(--no);}
+#view-written .wx-wrap{max-width:640px;margin:0 auto;padding:16px 18px 0;}
+#view-written .wx-card{background:var(--bg);border-radius:20px;padding:18px;box-shadow:var(--sh);margin-bottom:16px;}
+#view-written .wx-h{font-family:var(--ff-h);font-size:15px;font-weight:800;margin-bottom:4px;}
+#view-written .wx-sub{font-size:12.5px;color:var(--t3);line-height:1.5;margin-bottom:12px;}
+#view-written .wx-lbl{font-size:12px;font-weight:800;color:var(--t2);margin:14px 0 6px;}
+#view-written .wx-field,#view-written .wx-text{width:100%;border:none;outline:none;background:var(--bg);color:var(--t1);font-family:inherit;font-size:14px;font-weight:600;padding:13px 14px;border-radius:14px;box-shadow:var(--sh-in-sm);}
+#view-written .wx-text{min-height:150px;resize:vertical;line-height:1.55;font-weight:500;}
+#view-written .wx-field:focus,#view-written .wx-text:focus{box-shadow:var(--sh-in),0 0 0 2px var(--brand-lt);}
+#view-written .wx-chips{display:flex;gap:8px;flex-wrap:wrap;}
+#view-written .wx-chip{border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:800;color:var(--t2);background:var(--bg);padding:10px 16px;border-radius:12px;box-shadow:var(--sh-sm);}
+#view-written .wx-chip.wx-on{color:#fff;background:linear-gradient(140deg,var(--brand),var(--purple));box-shadow:var(--sh-in-sm);}
+#view-written .wx-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:none;cursor:pointer;font-family:inherit;font-size:15px;font-weight:800;padding:15px;border-radius:16px;margin-top:16px;color:#fff;background:linear-gradient(140deg,var(--brand),var(--purple));box-shadow:var(--sh);}
+#view-written .wx-btn:active{transform:scale(.98);}
+#view-written .wx-btn:disabled{opacity:.6;cursor:default;}
+#view-written .wx-btn.wx-plain{color:var(--t2);background:var(--bg);}
+#view-written .wx-hint{font-size:12px;color:var(--t3);margin-top:10px;line-height:1.5;}
+#view-written .wx-hist{display:flex;align-items:center;gap:12px;padding:12px 4px;border-top:1px solid rgba(127,127,127,.12);cursor:pointer;}
+#view-written .wx-hist:first-of-type{border-top:none;}
+#view-written .wx-hist-main{flex:1;min-width:0;}
+#view-written .wx-hist-t{font-size:13.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#view-written .wx-hist-s{font-size:11.5px;color:var(--t3);margin-top:2px;}
+#view-written .wx-score{font-family:var(--ff-h);font-weight:800;font-size:16px;color:var(--brand);}
+#view-written .wx-timer{font-family:var(--ff-h);font-weight:800;font-size:15px;color:var(--brand);padding:7px 12px;border-radius:10px;background:var(--bg);box-shadow:var(--sh-sm);font-variant-numeric:tabular-nums;}
+#view-written .wx-timer.wx-low{color:var(--no);animation:vwritten-pulse 1s ease-in-out infinite;}
+@keyframes vwritten-pulse{0%,100%{opacity:1;}50%{opacity:.55;}}
+#view-written .wx-qhead{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;}
+#view-written .wx-qn{width:28px;height:28px;border-radius:9px;background:linear-gradient(140deg,var(--brand),var(--purple));color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+#view-written .wx-qt{flex:1;font-size:14.5px;font-weight:700;line-height:1.5;white-space:pre-wrap;}
+#view-written .wx-marks{font-size:11px;font-weight:800;color:var(--t3);white-space:nowrap;padding-top:4px;}
+#view-written .wx-count{font-size:11px;color:var(--t3);text-align:right;margin-top:6px;}
+#view-written .wx-center{text-align:center;padding:60px 20px;}
+#view-written .wx-spin{width:42px;height:42px;border-radius:50%;border:4px solid var(--brand-lt);border-top-color:var(--brand);margin:0 auto 18px;animation:vwritten-spin .9s linear infinite;}
+@keyframes vwritten-spin{to{transform:rotate(360deg);}}
+#view-written .wx-big{text-align:center;padding:8px 0 4px;}
+#view-written .wx-big-n{font-family:var(--ff-h);font-size:44px;font-weight:800;color:var(--brand);line-height:1;}
+#view-written .wx-big-s{font-size:13px;color:var(--t3);margin-top:6px;font-weight:700;}
+#view-written .wx-ans{white-space:pre-wrap;font-size:13.5px;line-height:1.55;padding:12px 14px;border-radius:14px;background:var(--bg);box-shadow:var(--sh-in-sm);margin:8px 0 12px;}
+#view-written .wx-pt{display:flex;gap:9px;align-items:flex-start;font-size:13px;line-height:1.45;padding:6px 0;}
+#view-written .wx-pt i{margin-top:3px;flex-shrink:0;}
+#view-written .wx-pt.wx-got i{color:var(--ok);}
+#view-written .wx-pt.wx-miss i{color:var(--no);}
+#view-written .wx-pt.wx-miss{color:var(--t2);}
+#view-written .wx-fb{font-size:13px;line-height:1.55;margin-top:10px;padding:12px 14px;border-radius:14px;background:var(--brand-lt);}
+#view-written .wx-model{font-size:13px;line-height:1.55;margin-top:10px;padding:12px 14px;border-radius:14px;background:var(--bg);box-shadow:var(--sh-in-sm);white-space:pre-wrap;}
+#view-written .wx-late{font-size:12px;font-weight:700;color:var(--no);text-align:center;margin-top:8px;}
+</style>
+
+<div class="wx-top">
+  <button type="button" class="wx-back" onclick="wxBack()" aria-label="Back">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+  </button>
+  <div class="wx-title" id="wx-title">Written Exam</div>
+  <div class="wx-pill" id="wx-quota"></div>
+  <div class="wx-timer" id="wx-timer" style="display:none;">--:--</div>
+</div>
+
+<div class="wx-wrap">
+  <!-- 1. SET UP -->
+  <div id="wx-setup">
+    <div class="wx-card">
+      <div class="wx-h">Practise like the real theory paper</div>
+      <div class="wx-sub">You get essay-style questions, type your answers against the clock, and the AI marks every answer against a hidden marking scheme — then shows you the points you missed and a model answer.</div>
+      <div class="wx-lbl" style="margin-top:0;">Course</div>
+      <select class="wx-field" id="wx-course"><option value="">Loading courses…</option></select>
+      <div class="wx-lbl">Topic <span style="font-weight:600;color:var(--t3)">(optional)</span></div>
+      <input class="wx-field" id="wx-topic" type="text" maxlength="80" placeholder="e.g. Atomic structure">
+      <div class="wx-lbl">Number of questions</div>
+      <div class="wx-chips" id="wx-counts"></div>
+      <div class="wx-lbl">Difficulty</div>
+      <div class="wx-chips" id="wx-diffs"></div>
+      <button type="button" class="wx-btn" id="wx-start" onclick="wxStart()"><i class="fa-solid fa-pen-to-square"></i> Start exam</button>
+      <div class="wx-hint" id="wx-hint"></div>
+    </div>
+    <div class="wx-card" id="wx-hist-card" style="display:none;">
+      <div class="wx-h">Your past written exams</div>
+      <div id="wx-hist"></div>
+    </div>
+  </div>
+
+  <!-- 2. SITTING THE EXAM -->
+  <div id="wx-exam" style="display:none;">
+    <div class="wx-card" style="padding:14px 18px;">
+      <div class="wx-hint" style="margin:0;" id="wx-exam-meta"></div>
+    </div>
+    <div id="wx-qs"></div>
+    <button type="button" class="wx-btn" id="wx-submit" onclick="wxSubmit(false)"><i class="fa-solid fa-paper-plane"></i> Submit for marking</button>
+    <div class="wx-hint" style="text-align:center;">Your answers are saved as you type. Nothing is marked until you submit.</div>
+  </div>
+
+  <!-- 3. MARKING -->
+  <div id="wx-marking" style="display:none;">
+    <div class="wx-center">
+      <div class="wx-spin"></div>
+      <div class="wx-h">Marking your answers…</div>
+      <div class="wx-sub">This usually takes under half a minute.</div>
+    </div>
+  </div>
+
+  <!-- 4. RESULT -->
+  <div id="wx-result" style="display:none;">
+    <div class="wx-card">
+      <div class="wx-big"><div class="wx-big-n" id="wx-res-pct"></div><div class="wx-big-s" id="wx-res-sub"></div></div>
+      <div class="wx-late" id="wx-res-late" style="display:none;">Submitted after time was up</div>
+    </div>
+    <div id="wx-res-body"></div>
+    <button type="button" class="wx-btn" onclick="wxNew()"><i class="fa-solid fa-rotate-right"></i> Take another exam</button>
+  </div>
+</div>
+
+<script>
+const document = PhqShell.scope(root); // every getElementById/querySelector in this view only sees this view
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+const STATES = ['setup', 'exam', 'marking', 'result'];
+let state = 'setup', exam = null, timerId = null, submitting = false, count = 3, diff = 'medium', coursesLoaded = false, saveT = null;
+
+function show(s){
+  state = s;
+  STATES.forEach(x => { $('wx-' + x).style.display = x === s ? 'block' : 'none'; });
+  $('wx-timer').style.display = s === 'exam' ? '' : 'none';
+  $('wx-quota').style.display = s === 'setup' ? '' : 'none';
+  $('wx-title').textContent = s === 'exam' ? (exam ? exam.course.toUpperCase() : 'Written Exam') : 'Written Exam';
+  window.scrollTo({ top: 0 });
+}
+const api = (url, opts) => PhqAuth.authFetch(url, opts || {}, 'student');
+const post = (url, body) => api(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) });
+
+// ── set up ──
+function paintChips(){
+  $('wx-counts').innerHTML = [1, 2, 3, 4, 5].map(n => `<button type="button" class="wx-chip ${n === count ? 'wx-on' : ''}" onclick="wxSetCount(${n})">${n}</button>`).join('');
+  $('wx-diffs').innerHTML = [['easy', 'Easy'], ['medium', 'Medium'], ['hard', 'Hard']].map(([k, l]) => `<button type="button" class="wx-chip ${k === diff ? 'wx-on' : ''}" onclick="wxSetDiff('${k}')">${l}</button>`).join('');
+  $('wx-hint').textContent = `About ${count * 8} minutes (8 per question). Starting an exam uses one of today's written exams.`;
+}
+function wxSetCount(n){ count = n; paintChips(); }
+function wxSetDiff(k){ diff = k; paintChips(); }
+
+async function loadCourses(){
+  if(coursesLoaded) return;
+  try{
+    const r = await api('/api/courses'); if(!r.ok) return;
+    const list = (await r.json()).filter(c => c.courseCode).sort((a, b) => a.courseCode.localeCompare(b.courseCode));
+    let mine = [];
+    try{ mine = (window.curUser && curUser.selectedCourses || []).map(k => String(k).toLowerCase()); }catch(e){}
+    const opt = (c) => `<option value="${esc(c.courseCode)}">${esc(c.courseCode)}${c.title ? ' — ' + esc(c.title) : ''}</option>`;
+    const mineList = list.filter(c => mine.includes(String(c.key).toLowerCase())), rest = list.filter(c => !mineList.includes(c));
+    $('wx-course').innerHTML = '<option value="">Choose a course…</option>'
+      + (mineList.length ? `<optgroup label="My courses">${mineList.map(opt).join('')}</optgroup>` : '')
+      + `<optgroup label="${mineList.length ? 'All courses' : 'Courses'}">${rest.map(opt).join('')}</optgroup>`;
+    coursesLoaded = true;
+  }catch(e){}
+}
+
+async function loadQuota(){
+  try{
+    const r = await api('/api/usage/limits'); if(!r.ok) return;
+    const w = (await r.json()).writtenExams; const el = $('wx-quota');
+    if(!w || w.limit == null){ el.textContent = 'Unlimited'; el.classList.remove('wx-warn'); return; }
+    const left = Math.max(0, w.limit - w.used);
+    el.textContent = `${left} left today`; el.classList.toggle('wx-warn', left === 0);
+  }catch(e){}
+}
+
+async function loadHistory(){
+  try{
+    const r = await api('/api/written'); if(!r.ok) return;
+    const rows = await r.json();
+    $('wx-hist-card').style.display = rows.length ? '' : 'none';
+    $('wx-hist').innerHTML = rows.map(h => `<div class="wx-hist" onclick="wxOpen('${esc(h.id)}')">
+      <div class="wx-hist-main"><div class="wx-hist-t">${esc(String(h.course).toUpperCase())}${h.topic ? ' · ' + esc(h.topic) : ''}</div>
+      <div class="wx-hist-s">${esc(new Date(h.startedAt).toLocaleDateString())} · ${h.status === 'marked' ? h.total + '/' + h.maxTotal + ' marks' : 'not submitted'}</div></div>
+      <div class="wx-score">${h.pct == null ? '…' : h.pct + '%'}</div></div>`).join('');
+  }catch(e){}
+}
+
+async function wxStart(){
+  const course = $('wx-course').value;
+  if(!course){ toast('Choose a course first'); return; }
+  const btn = $('wx-start'); btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Setting your exam…';
+  try{
+    const r = await post('/api/written/start', { course, topic: $('wx-topic').value.trim(), count, difficulty: diff });
+    const d = await r.json().catch(() => ({}));
+    if(r.status === 409 && d.exam){ toast('Resuming your unfinished exam'); beginExam(d.exam); return; }
+    if(!r.ok){
+      if(d.code === 'LIMIT_REACHED' || d.code === 'FEATURE_LOCKED') showPaywall(d.code === 'LIMIT_REACHED' ? `You've used today's written exam${d.limit > 1 ? 's' : ''}. Upgrade for more, or come back tomorrow.` : d.error);
+      else toast(d.error || 'Could not start the exam. Try again.');
+      return;
+    }
+    beginExam(d);
+  }catch(e){ toast('Network error — please try again.'); }
+  finally{ btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Start exam'; }
+}
+
+// ── sitting the exam ──
+const draftKey = () => 'phq_wx_' + (exam && exam.id);
+function readDraft(){ try{ return JSON.parse(localStorage.getItem(draftKey()) || 'null') || []; }catch(e){ return []; } }
+function wxInput(el){
+  const i = Number(el.dataset.i);
+  el.parentNode.querySelector('.wx-count').textContent = el.value.length + ' characters';
+  clearTimeout(saveT);
+  saveT = setTimeout(() => { try{ const a = readDraft(); a[i] = el.value; localStorage.setItem(draftKey(), JSON.stringify(a)); }catch(e){} }, 400);
+}
+
+function beginExam(e){
+  exam = e; submitting = false;
+  const draft = readDraft();
+  $('wx-exam-meta').textContent = `${e.questions.length} question${e.questions.length === 1 ? '' : 's'} · ${e.questions.reduce((a, q) => a + q.marks, 0)} marks · ${e.durationMin} minutes${e.topic ? ' · ' + e.topic : ''}`;
+  $('wx-qs').innerHTML = e.questions.map((q, i) => `<div class="wx-card">
+      <div class="wx-qhead"><div class="wx-qn">${i + 1}</div><div class="wx-qt">${esc(q.q)}</div><div class="wx-marks">${q.marks} mark${q.marks === 1 ? '' : 's'}</div></div>
+      <textarea class="wx-text" data-i="${i}" placeholder="Write your answer here…" oninput="wxInput(this)">${esc(draft[i] || (e.answers && e.answers[i]) || '')}</textarea>
+      <div class="wx-count"></div></div>`).join('');
+  [...document.querySelectorAll('.wx-text')].forEach(t => { t.parentNode.querySelector('.wx-count').textContent = t.value.length + ' characters'; });
+  show('exam'); tick(); clearInterval(timerId); timerId = setInterval(tick, 1000);
+}
+
+function tick(){
+  if(!exam || state !== 'exam') return;
+  const ms = new Date(exam.endsAt).getTime() - Date.now(), el = $('wx-timer');
+  const s = Math.max(0, Math.ceil(ms / 1000));
+  el.textContent = `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+  el.classList.toggle('wx-low', s <= 120);
+  if(ms <= 0 && !submitting){ clearInterval(timerId); toast("Time's up — submitting your answers"); wxSubmit(true); }
+}
+
+async function wxSubmit(auto){
+  if(submitting || !exam) return;
+  const answers = [...document.querySelectorAll('.wx-text')].map(t => t.value);
+  if(!auto && answers.every(a => !a.trim()) && !confirm('You have not written any answers. Submit anyway? You will score 0.')) return;
+  if(!auto && answers.some(a => !a.trim()) && !confirm('Some questions are still blank. Submit anyway?')) return;
+  submitting = true; clearInterval(timerId); show('marking');
+  try{
+    const r = await post(`/api/written/${exam.id}/submit`, { answers });
+    const d = await r.json().catch(() => ({}));
+    if(!r.ok){
+      toast(d.error || 'Could not submit. Your answers are still here.');
+      submitting = false; show('exam'); if(new Date(exam.endsAt).getTime() > Date.now()) timerId = setInterval(tick, 1000);
+      return;
+    }
+    try{ localStorage.removeItem(draftKey()); }catch(e){}
+    renderResult(d);
+  }catch(e){ toast('Network error — your answers are still here. Tap Submit again.'); submitting = false; show('exam'); }
+}
+
+// ── result ──
+function renderResult(d){
+  exam = d;
+  $('wx-res-pct').textContent = d.pct + '%';
+  $('wx-res-sub').textContent = `${d.total} / ${d.maxTotal} marks · ${String(d.course).toUpperCase()}${d.topic ? ' · ' + d.topic : ''}`;
+  $('wx-res-late').style.display = d.late ? 'block' : 'none';
+  $('wx-res-body').innerHTML = d.questions.map((q, i) => `<div class="wx-card">
+      <div class="wx-qhead"><div class="wx-qn">${i + 1}</div><div class="wx-qt">${esc(q.q)}</div><div class="wx-marks wx-score" style="font-size:14px;">${q.score}/${q.marks}</div></div>
+      <div class="wx-lbl" style="margin-top:4px;">Your answer</div>
+      <div class="wx-ans">${q.answer ? esc(q.answer) : '<span style="color:var(--t3)">(no answer)</span>'}</div>
+      <div class="wx-lbl" style="margin-top:0;">Marking scheme</div>
+      ${q.rubric.map(p => `<div class="wx-pt ${p.earned ? 'wx-got' : 'wx-miss'}"><i class="fa-solid ${p.earned ? 'fa-circle-check' : 'fa-circle-xmark'}"></i><div>${esc(p.point)} <span style="color:var(--t3);font-weight:700;">(${p.marks})</span></div></div>`).join('')}
+      ${q.feedback ? `<div class="wx-fb">${esc(q.feedback)}${q.tip ? `<div style="margin-top:6px;font-weight:700;">💡 ${esc(q.tip)}</div>` : ''}</div>` : ''}
+      <div class="wx-lbl">Model answer</div><div class="wx-model">${esc(q.model)}</div></div>`).join('');
+  show('result'); loadQuota(); loadHistory();
+}
+
+async function wxOpen(id){
+  try{
+    const r = await api(`/api/written/${encodeURIComponent(id)}`); const d = await r.json().catch(() => ({}));
+    if(!r.ok){ toast(d.error || 'Could not open that exam'); return; }
+    d.status === 'marked' ? renderResult(d) : beginExam(d);
+  }catch(e){ toast('Network error — please try again.'); }
+}
+function wxNew(){ exam = null; show('setup'); loadQuota(); loadHistory(); }
+function wxBack(){
+  if(state === 'exam' && !confirm('Leave the exam? Your answers are saved and the clock keeps running — you can come back to it.')) return;
+  if(state === 'result' || state === 'marking'){ if(state === 'result'){ wxNew(); return; } return; }
+  PhqShell.go('/dashboard');
+}
+
+// pick up an unfinished exam (refresh, closed tab) as soon as the screen is shown
+async function resumeIfAny(){
+  if(state !== 'setup') return;
+  try{ const r = await api('/api/written/active'); if(!r.ok) return; const d = await r.json(); if(d.exam){ toast('Resuming your unfinished exam'); beginExam(d.exam); } }catch(e){}
+}
+window.addEventListener('phq:route', (e) => { if(e.detail && e.detail.path !== '/written') clearInterval(timerId); });
+
+paintChips();
+
+// inline onclick="..." handlers run in the global scope, so the functions they call are exposed
+window.wxStart = wxStart;
+window.wxSubmit = wxSubmit;
+window.wxSetCount = wxSetCount;
+window.wxSetDiff = wxSetDiff;
+window.wxOpen = wxOpen;
+window.wxNew = wxNew;
+window.wxBack = wxBack;
+window.wxInput = wxInput;
+
+return { onShow(){ loadCourses(); loadQuota(); loadHistory(); resumeIfAny(); if(state === 'exam'){ tick(); clearInterval(timerId); timerId = setInterval(tick, 1000); } } };
+//# sourceURL=view-written.js
+</script>

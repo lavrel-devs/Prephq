@@ -43,6 +43,8 @@ Settings.getGlobal = async () => ({
   tiers: { free: { dailyQuestions: 20, dailyAIQuizzes: 2, dailyAIChatMessages: 5, features: {} }, premium: { dailyQuestions: null } },
 });
 
+require(abs('models/Challenge.js')).deleteMany = async () => ({});   // revoking a share also clears its challenges (v1.7.4); none here
+
 const express = require('express');
 const app = express(); app.use(express.json());
 app.use('/api/quiz', require(abs('routes/quiz.routes.js')));

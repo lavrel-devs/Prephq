@@ -3,6 +3,8 @@ const Student = require('../../models/Student');
 const CreditTransaction = require('../../models/CreditTransaction');
 const Contest = require('../../models/Contest');
 const { requireAdmin } = require('../../middleware/auth');
+const Settings = require('../../models/Settings');
+const { engagementReport } = require('../../services/engagement.service');
 
 const router = express.Router();
 router.use(requireAdmin);
@@ -10,6 +12,25 @@ router.use(requireAdmin);
 function daysAgo(n) {
   return new Date(Date.now() - n * 24 * 60 * 60 * 1000);
 }
+
+// GET /api/admin/analytics/engagement?weeks=8 — REAL engagement: students who answered questions, funnel,
+// weekly actives, come-back rate, free-cap hit rate. Excluded accounts (below) are left out of every number.
+router.get('/analytics/engagement', async (req, res) => {
+  try {
+    const weeks = Math.min(Math.max(parseInt(req.query.weeks, 10) || 8, 2), 26);
+    res.json(await engagementReport({ weeks }));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// PUT /api/admin/analytics/exclusions  { matrics: ['PSC25CHM102', ...] } — accounts to leave out of the numbers
+router.put('/analytics/exclusions', async (req, res) => {
+  try {
+    const raw = Array.isArray(req.body && req.body.matrics) ? req.body.matrics : String((req.body && req.body.matrics) || '').split(/[\s,;]+/);
+    const matrics = [...new Set(raw.map(m => String(m).trim().toUpperCase()).filter(m => /^[A-Z0-9][A-Z0-9 \/_-]{2,40}$/.test(m)))].slice(0, 50);
+    await Settings.updateOne({ key: 'global' }, { $set: { analyticsExclude: matrics } }, { upsert: true });
+    res.json({ exclude: matrics });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
 
 // GET /api/admin/analytics/signups?days=30 — new signups per day.
 router.get('/analytics/signups', async (req, res) => {

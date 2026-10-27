@@ -763,6 +763,12 @@ details.np-card>summary::-webkit-details-marker{display:none;}
     </div>
   </div>
 
+  <div onclick="PhqShell.go('/written')" style="margin:20px 18px 0;padding:14px 16px;border-radius:var(--r16);background:var(--bg);box-shadow:var(--sh);display:flex;align-items:center;gap:12px;cursor:pointer;">
+    <div style="width:42px;height:42px;border-radius:14px;background:linear-gradient(140deg,var(--brand),var(--purple));color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-pen-to-square"></i></div>
+    <div style="flex:1;min-width:0;"><div style="font-weight:800;font-size:14px;font-family:var(--ff-h);">Written Exam <span style="font-size:10px;font-weight:800;color:#fff;background:var(--purple);padding:2px 7px;border-radius:99px;vertical-align:middle;">NEW</span></div><div style="font-size:12px;color:var(--t3);margin-top:2px;">Theory questions you type, marked by AI against a marking scheme</div></div>
+    <i class="fa-solid fa-chevron-right" style="color:var(--t3);font-size:12px;"></i>
+  </div>
+
   <div class="sec-h" style="padding-top:20px;"><div class="sec-title"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--purple);margin-right:6px;"></i>AI Quiz Generator</div></div>
   <div style="background:var(--bg);border-radius:var(--r16);margin:0 18px 18px;padding:16px;box-shadow:var(--sh);">
     <div style="font-size:12.5px;color:var(--t3);margin-bottom:12px;">Generate a fresh set of questions for any course with AI. Costs <b id="ai-quiz-cost">5</b> credits per quiz.</div>
@@ -1161,6 +1167,8 @@ details.np-card>summary::-webkit-details-marker{display:none;}
     <div class="sbox"><div class="sbox-val r" id="r-wrg">0</div><div class="sbox-lbl">Wrong</div></div>
     <div class="sbox"><div class="sbox-val o" id="r-skp">0</div><div class="sbox-lbl">Skipped</div></div>
   </div>
+  <div id="cap-strip" style="display:none;margin:0 16px 12px;padding:12px 14px;border-radius:var(--r16,18px);background:var(--bg);box-shadow:var(--sh);align-items:center;gap:10px;"></div>
+  <div id="challenge-banner" style="display:none;margin:0 16px 12px;padding:14px 16px;border-radius:var(--r16,18px);background:var(--bg);box-shadow:var(--sh);text-align:center;"></div>
   <button class="share-btn" onclick="shareResult()">
     <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92S19.61 16.08 18 16.08z"/></svg>
     Share Result
@@ -1171,6 +1179,10 @@ details.np-card>summary::-webkit-details-marker{display:none;}
     <button class="btn-surf" onclick="saveQuizForLater()" id="save-later-btn">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
       Save Quiz for Later
+    </button>
+    <button class="btn-surf" onclick="challengeFriend()" id="challenge-btn" style="background:linear-gradient(140deg,var(--brand),var(--purple));color:#fff;">
+      <i class="fa-solid fa-bolt"></i>
+      Challenge a Friend
     </button>
     <button class="btn-surf" onclick="shareCurrentQuiz()" id="share-quiz-btn">
       <i class="fa-solid fa-share-nodes"></i>
@@ -1258,6 +1270,11 @@ details.np-card>summary::-webkit-details-marker{display:none;}
       <div class="mi-body"><div class="mi-title">Contests</div><div class="mi-sub">Compete and win credits</div></div>
       <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
     </div>
+    <div class="menu-item" onclick="closeSheet('menu-sheet');PhqShell.go('/written')">
+      <div class="mi-icon" style="color:var(--brand)"><i class="fa-solid fa-pen-to-square" style="font-size:18px;"></i></div>
+      <div class="mi-body"><div class="mi-title">Written Exam</div><div class="mi-sub">Theory questions, AI-marked</div></div>
+      <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>
     <div class="menu-item" onclick="closeSheet('menu-sheet');PhqShell.go('/leaderboard')">
       <div class="mi-icon" style="color:var(--purple)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div>
       <div class="mi-body"><div class="mi-title">Leaderboard</div><div class="mi-sub">See how you rank, opt-in only</div></div>
@@ -1285,7 +1302,7 @@ details.np-card>summary::-webkit-details-marker{display:none;}
 <div class="sheet-bg" id="share-sheet" onclick="closeSheet('share-sheet',event)">
   <div class="sheet">
     <div class="sheet-handle"></div>
-    <div class="sheet-title">Share this quiz</div>
+    <div class="sheet-title" id="share-title">Share this quiz</div>
     <div class="sheet-sub" id="share-sub">Friends who open the link can take this quiz in PrepHQ.</div>
     <div style="padding:0 20px;">
       <input id="share-link-input" type="text" readonly onclick="this.select()" style="width:100%;padding:13px 14px;border:none;border-radius:var(--r12);background:var(--bg);box-shadow:var(--sh-in-sm);color:var(--t1);font-size:13px;font-weight:600;outline:none;">
@@ -1294,8 +1311,8 @@ details.np-card>summary::-webkit-details-marker{display:none;}
         <button class="btn-surf" style="flex:1;" onclick="shareLinkWhatsApp()"><i class="fa-brands fa-whatsapp"></i>&nbsp; WhatsApp</button>
       </div>
       <button class="btn-surf" id="share-native-btn" style="margin-top:10px;display:none;" onclick="shareLinkNative()"><i class="fa-solid fa-share-nodes"></i>&nbsp; More apps…</button>
-      <div style="font-size:11.5px;color:var(--t3);margin:14px 2px 6px;line-height:1.5;">Taking it uses your friend's own daily question limit — it never costs them credits or touches your score.</div>
-      <button class="btn-surf" style="margin-top:6px;color:var(--no);font-size:13px;padding:11px;" onclick="stopSharingQuiz()"><i class="fa-solid fa-link-slash"></i>&nbsp; Stop sharing (disable link)</button>
+      <div id="share-fine" style="font-size:11.5px;color:var(--t3);margin:14px 2px 6px;line-height:1.5;">Taking it uses your friend's own daily question limit — it never costs them credits or touches your score.</div>
+      <button class="btn-surf" id="share-stop-btn" style="margin-top:6px;color:var(--no);font-size:13px;padding:11px;" onclick="stopSharingQuiz()"><i class="fa-solid fa-link-slash"></i>&nbsp; Stop sharing (disable link)</button>
     </div>
   </div>
 </div>
@@ -1341,6 +1358,15 @@ details.np-card>summary::-webkit-details-marker{display:none;}
     <div style="width:60px;height:60px;border-radius:16px;background:var(--bg);color:var(--brand);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:24px;box-shadow:var(--sh);"><i class="fa-solid fa-bolt"></i></div>
     <div class="modal-title" id="pw-title">Daily limit reached</div>
     <div class="modal-sub" id="pw-sub">You've used everything your free plan gives you for today. Upgrade to keep going right now.</div>
+    <!-- v1.7.9: shown only when a FREE student has used up today's questions -->
+    <div id="pw-cap" style="display:none;margin:14px 0 2px;text-align:left;">
+      <div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:800;"><span id="pw-cap-used"></span><span id="pw-cap-reset" style="color:var(--t3);font-weight:700;"></span></div>
+      <div style="height:8px;border-radius:99px;background:var(--bg);box-shadow:var(--sh-in-sm);margin-top:6px;overflow:hidden;"><div style="height:100%;width:100%;background:linear-gradient(90deg,var(--brand),var(--purple));"></div></div>
+      <button type="button" id="pw-cap-daily" onclick="capGetDaily(event)" style="display:none;width:100%;margin-top:12px;border:none;cursor:pointer;text-align:left;padding:12px 14px;border-radius:14px;background:var(--bg);color:var(--t1);box-shadow:var(--sh);font-family:inherit;">
+        <div style="font-weight:800;font-size:13.5px;"><i class="fa-solid fa-bolt" style="color:var(--brand);"></i>&nbsp; Just need today?</div>
+        <div id="pw-cap-daily-sub" style="font-size:12px;color:var(--t3);margin-top:2px;"></div>
+      </button>
+    </div>
     <div style="background:var(--bg);border-radius:14px;padding:14px;text-align:left;box-shadow:var(--sh-in-sm),0 0 0 2px var(--brand-lt);margin:16px 0 12px;">
       <div style="font-weight:800;font-size:15px;font-family:var(--ff-h);">Premium</div>
       <div style="font-size:12px;color:var(--t3);margin-top:2px;">Unlimited questions, AI quizzes &amp; AI chat, plus every feature</div>
@@ -1522,6 +1548,7 @@ async function pushScore(entry){
     (saved.achievements||[]).forEach((a,i)=>setTimeout(()=>toast(`${a.icon} Achievement unlocked: ${a.title}`), 600*i));
     if(entry.perQuestion && entry.perQuestion.length) loadWeakTopics();
     loadPlanBanner();
+    showUsageStrip();
   }catch{}
 }
 
@@ -1602,7 +1629,14 @@ function doLogout(){
 
 async function bootFromSession(){
   const session = PhqAuth.getSession();
-  if(!session){ PhqAuth.stashShareLink(); window.location.replace('/login.html'); return; }
+  if(!session){
+    PhqAuth.stashShareLink();
+    // Someone opening a friend's shared quiz / challenge link while signed out gets the invite page (with Sign up
+    // carrying the sender's referral code) instead of a bare login form.
+    const sm = location.pathname.match(/^\/[qc]\/[A-Za-z0-9_-]{8,32}$/);
+    window.location.replace(sm ? '/invite' + location.pathname : '/login.html');
+    return;
+  }
   try{
     const res = await PhqAuth.authFetch('/api/me', {}, 'student');
     if(!res.ok){
@@ -1626,8 +1660,8 @@ async function bootFromSession(){
     else {
       // A friend's shared quiz link (/q/<token>). Skipped while a blocking setup modal is showing; the
       // address bar still says /q/<token>, so reloading once setup is done opens the quiz.
-      const m = location.pathname.match(/^\/q\/([A-Za-z0-9_-]{8,32})$/);
-      if(m) openSharedQuiz(m[1]);
+      const m = location.pathname.match(/^\/([qc])\/([A-Za-z0-9_-]{8,32})$/);
+      if(m) (m[1] === 'c' ? openChallenge : openSharedQuiz)(m[2]);
     }
   }catch(e){
     try { PhqAuth.logout('student'); } catch(e2){}
@@ -1834,11 +1868,64 @@ function updatePaywallLink(){
   document.getElementById('pw-whatsapp-link').href = wa ? `https://wa.me/${wa}?text=${encodeURIComponent(msg)}` : '#';
 }
 
+// ── The free-cap moment (v1.7.9) ─────────────────────────────
+// Free students answered up to the daily cap on 93 of 97 study days, so hitting it should feel like a pause with
+// clear options, not a wall: how much is used, exactly when it resets (midnight, Nigerian time), and a cheap way to
+// carry on today.
+function msUntilWatMidnight(now){
+  const t = now == null ? Date.now() : now;
+  const wat = new Date(t + 3600000);                                   // WAT = UTC+1, no daylight saving
+  return Date.UTC(wat.getUTCFullYear(), wat.getUTCMonth(), wat.getUTCDate() + 1) - 3600000 - t;
+}
+function fmtDuration(ms){
+  const mins = Math.max(1, Math.round(ms / 60000));
+  return mins >= 60 ? `${Math.floor(mins/60)}h ${String(mins%60).padStart(2,'0')}m` : `${mins}m`;
+}
+async function paintCapPanel(){
+  const box = document.getElementById('pw-cap'), title = document.getElementById('pw-title');
+  box.style.display = 'none'; title.textContent = 'Daily limit reached';
+  try{
+    const r = await PhqAuth.authFetch('/api/usage/limits', {}, 'student');
+    if(!r.ok) return;
+    const u = await r.json();
+    if(u.tier !== 'free' || u.questions.limit == null || u.questions.used < u.questions.limit) return;   // only the QUESTION cap gets this panel
+    title.textContent = `You've used all ${u.questions.limit} free questions today`;
+    document.getElementById('pw-cap-used').textContent = `${u.questions.limit}/${u.questions.limit} questions`;
+    document.getElementById('pw-cap-reset').textContent = `Resets at midnight · in ${fmtDuration(msUntilWatMidnight())}`;
+    const daily = (cachedPlans?.periods || []).find(x => x.key === 'daily' && x.price != null);
+    const btn = document.getElementById('pw-cap-daily');
+    btn.style.display = daily ? 'block' : 'none';
+    if(daily) document.getElementById('pw-cap-daily-sub').textContent = `Unlimited for 24 hours — ${fmtNaira(daily.price)}. Message admin and keep going now.`;
+    box.style.display = 'block';
+  }catch(e){}
+}
+function capGetDaily(ev){ pwPeriod = 'daily'; updatePaywallLink(); requestUpgrade(ev); }
+
+// Results screen: a gentle heads-up when only a few free questions are left (nothing when there's plenty).
+async function showUsageStrip(){
+  const el = document.getElementById('cap-strip'); if(!el) return;
+  el.style.display = 'none';
+  try{
+    const r = await PhqAuth.authFetch('/api/usage/limits', {}, 'student');
+    if(!r.ok) return;
+    const u = await r.json();
+    if(u.tier !== 'free' || u.questions.limit == null) return;
+    const left = Math.max(0, u.questions.limit - u.questions.used);
+    if(left > 5) return;
+    el.innerHTML = `<i class="fa-solid ${left ? 'fa-hourglass-half' : 'fa-moon'}" style="color:var(--brand);font-size:18px;"></i>
+      <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:800;">${left ? `${left} free question${left===1?'':'s'} left today` : "You've used today's free questions"}</div>
+      <div style="font-size:11.5px;color:var(--t3);">Resets at midnight · in ${fmtDuration(msUntilWatMidnight())}</div></div>
+      <button type="button" onclick="showPaywall()" style="border:none;cursor:pointer;font-size:12px;font-weight:800;color:#fff;background:linear-gradient(140deg,var(--brand),var(--purple));padding:9px 14px;border-radius:12px;font-family:inherit;">Keep going</button>`;
+    el.style.display = 'flex';
+  }catch(e){}
+}
+
 async function showPaywall(reasonText){
   document.getElementById('pw-sub').textContent = reasonText || "You've used everything your free plan gives you for today. Upgrade to keep going right now.";
   document.getElementById('m-paywall').classList.add('on');
   const plans = await loadPlans();
   if(plans) renderPaywallPeriods(plans);
+  paintCapPanel();
 }
 function closePaywall(){ document.getElementById('m-paywall').classList.remove('on'); }
 
@@ -2997,6 +3084,8 @@ function showResults(){
     else{wrong++;lastWrong.push({...quizQ[i]});}
   });
   const pct=total>0?Math.round((correct/total)*100):0;
+  lastScore = { arr: quizQ, correct, total };   // so "Challenge a Friend" can send THIS score
+  showChallengeOutcome(correct, total);
 
   const g=getGoal();
   const today=new Date().toDateString();
@@ -3217,15 +3306,19 @@ async function playSavedQuiz(id){
 // ── Shareable quiz links (v1.7.1) ────────────────────────────
 // Owner side: turn a quiz of mine into /q/<token>, copy it, send it. Friend side: openSharedQuiz() below.
 let shareCache = { arr: null, id: null };   // which saved record the quiz on the results screen came from
-let curShareId = null, curShareUrl = '';
+let curShareId = null, curShareUrl = '', curShareText = '', curShareMode = 'quiz';
+let lastScore = { arr: null, correct: 0, total: 0 };   // my score on the quiz whose results are on screen
+let activeChallenge = null;                            // set while a friend is playing someone's challenge
 
 async function shareQuizById(id){
   try{
     const r = await PhqAuth.authFetch(`/api/quiz/history/${id}/share`, { method:'POST' }, 'student');
     const d = await r.json().catch(()=>({}));
     if(!r.ok){ toast(d.error || 'Could not create a link. Try again.'); return; }
-    curShareId = id;
+    curShareId = id; curShareMode = 'quiz';
     curShareUrl = location.origin + d.path;
+    curShareText = `Try this quiz on PrepHQ 📚\n${curShareUrl}`;
+    paintShareSheet();
     document.getElementById('share-link-input').value = curShareUrl;
     document.getElementById('share-native-btn').style.display = navigator.share ? 'flex' : 'none';
     document.getElementById('share-sheet').classList.add('on');
@@ -3234,26 +3327,115 @@ async function shareQuizById(id){
 }
 
 // Results screen: reuse the record this quiz already lives in, or bank it first (once per quiz).
+async function ensureQuizRecord(){
+  if(shareCache.arr === quizQ && shareCache.id) return shareCache.id;
+  const names = selCourses.map(c=>COURSES[c]?.code||ALL_COURSES[c]?.code||c);
+  const r = await PhqAuth.authFetch('/api/quiz/save-for-later', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      course: names.length<=2 ? names.join('+') : 'Mixed',
+      questions: quizQ.map(q=>({ q:q.q||q.question||'', opts:q.opts, ans:q.ans, exp:q.exp||'', tag:q.tag||'', course:q.course })),
+    })
+  }, 'student');
+  if(!r.ok) return null;
+  shareCache = { arr: quizQ, id: (await r.json()).id };
+  return shareCache.id;
+}
 async function shareCurrentQuiz(){
   if(!quizQ.length) return;
   const btn = document.getElementById('share-quiz-btn');
   btn.disabled = true;
   try{
-    if(shareCache.arr !== quizQ || !shareCache.id){
-      const names = selCourses.map(c=>COURSES[c]?.code||ALL_COURSES[c]?.code||c);
-      const r = await PhqAuth.authFetch('/api/quiz/save-for-later', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({
-          course: names.length<=2 ? names.join('+') : 'Mixed',
-          questions: quizQ.map(q=>({ q:q.q||q.question||'', opts:q.opts, ans:q.ans, exp:q.exp||'', tag:q.tag||'', course:q.course })),
-        })
-      }, 'student');
-      if(!r.ok){ toast('Could not prepare this quiz for sharing. Try again.'); return; }
-      shareCache = { arr: quizQ, id: (await r.json()).id };
-    }
-    await shareQuizById(shareCache.id);
+    const id = await ensureQuizRecord();
+    if(!id){ toast('Could not prepare this quiz for sharing. Try again.'); return; }
+    await shareQuizById(id);
   }catch(e){ toast('Could not prepare this quiz for sharing. Try again.'); }
   finally{ btn.disabled = false; }
+}
+
+// ── Challenge a friend (v1.7.4) ──────────────────────────────
+// Sender: link carries THIS quiz + my score. Friend: plays it, sees me-vs-them, sender gets a notification.
+async function challengeFriend(){
+  if(!quizQ.length || lastScore.arr !== quizQ){ toast('Finish a quiz first, then challenge a friend'); return; }
+  const btn = document.getElementById('challenge-btn');
+  btn.disabled = true;
+  try{
+    const id = await ensureQuizRecord();
+    if(!id){ toast('Could not prepare the challenge. Try again.'); return; }
+    const r = await PhqAuth.authFetch(`/api/quiz/history/${id}/challenge`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ correct: lastScore.correct, total: lastScore.total }),
+    }, 'student');
+    const d = await r.json().catch(()=>({}));
+    if(!r.ok){ toast(d.error || 'Could not create the challenge. Try again.'); return; }
+    curShareId = id; curShareMode = 'challenge';
+    curShareUrl = location.origin + d.path;
+    const course = (quizQ[0] && (COURSES[quizQ[0].course]?.code || quizQ[0].course)) || 'a';
+    curShareText = `I scored ${d.correct}/${d.total} (${d.pct}%) on a ${String(course).toUpperCase()} quiz on PrepHQ. Think you can beat me? 😎\n${curShareUrl}`;
+    document.getElementById('share-link-input').value = curShareUrl;
+    document.getElementById('share-native-btn').style.display = navigator.share ? 'flex' : 'none';
+    paintShareSheet();
+    document.getElementById('share-sheet').classList.add('on');
+    copyShareLink(true);
+  }catch(e){ toast('Could not create the challenge. Try again.'); }
+  finally{ btn.disabled = false; }
+}
+
+// Friend side: /c/<token>
+async function openChallenge(token){
+  try{ history.replaceState({phq:1}, '', '/dashboard'); }catch(e){}
+  try{
+    const r = await PhqAuth.authFetch(`/api/quiz/challenge/${encodeURIComponent(token)}`, {}, 'student');
+    const d = await r.json().catch(()=>({}));
+    if(!r.ok){
+      if(d.code === 'LIMIT_REACHED') showPaywall(`You've used all ${d.limit} of your daily questions, so you can't take this challenge today. Upgrade to keep going, or open the link again tomorrow.`);
+      else if(d.code === 'FEATURE_LOCKED') showPaywall(d.error);
+      else toast(d.error || 'Could not open this challenge');
+      return;
+    }
+    const c = d.challenge;
+    if(d.isOwner){ toast("That's your own challenge — send it to a friend!"); return; }
+    toast(d.capped ? `Only ${d.questions.length} of ${d.total} questions fit in your daily limit today` : `${c.by || 'A friend'} scored ${c.correct}/${c.total} — can you beat it?`);
+    clearAutoAdvance();
+    curAIQuizId = null;
+    quizMode = 'practice';
+    quizQ = d.questions.map(q=>({ ...q, course: q.course || d.course }));
+    shareCache = { arr: null, id: null };
+    activeChallenge = { token, arr: quizQ, by: c.by, correct: c.correct, total: c.total, pct: c.pct, capped: d.capped };
+    selCourses = [...new Set(quizQ.map(q=>q.course))];
+    answers = new Array(quizQ.length).fill(null);
+    confirmed = new Array(quizQ.length).fill(false);
+    timedOut = new Array(quizQ.length).fill(false);
+    cur = 0;
+    document.getElementById('qt-title').textContent = d.course;
+    showScr('quiz');
+    renderQ();
+  }catch(e){ toast('Could not open this challenge. Check your connection and try again.'); }
+}
+
+// Results screen: if this quiz was someone's challenge, report my score and show who won.
+async function showChallengeOutcome(correct, total){
+  const box = document.getElementById('challenge-banner');
+  box.style.display = 'none'; box.innerHTML = '';
+  const ac = activeChallenge;
+  if(!ac || ac.arr !== quizQ) return;
+  try{
+    const r = await PhqAuth.authFetch(`/api/quiz/challenge/${encodeURIComponent(ac.token)}/result`, {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ correct, total }),
+    }, 'student');
+    const d = await r.json().catch(()=>({}));
+    if(!r.ok) return;
+    const head = d.outcome === 'win' ? '🏆 You beat ' : d.outcome === 'tie' ? '🤝 You tied with ' : '💪 ' ;
+    const who = d.challenger.by || 'your friend';
+    const line = d.outcome === 'lose' ? `${who} still leads — try again tomorrow!` : `${head}${who}!`;
+    box.innerHTML = `<div style="font-size:15px;font-weight:800;margin-bottom:6px;">${escapeHtml(line)}</div>
+      <div style="display:flex;justify-content:center;gap:24px;font-size:13px;color:var(--t2);">
+        <div><div style="font-size:20px;font-weight:800;color:var(--brand);">${d.you.correct}/${d.you.total}</div>You (${d.you.pct}%)</div>
+        <div><div style="font-size:20px;font-weight:800;">${d.challenger.correct}/${d.challenger.total}</div>${escapeHtml(who)} (${d.challenger.pct}%)</div>
+      </div>
+      ${ac.capped ? '<div style="font-size:11px;color:var(--t3);margin-top:8px;">Compared by percentage — your daily limit trimmed this quiz.</div>' : ''}`;
+    box.style.display = 'block';
+  }catch(e){}
 }
 
 async function copyShareLink(quiet){
@@ -3265,7 +3447,14 @@ async function copyShareLink(quiet){
   }
   toast(ok ? 'Link copied — send it to your friends' : (quiet ? 'Tap the link to select it, then copy' : 'Could not copy. Tap the link and copy it manually.'));
 }
-function shareLinkText(){ return `Try this quiz on PrepHQ 📚\n${curShareUrl}`; }
+function shareLinkText(){ return curShareText || `Try this quiz on PrepHQ 📚\n${curShareUrl}`; }
+function paintShareSheet(){
+  const ch = curShareMode === 'challenge';
+  document.getElementById('share-title').textContent = ch ? 'Challenge a friend' : 'Share this quiz';
+  document.getElementById('share-sub').textContent = ch ? 'Send the link — they play the same questions and see if they can beat your score.' : 'Friends who open the link can take this quiz in PrepHQ.';
+  document.getElementById('share-stop-btn').style.display = ch ? 'none' : '';
+  document.getElementById('share-fine').textContent = ch ? "You'll get a notification when they finish. It uses their own daily question limit." : "Taking it uses your friend's own daily question limit — it never costs them credits or touches your score.";
+}
 function shareLinkWhatsApp(){ if(curShareUrl) window.open('https://wa.me/?text=' + encodeURIComponent(shareLinkText()), '_blank', 'noopener'); }
 function shareLinkNative(){ if(curShareUrl && navigator.share) navigator.share({ title:'PrepHQ quiz', text:'Try this quiz on PrepHQ', url:curShareUrl }).catch(()=>{}); }
 

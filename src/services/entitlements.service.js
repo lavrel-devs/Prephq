@@ -18,7 +18,11 @@ const Student = require('../models/Student');
 const FEATURES = [
   { key: 'aiTutor',              label: 'AI Tutor (chat)',            freeDefault: true  },
   { key: 'practiceQuestions',    label: 'Practice questions',         freeDefault: true  },
-  { key: 'aiQuestionGeneration', label: 'AI question generation',     freeDefault: true  },
+  // v1.7.5: for Free this is controlled by the "AI quizzes/day" number, NOT an on/off switch — having both let an
+  // admin set 1/day while the switch was off, so free students were locked out of a quiz the settings promised them.
+  { key: 'aiQuestionGeneration', label: 'AI question generation',     freeDefault: true, controlledBy: 'dailyAIQuizzes' },
+  // v1.8.0 Written Exam (theory/essay answers, AI-marked). Free access = the "Written exams/day" number (0 = locked).
+  { key: 'writtenExam',          label: 'Written exams',              freeDefault: true, controlledBy: 'dailyWrittenExams' },
   { key: 'flashcards',           label: 'Flashcards',                 freeDefault: false },
   { key: 'examMode',             label: 'Exam mode (CBT)',            freeDefault: true  },
   { key: 'examHistory',          label: 'Exam history & readiness',   freeDefault: true  },
@@ -73,9 +77,13 @@ function isPremiumActive(s, now = new Date()) {
 function resolvePlan(s) { return isPremiumActive(s) ? 'premium' : 'free'; }
 
 function freeFeatureOn(settings, key) {
-  const f = settings.tiers && settings.tiers.free && settings.tiers.free.features;
-  if (f && typeof f[key] === 'boolean') return f[key];
   const def = FEATURES.find(x => x.key === key);
+  const free = settings.tiers && settings.tiers.free;
+  // A limit-controlled feature is available to Free exactly when its daily limit allows at least one use:
+  // 0 = locked, 1+ = that many per day, blank (null) = unlimited.
+  if (def && def.controlledBy && free) { const lim = free[def.controlledBy]; return lim === undefined || lim === null || lim > 0; }
+  const f = free && free.features;
+  if (f && typeof f[key] === 'boolean') return f[key];
   return def ? def.freeDefault : false;
 }
 

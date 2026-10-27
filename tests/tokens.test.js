@@ -5,7 +5,7 @@ const fs = require('fs'), path = require('path'), assert = require('assert');
 const PUB = path.join(__dirname, '..', 'public');
 // The tab screens (contests, study rooms, assistant, profile, leaderboard) now live in public/views/ inside the dashboard shell and
 // take their tokens from the dashboard page; tests/views.test.js guards those.
-const PAGES = ['dashboard', 'change-password', 'login', 'register', 'forgot-password', 'landing'];
+const PAGES = ['dashboard', 'change-password', 'login', 'register', 'forgot-password', 'landing', 'invite'];
 
 const mask = s => s.replace(/\/\*[\s\S]*?\*\//g, m => ' '.repeat(m.length));
 const norm = v => v.trim().replace(/\s+/g, ' ').replace(/\s*,\s*/g, ',').toLowerCase();

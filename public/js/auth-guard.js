@@ -162,7 +162,7 @@
   // v1.7.1 — a friend who taps a shared quiz link while signed out is sent to login; remember the link so
   // they land back on the quiz afterwards instead of the plain dashboard. Expires after a day.
   const NEXT_KEY = 'phq_next';
-  const SHARE_PATH_RE = /^\/q\/[A-Za-z0-9_-]{8,32}$/;
+  const SHARE_PATH_RE = /^\/[qc]\/[A-Za-z0-9_-]{8,32}$/;   // /q/<token> shared quiz, /c/<token> challenge
   function stashShareLink() {
     try {
       if (SHARE_PATH_RE.test(location.pathname)) localStorage.setItem(NEXT_KEY, JSON.stringify({ path: location.pathname, at: Date.now() }));

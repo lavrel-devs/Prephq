@@ -1063,7 +1063,8 @@ select.f-input option{background:var(--bg);color:var(--t1);}
             <b style="font-size:13px;">Free tier daily caps</b>
             <div style="display:flex;gap:20px;align-items:center;margin-top:8px;flex-wrap:wrap;">
               <div><label style="font-size:12px;color:var(--t3);">Questions/day:</label><input type="number" id="ts-free-questions" class="f-input" style="width:90px;" onchange="saveTierSettings()"></div>
-              <div><label style="font-size:12px;color:var(--t3);">AI quizzes/day:</label><input type="number" id="ts-free-aiquiz" class="f-input" style="width:90px;" onchange="saveTierSettings()"></div>
+              <div><label style="font-size:12px;color:var(--t3);" title="0 locks AI quizzes for Free students; 1 or more lets them try that many per day; blank = unlimited">AI quizzes/day <span style="color:var(--t4)">(0 = locked)</span>:</label><input type="number" min="0" id="ts-free-aiquiz" class="f-input" style="width:90px;" onchange="saveTierSettings()"></div>
+              <div><label style="font-size:12px;color:var(--t3);" title="Theory/essay exams a Free student may start per day. 0 locks it; blank = unlimited">Written exams/day <span style="color:var(--t4)">(0 = locked)</span>:</label><input type="number" min="0" id="ts-free-written" class="f-input" style="width:90px;" onchange="saveTierSettings()"></div>
               <div><label style="font-size:12px;color:var(--t3);">AI chat msgs/day:</label><input type="number" id="ts-free-aichat" class="f-input" style="width:90px;" onchange="saveTierSettings()"></div>
             </div>
           </div>
@@ -1087,6 +1088,7 @@ select.f-input option{background:var(--bg);color:var(--t1);}
             <div style="display:flex;gap:20px;align-items:center;margin-top:12px;flex-wrap:wrap;">
               <div><label style="font-size:12px;color:var(--t3);">Questions/day:</label><input type="number" id="ts-premium-questions" class="f-input" style="width:90px;" placeholder="Unlimited" onchange="saveTierSettings()"></div>
               <div><label style="font-size:12px;color:var(--t3);">AI quizzes/day:</label><input type="number" id="ts-premium-aiquiz" class="f-input" style="width:90px;" placeholder="Unlimited" onchange="saveTierSettings()"></div>
+              <div><label style="font-size:12px;color:var(--t3);">Written exams/day:</label><input type="number" min="0" id="ts-premium-written" class="f-input" style="width:90px;" placeholder="Unlimited" onchange="saveTierSettings()"></div>
               <div><label style="font-size:12px;color:var(--t3);">AI chat msgs/day:</label><input type="number" id="ts-premium-aichat" class="f-input" style="width:90px;" placeholder="Unlimited" onchange="saveTierSettings()"></div>
             </div>
             <div style="font-size:11.5px;color:var(--t4);margin-top:6px;">Leave any cap blank for unlimited.</div>
@@ -1113,6 +1115,33 @@ select.f-input option{background:var(--bg);color:var(--t1);}
           </select>
         </div>
 
+        <!-- v1.7.8 Real engagement: students who actually ANSWERED questions (background activity does not count) -->
+        <div class="tw" style="padding:20px;">
+          <div class="th-title" style="margin-bottom:2px;">Real engagement</div>
+          <div style="font-size:12px;color:var(--t3);margin-bottom:14px;">Counts only students who answered questions. Opening the app or background activity does not make someone “active”.</div>
+          <div id="eng-kpis" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:16px;"></div>
+          <div style="font-size:12px;font-weight:800;color:var(--t2);margin-bottom:6px;">Students answering questions each week</div>
+          <canvas id="chart-engagement" height="70"></canvas>
+          <div id="eng-note" style="font-size:12px;color:var(--t3);margin:10px 0 14px;"></div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;">
+            <div>
+              <div style="font-size:12px;font-weight:800;color:var(--t2);margin-bottom:6px;">Funnel</div>
+              <div class="tbl-wrap"><table><tbody id="eng-funnel"></tbody></table></div>
+            </div>
+            <div>
+              <div style="font-size:12px;font-weight:800;color:var(--t2);margin-bottom:6px;">Did new studiers come back?</div>
+              <div class="tbl-wrap"><table><thead><tr><th>First studied (week of)</th><th>New</th><th>Came back</th><th>%</th></tr></thead><tbody id="eng-cohorts"></tbody></table></div>
+            </div>
+          </div>
+          <div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(127,127,127,.15);">
+            <div style="font-size:12px;font-weight:800;color:var(--t2);margin-bottom:6px;">Leave these accounts out <span style="font-weight:600;color:var(--t3)">— your own testing logins, so they don't inflate the numbers (matrics, comma-separated)</span></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <input class="f-input" id="eng-exclude" placeholder="e.g. PSC25CHM102, PSC25BIO101" style="flex:1;min-width:200px;">
+              <button class="btn-main" style="width:auto;padding:10px 18px;font-size:13px;" onclick="saveEngExclusions()">Save</button>
+            </div>
+          </div>
+        </div>
+
         <div class="tw" style="padding:20px;">
           <div class="th-title" style="margin-bottom:12px;">New Signups</div>
           <canvas id="chart-signups" height="80"></canvas>
@@ -1130,7 +1159,7 @@ select.f-input option{background:var(--bg);color:var(--t1);}
         </div>
 
         <div class="tw">
-          <div class="th"><div class="th-title">Retention by Signup Cohort</div></div>
+          <div class="th"><div class="th-title">Retention by Signup Cohort</div><div style="font-size:11.5px;color:var(--t3);margin-top:2px;">Based on last-seen time, which also moves on background activity — it flatters the numbers. Use “Real engagement” above for true study return rates.</div></div>
           <div class="tbl-wrap"><table>
             <thead><tr><th>Signup Day</th><th>Cohort Size</th><th>Day 1</th><th>Day 7</th><th>Day 30</th></tr></thead>
             <tbody id="an-retention-body"></tbody>
@@ -3636,6 +3665,7 @@ async function loadCreditSettings(){
     // v1.4: subscription tiers + support contact
     document.getElementById('ts-free-questions').value = s.tiers.free.dailyQuestions ?? '';
     document.getElementById('ts-free-aiquiz').value = s.tiers.free.dailyAIQuizzes ?? '';
+    document.getElementById('ts-free-written').value = s.tiers.free.dailyWrittenExams ?? '';
     document.getElementById('ts-free-aichat').value = s.tiers.free.dailyAIChatMessages ?? '';
     const pr = s.tiers.premium || {};
     document.getElementById('ts-premium-daily').value = pr.priceDaily ?? '';
@@ -3645,6 +3675,7 @@ async function loadCreditSettings(){
     document.getElementById('ts-premium-lifetime').value = pr.priceLifetime ?? '';
     document.getElementById('ts-premium-questions').value = pr.dailyQuestions ?? '';
     document.getElementById('ts-premium-aiquiz').value = pr.dailyAIQuizzes ?? '';
+    document.getElementById('ts-premium-written').value = pr.dailyWrittenExams ?? '';
     document.getElementById('ts-premium-aichat').value = pr.dailyAIChatMessages ?? '';
     renderFreeFeatureSwitches(s.featureDefs || [], s.tiers.free.features || {});
     document.getElementById('ts-whatsapp').value = s.support?.whatsapp || '';
@@ -3702,6 +3733,7 @@ async function saveTierSettings(){
       free: {
         dailyQuestions: emptyToNull(document.getElementById('ts-free-questions').value),
         dailyAIQuizzes: emptyToNull(document.getElementById('ts-free-aiquiz').value),
+        dailyWrittenExams: emptyToNull(document.getElementById('ts-free-written').value),
         dailyAIChatMessages: emptyToNull(document.getElementById('ts-free-aichat').value),
         features: readFreeFeatureSwitches(),
       },
@@ -3713,6 +3745,7 @@ async function saveTierSettings(){
         priceLifetime: emptyToNull(document.getElementById('ts-premium-lifetime').value),
         dailyQuestions: emptyToNull(document.getElementById('ts-premium-questions').value),
         dailyAIQuizzes: emptyToNull(document.getElementById('ts-premium-aiquiz').value),
+        dailyWrittenExams: emptyToNull(document.getElementById('ts-premium-written').value),
         dailyAIChatMessages: emptyToNull(document.getElementById('ts-premium-aichat').value),
       },
     },
@@ -3883,6 +3916,7 @@ let chartSignups = null, chartCredits = null, chartContests = null;
 
 async function loadAnalytics(){
   const days = document.getElementById('an-days').value;
+  loadEngagement();
   try{
     const [signupsR, retentionR, creditsR, contestsR] = await Promise.all([
       adminFetch(`/api/admin/analytics/signups?days=${days}`, { headers: {} }),
@@ -3902,6 +3936,43 @@ async function loadAnalytics(){
       `${contests.participationRate}% of active users (${contests.activeUserCount}) have joined a contest in this window`;
     renderRetentionTable(retention);
   }catch(e){ toast('Could not load analytics'); }
+}
+
+let chartEng = null;
+async function loadEngagement(){
+  try{
+    const r = await adminFetch('/api/admin/analytics/engagement?weeks=8', { headers: {} });
+    if(!r.ok) return;
+    const d = await r.json(), f = d.funnel, pc = (a,b) => b ? Math.round(a/b*100)+'%' : '—';
+    const latest = d.weekly[d.weekly.length-2] || d.weekly[d.weekly.length-1];   // last COMPLETE week
+    const tile = (big, label, sub) => `<div style="padding:12px 14px;border-radius:16px;background:var(--bg);box-shadow:var(--press-sm);"><div style="font-size:22px;font-weight:800;color:var(--brand);">${big}</div><div style="font-size:12px;font-weight:700;">${label}</div><div style="font-size:11px;color:var(--t3);">${sub}</div></div>`;
+    document.getElementById('eng-kpis').innerHTML = [
+      tile(f.registered, 'Registered', d.exclude.length ? `${d.exclude.length} account(s) left out` : 'all accounts'),
+      tile(pc(f.studied, f.registered), 'Ever practiced', `${f.studied} of ${f.registered}`),
+      tile(latest ? latest.active : 0, 'Studied last week', latest ? `${latest.pct ?? '—'}% of registered` : ''),
+      tile(pc(f.studiedOneDayOnly, f.studied), 'One day only', `${f.studiedOneDayOnly} never came back`),
+      tile(f.studied3Days, 'Studied 3+ days', `${f.studied7Days} reached 7+`),
+      tile(d.freeCap && d.freeCap.pct !== null ? d.freeCap.pct + '%' : '—', 'Free days at the cap', d.freeCap ? `${d.freeCap.hit} of ${d.freeCap.studentDays} (cap ${d.freeCap.cap})` : 'no cap set'),
+    ].join('');
+    const ctx = document.getElementById('chart-engagement').getContext('2d');
+    if(chartEng) chartEng.destroy();
+    chartEng = new Chart(ctx, { type:'bar',
+      data:{ labels:d.weekly.map(w=>w.week.slice(5)+(w.partial?' (so far)':'')), datasets:[{ label:'Students answering questions', data:d.weekly.map(w=>w.active), backgroundColor:d.weekly.map(w=>w.partial?'rgba(10,92,245,.35)':'#0A5CF5') }] },
+      options:{ responsive:true, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true, ticks:{ precision:0 } } } } });
+    document.getElementById('eng-note').textContent = d.concentration.attempts
+      ? `The top 5 accounts account for ${d.concentration.top5Pct}% of all answers (the top 1 alone: ${d.concentration.top1Pct}%). If one of them is you, add it to the list below.` : '';
+    const row = (l, n) => `<tr><td>${l}</td><td style="text-align:right;font-weight:800;">${n}</td><td style="text-align:right;color:var(--t3);">${pc(n, f.registered)}</td></tr>`;
+    document.getElementById('eng-funnel').innerHTML = row('Registered', f.registered) + row('Profile completed', f.profileDone) + row('Chose courses', f.hasCourses) + row('Answered a question', f.studied) + row('Studied on 3+ days', f.studied3Days) + row('Studied on 7+ days', f.studied7Days);
+    document.getElementById('eng-cohorts').innerHTML = d.cohorts.length ? d.cohorts.map(c => `<tr><td>${escHtml(c.week)}</td><td>${c.newStudiers}</td><td>${c.cameBack}</td><td>${c.pct}%</td></tr>`).join('') : '<tr class="empty-row"><td colspan="4">Not enough weeks yet</td></tr>';
+    const inp = document.getElementById('eng-exclude'); if(document.activeElement !== inp) inp.value = d.exclude.join(', ');
+  }catch(e){}
+}
+async function saveEngExclusions(){
+  const r = await adminFetch('/api/admin/analytics/exclusions', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ matrics: document.getElementById('eng-exclude').value }) });
+  const d = await r.json().catch(()=>({}));
+  if(!r.ok) return toast(d.error || 'Could not save');
+  toast(d.exclude.length ? `Leaving out ${d.exclude.length} account(s)` : 'No accounts left out');
+  loadEngagement();
 }
 
 function renderSignupsChart(rows){

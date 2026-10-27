@@ -153,6 +153,8 @@ const StudentSchema = new mongoose.Schema({
   // in addition to the existing per-generation credit cost.
   dailyAIQuizCount: { type: Number, default: 0 },
   dailyAIQuizDate:  { type: String, default: null },
+  dailyWrittenCount: { type: Number, default: 0 },   // v1.8.0 written exams started today (WAT)
+  dailyWrittenDate:  { type: String, default: null },
 
   // ── Cosmetics shop (routes/cosmetics.routes.js) ─────────────
   // These three fields were referenced by the shop routes but never

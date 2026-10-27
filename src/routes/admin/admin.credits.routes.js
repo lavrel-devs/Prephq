@@ -16,7 +16,7 @@ router.get('/credit-settings', async (req, res) => {
   try {
     const settings = await Settings.getGlobal();
     const { FEATURES } = require('../../services/entitlements.service');
-    res.json({ ...settings.toObject(), featureDefs: FEATURES.map(f => ({ key: f.key, label: f.label })) });
+    res.json({ ...settings.toObject(), featureDefs: FEATURES.filter(f => !f.controlledBy).map(f => ({ key: f.key, label: f.label })) });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -64,7 +64,7 @@ router.put('/credit-settings', async (req, res) => {
         const incoming = tiers[tierName];
         if (!incoming || typeof incoming !== 'object') continue;
         const current = settings.tiers[tierName];
-        const fields = ['dailyQuestions', 'dailyAIQuizzes', 'dailyAIChatMessages', ...(tierName === 'premium' ? PRICE_FIELDS : [])];
+        const fields = ['dailyQuestions', 'dailyAIQuizzes', 'dailyAIChatMessages', 'dailyWrittenExams', ...(tierName === 'premium' ? PRICE_FIELDS : [])];
         for (const field of fields) {
           if (!(field in incoming)) continue;
           const val = incoming[field];
