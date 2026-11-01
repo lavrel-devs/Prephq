@@ -8,6 +8,8 @@ const { requireStudent } = require('../middleware/auth');
 const { generateTheoryQuestions, markTheoryAnswers } = require('../services/groq.service');
 const { checkDailyLimit, incrementDailyUsage } = require('../services/tier.service');
 const { requireFeature } = require('../services/entitlements.service');
+const TheoryQuestion = require('../models/TheoryQuestion');
+const { queueQuestions } = require('../services/questionReview.service');
 const { normalizeQuestions, normalizeAnswers, applyMarking, totals, publicQuestions } = require('../services/written.service');
 const { courseMatchFilter } = require('../utils/courseMatch');
 const { withLock } = require('../utils/lock');
@@ -84,20 +86,29 @@ async function startHandler(req, res) {
       Question.distinct('tag', match).catch(() => []),
       Question.aggregate([{ $match: match }, { $sample: { size: 6 } }, { $project: { q: 1 } }]).catch(() => []),
     ]);
+    // Admin-approved theory questions for this course are used first — up to half the paper — so vetted questions get
+    // used and fewer have to be generated. The AI always writes at least one, so every paper is still fresh.
+    const courseKey = (courseDoc && courseDoc.key) || course.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const banked = count > 1 ? normalizeQuestions(
+      await TheoryQuestion.aggregate([{ $match: { course: courseKey } }, { $sample: { size: Math.floor(count / 2) } }, { $project: { q: 1, rubric: 1, model: 1 } }]).catch(() => []), Math.floor(count / 2)) : [];
     let generated;
     try {
       generated = await generateTheoryQuestions({
-        course, courseTitle: (courseDoc && courseDoc.title) || '', topic, difficulty, count,
+        course, courseTitle: (courseDoc && courseDoc.title) || '', topic, difficulty, count: count - banked.length,
         topics: (tags || []).filter(t => typeof t === 'string' && t.trim()).slice(0, 40), samples: samples.map(s => String(s.q).slice(0, 220)),
       });
     } catch (e) {
       return res.status(e.code === 'GROQ_NOT_CONFIGURED' ? 503 : 502).json({ error: e.message, code: e.code || 'GROQ_ERROR' });
     }
-    const questions = normalizeQuestions(generated.questions, count);
-    if (!questions.length) return res.status(502).json({ error: 'The AI did not return a usable exam. Please try again — this did not use up one of your exams.', code: 'GROQ_EMPTY' });
+    const fresh = normalizeQuestions(generated.questions, count - banked.length);
+    const questions = banked.length ? [...banked, ...fresh].sort(() => Math.random() - 0.5) : fresh;   // shuffle only when mixed
+    if (!fresh.length) return res.status(502).json({ error: 'The AI did not return a usable exam. Please try again — this did not use up one of your exams.', code: 'GROQ_EMPTY' });
 
     const exam = await WrittenExam.create({ matric, course, topic, difficulty, durationMin: questions.length * MIN_PER_QUESTION, questions });
     await incrementDailyUsage(student, 'written');   // only a successfully built exam counts
+    // v1.8.1: the freshly generated questions also go to the admin review queue (approved ones join the theory bank).
+    queueQuestions({ kind: 'written', course: (courseDoc && courseDoc.key) || course, items: fresh, source: 'student-ai', submittedBy: matric, difficulty, tag: topic })
+      .catch(e => console.error('[ai-review] could not queue written questions:', e.message));
     res.status(201).json(openView(exam.toObject ? exam.toObject() : exam));
   } catch (e) { res.status(500).json({ error: e.message }); }
 }

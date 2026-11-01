@@ -10,6 +10,7 @@ const GeneratedQuestion = require('../models/GeneratedQuestion');
 const { requireStudent } = require('../middleware/auth');
 const { applyCreditDelta } = require('../utils/credits');
 const { generateQuiz, explainAnswer } = require('../services/groq.service');
+const { queueQuestions } = require('../services/questionReview.service');
 const { checkDailyLimit, incrementDailyUsage } = require('../services/tier.service');
 const { withLock } = require('../utils/lock');
 const { requireFeature } = require('../services/entitlements.service');
@@ -150,6 +151,13 @@ async function generateHandler(req, res) {
     }
 
     await incrementDailyUsage(student, 'aiQuiz');
+
+    // v1.8.1: send what the AI wrote to the admin review queue, so good questions can join the practice bank.
+    // Skipped when the student pasted their own notes — those questions are drawn from private material.
+    if (!rawMaterial) {
+      queueQuestions({ kind: 'mcq', course, items: generated.questions, source: 'student-ai', submittedBy: matric, difficulty: diff, tag: topic })
+        .catch(e => console.error('[ai-review] could not queue AI quiz questions:', e.message));
+    }
 
     res.status(201).json({
       id: record._id,

@@ -153,6 +153,8 @@ const StudentSchema = new mongoose.Schema({
   // in addition to the existing per-generation credit cost.
   dailyAIQuizCount: { type: Number, default: 0 },
   dailyAIQuizDate:  { type: String, default: null },
+  termsAcceptedAt: { type: Date, default: null },       // v1.8.2: when they last accepted the Terms/Privacy Policy (by signing up or logging in)
+  termsVersion:    { type: String, default: null },     //   ...and which version (see src/utils/legal.js)
   dailyWrittenCount: { type: Number, default: 0 },   // v1.8.0 written exams started today (WAT)
   dailyWrittenDate:  { type: String, default: null },
 

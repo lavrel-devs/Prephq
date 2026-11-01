@@ -771,7 +771,7 @@ details.np-card>summary::-webkit-details-marker{display:none;}
 
   <div class="sec-h" style="padding-top:20px;"><div class="sec-title"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--purple);margin-right:6px;"></i>AI Quiz Generator</div></div>
   <div style="background:var(--bg);border-radius:var(--r16);margin:0 18px 18px;padding:16px;box-shadow:var(--sh);">
-    <div style="font-size:12.5px;color:var(--t3);margin-bottom:12px;">Generate a fresh set of questions for any course with AI. Costs <b id="ai-quiz-cost">5</b> credits per quiz.</div>
+    <div style="font-size:12.5px;color:var(--t3);margin-bottom:12px;">Generate a fresh set of questions for any course with AI. Costs <b id="ai-quiz-cost">5</b> credits per quiz. Questions the AI writes for you may be reviewed by PrepHQ and added to the practice bank (questions made from notes you paste are never shared).</div>
     <div style="display:flex;gap:8px;margin-bottom:10px;">
       <input id="ai-course-input" placeholder="Course code e.g. CHM142" style="flex:1;min-width:0;padding:12px;border-radius:12px;border:none;background:var(--bg);font-size:14px;font-weight:600;color:var(--t1);outline:none;box-shadow:var(--sh-in-sm);" autocapitalize="characters">
       <div class="neu-select" id="ai-diff-select-wrap" data-value="medium" style="flex-shrink:0;width:104px;">
@@ -1273,6 +1273,11 @@ details.np-card>summary::-webkit-details-marker{display:none;}
     <div class="menu-item" onclick="closeSheet('menu-sheet');PhqShell.go('/written')">
       <div class="mi-icon" style="color:var(--brand)"><i class="fa-solid fa-pen-to-square" style="font-size:18px;"></i></div>
       <div class="mi-body"><div class="mi-title">Written Exam</div><div class="mi-sub">Theory questions, AI-marked</div></div>
+      <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>
+    <div class="menu-item" onclick="closeSheet('menu-sheet');window.open('/legal','_blank','noopener')">
+      <div class="mi-icon" style="color:var(--t3)"><i class="fa-solid fa-shield-halved" style="font-size:18px;"></i></div>
+      <div class="mi-body"><div class="mi-title">Terms &amp; Privacy</div><div class="mi-sub">Policies and your data</div></div>
       <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
     </div>
     <div class="menu-item" onclick="closeSheet('menu-sheet');PhqShell.go('/leaderboard')">

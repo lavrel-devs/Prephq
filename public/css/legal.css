@@ -1,0 +1,40 @@
+/* Legal pages (Terms, Privacy, Cookies, Acceptable Use, Payments & Refunds, AI Disclaimer) — v1.8.2.
+   Colours, fonts and shadows all come from tokens.css so the pages follow the app's light/dark theme. */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{scroll-behavior:smooth;scroll-padding-top:84px;}
+body{font-family:var(--ff-b);background:var(--bg);color:var(--t1);line-height:1.7;-webkit-font-smoothing:antialiased;}
+.lg-top{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:14px;padding:calc(env(safe-area-inset-top,0px) + 12px) 20px 12px;background:var(--bg);box-shadow:0 4px 14px -10px var(--sd);}
+.lg-brand{font-family:var(--ff-h);font-weight:800;font-size:19px;letter-spacing:-.4px;color:var(--brand);text-decoration:none;}
+.lg-nav{display:flex;gap:6px;margin-left:auto;overflow-x:auto;scrollbar-width:none;}
+.lg-nav::-webkit-scrollbar{display:none;}
+.lg-nav a{font-size:12.5px;font-weight:700;color:var(--t2);text-decoration:none;padding:8px 12px;border-radius:10px;white-space:nowrap;}
+.lg-nav a.on{color:#fff;background:linear-gradient(140deg,var(--brand),var(--purple));}
+.lg-wrap{max-width:780px;margin:0 auto;padding:28px 20px 60px;}
+.lg-wrap h1{font-family:var(--ff-h);font-size:30px;line-height:1.2;letter-spacing:-.8px;font-weight:800;}
+.lg-meta{font-size:12.5px;color:var(--t3);margin-top:8px;}
+.lg-box{margin:20px 0;padding:16px 18px;border-radius:18px;background:var(--bg);box-shadow:var(--sh-in-sm);font-size:14px;}
+.lg-box b{color:var(--brand);}
+.lg-toc{margin:20px 0 8px;padding:16px 18px;border-radius:18px;background:var(--bg);box-shadow:var(--sh);}
+.lg-toc h3{font-family:var(--ff-h);font-size:14px;margin-bottom:8px;}
+.lg-toc ol{padding-left:20px;columns:2;column-gap:28px;font-size:13px;}
+.lg-toc li{margin:3px 0;break-inside:avoid;}
+.lg-toc a{color:var(--t2);text-decoration:none;}
+.lg-toc a:hover{color:var(--brand);}
+.lg-wrap h2{font-family:var(--ff-h);font-size:19px;margin:34px 0 8px;letter-spacing:-.3px;font-weight:800;}
+.lg-wrap h3{font-size:15px;margin:18px 0 4px;font-weight:800;}
+.lg-wrap p{margin:8px 0;font-size:14.5px;color:var(--t2);}
+.lg-wrap ul,.lg-wrap ol.lg-ol{margin:8px 0 8px 22px;font-size:14.5px;color:var(--t2);}
+.lg-wrap li{margin:5px 0;}
+.lg-wrap a{color:var(--brand);font-weight:600;}
+.lg-wrap table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px;}
+.lg-wrap th,.lg-wrap td{text-align:left;padding:9px 10px;border-bottom:1px solid rgba(127,127,127,.18);vertical-align:top;}
+.lg-wrap th{font-size:12px;color:var(--t3);text-transform:uppercase;letter-spacing:.04em;}
+.lg-tablewrap{overflow-x:auto;}
+.lg-foot{max-width:780px;margin:0 auto;padding:22px 20px calc(env(safe-area-inset-bottom,0px) + 36px);border-top:1px solid rgba(127,127,127,.18);font-size:12.5px;color:var(--t3);}
+.lg-foot a{color:var(--t2);font-weight:700;text-decoration:none;margin-right:14px;display:inline-block;margin-bottom:6px;}
+.lg-grid{display:grid;gap:14px;margin-top:22px;}
+.lg-card{display:block;padding:18px;border-radius:20px;background:var(--bg);box-shadow:var(--sh);text-decoration:none;color:inherit;}
+.lg-card b{display:block;font-family:var(--ff-h);font-size:16px;color:var(--t1);}
+.lg-card span{font-size:13px;color:var(--t3);}
+@media (max-width:560px){.lg-toc ol{columns:1;}.lg-wrap h1{font-size:25px;}.lg-nav{display:none;}}
+@media print{.lg-top,.lg-toc,.lg-foot{display:none;}body{background:#fff;color:#000;}}

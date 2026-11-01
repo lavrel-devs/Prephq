@@ -13,12 +13,17 @@ let lastGen = null;
 
 const WrittenExam = require(abs('models/WrittenExam.js')), Student = require(abs('models/Student.js')), Course = require(abs('models/Course.js'));
 const Question = require(abs('models/Question.js')), Settings = require(abs('models/Settings.js'));
+const TheoryQuestion = require(abs('models/TheoryQuestion.js')), AIQuestionReview = require(abs('models/AIQuestionReview.js'));
+let bank = [], queued = [];
+TheoryQuestion.aggregate = async (p) => bank.slice(0, p[1].$sample.size);
+AIQuestionReview.insertMany = async (docs) => { queued.push(...docs); return docs; };
 const { watDateString } = require(abs('services/credit.service.js'));
 const today = watDateString();
 
 const students = {
   FREE1: { _id: 'f1', matric: 'FREE1', tier: 'free', dailyWrittenDate: today, dailyWrittenCount: 0 },
   FREE2: { _id: 'f2', matric: 'FREE2', tier: 'free', dailyWrittenDate: today, dailyWrittenCount: 0 },
+  PREM2: { _id: 'p2', matric: 'PREM2', tier: 'premium', premiumPlan: 'monthly', tierExpiresAt: new Date(Date.now() + 864e5), dailyWrittenDate: today, dailyWrittenCount: 0 },
   PREM:  { _id: 'p1', matric: 'PREM', tier: 'premium', premiumPlan: 'monthly', tierExpiresAt: new Date(Date.now() + 864e5), dailyWrittenDate: today, dailyWrittenCount: 5 },
 };
 const q = v => ({ select() { return this; }, lean() { return this; }, sort() { return this; }, limit() { return this; }, then: (a, b) => Promise.resolve(v).then(a, b) });
@@ -115,6 +120,22 @@ const goodExam = () => [
     const lim = await call('POST', '/start', 'FREE1', { course: 'CHM101' });
     assert.strictEqual(lim.status, 403); assert.strictEqual(lim.body.code, 'LIMIT_REACHED'); assert.strictEqual(lim.body.limit, 1);
     assert.strictEqual((await call('POST', '/start', 'PREM', { course: 'CHM101' })).status, 201);
+
+    // ── v1.8.1: AI-written questions go to the review queue; approved theory questions are mixed into the paper ──
+    await new Promise(r => setTimeout(r, 20));
+    const forS1 = queued.filter(x => x.source === 'student-ai' && x.kind === 'written');
+    assert.ok(forS1.length >= 2, 'freshly generated written questions are queued for admin review');
+    assert.ok(forS1.every(x => x.submittedBy && x.rubric.length >= 2 && x.status === undefined), 'queued with the scheme, pending by default');
+    const queuedBefore = queued.length;
+    bank = [{ q: 'BANKED-QUESTION-A', rubric: [{ point: 'p1', marks: 1 }, { point: 'p2', marks: 2 }], model: 'bank model' }, { q: 'BANKED-QUESTION-B', rubric: [{ point: 'p1', marks: 1 }, { point: 'p2', marks: 1 }], model: 'bank model' }];
+    aiExam = (a) => ({ questions: goodExam().slice(0, a.count) });
+    const mixed = await call('POST', '/start', 'PREM2', { course: 'CHM101', count: 4 });
+    assert.strictEqual(mixed.status, 201);
+    assert.strictEqual(lastGen.count, 2, 'half the paper comes from the approved bank, the AI writes the rest');
+    assert.ok(mixed.body.questions.some(x => /BANKED-QUESTION/.test(x.q)), 'approved theory questions appear in the paper');
+    await new Promise(r => setTimeout(r, 20));
+    assert.ok(queued.slice(queuedBefore).every(x => !/BANKED-QUESTION/.test(x.q)), 'banked questions are not queued again');
+    bank = [];
 
     // ── history ──
     const hist = await call('GET', '/', 'FREE1'); assert.strictEqual(hist.body.length, 1); assert.strictEqual(hist.body[0].pct, 38);

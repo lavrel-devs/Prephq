@@ -45,6 +45,13 @@ app.use('/api/auth', require(abs('routes/auth.routes.js')));
     assert.strictEqual((await login({ matric: 'ada_o' })).status, 400);
     // suspended accounts are still refused when they use a username
     assert.strictEqual((await login({ matric: 'dayo', password: P })).status, 403);
+    // the sign-in page says logging in = accepting the Terms and Privacy Policy, so the version accepted is recorded
+    const { LEGAL_VERSION } = require(abs('utils/legal.js'));
+    const ada = docs[0]; ada.termsVersion = null; ada.termsAcceptedAt = null;
+    await login({ matric: 'ada_o', password: P });
+    assert.strictEqual(ada.termsVersion, LEGAL_VERSION); assert.ok(ada.termsAcceptedAt instanceof Date);
+    const first = ada.termsAcceptedAt; await new Promise(r => setTimeout(r, 5)); await login({ matric: 'ada_o', password: P });
+    assert.strictEqual(ada.termsAcceptedAt, first, 'already on the current version: the timestamp is left alone');
     console.log('login by matric or username OK');
   } finally { server.close(); }
 })().catch(e => { console.error(e); process.exit(1); });

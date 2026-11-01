@@ -51,6 +51,7 @@ const RULES = [
 
   [/^\/courses(\/|$)/, ['courses']],
   [/^\/questions(\/|$)/, ['questions']],
+  [/^\/ai-review(\/|$)/, ['questions']],
   [/^\/contests-question-bank\/?$/, ['questions', 'contests']],
   [/^\/contest-templates(\/|$)/, ['contests']],
   [/^\/contests(\/|$)/, ['contests']],

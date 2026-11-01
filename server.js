@@ -163,6 +163,7 @@ app.use('/api/admin', require('./src/routes/admin/admin.contest-templates.routes
 app.use('/api/admin', require('./src/routes/admin/admin.analytics.routes'));
 app.use('/api/admin', require('./src/routes/admin/admin.support.routes'));
 app.use('/api/admin', require('./src/routes/admin/admin.plancodes.routes'));
+app.use('/api/admin', require('./src/routes/admin/admin.aireview.routes'));   // v1.8.1 AI question review queue
 app.use('/api', require('./src/routes/invite.routes'));   // v1.7.5 public invite preview (no login)
 app.use('/api/admin', require('./src/routes/admin/admin.followups.routes'));
 app.use('/api/admin', require('./src/routes/admin/admin.notes.routes'));
@@ -204,6 +205,14 @@ const PAGE_ROUTES = {
   '/admin':     'admin.html',
   '/forgot-password': 'forgot-password.html',
   '/change-password': 'change-password.html',
+  // v1.8.2 legal pages (Terms, Privacy, ...) — static files in public/legal/
+  '/legal':            'legal/index.html',
+  '/terms':            'legal/terms.html',
+  '/privacy':          'legal/privacy.html',
+  '/cookies':          'legal/cookies.html',
+  '/acceptable-use':   'legal/acceptable-use.html',
+  '/payments-refunds': 'legal/payments-refunds.html',
+  '/ai-disclaimer':    'legal/ai-disclaimer.html',
 };
 app.get(['/question-uploader', '/question-uploader.html'], (req, res) => res.redirect(301, '/admin'));
 app.get('/landing.html', (req, res) => res.redirect(301, '/'));

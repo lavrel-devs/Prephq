@@ -11,6 +11,7 @@ const { getClientIp, isNewDevice } = require('../utils/fingerprint');
 const { applyCreditDelta } = require('../utils/credits');
 const { activateNewStudent } = require('../services/credit.service');
 const { checkAvailability, normalizeUsername, isValidFormat } = require('../utils/username');
+const { LEGAL_VERSION } = require('../utils/legal');
 const { usernameCheckLimiter } = require('../middleware/rateLimit');
 const { cleanMatric, cleanName, cleanPhone } = require('../utils/validate');
 const SupportRequest = require('../models/SupportRequest');
@@ -134,6 +135,9 @@ router.post('/register', async (req, res) => {
         tier:              'free',
         username:          usernameCheck.username,
         usernameChangedAt: new Date(),
+        // The signup page tells people that creating an account means accepting the Terms and Privacy Policy.
+        termsAcceptedAt:   new Date(),
+        termsVersion:      LEGAL_VERSION,
       });
     } catch (e) {
       // Two signups racing for the same matric/username slip past the
@@ -287,6 +291,9 @@ router.post('/login', loginLimiter, async (req, res) => {
         if (student.devices.length > 20) student.devices.splice(0, student.devices.length - 20); // don't let the list grow forever
       }
     }
+    // The sign-in page tells people that logging in means accepting the Terms and Privacy Policy, so record that
+    // they did — and which version — whenever it isn't the current one (older accounts, or after the policies change).
+    if (student.termsVersion !== LEGAL_VERSION) { student.termsAcceptedAt = new Date(); student.termsVersion = LEGAL_VERSION; }
     await student.save();
 
     const { accessToken, refreshToken } = await issueSession({

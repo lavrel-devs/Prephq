@@ -368,6 +368,9 @@ select.f-input option{background:var(--bg);color:var(--t1);}
       <div class="nav-item" data-v="bulk-upload" onclick="go('bulk-upload',this)">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>Bulk Upload
       </div>
+      <div class="nav-item" data-v="ai-review" onclick="go('ai-review',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>AI Review <span id="nav-review-badge" class="badge b-no" style="display:none;margin-left:auto;">0</span>
+      </div>
       <div class="nav-sec">v1.2</div>
       <div class="nav-item" data-v="contests" onclick="go('contests',this)">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 4v3h5.5v12h3V7H19V4z"/></svg>Contests
@@ -685,6 +688,47 @@ select.f-input option{background:var(--bg);color:var(--t1);}
             <div class="th"><div class="th-title">Recent uploads</div><div style="font-size:12px;color:var(--t3);font-weight:600;">Undo removes every question from that upload</div></div>
             <div id="bp-batches" style="padding:6px 18px 14px;display:flex;flex-direction:column;gap:8px;"></div>
           </div>
+        </div>
+      </div>
+
+      <!-- v1.8.1: AI QUESTION REVIEW -->
+      <div id="v-ai-review" class="view">
+        <div class="ph">
+          <div><div class="ph-title">AI Question Review</div><div class="ph-sub">Questions students generate with the AI, and questions you ask it to write, wait here until you approve them</div></div>
+        </div>
+
+        <div class="tw" style="padding:18px;">
+          <div class="th-title" style="margin-bottom:2px;">Generate practice questions</div>
+          <div style="font-size:12px;color:var(--t3);margin-bottom:12px;">The AI writes multiple-choice questions for a course, in batches of 10. They are added to the list below — nothing reaches students until you approve it.</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;align-items:end;">
+            <div class="field" style="margin:0;"><label>Course</label><select id="rv-course"></select></div>
+            <div class="field" style="margin:0;"><label>Topic <span style="color:var(--t4)">(optional)</span></label><input type="text" id="rv-topic" maxlength="80" placeholder="e.g. Bonding"></div>
+            <div class="field" style="margin:0;"><label>Difficulty</label><select id="rv-diff"><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option></select></div>
+            <div class="field" style="margin:0;"><label>How many (1–100)</label><input type="number" id="rv-count" min="1" max="100" value="20"></div>
+            <button class="btn-main" id="rv-gen-btn" style="width:auto;padding:11px 18px;font-size:13px;" onclick="rvGenerate()">Generate</button>
+          </div>
+          <div id="rv-progress" style="display:none;margin-top:14px;">
+            <div style="height:8px;border-radius:99px;background:var(--bg);box-shadow:var(--press-sm);overflow:hidden;"><div id="rv-bar" style="height:100%;width:0;background:linear-gradient(90deg,var(--brand),var(--purple));transition:width .3s;"></div></div>
+            <div id="rv-progress-txt" style="font-size:12px;color:var(--t3);margin-top:6px;"></div>
+          </div>
+        </div>
+
+        <div class="tw" style="padding:18px;">
+          <div class="bp-tabs" style="margin-bottom:12px;">
+            <button class="bp-tab on" data-rs="pending" onclick="rvSetStatus('pending')">Pending <span id="rv-c-pending"></span></button>
+            <button class="bp-tab" data-rs="approved" onclick="rvSetStatus('approved')">Added <span id="rv-c-approved"></span></button>
+            <button class="bp-tab" data-rs="rejected" onclick="rvSetStatus('rejected')">Rejected <span id="rv-c-rejected"></span></button>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;">
+            <select class="f-input" id="rv-kind" style="width:auto;" onchange="rvFilter()"><option value="">All types</option><option value="mcq">Multiple choice</option><option value="written">Written</option></select>
+            <select class="f-input" id="rv-source" style="width:auto;" onchange="rvFilter()"><option value="">All sources</option><option value="student-ai">Student-generated</option><option value="admin-ai">Admin-generated</option></select>
+            <label id="rv-all-wrap" style="font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px;"><input type="checkbox" id="rv-all" onchange="rvSelectAll(this.checked)"> Select all shown</label>
+            <span style="flex:1"></span>
+            <button class="ab ab-ok" id="rv-bulk-approve" onclick="rvApproveSelected()">Approve selected</button>
+            <button class="ab ab-del" id="rv-bulk-reject" onclick="rvRejectSelected()">Reject selected</button>
+          </div>
+          <div id="rv-list"></div>
+          <div style="text-align:center;margin-top:8px;"><button class="ab ab-edit" id="rv-more" style="display:none;" onclick="rvFetch(false)">Load more</button></div>
         </div>
       </div>
 
@@ -1178,10 +1222,29 @@ select.f-input option{background:var(--bg);color:var(--t1);}
     <div class="mn-item" data-v="courses" onclick="go('courses',this)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-3 14H9v-2h6v2zm3-4H6V4h12v8z"/></svg>Courses</div>
     <div class="mn-item" data-v="questions" onclick="go('questions',this)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>Questions</div>
     <div class="mn-item" data-v="bulk-upload" onclick="go('bulk-upload',this)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>Upload</div>
+    <div class="mn-item" data-v="ai-review" onclick="go('ai-review',this)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Review</div>
   </div>
 </div>
 
 <!-- ═══ MODALS ═════════════════════════════════════════════════ -->
+
+<!-- v1.8.1: EDIT A QUEUED AI QUESTION -->
+<div class="modal-bg" id="m-rv-edit" onclick="closeMBg(event,'m-rv-edit')">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-title">Edit question</div>
+    <div class="modal-sub">Fix anything the AI got wrong before you approve it.</div>
+    <div class="field"><label>Question</label><textarea id="rv-e-q" rows="3" style="width:100%;"></textarea></div>
+    <div class="field"><label>Options <span style="color:var(--t4)">(leave extra ones blank)</span></label>
+      <div id="rv-e-opts" style="display:grid;gap:8px;"></div></div>
+    <div class="field"><label>Correct answer</label><select id="rv-e-ans"></select></div>
+    <div class="field"><label>Explanation</label><textarea id="rv-e-exp" rows="2" style="width:100%;"></textarea></div>
+    <div class="field"><label>Topic tag</label><input type="text" id="rv-e-tag" maxlength="80"></div>
+    <div class="mfooter">
+      <button class="btn-cancel" onclick="closeM('m-rv-edit')">Cancel</button>
+      <button class="btn-confirm" onclick="rvSaveEdit()">Save changes</button>
+    </div>
+  </div>
+</div>
 
 <!-- ADD STUDENT -->
 <div class="modal-bg" id="m-add-student" onclick="closeMBg(event,'m-add-student')">
@@ -1613,7 +1676,7 @@ let editingAdmin = null; // username being edited, or null when creating
 // which sidebar / mobile-nav view needs which permission area ('FULL' = full access only)
 const VIEW_AREA = {
   dashboard:'analytics', analytics:'analytics', students:'students', payments:'payments',
-  courses:'courses', questions:'questions', 'bulk-upload':'questions', contests:'contests', recurring:'contests',
+  courses:'courses', questions:'questions', 'bulk-upload':'questions', 'ai-review':'questions', contests:'contests', recurring:'contests',
   transfers:'credits', announcements:'announcements', 'credit-settings':'settings', admins:'FULL', activity:'OWNER', support:'support', followups:'students', 'course-notes':'courses',
 };
 function canView(area){
@@ -1639,6 +1702,7 @@ async function bootAdmin(){
   const act = document.getElementById('nav-activity'); if(act) act.style.display = myAccess.owner ? '' : 'none';
 
   if(canView('support')){ refreshSupportBadge(); setInterval(refreshSupportBadge, 60000); }
+  if(canView('questions')){ refreshReviewBadge(); setInterval(refreshReviewBadge, 60000); }
   if(canView('analytics')) loadDashboard();
   else {
     const first = Object.keys(VIEW_AREA).find(v => canView(VIEW_AREA[v]));
@@ -1835,6 +1899,144 @@ function actDownload(fmt){
 const fmtWhen = d => new Date(d).toLocaleString(undefined,{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
 const waOpen = (num, text) => num ? `https://wa.me/${num}?text=${encodeURIComponent(text)}` : '';
 let supRows = [];
+
+// -- AI QUESTION REVIEW (v1.8.1) --------------------------------
+let rv = { status:'pending', items:[], total:0, selected:new Set(), editId:null, busy:false };
+const rvCourseKey = (c) => String(c || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+async function refreshReviewBadge(){
+  try{
+    const r = await adminFetch('/api/admin/ai-review/summary', { headers:{} }); if(!r.ok) return;
+    const d = await r.json(); const b = document.getElementById('nav-review-badge');
+    if(b){ b.textContent = d.pending; b.style.display = d.pending ? '' : 'none'; }
+  }catch(e){}
+}
+function rvCourseOptions(selectedKey){
+  const list = (allCourses || []).slice().sort((a,b) => String(a.courseCode).localeCompare(String(b.courseCode)));
+  return `<option value="">Choose course…</option>` + list.map(c => `<option value="${escHtml(c.key)}" ${c.key === selectedKey ? 'selected' : ''}>${escHtml(c.courseCode)}</option>`).join('');
+}
+async function loadAIReview(){
+  if(!(allCourses || []).length) await loadCourses();
+  const sel = document.getElementById('rv-course');
+  if(!sel.options.length) sel.innerHTML = rvCourseOptions('');
+  await rvFetch(true); refreshReviewBadge();
+}
+function rvSetStatus(s){
+  rv.status = s;
+  document.querySelectorAll('[data-rs]').forEach(b => b.classList.toggle('on', b.dataset.rs === s));
+  rvFetch(true);
+}
+function rvFilter(){ rvFetch(true); }
+async function rvFetch(reset){
+  if(reset){ rv.items = []; rv.selected = new Set(); }
+  const q = new URLSearchParams({ status: rv.status, limit: 40, skip: rv.items.length });
+  const kind = document.getElementById('rv-kind').value, source = document.getElementById('rv-source').value;
+  if(kind) q.set('kind', kind); if(source) q.set('source', source);
+  try{
+    const r = await adminFetch('/api/admin/ai-review?' + q, { headers:{} });
+    const d = await r.json().catch(()=>({}));
+    if(!r.ok){ document.getElementById('rv-list').innerHTML = `<div style="padding:24px;text-align:center;color:var(--no);">${escHtml(d.error || 'Could not load')}</div>`; return; }
+    rv.items = rv.items.concat(d.items); rv.total = d.total;
+    ['pending','approved','rejected'].forEach(k => { document.getElementById('rv-c-' + k).textContent = d.counts[k] ? `(${d.counts[k]})` : ''; });
+    rvRender();
+  }catch(e){}
+}
+function rvRender(){
+  const pending = rv.status === 'pending';
+  document.getElementById('rv-bulk-approve').style.display = pending ? '' : 'none';
+  document.getElementById('rv-bulk-reject').style.display = pending ? '' : 'none';
+  document.getElementById('rv-all-wrap').style.display = pending ? '' : 'none';
+  document.getElementById('rv-all').checked = false;
+  document.getElementById('rv-more').style.display = rv.items.length < rv.total ? '' : 'none';
+  const badge = (t, c) => `<span class="badge ${c}" style="margin-right:6px;">${t}</span>`;
+  document.getElementById('rv-list').innerHTML = rv.items.length ? rv.items.map(it => {
+    const matched = (allCourses || []).some(c => c.key === rvCourseKey(it.course));
+    const head = badge(it.kind === 'mcq' ? 'MCQ' : 'Written', 'b-ok') + badge(it.source === 'student-ai' ? 'Student AI' : 'Admin AI', 'b-warn') + badge(escHtml(it.difficulty || 'medium'), 'b-no')
+      + `<span style="font-size:11.5px;color:var(--t3);">${escHtml(it.course)}${it.tag ? ' · ' + escHtml(it.tag) : ''}${it.source === 'student-ai' && it.submittedBy ? ' · by ' + escHtml(it.submittedBy) : ''} · ${fmtWhen(it.createdAt)}</span>`;
+    const body = it.kind === 'mcq'
+      ? `<div style="margin-top:8px;display:grid;gap:4px;">${it.opts.map((o,i) => `<div style="font-size:13px;${i === it.ans ? 'font-weight:800;color:var(--ok);' : 'color:var(--t2);'}">${'ABCDEF'[i]}. ${escHtml(o)}${i === it.ans ? ' ✓' : ''}</div>`).join('')}</div>${it.exp ? `<div style="font-size:12px;color:var(--t3);margin-top:6px;">${escHtml(it.exp)}</div>` : ''}`
+      : `<div style="margin-top:8px;font-size:12.5px;">${(it.rubric || []).map(r => `<div style="color:var(--t2);">• ${escHtml(r.point)} <span style="color:var(--t3)">(${r.marks})</span></div>`).join('')}</div>${it.model ? `<div style="font-size:12px;color:var(--t3);margin-top:6px;white-space:pre-wrap;"><b>Model answer:</b> ${escHtml(it.model)}</div>` : ''}`;
+    const foot = pending
+      ? `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px;">
+          <select class="f-input" id="rv-cs-${it._id}" style="width:auto;min-width:120px;${matched ? '' : 'box-shadow:0 0 0 2px var(--no);'}">${rvCourseOptions(matched ? rvCourseKey(it.course) : '')}</select>
+          ${it.kind === 'mcq' ? `<button class="ab ab-edit" onclick="rvOpenEdit('${it._id}')">Edit</button>` : ''}
+          <button class="ab ab-ok" onclick="rvApprove(['${it._id}'])">Approve</button>
+          <button class="ab ab-del" onclick="rvReject(['${it._id}'])">Reject</button></div>`
+      : `<div style="font-size:12px;color:var(--t3);margin-top:10px;">${it.status === 'approved' ? 'Added to ' + (it.kind === 'mcq' ? 'the question bank' : 'the theory bank') : 'Rejected'}${it.note ? ' — ' + escHtml(it.note) : ''}${it.reviewedBy ? ' · by ' + escHtml(it.reviewedBy) : ''}</div>`;
+    return `<div style="padding:14px;border-radius:16px;background:var(--bg);box-shadow:var(--press-sm);margin-bottom:12px;">
+      <div style="display:flex;gap:10px;align-items:flex-start;">${pending ? `<input type="checkbox" style="margin-top:3px;" ${rv.selected.has(it._id) ? 'checked' : ''} onchange="rvToggle('${it._id}',this.checked)">` : ''}
+      <div style="flex:1;min-width:0;"><div>${head}</div><div style="font-size:14px;font-weight:700;line-height:1.5;margin-top:8px;white-space:pre-wrap;">${escHtml(it.q)}</div>${body}${foot}</div></div></div>`;
+  }).join('') : `<div style="padding:30px;text-align:center;color:var(--t3);">${pending ? 'Nothing waiting for review 🎉' : 'Nothing here yet'}</div>`;
+}
+function rvToggle(id, on){ on ? rv.selected.add(id) : rv.selected.delete(id); }
+function rvSelectAll(on){ rv.selected = on ? new Set(rv.items.map(i => i._id)) : new Set(); rvRender(); document.getElementById('rv-all').checked = on; }
+
+async function rvApprove(ids){
+  const items = ids.map(id => { const sel = document.getElementById('rv-cs-' + id); return { id, course: sel ? sel.value : '' }; });
+  const r = await adminFetch('/api/admin/ai-review/approve', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ items }) });
+  const d = await r.json().catch(()=>({}));
+  if(!r.ok) return toast(d.error || 'Could not approve');
+  const c = (k) => d.results.filter(x => x.result === k).length;
+  toast([`Approved ${d.approved}`, c('duplicate') ? `${c('duplicate')} already existed` : '', c('needs_course') ? `${c('needs_course')} need a course chosen` : ''].filter(Boolean).join(' · '));
+  rv.selected = new Set(); rvFetch(true); refreshReviewBadge();
+}
+function rvApproveSelected(){ const ids = [...rv.selected]; if(!ids.length) return toast('Select some questions first'); rvApprove(ids.slice(0, 100)); }
+async function rvReject(ids){
+  const r = await adminFetch('/api/admin/ai-review/reject', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ids }) });
+  const d = await r.json().catch(()=>({}));
+  if(!r.ok) return toast(d.error || 'Could not reject');
+  toast(`Rejected ${d.rejected}`); rv.selected = new Set(); rvFetch(true); refreshReviewBadge();
+}
+function rvRejectSelected(){ const ids = [...rv.selected]; if(!ids.length) return toast('Select some questions first'); rvReject(ids); }
+
+function rvOpenEdit(id){
+  const it = rv.items.find(x => x._id === id); if(!it) return;
+  rv.editId = id;
+  document.getElementById('rv-e-q').value = it.q;
+  document.getElementById('rv-e-opts').innerHTML = [0,1,2,3,4,5].map(i => `<input type="text" class="f-input" id="rv-e-o${i}" maxlength="400" placeholder="Option ${'ABCDEF'[i]}" value="${escHtml(it.opts[i] || '')}">`).join('');
+  document.getElementById('rv-e-ans').innerHTML = [0,1,2,3,4,5].map(i => `<option value="${i}" ${i === it.ans ? 'selected' : ''}>${'ABCDEF'[i]}</option>`).join('');
+  document.getElementById('rv-e-exp').value = it.exp || '';
+  document.getElementById('rv-e-tag').value = it.tag || '';
+  document.getElementById('m-rv-edit').classList.add('on');
+}
+async function rvSaveEdit(){
+  const raw = [0,1,2,3,4,5].map(i => document.getElementById('rv-e-o' + i).value.trim());
+  const ansRaw = Number(document.getElementById('rv-e-ans').value);
+  if(!raw[ansRaw]) return toast('The correct answer must be one of the options you filled in');
+  const opts = raw.filter(Boolean), ans = raw.slice(0, ansRaw).filter(Boolean).length;   // blank options are dropped, so re-find the answer's position
+  const r = await adminFetch(`/api/admin/ai-review/${rv.editId}`, { method:'PUT', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ q: document.getElementById('rv-e-q').value, opts, ans, exp: document.getElementById('rv-e-exp').value, tag: document.getElementById('rv-e-tag').value }) });
+  const d = await r.json().catch(()=>({}));
+  if(!r.ok) return toast(d.error || 'Could not save');
+  closeM('m-rv-edit'); toast('Saved'); rvFetch(true);
+}
+
+// Ask the AI for N practice questions: runs in batches of 10 so every request stays short; stops cleanly on an error.
+async function rvGenerate(){
+  if(rv.busy) return;
+  const course = document.getElementById('rv-course').value;
+  const total = parseInt(document.getElementById('rv-count').value, 10);
+  if(!course) return toast('Choose a course first');
+  if(!(total >= 1 && total <= 100)) return toast('Enter a number between 1 and 100');
+  rv.busy = true;
+  const btn = document.getElementById('rv-gen-btn'), box = document.getElementById('rv-progress'), bar = document.getElementById('rv-bar'), txt = document.getElementById('rv-progress-txt');
+  btn.disabled = true; box.style.display = 'block'; bar.style.width = '0';
+  let asked = 0, queued = 0, dupes = 0, error = '';
+  try{
+    while(asked < total){
+      const n = Math.min(10, total - asked);
+      txt.textContent = `Writing questions… ${asked}/${total}`;
+      const r = await adminFetch('/api/admin/ai-review/generate', { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ course, topic: document.getElementById('rv-topic').value.trim(), difficulty: document.getElementById('rv-diff').value, count: n }) });
+      const d = await r.json().catch(()=>({}));
+      if(!r.ok){ error = d.error || 'The AI request failed'; break; }
+      asked += n; queued += d.queued; dupes += d.duplicates + Math.max(0, d.requested - d.generated);
+      bar.style.width = Math.round(asked / total * 100) + '%';
+    }
+  }catch(e){ error = 'Network error'; }
+  txt.textContent = `${error ? 'Stopped: ' + error + '. ' : 'Done. '}${queued} question${queued === 1 ? '' : 's'} added for review${dupes ? ` (${dupes} skipped as duplicates or unusable)` : ''}.`;
+  rv.busy = false; btn.disabled = false;
+  if(queued){ rv.status = 'pending'; document.querySelectorAll('[data-rs]').forEach(b => b.classList.toggle('on', b.dataset.rs === 'pending')); rvFetch(true); refreshReviewBadge(); }
+}
 
 async function refreshSupportBadge(){
   try{
@@ -2207,6 +2409,7 @@ function go(v, el) {
   if(v==='courses')   { loadCourses(); loadCourseList(); }
   if(v==='questions'){ loadQuestions(); loadQuality(); }
   if(v==='bulk-upload'){ if(!allCourses.length) loadCourses().then(initBulkUpload); else initBulkUpload(); }
+  if(v==='ai-review') loadAIReview();
   if(v==='contests') loadContests();
   if(v==='recurring') loadTemplates();
   if(v==='transfers') loadTransfers();

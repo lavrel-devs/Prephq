@@ -141,7 +141,7 @@ const post = (url, body) => api(url, { method: 'POST', headers: { 'Content-Type'
 function paintChips(){
   $('wx-counts').innerHTML = [1, 2, 3, 4, 5].map(n => `<button type="button" class="wx-chip ${n === count ? 'wx-on' : ''}" onclick="wxSetCount(${n})">${n}</button>`).join('');
   $('wx-diffs').innerHTML = [['easy', 'Easy'], ['medium', 'Medium'], ['hard', 'Hard']].map(([k, l]) => `<button type="button" class="wx-chip ${k === diff ? 'wx-on' : ''}" onclick="wxSetDiff('${k}')">${l}</button>`).join('');
-  $('wx-hint').textContent = `About ${count * 8} minutes (8 per question). Starting an exam uses one of today's written exams.`;
+  $('wx-hint').textContent = `About ${count * 8} minutes (8 per question). Starting an exam uses one of today's written exams. Questions the AI writes may be reviewed by PrepHQ and added to the practice bank.`;
 }
 function wxSetCount(n){ count = n; paintChips(); }
 function wxSetDiff(k){ diff = k; paintChips(); }
