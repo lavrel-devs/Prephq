@@ -173,6 +173,25 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
 .mn-item svg{width:22px;height:22px;}
 @media(max-width:680px){.content{padding-bottom:80px;}}
 @media(max-width:900px){.bulk-grid{grid-template-columns:1fr !important;}}
+/* v1.8.7 ADAPTIVE LAYOUT — admin works on a phone, a tablet and a wide desktop */
+.content{max-width:1500px;margin-left:auto;margin-right:auto;width:100%;}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+@media(max-width:900px){.content{padding:18px;}}
+@media(max-width:680px){.content{padding:12px 12px 84px;}}
+@media(max-width:600px){
+  .modal-bg{padding:10px;align-items:flex-end;}
+  .modal{max-width:none !important;width:100% !important;max-height:94dvh;border-radius:20px 20px 14px 14px;padding:20px 16px;}
+  .th{flex-wrap:wrap;gap:8px;}
+  .sg{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+  table th,table td{padding-left:10px !important;padding-right:10px !important;}
+}
+/* side-by-side form fields stack on narrow phones (label/value info grids are left alone) */
+@media(max-width:440px){
+  [style*="grid-template-columns:1fr 1fr;gap:10px"]:not([style*="gap:3px"]),
+  [style*="grid-template-columns:1fr 1fr;gap:12px"]:not([style*="gap:3px"]){grid-template-columns:1fr !important;}
+}
+@media(pointer:coarse){.ab,.nav-item,.mn-item{min-height:40px;}}
+@media(min-width:1700px){.sg{grid-template-columns:repeat(auto-fill,minmax(190px,1fr));}}
 /* bulk upload — paste & parse (moved from the old question-uploader page) */
 .bp-tabs{display:inline-flex;gap:4px;padding:4px;border-radius:var(--rpill);box-shadow:var(--press-sm);margin-bottom:18px;}
 .bp-tab{padding:8px 16px;border:none;border-radius:var(--rpill);background:transparent;color:var(--t3);font:800 12.5px var(--ff-b);cursor:pointer;}
@@ -505,7 +524,10 @@ select.f-input option{background:var(--bg);color:var(--t1);}
       <div id="v-courses" class="view">
         <div class="ph">
           <div><div class="ph-title">Course Management</div><div class="ph-sub">Add, edit, or remove courses students can pick from</div></div>
-          <button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;" onclick="openAddCourse()">+ Add Course</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn-main" id="ai-fill-btn" style="width:auto;padding:9px 18px;font-size:13px;background:var(--brand-lt);color:var(--brand);box-shadow:none;" onclick="aiFillMissingTopics()" title="Reads each course's uploaded questions and saves a topic outline for every course that has none">✨ Fill missing topics</button>
+            <button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;" onclick="openAddCourse()">+ Add Course</button>
+          </div>
         </div>
 
         <div class="tw">
@@ -726,6 +748,8 @@ select.f-input option{background:var(--bg);color:var(--t1);}
             <span style="flex:1"></span>
             <button class="ab ab-ok" id="rv-bulk-approve" onclick="rvApproveSelected()">Approve selected</button>
             <button class="ab ab-del" id="rv-bulk-reject" onclick="rvRejectSelected()">Reject selected</button>
+            <button class="ab ab-del" id="rv-bulk-delete" style="display:none;" onclick="rvDeleteSelected()">Delete selected</button>
+            <button class="ab ab-del" id="rv-delete-all" style="display:none;" onclick="rvDeleteAllRejected()">Delete all rejected</button>
           </div>
           <div id="rv-list"></div>
           <div style="text-align:center;margin-top:8px;"><button class="ab ab-edit" id="rv-more" style="display:none;" onclick="rvFetch(false)">Load more</button></div>
@@ -1098,6 +1122,17 @@ select.f-input option{background:var(--bg);color:var(--t1);}
           </div>
         </div>
 
+        <!-- v1.8.7: AI PROVIDERS ────────────────────────────── -->
+        <div class="tw" id="ai-prov-card" style="padding:20px;margin-top:20px;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;">
+            <div class="th-title">AI providers</div><span style="flex:1"></span>
+            <button class="ab ab-edit" onclick="aiProvLoad()">Refresh</button>
+            <button class="ab ab-ok" id="ai-prov-test" onclick="aiProvTest()">Test both</button>
+          </div>
+          <div style="font-size:12px;color:var(--t3);margin-bottom:12px;">Groq answers students first; when it is rate-limited, slow or down, Gemini takes over automatically. Bulk jobs (notes, bulk question generation) go to Gemini first so Groq's limit stays free for students. Keys and models are set in your server environment.</div>
+          <div id="ai-prov-body" style="font-size:13px;display:grid;gap:8px;">Loading…</div>
+        </div>
+
         <!-- v1.4: SUBSCRIPTION PLANS ────────────────────────── -->
         <div class="tw" style="padding:20px;margin-top:20px;">
           <div class="th-title" style="margin-bottom:4px;">Subscription Plans</div>
@@ -1351,7 +1386,7 @@ select.f-input option{background:var(--bg);color:var(--t1);}
       <div class="field"><label>Department</label><input id="course-dept" placeholder="e.g. CHM"></div>
       <div class="field"><label>Level</label><input id="course-level" placeholder="e.g. 100"></div>
     </div>
-    <div class="field"><label>Topics <span style="color:var(--t4);font-weight:400">(comma-separated)</span></label><textarea id="course-topics" rows="2" placeholder="e.g. Atomic structure, Bonding, Stoichiometry"></textarea></div>
+    <div class="field"><label style="display:flex;align-items:center;gap:8px;">Topics <span style="color:var(--t4);font-weight:400">(comma-separated)</span><button type="button" id="ai-topics-btn" class="ab ab-edit" style="margin-left:auto;" onclick="aiTopicsForForm()">✨ Generate with AI</button></label><textarea id="course-topics" rows="2" placeholder="e.g. Atomic structure, Bonding, Stoichiometry"></textarea></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
       <div class="field"><label>Color</label><input id="course-color" type="color" value="#0A5CF5" style="height:42px;padding:4px;"></div>
       <div class="field"><label>Icon</label>
@@ -1941,10 +1976,13 @@ async function rvFetch(reset){
   }catch(e){}
 }
 function rvRender(){
-  const pending = rv.status === 'pending';
+  const pending = rv.status === 'pending', rejected = rv.status === 'rejected', selectable = pending || rejected;
+  const cf = (x) => window.PhqChem ? PhqChem.fix(x) : x;   // \ce{Cu^2+} -> Cu²⁺ (also repairs older queued items)
   document.getElementById('rv-bulk-approve').style.display = pending ? '' : 'none';
   document.getElementById('rv-bulk-reject').style.display = pending ? '' : 'none';
-  document.getElementById('rv-all-wrap').style.display = pending ? '' : 'none';
+  document.getElementById('rv-bulk-delete').style.display = rejected ? '' : 'none';
+  document.getElementById('rv-delete-all').style.display = rejected && rv.total ? '' : 'none';
+  document.getElementById('rv-all-wrap').style.display = selectable ? '' : 'none';
   document.getElementById('rv-all').checked = false;
   document.getElementById('rv-more').style.display = rv.items.length < rv.total ? '' : 'none';
   const badge = (t, c) => `<span class="badge ${c}" style="margin-right:6px;">${t}</span>`;
@@ -1953,18 +1991,18 @@ function rvRender(){
     const head = badge(it.kind === 'mcq' ? 'MCQ' : 'Written', 'b-ok') + badge(it.source === 'student-ai' ? 'Student AI' : 'Admin AI', 'b-warn') + badge(escHtml(it.difficulty || 'medium'), 'b-no')
       + `<span style="font-size:11.5px;color:var(--t3);">${escHtml(it.course)}${it.tag ? ' · ' + escHtml(it.tag) : ''}${it.source === 'student-ai' && it.submittedBy ? ' · by ' + escHtml(it.submittedBy) : ''} · ${fmtWhen(it.createdAt)}</span>`;
     const body = it.kind === 'mcq'
-      ? `<div style="margin-top:8px;display:grid;gap:4px;">${it.opts.map((o,i) => `<div style="font-size:13px;${i === it.ans ? 'font-weight:800;color:var(--ok);' : 'color:var(--t2);'}">${'ABCDEF'[i]}. ${escHtml(o)}${i === it.ans ? ' ✓' : ''}</div>`).join('')}</div>${it.exp ? `<div style="font-size:12px;color:var(--t3);margin-top:6px;">${escHtml(it.exp)}</div>` : ''}`
-      : `<div style="margin-top:8px;font-size:12.5px;">${(it.rubric || []).map(r => `<div style="color:var(--t2);">• ${escHtml(r.point)} <span style="color:var(--t3)">(${r.marks})</span></div>`).join('')}</div>${it.model ? `<div style="font-size:12px;color:var(--t3);margin-top:6px;white-space:pre-wrap;"><b>Model answer:</b> ${escHtml(it.model)}</div>` : ''}`;
+      ? `<div style="margin-top:8px;display:grid;gap:4px;">${it.opts.map((o,i) => `<div style="font-size:13px;${i === it.ans ? 'font-weight:800;color:var(--ok);' : 'color:var(--t2);'}">${'ABCDEF'[i]}. ${escHtml(cf(o))}${i === it.ans ? ' ✓' : ''}</div>`).join('')}</div>${it.exp ? `<div style="font-size:12px;color:var(--t3);margin-top:6px;">${escHtml(it.exp)}</div>` : ''}`
+      : `<div style="margin-top:8px;font-size:12.5px;">${(it.rubric || []).map(r => `<div style="color:var(--t2);">• ${escHtml(cf(r.point))} <span style="color:var(--t3)">(${r.marks})</span></div>`).join('')}</div>${it.model ? `<div style="font-size:12px;color:var(--t3);margin-top:6px;white-space:pre-wrap;"><b>Model answer:</b> ${escHtml(it.model)}</div>` : ''}`;
     const foot = pending
       ? `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px;">
           <select class="f-input" id="rv-cs-${it._id}" style="width:auto;min-width:120px;${matched ? '' : 'box-shadow:0 0 0 2px var(--no);'}">${rvCourseOptions(matched ? rvCourseKey(it.course) : '')}</select>
           ${it.kind === 'mcq' ? `<button class="ab ab-edit" onclick="rvOpenEdit('${it._id}')">Edit</button>` : ''}
           <button class="ab ab-ok" onclick="rvApprove(['${it._id}'])">Approve</button>
           <button class="ab ab-del" onclick="rvReject(['${it._id}'])">Reject</button></div>`
-      : `<div style="font-size:12px;color:var(--t3);margin-top:10px;">${it.status === 'approved' ? 'Added to ' + (it.kind === 'mcq' ? 'the question bank' : 'the theory bank') : 'Rejected'}${it.note ? ' — ' + escHtml(it.note) : ''}${it.reviewedBy ? ' · by ' + escHtml(it.reviewedBy) : ''}</div>`;
+      : `<div style="font-size:12px;color:var(--t3);margin-top:10px;">${it.status === 'approved' ? 'Added to ' + (it.kind === 'mcq' ? 'the question bank' : 'the theory bank') : 'Rejected'}${it.note ? ' — ' + escHtml(it.note) : ''}${it.reviewedBy ? ' · by ' + escHtml(it.reviewedBy) : ''}</div>${it.status === 'rejected' ? `<div style="margin-top:8px;"><button class="ab ab-del" onclick="rvDelete(['${it._id}'])">Delete</button></div>` : ''}`;
     return `<div style="padding:14px;border-radius:16px;background:var(--bg);box-shadow:var(--press-sm);margin-bottom:12px;">
-      <div style="display:flex;gap:10px;align-items:flex-start;">${pending ? `<input type="checkbox" style="margin-top:3px;" ${rv.selected.has(it._id) ? 'checked' : ''} onchange="rvToggle('${it._id}',this.checked)">` : ''}
-      <div style="flex:1;min-width:0;"><div>${head}</div><div style="font-size:14px;font-weight:700;line-height:1.5;margin-top:8px;white-space:pre-wrap;">${escHtml(it.q)}</div>${body}${foot}</div></div></div>`;
+      <div style="display:flex;gap:10px;align-items:flex-start;">${selectable ? `<input type="checkbox" style="margin-top:3px;" ${rv.selected.has(it._id) ? 'checked' : ''} onchange="rvToggle('${it._id}',this.checked)">` : ''}
+      <div style="flex:1;min-width:0;"><div>${head}</div><div style="font-size:14px;font-weight:700;line-height:1.5;margin-top:8px;white-space:pre-wrap;">${escHtml(cf(it.q))}</div>${body}${foot}</div></div></div>`;
   }).join('') : `<div style="padding:30px;text-align:center;color:var(--t3);">${pending ? 'Nothing waiting for review 🎉' : 'Nothing here yet'}</div>`;
 }
 function rvToggle(id, on){ on ? rv.selected.add(id) : rv.selected.delete(id); }
@@ -1987,6 +2025,25 @@ async function rvReject(ids){
   toast(`Rejected ${d.rejected}`); rv.selected = new Set(); rvFetch(true); refreshReviewBadge();
 }
 function rvRejectSelected(){ const ids = [...rv.selected]; if(!ids.length) return toast('Select some questions first'); rvReject(ids); }
+
+// v1.8.7 Delete rejected generations. Only items that are already rejected can be deleted (the server refuses anything else).
+async function rvDelete(ids){
+  const r = await adminFetch('/api/admin/ai-review', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ids }) });
+  const d = await r.json().catch(()=>({}));
+  if(!r.ok) return toast(d.error || 'Could not delete');
+  toast(`Deleted ${d.deleted}`); rv.selected = new Set(); rvFetch(true); refreshReviewBadge();
+}
+function rvDeleteSelected(){ const ids = [...rv.selected]; if(!ids.length) return toast('Select some rejected questions first'); if(!confirm(`Permanently delete ${ids.length} rejected question${ids.length === 1 ? '' : 's'}?`)) return; rvDelete(ids.slice(0, 200)); }
+async function rvDeleteAllRejected(){
+  const kind = document.getElementById('rv-kind').value, source = document.getElementById('rv-source').value;
+  const what = [kind === 'mcq' ? 'multiple-choice' : kind === 'written' ? 'written' : '', source === 'student-ai' ? 'student-generated' : source === 'admin-ai' ? 'admin-generated' : ''].filter(Boolean).join(', ');
+  if(!confirm(`Permanently delete ALL rejected ${what ? what + ' ' : ''}generations (${rv.total})? This cannot be undone. Pending and approved ones are never touched.`)) return;
+  const q = new URLSearchParams(); if(kind) q.set('kind', kind); if(source) q.set('source', source);
+  const r = await adminFetch('/api/admin/ai-review/rejected?' + q, { method:'DELETE' });
+  const d = await r.json().catch(()=>({}));
+  if(!r.ok) return toast(d.error || 'Could not delete');
+  toast(`Deleted ${d.deleted} rejected generation${d.deleted === 1 ? '' : 's'}`); rv.selected = new Set(); rvFetch(true); refreshReviewBadge();
+}
 
 function rvOpenEdit(id){
   const it = rv.items.find(x => x._id === id); if(!it) return;
@@ -2927,6 +2984,7 @@ function renderCourses(list) {
       <td style="max-width:220px;font-size:11px;color:var(--t3)">${escHtml((c.topics||[]).join(', '))||'—'}</td>
       <td><div class="act-row">
         <button class="ab ab-edit" onclick="editCourse('${c._id}')">Edit</button>
+        <button class="ab ab-edit" onclick="aiTopicsRow('${c._id}',this)" title="Read this course's uploaded questions and add any missing topics">✨ Topics</button>
         <button class="ab ab-del" onclick="delCourse('${c._id}')">Del</button>
       </div></td>
     </tr>`).join('')
@@ -2961,6 +3019,53 @@ function editCourse(id) {
   document.getElementById('course-icon').value = c.icon || 'star';
   document.getElementById('m-course-err').classList.remove('on');
   document.getElementById('m-add-course').classList.add('on');
+}
+
+// ── v1.8.5 AI topic outline ──────────────────────────────────────────────────────────────
+// The AI reads the questions already uploaded for a course and works out its topics, in teaching order. It only ever
+// ADDS topics (nothing you wrote is removed or reordered). A course with too few questions gets a suggestion from its
+// title instead — read that one before saving.
+async function aiBusy(btn, text, fn) {
+  const old = btn.textContent; btn.disabled = true; btn.textContent = text;
+  try { return await fn(); } finally { btn.disabled = false; btn.textContent = old; }
+}
+async function aiPost(url, body) {
+  const r = await adminFetch(url, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body || {}) });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || 'Something went wrong');
+  return d;
+}
+async function aiTopicsForForm() {
+  const courseCode = document.getElementById('course-code').value.trim(), courseTitle = document.getElementById('course-title').value.trim();
+  if (!courseCode || !courseTitle) return toast('Enter the course code and title first');
+  const box = document.getElementById('course-topics');
+  const existing = box.value.split(',').map(t => t.trim()).filter(Boolean);
+  try {
+    const d = await aiBusy(document.getElementById('ai-topics-btn'), 'Thinking…', () => aiPost('/api/admin/courses/ai-topics', {
+      courseCode, courseTitle, department: document.getElementById('course-dept').value.trim(), level: document.getElementById('course-level').value.trim(), existing }));
+    const have = new Set(existing.map(t => t.toLowerCase().replace(/[^a-z0-9]/g, '')));
+    const fresh = d.topics.filter(t => !have.has(t.toLowerCase().replace(/[^a-z0-9]/g, '')));
+    if (!fresh.length) return toast(d.topics.length ? 'Nothing new to add. Your topics already cover it' : 'The AI could not work out topics for this course');
+    box.value = [...existing, ...fresh].join(', ');
+    toast(d.basis === 'questions' ? `Added ${fresh.length} topics from ${d.totalQuestions} uploaded questions. Review, then Save` : `Added ${fresh.length} suggested topics from the course title. Please review them, then Save`);
+  } catch (e) { toast(e.message); }
+}
+async function aiTopicsRow(id, btn) {
+  try {
+    const d = await aiBusy(btn, 'Reading…', () => aiPost(`/api/admin/courses/${id}/ai-topics`, { mode: 'merge' }));
+    if (!d.saved) return toast(d.reason === 'nothing-found' ? 'The AI could not work out topics for this course' : 'No change');
+    toast(d.added.length ? `Saved ${d.added.length} new topic${d.added.length === 1 ? '' : 's'} (${d.basis === 'questions' ? 'from ' + d.totalQuestions + ' questions' : 'suggested from the title, please review'})` : 'Already complete. Nothing new to add');
+    loadCourses();
+  } catch (e) { toast(e.message); }
+}
+async function aiFillMissingTopics() {
+  if (!confirm('The AI will read the uploaded questions of every course that has no topics yet, and save an outline for each. Courses with fewer than 5 questions are skipped. Continue?')) return;
+  try {
+    const d = await aiBusy(document.getElementById('ai-fill-btn'), 'Working… this can take a minute', () => aiPost('/api/admin/courses/ai-topics/fill-missing'));
+    const skipped = d.results.filter(r => r.status === 'skipped').length, failed = d.results.filter(r => r.status === 'failed').length;
+    toast(`Saved topics for ${d.saved} course${d.saved === 1 ? '' : 's'}` + (skipped ? `, ${skipped} skipped (too few questions)` : '') + (failed ? `, ${failed} failed` : '') + (d.remaining ? `. ${d.remaining} more waiting: click again` : ''));
+    loadCourses();
+  } catch (e) { toast(e.message); }
 }
 
 async function saveCourse() {
@@ -3843,7 +3948,37 @@ async function deleteAnnouncement(id){
 // ══════════════════════════════════════════════════════════════
 //  v1.2: CREDIT SETTINGS
 // ══════════════════════════════════════════════════════════════
+// v1.8.7 AI providers card (Groq + Gemini)
+function aiProvRow(name, p, extra){
+  if(!p.configured) return `<div style="padding:10px 12px;border-radius:12px;background:var(--bg);box-shadow:var(--press-sm);"><b>${name}</b> <span class="badge b-no">Not configured</span></div>`;
+  const cool = p.coolingForSec > 0 ? `<span class="badge b-warn">Rate-limited, cooling ${p.coolingForSec}s</span>` : '<span class="badge b-ok">Ready</span>';
+  return `<div style="padding:10px 12px;border-radius:12px;background:var(--bg);box-shadow:var(--press-sm);"><b>${name}</b> ${cool}<div style="color:var(--t3);font-size:12px;margin-top:4px;">${escHtml(p.model || '')}${p.bulkModel ? ' · bulk: ' + escHtml(p.bulkModel) : ''} · ${p.ok} ok · ${p.failed} failed${p.lastError ? ' · last error: ' + escHtml(p.lastError) : ''}</div>${extra || ''}</div>`;
+}
+async function aiProvLoad(){
+  const box = document.getElementById('ai-prov-body'); if(!box) return;
+  try{
+    const r = await adminFetch('/api/admin/ai/status', { headers:{} });
+    if(r.status === 403){ document.getElementById('ai-prov-card').style.display = 'none'; return; }
+    const d = await r.json();
+    const order = a => a.length ? a.map(x => x === 'groq' ? 'Groq' : 'Gemini').join(' → ') : 'none configured';
+    box.innerHTML = aiProvRow('Groq', d.groq) + aiProvRow('Gemini', d.gemini)
+      + `<div style="font-size:12px;color:var(--t3);">Students: ${order(d.interactiveOrder)} · Bulk jobs: ${order(d.bulkOrder)} · Mode: ${escHtml(d.mode)}</div>`;
+  }catch(e){ box.textContent = 'Could not load AI status'; }
+}
+async function aiProvTest(){
+  const btn = document.getElementById('ai-prov-test'); btn.disabled = true; btn.textContent = 'Testing…';
+  try{
+    const r = await adminFetch('/api/admin/ai/test', { method:'POST', headers:{} });
+    const d = await r.json().catch(()=>({}));
+    if(!r.ok) return toast(d.error || 'Test failed');
+    const line = (n, p) => !p.configured ? `${n}: not configured` : p.ok ? `${n}: working (${p.ms} ms)` : `${n}: FAILED (${p.error})`;
+    alert(line('Groq', d.groq) + '\n' + line('Gemini', d.gemini));
+    aiProvLoad();
+  }finally{ btn.disabled = false; btn.textContent = 'Test both'; }
+}
+
 async function loadCreditSettings(){
+  aiProvLoad();
   try{
     const r = await adminFetch('/api/admin/credit-settings', { headers: {} });
     const s = await r.json();
@@ -4227,6 +4362,7 @@ function renderRetentionTable(rows){
 }
 </script>
 <script src="/js/phq-latexfix.js" defer></script>
+<script src="/js/phq-chemfix.js"></script>
 <script src="/js/phq-sci.js" defer></script>
 </body>
 </html>

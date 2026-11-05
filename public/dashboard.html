@@ -14,6 +14,8 @@
 <script src="/js/auth-guard.js"></script>
 <script src="/js/shared-nav.js"></script>
 <script src="/js/shell.js"></script>
+<script src="/js/phq-mdclean.js"></script>
+<script src="/js/brainiac.js"></script>
 <script>
 (function(){
   const s = PhqAuth.getSession();
@@ -596,17 +598,39 @@ body.quiz-active #shared-glass-nav{display:none;}
 
 #plan-banner{border-radius:14px;box-shadow:var(--sh-sm);}
 
+/* v1.8.7 ADAPTIVE LAYOUT — one page width (--page-w) that grows with the screen: phone (full width) -> large phone/small
+   tablet -> tablet -> laptop -> wide desktop. Grids add columns as the room appears; everything else keeps its phone design. */
+:root{ --page-w: 100%; }
 @media (min-width: 640px){
+  :root{ --page-w: 560px; }
   body{ background: var(--bg); }
-  .scr{ max-width: 480px; margin: 0 auto; min-height: 100dvh; box-shadow:var(--sh-lg); background: var(--bg); }
-  .quiz-actions{ max-width: 480px; margin: 0 auto; }
-  .sheet{ max-width: 480px; margin: 0 auto; }
+  .scr{ max-width: var(--page-w); margin: 0 auto; min-height: 100dvh; box-shadow:var(--sh-lg); background: var(--bg); }
+  .quiz-actions{ max-width: var(--page-w); margin: 0 auto; }
+  .sheet{ max-width: var(--page-w); margin: 0 auto; }
 }
-@media (min-width: 900px){
-  .scr{ max-width: 560px; }
-  .quiz-actions{ max-width: 560px; }
-  .sheet{ max-width: 560px; }
+@media (min-width: 768px){
+  :root{ --page-w: 700px; }
   .cg{ grid-template-columns: repeat(3,1fr); }
+  .stats-row, .mode-row, .cg{ padding-left: 24px; padding-right: 24px; }
+  .opts{ padding-left: 20px; padding-right: 20px; }
+}
+@media (min-width: 1024px){
+  :root{ --page-w: 880px; }
+  .cg{ grid-template-columns: repeat(4,1fr); gap: 16px; }
+  .opt{ padding: 16px; }
+}
+@media (min-width: 1360px){
+  :root{ --page-w: 1040px; }
+  .cg{ grid-template-columns: repeat(5,1fr); }
+}
+/* short landscape phones: give the content the height back */
+@media (max-height: 480px) and (orientation: landscape){
+  .topbar{ padding-top: 6px; padding-bottom: 6px; }
+  .modal-bg .modal{ max-height: 96dvh; padding: 18px 20px; }
+}
+/* keep inputs/buttons comfortable under a thumb on touch screens */
+@media (pointer: coarse){
+  .opt, .btn-grad, .btn-surf{ min-height: 44px; }
 }
 @media (max-width: 359px){
   .stats-row{ gap:8px; padding:12px 14px; }
@@ -638,6 +662,10 @@ details.np-card>summary::-webkit-details-marker{display:none;}
 .fb-links{margin-top:8px;display:flex;gap:16px;font-size:12px;font-weight:800;}
 .fb-links a{color:var(--brand);cursor:pointer;text-decoration:none;}
 .fb-links a.rep{color:var(--t3);}
+/* v1.8.6 "I guessed" toggle under the options */
+.guess-btn{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;margin:10px 0 2px auto;padding:8px 14px;border-radius:999px;font-size:12.5px;font-weight:800;color:var(--t3);cursor:pointer;background:var(--bg);box-shadow:var(--sh-sm,3px 3px 7px rgba(120,130,170,.3),-3px -3px 7px rgba(255,255,255,.8));-webkit-tap-highlight-color:transparent}
+.guess-btn:active{box-shadow:var(--sh-in-sm,inset 2px 2px 5px rgba(120,130,170,.35),inset -2px -2px 5px rgba(255,255,255,.8))}
+.guess-btn.on{color:#7a4a00;background:linear-gradient(135deg,#FFE29A,#FFC24D);box-shadow:0 3px 0 rgba(160,100,0,.35)}
 </style>
 </head>
 <body class="fs-md">
@@ -830,6 +858,15 @@ details.np-card>summary::-webkit-details-marker{display:none;}
     </div>
     <div id="missed-sub" style="font-size:12.5px;color:var(--t3);margin-bottom:12px;"></div>
     <button class="btn-grad" style="width:100%;padding:12px;border-radius:11px;color:var(--no);font-weight:700;font-size:13px;cursor:pointer;" onclick="startMissedReview()">Review them now</button>
+  </div>
+
+  <div id="guess-card" style="display:none;margin:0 18px 16px;background:var(--bg);border-radius:var(--r16);padding:16px;box-shadow:var(--sh),0 0 0 2px rgba(255,194,77,.55);">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <span style="font-size:16px;">🎲</span>
+      <div style="font-weight:800;font-size:14px;font-family:var(--ff-h);">Questions you guessed</div>
+    </div>
+    <div id="guess-sub" style="font-size:12.5px;color:var(--t3);margin-bottom:12px;"></div>
+    <button class="btn-grad" style="width:100%;padding:12px;border-radius:11px;font-weight:700;font-size:13px;cursor:pointer;" onclick="startGuessReview()">Learn them for real</button>
   </div>
 
   <div id="invite-card" style="display:none;margin:0 18px 16px;background:var(--bg);border-radius:var(--r16);padding:16px;box-shadow:var(--sh);">
@@ -1025,6 +1062,11 @@ details.np-card>summary::-webkit-details-marker{display:none;}
         <div style="font-size:11px;color:var(--t3);margin-top:6px;">Or share just the code: <b id="referral-code-only">—</b></div>
       </div>
     </div>
+    <div style="background:var(--bg);border-radius:var(--r16);padding:18px;box-shadow:var(--sh);display:flex;align-items:center;gap:12px;">
+      <div style="flex:1;"><div style="font-size:15px;font-weight:800;color:var(--t1);font-family:var(--ff-h);">Brainiac</div>
+      <div style="font-size:13px;color:var(--t3);margin-top:2px;">Your floating study buddy. Turn it on or off, and see or clear what it remembers.</div></div>
+      <button class="btn-surf" style="padding:10px 16px;font-size:13px;flex-shrink:0;" onclick="PhqBrainiac.openSettings()">Manage</button>
+    </div>
     <div style="background:var(--bg);border-radius:var(--r16);padding:18px;box-shadow:var(--sh);">
       <div style="font-size:15px;font-weight:800;color:var(--t1);font-family:var(--ff-h);margin-bottom:4px;">Exam Date Countdown</div>
       <div style="font-size:13px;color:var(--t3);margin-bottom:14px;">Set your exam date to see a countdown on the home screen.</div>
@@ -1167,6 +1209,7 @@ details.np-card>summary::-webkit-details-marker{display:none;}
     <div class="sbox"><div class="sbox-val r" id="r-wrg">0</div><div class="sbox-lbl">Wrong</div></div>
     <div class="sbox"><div class="sbox-val o" id="r-skp">0</div><div class="sbox-lbl">Skipped</div></div>
   </div>
+  <div id="r-guess" style="display:none;margin:0 16px 12px;padding:14px 16px;border-radius:var(--r16,18px);background:var(--bg);box-shadow:var(--sh);"></div>
   <div id="cap-strip" style="display:none;margin:0 16px 12px;padding:12px 14px;border-radius:var(--r16,18px);background:var(--bg);box-shadow:var(--sh);align-items:center;gap:10px;"></div>
   <div id="challenge-banner" style="display:none;margin:0 16px 12px;padding:14px 16px;border-radius:var(--r16,18px);background:var(--bg);box-shadow:var(--sh);text-align:center;"></div>
   <button class="share-btn" onclick="shareResult()">
@@ -1449,12 +1492,13 @@ let timerOn = false, timerMins = 10; // one countdown for the WHOLE session, in 
 let quizQ = [], cur = 0, answers = [], confirmed = [];
 let timedOut = [];
 let lastWrong = [];
-let missedRun = false, missedPrevSel = null, missedPrevMode = 'practice';
+let missedRun = false, missedPrevSel = null, missedPrevMode = 'practice', reviewKind = 'missed';
+let GUESS = new WeakSet(); // v1.8.6 questions the student marked "I'm guessing" in the current quiz
 // Home-screen data is cached briefly and shared between simultaneous callers (initHome and showScr('home') both
 // run on first load), so opening the dashboard doesn't repeat the same request.
 const COUNTS = {}, BANK_AT = {};
 let countsAt = 0, countsInflight = null;
-const HOME_MEMO = { missedN: null, missedAt: 0, missedInflight: null };
+const HOME_MEMO = { missedN: null, missedAt: 0, missedInflight: null, guessN: null, guessAt: 0 };
 const inflight = {};
 function singleFlight(key, fn){ return inflight[key] || (inflight[key] = Promise.resolve().then(fn).finally(() => { delete inflight[key]; })); }
 let logoTapCount = 0, logoTapTimer = null;
@@ -1657,6 +1701,7 @@ async function bootFromSession(){
     await initHome();
     showScr('home');
     if(window.PhqShell) PhqShell.start(); // opens /contests, /profile, ... if that's the URL
+    if(window.PhqBrainiac) PhqBrainiac.start(); // v1.8.3 floating companion
     populateWallet(data);
     loadPlanBanner();
     loadNotifications();
@@ -2012,7 +2057,7 @@ async function explainAnswer(i){
     }, 'student');
     const d = await r.json();
     if(!r.ok){ out.textContent = d.error || 'Could not get an explanation right now.'; out.style.display='block'; btn.style.display='none'; return; }
-    out.textContent = d.explanation;
+    out.textContent = window.PhqMd ? PhqMd.strip(d.explanation) : d.explanation;
     out.style.display = 'block';
     btn.style.display = 'none';
   }catch(e){
@@ -2214,6 +2259,7 @@ async function initHome(){
   refreshFlashcardBadge();
   loadWeakTopics();
   loadMissedCard();
+  loadGuessCard();
   renderOnboarding();
   renderInviteCard();
   refreshStats();
@@ -2424,7 +2470,52 @@ async function loadMissedCard(force){
   HOME_MEMO.missedN = n; HOME_MEMO.missedAt = Date.now();
   paint(n);
 }
-async function startMissedReview(){
+// ── v1.8.6 "I guessed" ───────────────────────────────────────
+// A small toggle on every question: "I'm just guessing". Marked questions are saved when the quiz ends (bank questions only),
+// show up in "Questions you guessed" on the home screen, and drop off once answered again WITHOUT the mark.
+function toggleGuess(){
+  const q = quizQ[cur]; if(!q || timedOut[cur]) return;
+  if(GUESS.has(q)) GUESS.delete(q); else GUESS.add(q);
+  clearAutoAdvance(); // the student is thinking about this one; don't whisk them to the next question
+  const b = document.getElementById('guess-btn'); if(b){ const on = GUESS.has(q); b.classList.toggle('on', on); b.innerHTML = guessBtnInner(on); }
+}
+function guessBtnInner(on){ return on ? '🎲 Marked as a guess. I\'ll help you learn it' : '🎲 Not sure? Mark as a guess'; }
+async function submitGuessFlags(){
+  const items = [];
+  quizQ.forEach((q,i) => { if(!q.id || answers[i] === null || timedOut[i]) return; items.push({ qid: q.id, guessed: GUESS.has(q), correct: answers[i] === q.ans, course: q.course, tag: q.tag || '' }); });
+  if(!items.length || (!items.some(x => x.guessed) && !HOME_MEMO.guessN)) return null; // nothing to save, nothing to clear
+  try{
+    const r = await PhqAuth.authFetch('/api/guesses', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ items }) }, 'student');
+    if(!r.ok) return null;
+    const d = await r.json(); HOME_MEMO.guessN = d.count; HOME_MEMO.guessAt = Date.now(); return d.count;
+  }catch(e){ return null; }
+}
+async function loadGuessCard(force){
+  const card = document.getElementById('guess-card'); if(!card) return;
+  if(!curUser || !hasFeature('practiceQuestions')){ card.style.display = 'none'; return; }
+  const paint = n => { card.style.display = n ? '' : 'none'; if(n) document.getElementById('guess-sub').textContent = `${n}${n === 30 ? '+' : ''} question${n === 1 ? '' : 's'} you weren't sure about. Answer them without guessing to clear them.`; };
+  if(!force && HOME_MEMO.guessN != null && Date.now() - HOME_MEMO.guessAt < 20000){ paint(HOME_MEMO.guessN); return; }
+  let n = 0;
+  try{ const r = await PhqAuth.authFetch('/api/guesses', {}, 'student'); const d = r.ok ? await r.json() : null; n = d && Number.isFinite(d.count) ? d.count : 0; }catch(e){}
+  HOME_MEMO.guessN = n; HOME_MEMO.guessAt = Date.now(); paint(n);
+}
+function paintGuessResult(guessedTotal, guessedRight, correct, total){
+  const el = document.getElementById('r-guess'); if(!el) return;
+  if(!guessedTotal){ el.style.display = 'none'; el.innerHTML = ''; return; }
+  const solid = total ? Math.round(((correct - guessedRight) / total) * 100) : 0;
+  el.style.display = '';
+  el.innerHTML = `<div style="font-weight:800;font-size:14px;font-family:var(--ff-h);">🎲 ${guessedTotal} guess${guessedTotal === 1 ? '' : 'es'} marked</div><div style="font-size:12.5px;color:var(--t3);margin-top:4px;">${guessedRight ? `${guessedRight} of your correct answers ${guessedRight === 1 ? 'was a lucky guess' : 'were lucky guesses'}. Your solid score is ${solid}%.` : 'Honest marking helps you most. These will wait for you in "Questions you guessed".'}</div>`;
+}
+function addGuessReviewBtn(){
+  const el = document.getElementById('r-guess'); if(!el || el.style.display === 'none' || el.querySelector('button')) return;
+  const b = document.createElement('button'); b.className = 'btn-grad'; b.style.cssText = 'width:100%;margin-top:10px;padding:11px;border-radius:11px;font-weight:700;font-size:13px;cursor:pointer;';
+  b.textContent = 'Learn them now'; b.onclick = startGuessReview; el.appendChild(b);
+}
+function startGuessReview(){ return startMissedReview('guess'); }
+
+async function startMissedReview(kind){
+  reviewKind = kind === 'guess' ? 'guess' : 'missed';
+  const isGuess = reviewKind === 'guess';
   let remaining = null;
   try{
     const u = await (await PhqAuth.authFetch('/api/usage/limits', {}, 'student')).json();
@@ -2435,11 +2526,11 @@ async function startMissedReview(){
   }catch(e){}
   let list = [];
   try{
-    const r = await PhqAuth.authFetch('/api/questions/missed', {}, 'student');
+    const r = await PhqAuth.authFetch(isGuess ? '/api/guesses/questions' : '/api/questions/missed', {}, 'student');
     if(r.status === 403){ const d = await r.json().catch(()=>({})); showPaywall(d.error || lockedMsg('Practice questions')); return; }
     if(r.ok) list = await r.json();
   }catch(e){}
-  if(!Array.isArray(list) || !list.length){ toast('No missed questions to review'); loadMissedCard(); return; }
+  if(!Array.isArray(list) || !list.length){ toast(isGuess ? 'No guessed questions to review' : 'No missed questions to review'); isGuess ? loadGuessCard(true) : loadMissedCard(); return; }
   if(remaining != null && list.length > remaining){ list = list.slice(0, remaining); toast(`Capped to ${remaining} questions — that's all that's left in your daily limit today`); }
 
   clearAutoAdvance(); stopSessionClock(); curAIQuizId = null;
@@ -2451,7 +2542,7 @@ async function startMissedReview(){
   confirmed = new Array(quizQ.length).fill(false);
   timedOut = new Array(quizQ.length).fill(false);
   cur = 0;
-  document.getElementById('qt-title').textContent = 'Missed';
+  document.getElementById('qt-title').textContent = isGuess ? 'Guesses' : 'Missed';
   showScr('quiz');
   renderQ();
 }
@@ -2888,7 +2979,7 @@ async function startQuiz(){
 }
 
 function renderQ(){
-  if(clockFor !== answers){ clockFor = answers; beginSessionClock(); } // first render of a new quiz starts the timer
+  if(clockFor !== answers){ clockFor = answers; GUESS = new WeakSet(); beginSessionClock(); } // first render of a new quiz starts the timer
   const q=quizQ[cur];
   const total=quizQ.length;
   const locked=confirmed[cur];
@@ -2958,6 +3049,7 @@ function renderQ(){
         <div class="qtext">${q.q||q.question||''}</div>
       </div>
       <div class="opts">${optsHtml}</div>
+      ${isTimedOut ? '' : `<button type="button" id="guess-btn" class="guess-btn${GUESS.has(q) ? ' on' : ''}" onclick="toggleGuess()">${guessBtnInner(GUESS.has(q))}</button>`}
       ${fbHtml}
       <div class="note-panel">
         <textarea placeholder="Add a study note for this question..." oninput="saveNote('${qid}',this.value)">${qnote}</textarea>
@@ -2973,6 +3065,7 @@ function pickOpt(i){
   answers[cur]=i;
   if(quizMode==='practice'){
     confirmed[cur]=true;
+    window.dispatchEvent(new CustomEvent('phq:answer',{detail:{correct:i===quizQ[cur].ans}})); // Brainiac reacts
     renderQ();
     clearAutoAdvance();
     autoAdvanceTimer = setTimeout(() => {
@@ -3090,12 +3183,17 @@ function showResults(){
   });
   const pct=total>0?Math.round((correct/total)*100):0;
   lastScore = { arr: quizQ, correct, total };   // so "Challenge a Friend" can send THIS score
+  let guessedTotal=0, guessedRight=0;
+  quizQ.forEach((q,i)=>{ if(GUESS.has(q) && answers[i]!==null && !timedOut[i]){ guessedTotal++; if(answers[i]===q.ans) guessedRight++; } });
+  window.dispatchEvent(new CustomEvent('phq:results',{detail:{pct,correct,total,guessed:guessedTotal,guessedRight}})); // Brainiac reacts
   showChallengeOutcome(correct, total);
 
   const g=getGoal();
   const today=new Date().toDateString();
   if(g.today!==today){g.today=today;g.done=0;}
+  const _goalBefore=g.done;
   g.done+=answers.filter((a,i)=>a!==null && !timedOut[i]).length;saveGoal(g);
+  window.dispatchEvent(new CustomEvent('phq:goal',{detail:{done:g.done,before:_goalBefore,target:getSettings().goalTarget||20}})); // Brainiac: goal reached / nearly there
 
   pullHistory().then(hist=>{
     if(hist.length>0){
@@ -3132,6 +3230,9 @@ function showResults(){
   document.getElementById('r-cor').textContent=correct;
   document.getElementById('r-wrg').textContent=wrong;
   document.getElementById('r-skp').textContent=skip+timeouts;
+  paintGuessResult(guessedTotal, guessedRight, correct, total);
+  HOME_MEMO.guessAt = 0;
+  submitGuessFlags().then(n => { if(n && guessedTotal) addGuessReviewBtn(); });
   document.getElementById('res-sub').textContent=selCourses.map(c=>COURSES[c]?.code||c).join(', ');
   const rt=document.getElementById('r-time');
   if(rt){ rt.style.display = wasTimed ? '' : 'none'; rt.textContent = clockExpired ? `Time's up · ${fmtClock(clockTotal)} limit` : `Time used ${fmtClock(usedSecs)} of ${fmtClock(clockTotal)}`; }
@@ -3222,7 +3323,7 @@ async function shareResult(){
   else navigator.clipboard.writeText(text).then(()=>toast('Result copied!')).catch(()=>toast('Could not share'));
 }
 
-function retryQuiz(){ clearAutoAdvance(); if(missedRun) startMissedReview(); else startQuiz(); }function goHome(){ clearAutoAdvance(); stopSessionClock(); if(missedPrevSel){ selCourses=missedPrevSel; quizMode=missedPrevMode; missedPrevSel=null; } showScr('home');refreshStats();renderDailyGoal(); }
+function retryQuiz(){ clearAutoAdvance(); if(missedRun) startMissedReview(reviewKind); else startQuiz(); }function goHome(){ clearAutoAdvance(); stopSessionClock(); if(missedPrevSel){ selCourses=missedPrevSel; quizMode=missedPrevMode; missedPrevSel=null; } showScr('home');refreshStats();renderDailyGoal(); }
 
 async function saveQuizForLater(){
   if(!quizQ.length) return;
@@ -4070,7 +4171,7 @@ async function openExamOverview(){
 // ── Course notes ──────────────────────────────────────────────
 function renderNoteBody(t){
   // Notes use a tiny markup: "## Heading", "- bullet", **bold**. Everything is escaped first, so nothing else can render.
-  const lines = escapeHtml(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').split('\n');
+  const lines = escapeHtml(window.PhqMd ? PhqMd.strip(t,{keepBold:true,keepHeadings:true}) : t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').split('\n');
   let out = '', inList = false;
   const closeList = () => { if(inList){ out += '</ul>'; inList = false; } };
   for(const l of lines){
@@ -4253,7 +4354,8 @@ function showScr(id){
   if(id==='performance'){renderPerf();renderAIHistory();}
   if(id==='notifications')renderNotifications();
   if(id==='saved-quizzes')renderSavedQuizzes();
-  if(id==='home'){refreshStats();buildCourseGrid();loadWeakTopics();loadMissedCard();renderOnboarding();renderInviteCard();}
+  if(id==='home'){refreshStats();buildCourseGrid();loadWeakTopics();loadMissedCard();loadGuessCard();renderOnboarding();renderInviteCard();}
+  window.dispatchEvent(new CustomEvent('phq:screen',{detail:{id}})); // Brainiac: hide during timed/exam quizzes
 }
 
 window.addEventListener('beforeinstallprompt',e=>{
@@ -4273,6 +4375,29 @@ function toast(msg){
   const el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');
   clearTimeout(tTimer);tTimer=setTimeout(()=>el.classList.remove('on'),2400);
 }
+
+// ── v1.8.3 Brainiac host: what the floating companion may know about this page (it never touches quiz code itself) ──
+window.PhqBrainiacHost = {
+  // Hidden while a timed session or an exam is running, so it never distracts or hints.
+  hide(){ const q=document.getElementById('quiz'); return !!(q && q.classList.contains('on') && (quizMode==='exam' || timerOn || clockTotal>0)); },
+  // The screen, and — on the quiz screen — the question. The right answer is only shared once the student has answered.
+  context(){
+    const on=document.querySelector('.scr.on'); const ctx={screen:on?on.id:''};
+    if(ctx.screen==='quiz' && quizQ[cur]){
+      const q=quizQ[cur]; ctx.question=String(q.q||q.question||'').replace(/<[^>]*>/g,' '); ctx.course=(COURSES[q.course]||{}).code||q.course||''; ctx.topic=q.tag||'';
+      ctx.options=(q.opts||[]).map(o=>String(o).replace(/<[^>]*>/g,' '));
+      if(confirmed[cur] && quizMode!=='exam' && answers[cur]!==null){
+        ctx.wasCorrect=answers[cur]===q.ans; ctx.chosen=ctx.options[answers[cur]]||''; ctx.correct=ctx.options[q.ans]||'';
+      }
+    }
+    return ctx;
+  },
+  weak(){ return (typeof weakTopics!=='undefined' && weakTopics[0]) || null; },
+  drill(w){ showScr('home'); startWeakTopicQuiz(w); },
+  home(){ showScr('home'); },
+  guessReview(){ showScr('home'); startGuessReview(); },
+  assistant(){ if(window.PhqShell) PhqShell.go('/chat'); },
+};
 
 bootFromSession();
 </script>

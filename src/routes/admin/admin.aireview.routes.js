@@ -69,6 +69,31 @@ router.post('/ai-review/reject', async (req, res) => {
 });
 
 // PUT /api/admin/ai-review/:id { q, opts, ans, exp, tag, course } — fix a pending MCQ before approving it
+// v1.8.7 DELETE /api/admin/ai-review { ids: [...] } — permanently delete REJECTED generations. Pending and approved items can
+// never be deleted here (approved ones already live in the question bank; pending ones should be reviewed first).
+router.delete('/ai-review', async (req, res) => {
+  try {
+    const ids = (Array.isArray(req.body && req.body.ids) ? req.body.ids : []).filter(isObjectId).slice(0, 200);
+    if (!ids.length) return res.status(400).json({ error: 'Nothing selected' });
+    const r = await AIQuestionReview.deleteMany({ _id: { $in: ids }, status: 'rejected' });
+    logActivity({ actorType: 'admin', actor: req.admin.sub, action: 'ai_review.delete', detail: { deleted: r.deletedCount } });
+    res.json({ deleted: r.deletedCount });
+  } catch (e) { fail(res, e); }
+});
+
+// v1.8.7 DELETE /api/admin/ai-review/rejected?kind=mcq|written&source=student-ai|admin-ai — clear every rejected generation
+// (optionally only one type or source). Same rule: only rejected items are ever touched.
+router.delete('/ai-review/rejected', async (req, res) => {
+  try {
+    const f = { status: 'rejected' };
+    if (['mcq', 'written'].includes(req.query.kind)) f.kind = req.query.kind;
+    if (['student-ai', 'admin-ai'].includes(req.query.source)) f.source = req.query.source;
+    const r = await AIQuestionReview.deleteMany(f);
+    logActivity({ actorType: 'admin', actor: req.admin.sub, action: 'ai_review.delete_all_rejected', detail: { deleted: r.deletedCount, kind: f.kind || 'all', source: f.source || 'all' } });
+    res.json({ deleted: r.deletedCount });
+  } catch (e) { fail(res, e); }
+});
+
 router.put('/ai-review/:id', async (req, res) => {
   try {
     if (!isObjectId(req.params.id)) return res.status(404).json({ error: 'Not found' });

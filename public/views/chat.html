@@ -443,6 +443,7 @@ async function loadHistory(){
 function appendMessage(role, content){
   const el = document.createElement('div');
   el.className = `msg ${role}`;
+  if(role !== 'user' && window.PhqMd) content = PhqMd.strip(content);   // v1.8.5: no stray * or _ (also fixes old saved replies, and what the voice reads out)
   el.textContent = content;
   document.getElementById('chat-scroll').appendChild(el);
   if(role === 'assistant' && TTS && !el.classList.contains('pending') && !/^Something went wrong/.test(content)){

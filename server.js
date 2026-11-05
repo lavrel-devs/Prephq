@@ -164,6 +164,8 @@ app.use('/api/admin', require('./src/routes/admin/admin.analytics.routes'));
 app.use('/api/admin', require('./src/routes/admin/admin.support.routes'));
 app.use('/api/admin', require('./src/routes/admin/admin.plancodes.routes'));
 app.use('/api/admin', require('./src/routes/admin/admin.aireview.routes'));   // v1.8.1 AI question review queue
+app.use('/api/admin', require('./src/routes/admin/admin.coursetopics.routes'));   // v1.8.5 AI course topic outline
+app.use('/api/admin', require('./src/routes/admin/admin.aistatus.routes'));   // v1.8.7 AI provider status/test
 app.use('/api', require('./src/routes/invite.routes'));   // v1.7.5 public invite preview (no login)
 app.use('/api/admin', require('./src/routes/admin/admin.followups.routes'));
 app.use('/api/admin', require('./src/routes/admin/admin.notes.routes'));
@@ -175,6 +177,8 @@ app.use('/api', require('./src/routes/contest.routes'));
 app.use('/api', require('./src/routes/leaderboard.routes'));
 app.use('/api', require('./src/routes/studyRoom.routes'));
 app.use('/api', require('./src/routes/chat.routes'));
+app.use('/api', require('./src/routes/brainiac.routes'));   // v1.8.3 Brainiac floating companion
+app.use('/api', require('./src/routes/guess.routes'));   // v1.8.6 "I guessed" question flags
 app.use('/api/scores', require('./src/routes/scores.routes'));
 app.use('/api', require('./src/routes/studyguide.routes'));
 app.use('/api', require('./src/routes/cosmetics.routes'));
