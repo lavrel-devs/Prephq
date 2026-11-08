@@ -4,12 +4,16 @@
 <script src="/js/theme.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#e0e5ec">
-<meta name="description" content="PrepHQ — AI-powered exam preparation built for Nigerian university students. Practise past questions, generate AI quizzes, and study smarter.">
+<meta name="theme-color" content="#f2f2f7">
+<meta name="description" content="Wreddi — exam prep built for Nigerian university students. Practise questions, sit timed mock and written exams marked by AI, quiz by voice, and see exactly which topics to revise.">
 <link rel="manifest" href="/manifest.json">
-<title>PrepHQ — AI-Powered Exam Prep for Nigerian University Students</title>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/icons/favicon-48.png">
+<link rel="shortcut icon" href="/icons/favicon.ico">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<title>Wreddi — AI-Powered Exam Prep for Nigerian University Students</title>
+<link rel="stylesheet" href="/vendor/fonts.css">
+<link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
 <link rel="stylesheet" href="/css/glass.css">
 <link rel="stylesheet" href="/css/tokens.css">
 <style>
@@ -23,64 +27,85 @@ a{color:inherit;text-decoration:none;} ul{list-style:none;} button{font-family:i
 .wrap{max-width:1100px;margin:0 auto;padding:0 22px;position:relative;z-index:1;}
 
 /* nav */
-.nav{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:50;width:min(900px,calc(100vw - 24px));display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 8px 8px 16px;background:var(--bg);border-radius:var(--rpill);box-shadow:var(--sh);}
-.brand{display:flex;align-items:center;gap:9px;font-family:var(--ff-h);font-weight:800;font-size:17px;border:none;background:none;color:var(--t1);cursor:pointer;}
+.nav{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:50;width:min(900px,calc(100vw - 24px));display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 8px 8px 16px;background:var(--surf);border-radius:var(--rpill);box-shadow:var(--sh);}
+.brand{display:flex;align-items:center;gap:9px;font-family:var(--ff-h);font-weight:700;font-size:17px;border:none;background:none;color:var(--t1);cursor:pointer;}
 .brand .ico{width:32px;height:32px;border-radius:11px;display:flex;align-items:center;justify-content:center;box-shadow:var(--sh-sm);color:var(--brand);font-size:14px;}
 .links{display:flex;gap:2px;}
-.links button{font-size:13px;font-weight:700;color:var(--t3);padding:9px 14px;border:none;background:none;border-radius:var(--rpill);cursor:pointer;transition:color .15s;}
+.links button{font-size:13px;font-weight:600;color:var(--t3);padding:9px 14px;border:none;background:none;border-radius:var(--rpill);cursor:pointer;transition:color .15s;}
 .links button:hover{color:var(--brand);}
 .cta{display:flex;align-items:center;gap:8px;}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:var(--ff-h);font-weight:800;font-size:13.5px;padding:11px 20px;border-radius:var(--rpill);border:none;cursor:pointer;white-space:nowrap;transition:box-shadow .18s,transform .18s;}
-.btn.pri{background:linear-gradient(140deg,var(--brand),var(--purple));color:#fff;box-shadow:var(--sh-sm);}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:var(--ff-h);font-weight:700;font-size:13.5px;padding:11px 20px;border-radius:var(--rpill);border:none;cursor:pointer;white-space:nowrap;transition:box-shadow .18s,transform .18s;}
+.btn.pri{background:var(--grad);color:#fff;box-shadow:var(--sh-sm);}
 .btn.pri:hover{transform:translateY(-1px);} .btn.pri:active{transform:none;box-shadow:var(--sh-in-sm);}
-.btn.sec{background:var(--bg);color:var(--t2);box-shadow:var(--sh-sm);}
+.btn.sec{background:var(--surf);color:var(--t2);box-shadow:var(--sh-sm);}
 .btn.sec:active{box-shadow:var(--sh-in-sm);}
 .btn.lg{font-size:15px;padding:15px 28px;}
-.tbtn{width:38px;height:38px;border-radius:50%;border:none;background:var(--bg);color:var(--t2);box-shadow:var(--sh-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.tbtn{width:38px;height:38px;border-radius:50%;border:none;background:var(--surf);color:var(--t2);box-shadow:var(--sh-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;}
 .tbtn:active{box-shadow:var(--sh-in-sm);}
 
 /* hero */
 .hero{padding:150px 0 70px;text-align:center;}
-.badge{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:var(--rpill);box-shadow:var(--sh-in-sm);font-size:12.5px;font-weight:700;color:var(--t2);margin-bottom:26px;}
+.badge{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:var(--rpill);background:var(--brand-lt);font-size:12.5px;font-weight:600;color:var(--t2);margin-bottom:26px;}
 .badge i{color:var(--brand);}
-h1{font-family:var(--ff-h);font-size:clamp(34px,6vw,60px);font-weight:800;letter-spacing:-1.5px;line-height:1.07;max-width:880px;margin:0 auto 20px;}
+h1{font-family:var(--ff-h);font-size:clamp(34px,6vw,60px);font-weight:700;letter-spacing:-1.5px;line-height:1.07;max-width:880px;margin:0 auto 20px;}
 .grad{background:linear-gradient(120deg,var(--brand),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent;}
 .sub{font-size:clamp(15px,2vw,18px);color:var(--t3);max-width:580px;margin:0 auto 34px;line-height:1.6;}
 .hero-cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:44px;}
 .chips{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
-.chip{display:flex;align-items:center;gap:10px;padding:12px 18px;border-radius:var(--r16);box-shadow:var(--sh-sm);font-size:12.5px;font-weight:700;color:var(--t2);text-align:left;}
+.chip{display:flex;align-items:center;gap:10px;padding:12px 18px;border-radius:var(--r16);box-shadow:var(--sh-sm);font-size:12.5px;font-weight:600;color:var(--t2);text-align:left;}
 .chip i{font-size:15px;color:var(--brand);}
+/* app preview under the hero (decorative; built from the same tokens so it follows light / dark) */
+.showcase{position:relative;max-width:360px;margin:44px auto 0;}
+.phone{position:relative;background:var(--bg);border:8px solid #1c1c1e;border-bottom:none;border-radius:38px 38px 0 0;padding:16px 14px 0;height:430px;overflow:hidden;text-align:left;box-shadow:var(--sh-lg);}
+[data-theme=dark] .phone{border-color:#3a3a3c;}
+.phone::after{content:"";position:absolute;left:0;right:0;bottom:0;height:90px;background:linear-gradient(transparent,var(--bg));pointer-events:none;}
+.ph-top{display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:12px;}
+.ph-top b{font-family:var(--ff-h);font-weight:700;flex:1;} .ph-code{font-size:11px;font-weight:600;color:var(--t3);}
+.ph-pill{font-size:11px;font-weight:700;color:var(--brand);background:var(--brand-lt);border-radius:var(--rpill);padding:4px 10px;}
+.ph-bar{height:6px;border-radius:99px;background:var(--fill);margin-bottom:16px;overflow:hidden;} .ph-bar i{display:block;height:100%;width:35%;border-radius:99px;background:var(--brand);}
+.ph-q{font-family:var(--ff-h);font-size:15.5px;font-weight:700;line-height:1.35;margin-bottom:14px;letter-spacing:-.2px;}
+.ph-opt{display:flex;align-items:center;gap:12px;background:var(--surf);border-radius:var(--r16);box-shadow:var(--sh-sm);padding:12px 14px;font-size:13.5px;font-weight:600;margin-bottom:9px;}
+.ph-opt span{width:24px;height:24px;border-radius:50%;background:var(--fill);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--t3);flex-shrink:0;}
+.ph-opt.ok{background-image:linear-gradient(var(--ok-lt),var(--ok-lt));box-shadow:inset 0 0 0 2px var(--ok);} .ph-opt.ok span{background:var(--ok);color:#fff;}
+.ph-exp{background:var(--brand-lt);border-radius:var(--r16);padding:11px 14px;font-size:12.5px;line-height:1.5;color:var(--t2);margin-top:12px;} .ph-exp b{color:var(--brand);margin-right:4px;}
+.float{position:absolute;z-index:2;display:flex;align-items:center;gap:10px;background:var(--surf);border-radius:var(--r16);box-shadow:var(--sh-md);padding:11px 14px;text-align:left;}
+.float i{width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.float b{display:block;font-size:12.5px;font-weight:700;line-height:1.2;} .float small{font-size:11px;color:var(--t3);}
+.f1{top:96px;left:-178px;} .f1 i{background:var(--ok-lt);color:var(--ok);}
+.f2{top:250px;right:-186px;} .f2 i{background:var(--warn-lt);color:var(--warn);}
+@media(max-width:860px){.float{display:none;}}
+
 
 /* sections */
 section{padding:70px 0;}
-.eyebrow{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--brand);text-align:center;margin-bottom:12px;}
-h2{font-family:var(--ff-h);font-size:clamp(26px,4vw,38px);font-weight:800;letter-spacing:-1px;text-align:center;max-width:640px;margin:0 auto 14px;}
+.eyebrow{font-size:12px;font-weight:700;color:var(--brand);text-align:center;margin-bottom:12px;}
+h2{font-family:var(--ff-h);font-size:clamp(26px,4vw,38px);font-weight:700;letter-spacing:-1px;text-align:center;max-width:640px;margin:0 auto 14px;}
 .lead{font-size:15.5px;color:var(--t3);text-align:center;max-width:540px;margin:0 auto 46px;}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
-.card{background:var(--bg);border-radius:var(--r24);box-shadow:var(--sh);padding:28px 24px;}
-.f-ico{width:48px;height:48px;border-radius:15px;box-shadow:var(--sh-in-sm);display:flex;align-items:center;justify-content:center;margin-bottom:18px;font-size:18px;}
-.card h3{font-family:var(--ff-h);font-size:17.5px;font-weight:700;margin-bottom:8px;}
+.card{background:var(--surf);border-radius:var(--r24);box-shadow:var(--sh);padding:28px 24px;}
+.f-ico{width:48px;height:48px;border-radius:15px;background:var(--fill);background:color-mix(in srgb,currentColor 12%,transparent);display:flex;align-items:center;justify-content:center;margin-bottom:18px;font-size:18px;}
+.card h3{font-family:var(--ff-h);font-size:17.5px;font-weight:600;margin-bottom:8px;}
 .card p{font-size:13.8px;color:var(--t3);line-height:1.65;}
-.step-n{width:52px;height:52px;border-radius:50%;box-shadow:var(--sh);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-family:var(--ff-h);font-weight:800;font-size:19px;color:var(--brand);}
+.step-n{width:52px;height:52px;border-radius:50%;background:var(--brand-lt);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-family:var(--ff-h);font-weight:700;font-size:19px;color:var(--brand);}
 .step{text-align:center;padding:0 14px;} .step h3{font-family:var(--ff-h);font-size:17px;margin-bottom:8px;} .step p{font-size:13.8px;color:var(--t3);max-width:270px;margin:0 auto;}
 
 /* pricing (filled from /api/plans) */
 .price-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;max-width:760px;margin:0 auto;}
 .price-card{position:relative;} .price-card.pop{box-shadow:var(--sh-lg);}
-.tag{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(140deg,var(--brand),var(--purple));color:#fff;font-size:11px;font-weight:800;padding:5px 14px;border-radius:var(--rpill);}
-.p-name{font-family:var(--ff-h);font-weight:700;color:var(--t2);margin-bottom:6px;}
-.p-amt{font-family:var(--ff-h);font-size:34px;font-weight:800;letter-spacing:-1px;} .p-amt small{font-size:14px;font-weight:600;color:var(--t3);}
+.tag{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--grad);color:#fff;font-size:11px;font-weight:700;padding:5px 14px;border-radius:var(--rpill);}
+.p-name{font-family:var(--ff-h);font-weight:600;color:var(--t2);margin-bottom:6px;}
+.p-amt{font-family:var(--ff-h);font-size:34px;font-weight:700;letter-spacing:-1px;} .p-amt small{font-size:14px;font-weight:600;color:var(--t3);}
 .p-alt{font-size:12.5px;color:var(--t3);margin:4px 0 0;}
 .p-list{margin:20px 0 24px;} .p-list li{display:flex;gap:10px;font-size:13.5px;color:var(--t2);padding:6px 0;} .p-list i{color:var(--ok);font-size:12px;margin-top:4px;}
 .price-card .btn{width:100%;}
 
 /* faq */
 .faq{max-width:700px;margin:0 auto;display:flex;flex-direction:column;gap:14px;}
-details{background:var(--bg);border-radius:var(--r20);box-shadow:var(--sh-sm);}
-summary{list-style:none;cursor:pointer;padding:18px 22px;font-size:14.5px;font-weight:700;display:flex;justify-content:space-between;gap:14px;align-items:center;}
-summary::-webkit-details-marker{display:none;} summary::after{content:"\f078";font-family:"Font Awesome 6 Free";font-weight:900;font-size:12px;color:var(--t3);transition:transform .25s;}
+details{background:var(--surf);border-radius:var(--r20);box-shadow:var(--sh-sm);}
+summary{list-style:none;cursor:pointer;padding:18px 22px;font-size:14.5px;font-weight:600;display:flex;justify-content:space-between;gap:14px;align-items:center;}
+summary::-webkit-details-marker{display:none;} summary::after{content:"\f078";font-family:"Font Awesome 6 Free";font-weight:800;font-size:12px;color:var(--t3);transition:transform .25s;}
 details[open] summary::after{transform:rotate(180deg);color:var(--brand);}
-details[open]{box-shadow:var(--sh-in);} details p{padding:0 22px 20px;font-size:13.8px;color:var(--t3);line-height:1.65;}
+details[open]{box-shadow:var(--sh);} details p{padding:0 22px 20px;font-size:13.8px;color:var(--t3);line-height:1.65;}
 
 .final{border-radius:32px;box-shadow:var(--sh-lg);padding:56px 28px;text-align:center;}
 .final h2{margin-bottom:12px;} .final p{color:var(--t3);margin-bottom:26px;} .fine{font-size:12.5px;color:var(--t4);margin-top:14px;}
@@ -91,19 +116,19 @@ footer{padding:50px 0 60px;}
 .fx{opacity:0;transform:translateY(22px);transition:opacity .6s var(--ease-o),transform .6s var(--ease-o);} .fx.in{opacity:1;transform:none;}
 @media(prefers-reduced-motion:reduce){.fx{opacity:1;transform:none;transition:none;} html{scroll-behavior:auto;}}
 .btn:focus-visible,.tbtn:focus-visible,.links button:focus-visible,summary:focus-visible,a:focus-visible{outline:3px solid var(--brand);outline-offset:3px;}
-.btn.login{background:var(--bg);color:var(--brand);box-shadow:var(--sh-sm);border:2px solid var(--brand);}
+.btn.login{background:var(--surf);color:var(--brand);box-shadow:var(--sh-sm);border:2px solid var(--brand);}
 .btn.login:active{box-shadow:var(--sh-in-sm);}
 
 /* "New or returning?" — the first thing under the hero */
 .start-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px;max-width:780px;margin:0 auto;}
 .start-card{text-align:center;padding:30px 24px;}
-.start-card .who{width:56px;height:56px;border-radius:50%;box-shadow:var(--sh-in-sm);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:22px;}
-.start-card h3{font-family:var(--ff-h);font-size:20px;font-weight:800;margin-bottom:6px;}
+.start-card .who{width:56px;height:56px;border-radius:50%;background:var(--fill);background:color-mix(in srgb,currentColor 12%,transparent);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:22px;}
+.start-card h3{font-family:var(--ff-h);font-size:20px;font-weight:700;margin-bottom:6px;}
 .start-card p{font-size:14.5px;color:var(--t3);margin-bottom:20px;line-height:1.55;}
 .start-card .btn{width:100%;font-size:16px;padding:16px 20px;}
-.start-card .small{display:block;margin-top:14px;font-size:13.5px;font-weight:700;color:var(--brand);}
+.start-card .small{display:block;margin-top:14px;font-size:13.5px;font-weight:600;color:var(--brand);}
 .hint{font-size:13.5px;color:var(--t3);margin-top:16px;}
-.hint a{color:var(--brand);font-weight:800;text-decoration:underline;text-underline-offset:3px;}
+.hint a{color:var(--brand);font-weight:700;text-decoration:underline;text-underline-offset:3px;}
 .theme-link{background:none;border:none;color:var(--t3);font:600 13px var(--ff-b);cursor:pointer;margin-left:18px;text-decoration:underline;text-underline-offset:3px;}
 @media(max-width:860px){.links{display:none;} .grid3{grid-template-columns:1fr;} .price-grid{grid-template-columns:1fr;max-width:380px;} .start-grid{grid-template-columns:1fr;max-width:420px;}}
 @media(max-width:520px){
@@ -112,13 +137,17 @@ footer{padding:50px 0 60px;}
   .cta{gap:6px;} .cta .tbtn{display:none;} .cta .btn{padding:11px 14px;font-size:14px;min-height:44px;}
 }
 @media(max-width:360px){.brand span.nm{display:none;}}
+.brand .ico-img{width:32px;height:32px;border-radius:50%;display:block;}
+.brand .nm{display:flex;align-items:center;}
+.brand .wm{height:20px;width:auto;display:block;}
 </style>
+<link rel="stylesheet" href="/css/hybrid.css">
 </head>
 <body>
 <div class="blob b1"></div><div class="blob b2"></div>
 
 <nav class="nav">
-  <button class="brand" onclick="scrollToId('top')"><span class="ico"><i class="fa-solid fa-graduation-cap"></i></span><span class="nm">PrepHQ</span></button>
+  <button class="brand" onclick="scrollToId('top')"><img class="ico-img" src="/icons/logo-mark.png" alt="" width="32" height="32"><span class="nm"><img class="wm wm-light" src="/icons/wreddi-wordmark.png" alt="Wreddi" height="20"><img class="wm wm-dark" src="/icons/wreddi-wordmark-white.png" alt="" height="20"></span></button>
   <div class="links">
     <button onclick="scrollToId('features')">Features</button>
     <button onclick="scrollToId('how')">How it works</button>
@@ -136,16 +165,31 @@ footer{padding:50px 0 60px;}
   <div class="wrap">
     <div class="badge fx"><i class="fa-solid fa-circle-check"></i>Free to start · Made for Nigerian university students</div>
     <h1 class="fx">Practise your exam questions. <span class="grad">Walk into the hall ready.</span></h1>
-    <p class="sub fx">PrepHQ is a study app that runs on your phone. Practise real questions for your courses, see the right answer with an explanation, and find out which topics you still need to revise.</p>
+    <p class="sub fx">Wreddi is a study app that runs on your phone. Practise real questions for your courses, sit timed mock and written exams, and see exactly which topics you still need to revise.</p>
     <div class="hero-cta fx">
       <a href="/register" class="btn pri lg" id="hero-main"><i class="fa-solid fa-user-plus"></i> Create free account</a>
       <a href="/login" class="btn login lg" id="hero-login"><i class="fa-solid fa-right-to-bracket"></i> Log in</a>
     </div>
     <p class="hint fx" id="hero-hint">Already signed up? Tap <b>Log in</b>. New here? Tap <b>Create free account</b>. No card needed.</p>
     <div class="chips fx" style="margin-top:34px;">
-      <div class="chip"><i class="fa-solid fa-list-check"></i>Real questions<br>for your courses</div>
-      <div class="chip"><i class="fa-solid fa-lightbulb"></i>Answers with<br>explanations</div>
+      <div class="chip"><i class="fa-solid fa-list-check"></i>Practice, mock &amp;<br>written exams</div>
+      <div class="chip"><i class="fa-solid fa-lightbulb"></i>Every answer<br>explained</div>
       <div class="chip"><i class="fa-solid fa-mobile-screen"></i>Works on<br>any phone</div>
+    </div>
+
+    <div class="showcase fx" aria-hidden="true">
+      <div class="float f1"><i class="fa-solid fa-circle-check"></i><div><b>Correct</b><small>+1 · streak 6 days</small></div></div>
+      <div class="phone">
+        <div class="ph-top"><span class="ph-code">BIO 102</span><b>General Biology II</b><span class="ph-pill">7 / 20</span></div>
+        <div class="ph-bar"><i></i></div>
+        <p class="ph-q">Which organelle produces most of a cell's ATP?</p>
+        <div class="ph-opt"><span>A</span>Nucleus</div>
+        <div class="ph-opt ok"><span><i class="fa-solid fa-check"></i></span>Mitochondrion</div>
+        <div class="ph-opt"><span>C</span>Ribosome</div>
+        <div class="ph-opt"><span>D</span>Golgi apparatus</div>
+        <div class="ph-exp"><b>Why</b> Mitochondria make ATP through oxidative phosphorylation.</div>
+      </div>
+      <div class="float f2"><i class="fa-solid fa-book-bookmark"></i><div><b>Mistake notebook</b><small>3 topics to revise</small></div></div>
     </div>
   </div>
 </header>
@@ -175,16 +219,28 @@ footer{padding:50px 0 60px;}
 <section id="features">
   <div class="wrap">
     <div class="eyebrow">Features</div>
-    <h2 class="fx">What you can do with PrepHQ.</h2>
+    <h2 class="fx">What you can do with Wreddi.</h2>
     <p class="lead fx">Everything is built to help you go from “I read it” to “I can answer it in the exam.”</p>
     <div class="grid3">
-      <div class="card fx"><div class="f-ico" style="color:var(--brand);"><i class="fa-solid fa-list-check"></i></div><h3>Practise your courses</h3><p>Pick the courses you're taking this semester and answer questions. You see straight away if you got it right, and why.</p></div>
-      <div class="card fx"><div class="f-ico" style="color:var(--purple);"><i class="fa-solid fa-wand-magic-sparkles"></i></div><h3>Quizzes made for you</h3><p>Choose any topic and the app makes a new quiz on it, so you learn the idea instead of memorising one paper.</p></div>
-      <div class="card fx"><div class="f-ico" style="color:var(--teal);"><i class="fa-solid fa-comments"></i></div><h3>Ask a question</h3><p>Stuck on something? Type your question and get a clear, step-by-step explanation in simple words.</p></div>
-      <div class="card fx"><div class="f-ico" style="color:var(--ok);"><i class="fa-solid fa-book-open"></i></div><h3>Notes &amp; flashcards</h3><p>Short notes and flashcards to revise from, plus a list of the topics you keep getting wrong.</p></div>
-      <div class="card fx"><div class="f-ico" style="color:var(--warn);"><i class="fa-solid fa-trophy"></i></div><h3>Study with friends</h3><p>Join contests, see the leaderboard, and study together with friends in shared rooms.</p></div>
-      <div class="card fx"><div class="f-ico" style="color:var(--brand);"><i class="fa-solid fa-square-root-variable"></i></div><h3>Maths &amp; chemistry that display properly</h3><p>Formulas and molecule drawings show up clearly on your screen, with no broken symbols.</p></div>
+      <div class="card fx"><div class="f-ico" style="color:var(--brand);"><i class="fa-solid fa-list-check"></i></div><h3>Practise &amp; mock exams</h3><p>Pick your courses and answer questions with the explanation straight away, or switch to exam mode with a countdown timer and see your score at the end.</p></div>
+      <div class="card fx"><div class="f-ico" style="color:var(--purple);"><i class="fa-solid fa-pen-to-square"></i></div><h3>Written exams, marked by AI</h3><p>Type your answers to theory questions against the clock. The AI marks each one, shows the points you missed and gives a model answer.</p></div>
+      <div class="card fx"><div class="f-ico" style="color:var(--teal);"><i class="fa-solid fa-headphones"></i></div><h3>Voice quiz</h3><p>Hands-free revision. Wreddi reads each question aloud and you answer out loud, handy when you are walking or your eyes are tired.</p></div>
+      <div class="card fx"><div class="f-ico" style="color:var(--warn);"><i class="fa-solid fa-book-bookmark"></i></div><h3>Mistake notebook</h3><p>Tell Wreddi why you got one wrong: did not know it, careless slip, ran out of time or misread it. Add a line to remember and it all collects in one place.</p></div>
+      <div class="card fx"><div class="f-ico" style="color:var(--purple);"><i class="fa-solid fa-wand-magic-sparkles"></i></div><h3>Quizzes made for you</h3><p>Choose any topic and the app writes a fresh quiz on it, so you learn the idea instead of memorising one set of questions.</p></div>
+      <div class="card fx"><div class="f-ico" style="color:var(--teal);"><i class="fa-solid fa-comments"></i></div><h3>Ask a question</h3><p>Stuck on something? Type or speak your question and get a clear, step-by-step explanation in simple words.</p></div>
+      <div class="card fx"><div class="f-ico" style="color:var(--ok);"><i class="fa-solid fa-book-open"></i></div><h3>Notes, flashcards &amp; cheat sheets</h3><p>Short notes and flashcards that bring your weak cards back sooner, plus a chemistry cheat sheet with the periodic table, constants and formulas.</p></div>
+      <div class="card fx"><div class="f-ico" style="color:var(--warn);"><i class="fa-solid fa-trophy"></i></div><h3>Study with friends</h3><p>Join contests, climb the leaderboard and study together in shared rooms.</p></div>
+      <div class="card fx"><div class="f-ico" style="color:var(--brand);"><i class="fa-solid fa-hourglass-half"></i></div><h3>Stay on track</h3><p>A focus timer that keeps your screen awake, a daily goal and streak, and a Wreddi Wrapped recap of your semester that you can share.</p></div>
     </div>
+  </div>
+</section>
+
+<section id="courses" style="display:none;">
+  <div class="wrap" style="text-align:center;">
+    <div class="eyebrow">Courses</div>
+    <h2 class="fx">Courses you can practise right now.</h2>
+    <p class="lead fx" id="courses-lead"></p>
+    <div class="chips" id="courses-chips"></div>
   </div>
 </section>
 
@@ -218,12 +274,14 @@ footer{padding:50px 0 60px;}
     <div class="faq">
       <details open><summary>How do I log in?</summary><p>Tap <b>Log in</b> at the top of this page. Type your matric number and the password you chose when you signed up, then tap <b>Sign In</b>. If you haven't signed up yet, tap <b>Sign up free</b> first.</p></details>
       <details><summary>What do I need to sign up?</summary><p>Your full name, your matric number, a phone number, and a password you'll remember. You don't need a card or any payment.</p></details>
-      <details><summary>What is PrepHQ?</summary><p>PrepHQ is a study app for Nigerian university students. You practise questions for your courses, take quizzes, and see which topics need more work.</p></details>
+      <details><summary>What is Wreddi?</summary><p>Wreddi is a study app for Nigerian university students. You practise questions for your courses, take quizzes, and see which topics need more work.</p></details>
       <details><summary>Do I need a code or an invitation?</summary><p>No. Sign-up is free and open to everyone. Create an account and start practising straight away.</p></details>
+      <details><summary>Can I practise theory questions, not just multiple choice?</summary><p>Yes. In <b>Written Exam</b> you type your answers against the clock, and the AI marks them against a marking scheme, shows the points you missed and gives a model answer.</p></details>
+      <details><summary>Can I revise without reading the screen?</summary><p>Yes. <b>Voice quiz</b> reads each question aloud and listens for your answer. It needs microphone permission, and how well it listens depends on your phone and browser.</p></details>
       <details><summary>Is it really free?</summary><p>Yes. The free plan gives you a daily allowance of questions, AI quizzes and AI chat messages. Upgrade only if you want more.</p></details>
       <details><summary>How do I upgrade?</summary><p>Choose a plan from your profile and message us on WhatsApp. We activate your plan from our side, so there's no card or online payment step.</p></details>
       <details><summary>I forgot my password. What now?</summary><p>On the Log in page, tap “Forgot password”. Your request goes to an admin on WhatsApp, who helps you get back in.</p></details>
-      <details><summary>Do I need to download anything?</summary><p>No. PrepHQ works in your phone's browser, the same way you open any website. You can also add it to your home screen if you like.</p></details>
+      <details><summary>Do I need to download anything?</summary><p>No. Wreddi works in your phone's browser, the same way you open any website. You can also add it to your home screen if you like.</p></details>
     </div>
   </div>
 </section>
@@ -244,7 +302,7 @@ footer{padding:50px 0 60px;}
 
 <footer>
   <div class="wrap foot">
-    <div>&copy; <span id="year"></span> PrepHQ · Made with <i class="fa-solid fa-heart" style="color:var(--no);"></i> in Nigeria</div>
+    <div>&copy; <span id="year"></span> Wreddi · Made with <i class="fa-solid fa-heart" style="color:var(--no);"></i> in Nigeria</div>
     <div><a href="/login">Log in</a><a href="/register">Sign up free</a><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/legal">All policies</a><button class="theme-link" onclick="PhqTheme.toggle()">Light / dark</button></div>
   </div>
 </footer>
@@ -264,7 +322,7 @@ function scrollToId(id){ const el = document.getElementById(id); if (el) el.scro
   // Already logged in: one obvious button that takes them straight in; hide every sign-up / log-in prompt.
   ['nav-login','hero-login','final-login','hero-hint','start'].forEach(id => { const e = document.getElementById(id); if (e) e.style.display = 'none'; });
   const main = document.getElementById('nav-main'); main.href = dest; main.textContent = 'Open app';
-  ['hero-main','final-main'].forEach(id => { const a = document.getElementById(id); a.href = dest; a.innerHTML = '<i class="fa-solid fa-arrow-right"></i> Open PrepHQ'; });
+  ['hero-main','final-main'].forEach(id => { const a = document.getElementById(id); a.href = dest; a.innerHTML = '<i class="fa-solid fa-arrow-right"></i> Open Wreddi'; });
 })();
 
 // Pricing comes from /api/plans, so it always matches what the admin has configured. Numbers are only ever
@@ -285,8 +343,8 @@ function renderPricing(p){
   const alts = offered.filter(x => x !== lead).map(x => `${naira(x.price)}/${PER[x.key]}`);
   let alt = alts.join(' · ');
   if (monthly && yearly && yearly.price === monthly.price * 10) alt = `${naira(yearly.price)}/year — 2 months free` + (alts.length > 1 ? ' · ' + alts.filter(a => !a.includes('/year')).join(' · ') : '');
-  const wa = p.support && p.support.whatsapp ? `https://wa.me/${String(p.support.whatsapp).replace(/\D/g, '')}?text=${encodeURIComponent('Hi, I want to upgrade my PrepHQ plan.')}` : '/register';
-  const freeCard = priceCard('Free', '₦0', '/forever', 'Great for trying PrepHQ out', [
+  const wa = p.support && p.support.whatsapp ? `https://wa.me/${String(p.support.whatsapp).replace(/\D/g, '')}?text=${encodeURIComponent('Hi, I want to upgrade my Wreddi plan.')}` : '/register';
+  const freeCard = priceCard('Free', '₦0', '/forever', 'Great for trying Wreddi out', [
     `${lim(f.dailyQuestions)} practice questions a day`, `${lim(f.dailyAIQuizzes)} AI quizzes a day`, `${lim(f.dailyAIChatMessages)} AI chat messages a day`, 'Progress and weak-topic tracking',
   ], '<a href="/register" class="btn sec">Start free</a>', false);
   const premCard = priceCard('Premium', lead ? naira(lead.price) : 'Ask us', lead ? '/' + PER[lead.key] : '', alt, [
@@ -310,6 +368,18 @@ function observe(){
   });
 }
 observe();
+
+// v1.9.1 Live course list: whatever courses are in the app right now, straight from /api/courses.
+(async function(){
+  try {
+    const r = await fetch('/api/courses'); if (!r.ok) return;
+    const list = await r.json(); if (!Array.isArray(list) || !list.length) return;
+    const esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    document.getElementById('courses-lead').textContent = list.length + ' course' + (list.length === 1 ? '' : 's') + ' and growing. Pick the ones you are taking this semester.';
+    document.getElementById('courses-chips').innerHTML = list.map(c => '<div class="chip fx"><i class="fa-solid fa-book"></i><span><b>' + esc(c.courseCode || c.key) + '</b>' + (c.courseTitle ? ' · ' + esc(c.courseTitle) : '') + '</span></div>').join('');
+    document.getElementById('courses').style.display = '';
+  } catch (e) { /* the section simply stays hidden */ }
+})();
 </script>
 </body>
 </html>

@@ -1,23 +1,46 @@
-/* PrepHQ design tokens — the single source of truth for the student-facing pages
+/* Wreddi design tokens — the single source of truth for the student-facing pages
    (dashboard, profile, leaderboard, contests, study rooms, assistant, login, register,
    forgot/change password, landing). The admin panel keeps its own palette in admin.html.
 
-   To change the look of the whole app (for example the liquid-glass migration), edit this file.
-   A page may still declare a token that only that page uses; it sits in the page's own <style>,
-   which loads after this file. Light values are in :root, dark-mode overrides in [data-theme=dark]. */
+   v1.10 — "Apple × Material" hybrid.
+     From Apple (iOS 17 / HIG):  grouped surfaces on a light-grey canvas, filled (not inset) form fields,
+                                 translucent blurred bars, native system type (SF Pro), springy sheet motion.
+     From Material 3:            tonal containers (--brand-lt) for secondary actions and selected states,
+                                 layered elevation (--sh*), a pill "active indicator" in the tab bar,
+                                 ripple state layers on touch, emphasised easing.
+
+   Token meaning (this replaced the old single-surface neumorphic scheme):
+     --bg      page canvas              (grouped background)
+     --surf    raised surface           (cards, buttons, list rows, sheets)
+     --fill    recessed / filled        (inputs, progress tracks, chips, segmented-control troughs)
+     --sh*     elevation, soft & layered (sh-in* are now flat: wells are drawn with --fill, not shadow)
+   Light values are in :root, dark-mode overrides in [data-theme=dark]. A page may still declare a token
+   that only that page uses; it sits in the page's own <style>, which loads after this file. */
 
 :root {
-  /* Colour */
-  --bg: #e0e5ec;
-  --surf: #e0e5ec;
-  --surf2: #e0e5ec;
-  --surf3: #d1d9e6;
-  --sd: #b8c0cc;
-  --sl: #ffffff;
-  --brand: #4a67d1;
-  --brand-dk: #3a54b8;
-  --brand-lt: rgba(74,103,209,.10);
-  --brand-glow: rgba(74,103,209,.20);
+  /* Surfaces */
+  --bg: #f2f2f7;
+  --surf: #ffffff;
+  --surf2: #f9f9fb;
+  --surf3: #e9e9ef;
+  --fill: rgba(120,120,128,.12);
+  --fill2: rgba(120,120,128,.20);
+  --bar: rgba(249,249,251,.80);          /* translucent tab/top bar (needs backdrop blur) */
+  --bar-solid: #f9f9fb;                  /* same bar where blur is off (low-power / unsupported) */
+  --scrim: rgba(0,0,0,.40);
+  --inv-bg: rgba(28,28,30,.92);          /* toast / snackbar */
+  --inv-fg: #ffffff;
+  /* Shadow tints (kept for the few places that use them as hairlines / drops) */
+  --sd: rgba(60,60,67,.18);
+  --sl: rgba(255,255,255,.80);
+
+  /* Brand + semantic colour */
+  --brand: #3E5C8A;
+  --brand-dk: #2F4A72;
+  --brand-lt: rgba(62,92,138,.10);       /* tonal container */
+  --brand-glow: rgba(62,92,138,.24);
+  --on-brand: #ffffff;
+  --grad: linear-gradient(140deg,#3E5C8A,#5D7FB0);   /* primary-action fill; white text sits on it */
   --ok: #2d9c6e;
   --ok-lt: rgba(45,156,110,.12);
   --ok-bd: rgba(45,156,110,.30);
@@ -26,76 +49,106 @@
   --no-bd: rgba(209,69,69,.30);
   --warn: #c67a1e;
   --warn-lt: rgba(198,122,30,.12);
-  --purple: #7b52d1;
-  --purple-lt: rgba(123,82,209,.12);
+  --purple: #5D7FB0;
+  --purple-lt: rgba(93,127,176,.12);
   --teal: #2d9cb8;
   --teal-lt: rgba(45,156,184,.12);
-  --t1: #2a3142;
-  --t2: #4a5568;
-  --t3: #7a8296;
-  --t4: #a8b0c0;
-  --bd: transparent;
-  --bd2: transparent;
-  --qfont: 16px;
-  --spring: cubic-bezier(.34,1.56,.64,1);
   --gold: #c79a1e;
   --silver: #8a90a4;
   --bronze: #a86a3a;
-  /* Depth (soft shadows) */
-  --sh: 6px 6px 14px var(--sd), -6px -6px 14px var(--sl);
-  --sh-md: 8px 8px 18px var(--sd), -8px -8px 18px var(--sl);
-  --sh-lg: 12px 12px 26px var(--sd), -12px -12px 26px var(--sl);
-  --sh-sm: 4px 4px 8px var(--sd), -4px -4px 8px var(--sl);
-  --sh-in: inset 4px 4px 10px var(--sd), inset -4px -4px 10px var(--sl);
-  --sh-in-sm: inset 3px 3px 6px var(--sd), inset -3px -3px 6px var(--sl);
-  --sh-in-lg: inset 6px 6px 14px var(--sd), inset -6px -6px 14px var(--sl);
+
+  /* Text — Apple label hierarchy */
+  --t1: #1c1c1e;
+  --t2: #48484a;
+  --t3: #6c6c70;
+  --t4: #8e8e93;
+  --bd: rgba(60,60,67,.12);              /* hairline separators */
+  --bd2: rgba(60,60,67,.18);
+  --qfont: 16px;
+
+  /* Elevation (Material layering, Apple softness) */
+  --sh:    0 0 0 .5px rgba(60,60,67,.07), 0 1px 2px rgba(16,24,40,.05), 0 2px 8px rgba(16,24,40,.05);
+  --sh-sm: 0 0 0 .5px rgba(60,60,67,.07), 0 1px 2px rgba(16,24,40,.07);
+  --sh-md: 0 0 0 .5px rgba(60,60,67,.06), 0 2px 4px rgba(16,24,40,.06), 0 8px 20px rgba(16,24,40,.08);
+  --sh-lg: 0 0 0 .5px rgba(60,60,67,.06), 0 4px 8px rgba(16,24,40,.06), 0 18px 44px rgba(16,24,40,.16);
+  /* Wells are filled, not shadowed. These stay valid box-shadow values so that lists such as
+     "var(--sh-in), 0 0 0 2px var(--brand-lt)" in existing rules keep working. */
+  --sh-in:    inset 0 0 0 0 transparent;
+  --sh-in-sm: inset 0 0 0 0 transparent;
+  --sh-in-lg: inset 0 0 0 0 transparent;
+
   /* Corner radius */
-  --r8: 10px;
-  --r12: 14px;
-  --r16: 18px;
-  --r20: 22px;
-  --r24: 26px;
+  --r8: 8px;
+  --r12: 12px;
+  --r16: 16px;
+  --r20: 20px;
+  --r24: 28px;
   --rpill: 999px;
-  /* Type */
-  --ff-h: 'Bricolage Grotesque',system-ui,sans-serif;
-  --ff-b: 'DM Sans',system-ui,sans-serif;
+
+  /* Type — each platform gets its own system face: SF Pro on iOS/macOS, Roboto on Android,
+     Segoe UI on Windows. Nothing to download, which also helps on slow connections. */
+  --ff-h: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', Roboto, 'Segoe UI', system-ui, 'Helvetica Neue', Arial, sans-serif;
+  --ff-b: -apple-system, BlinkMacSystemFont, 'SF Pro Text', Roboto, 'Segoe UI', system-ui, 'Helvetica Neue', Arial, sans-serif;
+
   /* Layout */
-  --nav-space: 96px; /* room kept clear at the bottom for the shared tab bar */
+  --nav-space: 96px; /* room kept clear at the bottom for the floating tab bar */
 
   /* Motion */
-  --ease-s: cubic-bezier(.34,1.56,.64,1);
-  --ease-o: cubic-bezier(.22,1,.36,1);
-  --ease: cubic-bezier(.22,1,.36,1);
+  --spring: cubic-bezier(.32,1.25,.5,1);
+  --ease-s: cubic-bezier(.32,1.25,.5,1);   /* gentle spring: toggles, progress fills */
+  --ease-o: cubic-bezier(.2,0,0,1);        /* Material emphasised-decelerate */
+  --ease:   cubic-bezier(.2,0,0,1);
+  --ease-sheet: cubic-bezier(.32,.72,0,1); /* iOS sheet curve */
 }
 
 [data-theme=dark] {
-  /* Colour */
-  --bg: #252932;
-  --surf: #252932;
-  --surf2: #252932;
-  --surf3: #1e2229;
-  --sd: #181b21;
-  --sl: #323743;
-  --brand: #7c93ff;
-  --brand-dk: #a5b5ff;
-  --brand-lt: rgba(124,147,255,.12);
-  --brand-glow: rgba(124,147,255,.20);
+  /* Surfaces — true-black canvas, #1c1c1e raised surface (Apple dark elevated) */
+  --bg: #000000;
+  --surf: #1c1c1e;
+  --surf2: #242426;
+  --surf3: #2c2c2e;
+  --fill: rgba(120,120,128,.24);
+  --fill2: rgba(120,120,128,.34);
+  --bar: rgba(28,28,30,.78);
+  --bar-solid: #1c1c1e;
+  --scrim: rgba(0,0,0,.60);
+  --inv-bg: rgba(242,242,247,.94);
+  --inv-fg: #1c1c1e;
+  --sd: rgba(84,84,88,.55);
+  --sl: rgba(255,255,255,.06);
+
+  --brand: #7ba0d8;
+  --brand-dk: #a9c3ec;
+  --brand-lt: rgba(123,160,216,.16);
+  --brand-glow: rgba(123,160,216,.30);
+  --on-brand: #0b1626;
+  --grad: linear-gradient(140deg,#456fa8,#5f89c6);   /* deeper than --brand so white text keeps contrast in dark mode */
   --ok: #3dba86;
-  --ok-lt: rgba(61,186,134,.14);
-  --ok-bd: rgba(61,186,134,.30);
-  --no: #e56161;
-  --no-lt: rgba(229,97,97,.14);
-  --no-bd: rgba(229,97,97,.30);
-  --warn: #e09437;
-  --warn-lt: rgba(224,148,55,.14);
-  --purple: #9d7bea;
-  --purple-lt: rgba(157,123,234,.14);
+  --ok-lt: rgba(61,186,134,.16);
+  --ok-bd: rgba(61,186,134,.32);
+  --no: #ff6b66;
+  --no-lt: rgba(255,107,102,.16);
+  --no-bd: rgba(255,107,102,.32);
+  --warn: #e8a04a;
+  --warn-lt: rgba(232,160,74,.16);
+  --purple: #8EA9D6;
+  --purple-lt: rgba(142,169,214,.16);
   --teal: #4db8d4;
-  --teal-lt: rgba(77,184,212,.14);
-  --t1: #e8ecf5;
-  --t2: #b8c0d0;
-  --t4: #4a5060;
+  --teal-lt: rgba(77,184,212,.16);
   --gold: #e8b93a;
   --silver: #a5abc2;
   --bronze: #c47e42;
+
+  --t1: #f5f5f7;
+  --t2: #d1d1d6;
+  --t3: #a1a1a6;
+  --t4: #6e6e73;
+  --bd: rgba(84,84,88,.55);
+  --bd2: rgba(84,84,88,.75);
+
+  /* Shadows barely read on black, so surfaces are separated by tone and a faint top-light hairline */
+  --sh:    0 0 0 .5px rgba(255,255,255,.06), 0 1px 2px rgba(0,0,0,.5);
+  --sh-sm: 0 0 0 .5px rgba(255,255,255,.06), 0 1px 2px rgba(0,0,0,.5);
+  --sh-md: 0 0 0 .5px rgba(255,255,255,.07), 0 4px 14px rgba(0,0,0,.55);
+  --sh-lg: 0 0 0 .5px rgba(255,255,255,.08), 0 10px 36px rgba(0,0,0,.7);
 }

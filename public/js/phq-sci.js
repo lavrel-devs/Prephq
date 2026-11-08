@@ -1,4 +1,4 @@
-// ── PrepHQ science rendering (v1.6) ─────────────────────────────
+// ── Wreddi science rendering (v1.6) ─────────────────────────────
 // Turns plain text into proper maths and chemistry, anywhere in the app, with no per-screen wiring:
 //   • LaTeX maths:   $x^2 + y^2$   \( ... \)   $$ ... $$   \[ ... \]      (KaTeX)
 //   • Chemistry:     $\ce{H2SO4}$   $\ce{2H2 + O2 -> 2H2O}$                    (KaTeX + mhchem)
@@ -37,7 +37,25 @@
 
   const isDark = () => document.documentElement.getAttribute('data-theme') === 'dark';
 
+  // v1.9.2 lite mode: no KaTeX download, formulas become readable text (H₂SO₄, Ca²⁺, a/b) and drawings wait out
+  const isLite = () => !!(window.PhqPerf && window.PhqPerf.lite && window.PhqPerf.lite());
+  function liteMath(el) {
+    const run = () => {
+      const MATH = /\$\$([\s\S]+?)\$\$|\\\(([\s\S]+?)\\\)|\\\[([\s\S]+?)\\\]|\$([^$\n]+?)\$/g;
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, { acceptNode: n => n.parentElement && !n.parentElement.closest('script,style,textarea,pre,code,.katex,.no-sci') && /[$\\]/.test(n.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT });
+      const nodes = []; while (walker.nextNode()) nodes.push(walker.currentNode);
+      nodes.forEach(n => { n.nodeValue = n.nodeValue.replace(MATH, (m, a, b, c, d) => window.PhqChemSpeech.texToPlain(a || b || c || d || '')); });
+    };
+    return (window.PhqChemSpeech ? Promise.resolve() : loadScript('/js/chem-speech.js')).then(run).catch(() => {});
+  }
+  function liteStructures(el) {
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, { acceptNode: n => /\[\[\s*smiles/i.test(n.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT });
+    const nodes = []; while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(n => { n.nodeValue = n.nodeValue.replace(/\[\[\s*smiles[\s\S]*?\]\]/gi, ' (structure drawing hidden in lite mode) '); });
+  }
+
   function renderMath(el) {
+    if (isLite()) return liteMath(el);
     return ensureKatex().then(() => {
       window.renderMathInElement(el, {
         delimiters: [
@@ -55,6 +73,7 @@
 
   // Replaces every [[smiles: …]] token in the element's text with a drawn structure.
   function renderStructures(el) {
+    if (isLite()) { liteStructures(el); return Promise.resolve(); }
     const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
       acceptNode: (n) => /\[\[\s*smiles/i.test(n.nodeValue) && !n.parentElement.closest('[data-nosci],textarea,script,style')
         ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT,

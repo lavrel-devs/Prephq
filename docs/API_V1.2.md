@@ -1,4 +1,4 @@
-# PrepHQ API — v1.2 New & Changed Endpoints
+# Wreddi API — v1.2 New & Changed Endpoints
 
 Everything below is new in v1.2 unless marked **(changed)**. Existing v1.1.9 endpoints not listed here are unchanged. All request/response bodies are JSON. All student endpoints require `Authorization: Bearer <access token>`; all admin endpoints require `Authorization: Bearer <admin token>` (or the legacy `x-admin-key` header for scripts).
 

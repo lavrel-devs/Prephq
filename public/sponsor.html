@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Weekly progress · Wreddi</title>
+<link rel="stylesheet" href="/vendor/fonts.css">
+<link rel="stylesheet" href="/css/tokens.css">
+<script src="/js/theme.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--t1);font-family:var(--ff-b);-webkit-font-smoothing:antialiased;padding:22px 18px 60px;}
+.wrap{max-width:460px;margin:0 auto;}
+.brand{font-family:var(--ff-h);font-weight:700;font-size:20px;color:var(--brand);letter-spacing:-.4px;margin-bottom:18px;}
+.hero{border-radius:26px;padding:24px 20px;color:#fff;background:var(--grad);box-shadow:var(--sh-lg);}
+.hero small{display:block;font-size:12px;font-weight:700;opacity:.85;}
+.hero h1{font-family:var(--ff-h);font-size:30px;letter-spacing:-.8px;margin:6px 0 4px;}
+.hero p{font-size:14px;font-weight:600;opacity:.92;line-height:1.5;}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0;}
+.tile{background:var(--surf);border-radius:16px;box-shadow:var(--sh);padding:14px 6px;text-align:center;}
+.tile b{display:block;font-family:var(--ff-h);font-size:26px;letter-spacing:-.6px;color:var(--brand);}
+.tile span{font-size:11.5px;font-weight:600;color:var(--t3);}
+.card{background:var(--surf);border-radius:18px;box-shadow:var(--sh);padding:16px;margin-bottom:14px;}
+.card h2{font-family:var(--ff-h);font-size:14px;color:var(--t2);margin-bottom:10px;}
+.bars{display:flex;align-items:flex-end;gap:8px;height:84px;}
+.bars div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;height:100%;}
+.bars i{display:block;width:100%;border-radius:8px 8px 4px 4px;background:var(--brand);min-height:4px;}
+.bars span{font-size:10.5px;font-weight:600;color:var(--t3);}
+.line{display:flex;justify-content:space-between;gap:10px;font-size:14px;font-weight:600;padding:6px 0;}
+.line span:last-child{font-weight:700;}
+.btn{display:block;text-align:center;text-decoration:none;width:100%;padding:15px;border-radius:14px;background:var(--surf);box-shadow:var(--sh);color:var(--brand);font-weight:700;font-size:15px;font-family:var(--ff-h);}
+.btn:active{box-shadow:var(--sh-in);}
+.note{font-size:12px;color:var(--t3);line-height:1.55;text-align:center;margin-top:14px;}
+.msg{text-align:center;color:var(--t3);font-size:14px;line-height:1.6;padding:50px 12px;}
+</style>
+<link rel="stylesheet" href="/css/hybrid.css">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/icons/favicon-48.png">
+<link rel="shortcut icon" href="/icons/favicon.ico">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">Wreddi</div>
+  <div id="out"><div class="msg">Loading…</div></div>
+</div>
+<script>
+(function(){
+  const token = location.pathname.split('/').filter(Boolean).pop();
+  const out = document.getElementById('out');
+  const esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  fetch('/api/sponsor/public/' + encodeURIComponent(token)).then(async r => {
+    const d = await r.json();
+    if (!r.ok) { out.innerHTML = '<div class="msg">' + esc(d.error || 'This link is not available.') + '</div>'; return; }
+    const w = d.thisWeek, lw = d.lastWeek, max = Math.max(1, ...w.perDay);
+    const today = new Date(Date.now() + 3600000).getUTCDay();   // Nigerian day of week
+    const diff = w.answered - lw.answered;
+    const trend = lw.answered ? (diff === 0 ? 'Same as last week.' : (diff > 0 ? '+' + diff + ' more than last week.' : Math.abs(diff) + ' fewer than last week.')) : '';
+    const msg = w.answered ? d.name + ' answered ' + w.answered + ' practice question' + (w.answered === 1 ? '' : 's') + ' this week. ' + trend : d.name + ' has not practised yet this week.';
+    let html = '<div class="hero"><small>This week</small><h1>' + esc(d.name) + '</h1><p>' + esc(msg) + '</p></div>' +
+      '<div class="tiles"><div class="tile"><b>' + w.accuracy + '%</b><span>correct</span></div><div class="tile"><b>' + w.activeDays + '/7</b><span>days studied</span></div><div class="tile"><b>' + d.streak + '</b><span>day streak</span></div></div>' +
+      '<div class="card"><h2>Questions per day</h2><div class="bars">' + w.perDay.map((n, i) => '<div><i style="height:' + Math.round(n / max * 100) + '%"></i><span>' + DAYS[(today - 6 + i + 14) % 7] + '</span></div>').join('') + '</div></div>' +
+      '<div class="card"><h2>Plan</h2><div class="line"><span>Current plan</span><span>' + esc(d.plan.label) + '</span></div>' +
+      (d.plan.daysLeft != null ? '<div class="line"><span>Ends in</span><span>' + d.plan.daysLeft + ' day' + (d.plan.daysLeft === 1 ? '' : 's') + '</span></div>' : '') + '</div>';
+    if (d.whatsapp && (d.plan.free || (d.plan.daysLeft != null && d.plan.daysLeft <= 7))) {
+      const text = 'Hello, I am the sponsor of ' + d.name + ' on Wreddi. I would like to ' + (d.plan.free ? 'upgrade their plan.' : 'renew their plan.');
+      html += '<a class="btn" target="_blank" rel="noopener" href="https://wa.me/' + d.whatsapp + '?text=' + encodeURIComponent(text) + '">' + (d.plan.free ? 'Help ' + esc(d.name) + ' upgrade on WhatsApp' : 'Renew on WhatsApp') + '</a>';
+    }
+    out.innerHTML = html + '<p class="note">' + esc(d.name) + ' chose to share this page with you. It shows only this week\'s totals, never individual scores or private notes. ' + esc(d.name) + ' can turn it off at any time.</p>';
+  }).catch(() => { out.innerHTML = '<div class="msg">Could not load. Check your connection and try again.</div>'; });
+})();
+</script>
+</body>
+</html>

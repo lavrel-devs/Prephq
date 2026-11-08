@@ -100,7 +100,7 @@ async function generateNote(req, res) {
     // Already covered by an approved course note? Point them to it — no charge.
     const re = new RegExp(`^${escapeRegex(topic)}$`, 'i');
     if (await CourseNote.exists({ courseKey: course.key, published: true, $or: [{ topic: re }, { title: re }] })) {
-      return res.status(409).json({ error: `PrepHQ already has notes on “${topic}” for ${course.courseCode} — it's in the list below, free.`, code: 'NOTE_EXISTS' });
+      return res.status(409).json({ error: `Wreddi already has notes on “${topic}” for ${course.courseCode} — it's in the list below, free.`, code: 'NOTE_EXISTS' });
     }
     // Already wrote this exact topic + depth for this student? Open it again for free.
     const mine = await PersonalNote.findOne({ matric, courseKey: course.key, topicKey, depth });

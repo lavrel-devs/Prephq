@@ -44,7 +44,7 @@ router.post('/upgrade-request', requireStudent, limiter(10), async (req, res) =>
     }
     const contact = await pickAdminContact();
     const to = contact ? contact.number : '';
-    const msg = `Hi, I'd like to activate PrepHQ Premium (${PLAN_LABEL[plan]} — ₦${Number(price).toLocaleString('en-NG')}). Request ${reqDoc.code}. Matric: ${student.matric}. Name: ${student.name}.`;
+    const msg = `Hi, I'd like to activate Wreddi Premium (${PLAN_LABEL[plan]} — ₦${Number(price).toLocaleString('en-NG')}). Request ${reqDoc.code}. Matric: ${student.matric}. Name: ${student.name}.`;
     res.status(201).json({ code: reqDoc.code, plan, price, whatsappUrl: waUrl(to, msg), hasContact: !!to });
   } catch (e) { res.status(500).json({ error: 'Could not create your request. Please try again.' }); }
 });

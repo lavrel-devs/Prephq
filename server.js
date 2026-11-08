@@ -123,19 +123,19 @@ async function bootstrapCourses() {
     const count = await Course.countDocuments();
     if (count > 0) return;
     const defaults = [
-      { courseCode: 'GST101', key: 'gst101', courseTitle: 'Use of English',    department: 'GST', level: '100', color: '#0A5CF5', icon: 'translate' },
-      { courseCode: 'GST102', key: 'gst102', courseTitle: 'Communication',     department: 'GST', level: '100', color: '#00C96B', icon: 'edit' },
-      { courseCode: 'GST103', key: 'gst103', courseTitle: 'Peoples & Culture', department: 'GST', level: '100', color: '#F5930A', icon: 'globe' },
-      { courseCode: 'STA111', key: 'sta111', courseTitle: 'Statistics',        department: 'STA', level: '100', color: '#7B2CF5', icon: 'bar' },
-      { courseCode: 'PHY101', key: 'phy101', courseTitle: 'Mechanics',         department: 'PHY', level: '100', color: '#0ABCF5', icon: 'lightning' },
-      { courseCode: 'PHY107', key: 'phy107', courseTitle: 'Lab Measurements',  department: 'PHY', level: '100', color: '#00C96B', icon: 'flask' },
-      { courseCode: 'MTH101', key: 'mth101', courseTitle: 'Mathematics I',     department: 'MTH', level: '100', color: '#F5340A', icon: 'calc' },
-      { courseCode: 'MTH103', key: 'mth103', courseTitle: 'Mathematics III',   department: 'MTH', level: '100', color: '#F5930A', icon: 'math' },
-      { courseCode: 'CHM141', key: 'chm141', courseTitle: 'Chemistry',         department: 'CHM', level: '100', color: '#00C96B', icon: 'atom' },
-      { courseCode: 'BIO101', key: 'bio101', courseTitle: 'Biology',           department: 'BIO', level: '100', color: '#0A5CF5', icon: 'dna' },
-      { courseCode: 'CSC101', key: 'csc101', courseTitle: 'Computer Science',  department: 'CSC', level: '100', color: '#0ABCF5', icon: 'code' },
+      { courseCode: 'GST101', key: 'gst101', courseTitle: 'Use of English',    department: 'GST', level: '100', color: '#3E5C8A', icon: 'translate' },
+      { courseCode: 'GST102', key: 'gst102', courseTitle: 'Communication',     department: 'GST', level: '100', color: '#2E8B6A', icon: 'edit' },
+      { courseCode: 'GST103', key: 'gst103', courseTitle: 'Peoples & Culture', department: 'GST', level: '100', color: '#B98A2E', icon: 'globe' },
+      { courseCode: 'STA111', key: 'sta111', courseTitle: 'Statistics',        department: 'STA', level: '100', color: '#5D7FB0', icon: 'bar' },
+      { courseCode: 'PHY101', key: 'phy101', courseTitle: 'Mechanics',         department: 'PHY', level: '100', color: '#3A8FB0', icon: 'lightning' },
+      { courseCode: 'PHY107', key: 'phy107', courseTitle: 'Lab Measurements',  department: 'PHY', level: '100', color: '#2E8B6A', icon: 'flask' },
+      { courseCode: 'MTH101', key: 'mth101', courseTitle: 'Mathematics I',     department: 'MTH', level: '100', color: '#B5654A', icon: 'calc' },
+      { courseCode: 'MTH103', key: 'mth103', courseTitle: 'Mathematics III',   department: 'MTH', level: '100', color: '#B98A2E', icon: 'math' },
+      { courseCode: 'CHM141', key: 'chm141', courseTitle: 'Chemistry',         department: 'CHM', level: '100', color: '#2E8B6A', icon: 'atom' },
+      { courseCode: 'BIO101', key: 'bio101', courseTitle: 'Biology',           department: 'BIO', level: '100', color: '#3E5C8A', icon: 'dna' },
+      { courseCode: 'CSC101', key: 'csc101', courseTitle: 'Computer Science',  department: 'CSC', level: '100', color: '#3A8FB0', icon: 'code' },
       { courseCode: 'COS101', key: 'cos101', courseTitle: 'Computer Systems',  department: 'COS', level: '100', color: '#6B7089', icon: 'laptop' },
-      { courseCode: 'BONUS',  key: 'extra',  courseTitle: 'Grammar & Study',   department: 'GST', level: '100', color: '#F5930A', icon: 'star' },
+      { courseCode: 'BONUS',  key: 'extra',  courseTitle: 'Grammar & Study',   department: 'GST', level: '100', color: '#B98A2E', icon: 'star' },
     ];
     await Course.insertMany(defaults);
     console.log(`Course bootstrap: seeded ${defaults.length} default courses.`);
@@ -178,12 +178,16 @@ app.use('/api', require('./src/routes/leaderboard.routes'));
 app.use('/api', require('./src/routes/studyRoom.routes'));
 app.use('/api', require('./src/routes/chat.routes'));
 app.use('/api', require('./src/routes/brainiac.routes'));   // v1.8.3 Brainiac floating companion
+app.use('/api/sponsor', require('./src/routes/sponsor.routes'));   // v1.9.2 sponsor progress link (public view + student controls)
+app.use('/api/wrapped', require('./src/routes/wrapped.routes'));   // v1.9.2 semester recap
+app.use('/api/mistakes', require('./src/routes/mistakes.routes'));   // v1.9.2 why-I-got-it-wrong notebook
 app.use('/api', require('./src/routes/guess.routes'));   // v1.8.6 "I guessed" question flags
 app.use('/api/scores', require('./src/routes/scores.routes'));
 app.use('/api', require('./src/routes/studyguide.routes'));
 app.use('/api', require('./src/routes/cosmetics.routes'));
 app.use('/api', require('./src/routes/support.routes'));   // upgrade requests + question reports
 app.use('/api', require('./src/routes/study.routes'));     // study plan, exam overview, achievements
+app.use('/api', require('./src/routes/autopilot.routes')); // v1.9.0 Weakness Autopilot (today's 15-minute plan)
 app.use('/api', require('./src/routes/notes.routes'));     // course notes
 app.use('/api/admin', require('./src/routes/admin/admin.cosmetics.routes'));
 app.use('/api', require('./src/routes/student.routes')); // /api/questions/:course, /api/me
@@ -223,13 +227,14 @@ app.get('/landing.html', (req, res) => res.redirect(301, '/'));
 
 // The signed-in tabs are one single-page app: every one of these URLs serves the dashboard (the shell), and
 // js/shell.js opens the matching view from the path. Old .html links keep working.
-const SHELL_ROUTES = ['/contests', '/study-rooms', '/chat', '/profile', '/leaderboard', '/written'];
+const SHELL_ROUTES = ['/contests', '/study-rooms', '/chat', '/profile', '/leaderboard', '/written', '/cheatsheet', '/focus', '/mistakes', '/wrapped'];
 SHELL_ROUTES.forEach(r => {
   app.get(r, (req, res) => res.sendFile(path.join(__dirname, 'public', 'dashboard.html')));
   app.get(r + '.html', (req, res) => res.redirect(301, r + req.url.slice(req.path.length)));
 });
 // v1.7.1: shared quiz links (/q/<token>) also open the shell; the dashboard reads the token from the path.
 app.get('/q/:token', (req, res) => res.sendFile(path.join(__dirname, 'public', 'dashboard.html')));
+app.get('/s/:token', (req, res) => { res.set({ 'X-Robots-Tag': 'noindex, nofollow', 'Referrer-Policy': 'no-referrer', 'Cache-Control': 'no-store' }); res.sendFile(path.join(__dirname, 'public', 'sponsor.html')); });   // v1.9.2 sponsor page, no login
 app.get('/invite/:kind/:token', (req, res) => res.sendFile(path.join(__dirname, 'public', 'invite.html')));   // v1.7.5 logged-out landing for shared links
 app.get('/c/:token', (req, res) => res.sendFile(path.join(__dirname, 'public', 'dashboard.html')));   // v1.7.4 challenge links
 Object.entries(PAGE_ROUTES).forEach(([route, file]) => {
@@ -302,7 +307,7 @@ initStudyRoomSockets(io);
 // ══════════════════════════════════════════════════════════════
 httpServer.listen(PORT, () => {
   console.log('\n╔══════════════════════════════════════════════════╗');
-  console.log(`║  PrepHQ v1.7.0 running on http://localhost:${PORT}   ║`);
+  console.log(`║  Wreddi v1.9.0 running on http://localhost:${PORT}   ║`);
   console.log(`║  Student login: http://localhost:${PORT}/login       ║`);
   console.log(`║  Admin:         http://localhost:${PORT}/login       ║`);
   console.log('╚══════════════════════════════════════════════════╝\n');

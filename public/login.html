@@ -6,11 +6,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#e0e5ec">
+<meta name="theme-color" content="#f2f2f7">
 <link rel="manifest" href="/manifest.json">
-<title>PrepHQ — Sign In</title>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/icons/favicon-48.png">
+<link rel="shortcut icon" href="/icons/favicon.ico">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<title>Wreddi — Sign In</title>
+<link rel="stylesheet" href="/vendor/fonts.css">
+<link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
 <link rel="stylesheet" href="/css/glass.css">
 <link rel="stylesheet" href="/css/tokens.css">
 <style>
@@ -40,26 +44,26 @@ body{
   width:100%;max-width:410px;
   position:relative;z-index:1;
   padding:38px 28px 30px;
-  background:var(--bg);
+  background:var(--surf);
   border-radius:28px;
   box-shadow:var(--sh-lg);
   border:none;
 }
 .logo{
-  width:68px;height:68px;border-radius:22px;
-  background:var(--bg);
+  width:68px;height:68px;border-radius:50%;
+  background:transparent;
   display:flex;align-items:center;justify-content:center;
   margin:0 auto 20px;
-  box-shadow:var(--sh);
+  box-shadow:0 4px 14px rgba(22,41,110,.25);
 }
 .logo i{font-size:26px;color:var(--brand);}
-.title{font-family:var(--ff-h);font-size:24px;font-weight:800;text-align:center;letter-spacing:-.5px;}
+.title{font-family:var(--ff-h);font-size:24px;font-weight:700;text-align:center;letter-spacing:-.5px;}
 .sub{font-size:13px;color:var(--t3);text-align:center;margin-top:5px;margin-bottom:22px;}
 
 /* Segmented tab control — inset trough with a raised active pill */
 .tabs{
   display:flex;
-  background:var(--bg);
+  background:var(--fill);
   border:none;
   border-radius:var(--rpill);
   padding:5px;
@@ -70,7 +74,7 @@ body{
   flex:1;text-align:center;
   padding:10px 0;
   border-radius:var(--rpill);
-  font-size:13px;font-weight:800;
+  font-size:13px;font-weight:700;
   color:var(--t3);
   cursor:pointer;
   transition:box-shadow .18s, color .18s, background .18s;
@@ -78,14 +82,14 @@ body{
 }
 .tab:active{transform:scale(.98);}
 .tab.on{
-  background:var(--bg);
+  background:var(--surf);
   color:var(--brand);
   box-shadow:var(--sh-sm);
 }
 
 /* Error banner */
 .err-banner{
-  background:var(--bg);
+  background:var(--fill);
   box-shadow:var(--sh-in), 0 0 0 2px var(--no-lt);
   border-radius:var(--r8);
   padding:11px 14px;
@@ -99,8 +103,8 @@ body{
 /* Inputs — inset wells */
 .f-group{margin-bottom:16px;}
 .f-label{
-  font-size:11px;font-weight:700;
-  text-transform:uppercase;letter-spacing:.08em;
+  font-size:11px;font-weight:600;
+  
   color:var(--t3);
   display:flex;align-items:center;gap:6px;
   margin-bottom:8px;
@@ -117,7 +121,7 @@ body{
   padding:14px 14px 14px 42px;
   border-radius:var(--r12);
   border:none;
-  background:var(--bg);
+  background:var(--fill);
   font-size:15px;font-weight:600;
   color:var(--t1);
   outline:none;
@@ -137,9 +141,9 @@ body{
   width:100%;
   padding:16px;
   border-radius:var(--r12);
-  background:var(--bg);
+  background:var(--surf);
   color:var(--brand);
-  font-size:16px;font-weight:800;
+  font-size:16px;font-weight:700;
   border:none;cursor:pointer;
   box-shadow:var(--sh);
   transition:box-shadow .15s, transform .15s, color .15s;
@@ -156,18 +160,18 @@ body{
 .btn-grad i{font-size:14px;}
 
 .foot{text-align:center;margin-top:18px;font-size:13px;color:var(--t3);}
-.foot a{color:var(--brand);font-weight:700;text-decoration:none;}
+.foot a{color:var(--brand);font-weight:600;text-decoration:none;}
 .foot a:active{opacity:.7;}
 
 /* Toast — raised neutral pill with brand text */
 #toast{
   position:fixed;bottom:24px;left:50%;
   transform:translateX(-50%) translateY(16px);
-  background:var(--bg);
+  background:var(--surf);
   color:var(--brand);
   padding:12px 22px;
   border-radius:var(--rpill);
-  font-size:13px;font-weight:700;
+  font-size:13px;font-weight:600;
   opacity:0;
   transition:all .3s var(--ease-o);
   z-index:999;pointer-events:none;white-space:nowrap;
@@ -181,6 +185,8 @@ body{
   .title{font-size:22px;}
 }
 </style>
+<link rel="stylesheet" href="/css/hybrid.css">
+<script src="/js/ripple.js" defer></script>
 </head>
 <body class="fs-md">
 <div class="glass-backdrop"></div>
@@ -191,8 +197,8 @@ body{
 <div id="toast"></div>
 
 <div class="card">
-  <div class="logo"><i class="fa-solid fa-graduation-cap"></i></div>
-  <div class="title">PrepHQ</div>
+  <div class="logo"><img src="/icons/logo-mark.png" alt="Wreddi" width="68" height="68" class="logo-img"></div>
+  <div class="title">Wreddi</div>
   <div class="sub">Sign in to continue</div>
 
   <div class="tabs">
@@ -217,10 +223,10 @@ body{
         <i class="fa-solid fa-key f-input-icon"></i>
         <input class="f-input" id="s-pass" type="password" placeholder="Your password" autocomplete="current-password">
       </div>
-      <div class="f-hint">Use the password you created when you signed up. <a href="/forgot-password" style="color:var(--brand);font-weight:700;text-decoration:none;">Forgot password?</a></div>
+      <div class="f-hint">Use the password you created when you signed up. <a href="/forgot-password" style="color:var(--brand);font-weight:600;text-decoration:none;">Forgot password?</a></div>
     </div>
     <button class="btn-grad" id="s-btn" onclick="studentLogin()"><i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In</button>
-    <div style="font-size:11.5px;color:var(--t3);line-height:1.55;margin:12px 2px 0;text-align:center;">By signing in you agree to our <a href="/terms" target="_blank" rel="noopener" style="color:var(--brand);font-weight:700;">Terms &amp; Conditions</a> and <a href="/privacy" target="_blank" rel="noopener" style="color:var(--brand);font-weight:700;">Privacy Policy</a> (and our other <a href="/legal" target="_blank" rel="noopener" style="color:var(--brand);font-weight:700;">policies</a>), and you consent to how we use your information.</div>
+    <div style="font-size:11.5px;color:var(--t3);line-height:1.55;margin:12px 2px 0;text-align:center;">By signing in you agree to our <a href="/terms" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600;">Terms &amp; Conditions</a> and <a href="/privacy" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600;">Privacy Policy</a> (and our other <a href="/legal" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600;">policies</a>), and you consent to how we use your information.</div>
     <div class="foot">New student? <a href="/register.html">Create a free account</a></div>
   </form>
 
@@ -280,7 +286,7 @@ async function studentLogin(){
     if(!res.ok){
       showErr(data.error || 'Invalid credentials');
       // A wrong sign-in is often just someone who never registered — point them at sign-up (not an account check).
-      if(res.status === 401) document.getElementById('err-msg').insertAdjacentHTML('beforeend', ' <a href="/register.html" style="color:var(--brand);font-weight:800;white-space:nowrap;">New here? Create an account</a>');
+      if(res.status === 401) document.getElementById('err-msg').insertAdjacentHTML('beforeend', ' <a href="/register.html" style="color:var(--brand);font-weight:700;white-space:nowrap;">New here? Create an account</a>');
       btn.disabled=false; return;
     }
     PhqAuth.setSession({

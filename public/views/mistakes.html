@@ -1,0 +1,66 @@
+<!-- View: Mistake Notebook. Loaded once by js/shell.js into <div class="scr" id="view-mistakes">, then only shown and hidden.
+     Shows why this student misses questions (the reason they tagged in practice), advice from the pattern, and their one-line lessons. -->
+<style>
+#view-mistakes *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+#view-mistakes{font-family:var(--ff-b);color:var(--t1);min-height:calc(100dvh - var(--nav-space,96px));-webkit-font-smoothing:antialiased;}
+#view-mistakes .v-wrap{max-width:560px;margin:0 auto;padding:18px 18px 120px;}
+#view-mistakes .v-topbar{display:flex;align-items:center;gap:12px;padding:6px 0 16px;}
+#view-mistakes .v-back-btn{width:38px;height:38px;border-radius:50%;background:var(--surf);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--brand);flex-shrink:0;box-shadow:var(--sh);}
+#view-mistakes .v-title{font-family:var(--ff-h);font-weight:700;font-size:20px;letter-spacing:-.4px;}
+#view-mistakes .v-card{background:var(--surf);border-radius:18px;box-shadow:var(--sh);padding:16px;margin-bottom:14px;}
+#view-mistakes .v-advice{font-size:14.5px;line-height:1.55;font-weight:600;}
+#view-mistakes .v-bar{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:12.5px;color:var(--t2);font-weight:600;}
+#view-mistakes .v-bar-name{width:112px;flex-shrink:0;}
+#view-mistakes .v-bar-track{flex:1;height:9px;border-radius:99px;background:var(--fill);box-shadow:var(--sh-in-sm);overflow:hidden;}
+#view-mistakes .v-bar-track i{display:block;height:100%;border-radius:99px;background:var(--brand);}
+#view-mistakes .v-bar-n{width:26px;text-align:right;color:var(--t3);}
+#view-mistakes .v-h{font-family:var(--ff-h);font-weight:700;font-size:14px;margin:18px 2px 10px;color:var(--t2);}
+#view-mistakes .v-q{font-size:14px;line-height:1.5;font-weight:600;}
+#view-mistakes .v-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;font-size:11.5px;color:var(--t3);font-weight:600;}
+#view-mistakes .v-pill{padding:3px 9px;border-radius:99px;box-shadow:var(--sh-in-sm);color:var(--brand);}
+#view-mistakes .v-ans{margin-top:8px;font-size:12.5px;color:var(--t2);}
+#view-mistakes .v-lesson{margin-top:10px;font-size:13.5px;line-height:1.5;padding:10px 12px;border-radius:12px;box-shadow:var(--sh-in-sm);}
+#view-mistakes .v-empty{text-align:center;color:var(--t3);font-size:13.5px;line-height:1.6;padding:26px 10px;}
+</style>
+
+<div class="v-wrap">
+  <div class="v-topbar">
+    <div class="v-back-btn" onclick="PhqShell.go('/dashboard')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></div>
+    <div class="v-title">Mistake Notebook</div>
+  </div>
+  <div id="mnb-body"><div class="v-empty">Loading…</div></div>
+</div>
+
+<script>
+const document = PhqShell.scope(root); // every getElementById/querySelector in this view only sees this view
+
+const NAMES = { didnt_know: "Didn't know it", careless: 'Careless slip', time: 'Ran out of time', misread: 'Misread it' };
+const esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+let loaded = false;
+
+async function load(){
+  const box = document.getElementById('mnb-body');
+  try {
+    const r = await PhqAuth.authFetch('/api/mistakes', {}, 'student');
+    if (!r.ok) throw new Error('bad');
+    const d = await r.json();
+    const total = Object.values(d.counts || {}).reduce((a, b) => a + b, 0), max = Math.max(1, ...Object.values(d.counts || { x: 1 }));
+    let html = `<div class="v-card"><div class="v-advice">${esc(d.advice.text)}</div>${
+      Object.keys(NAMES).map(k => { const n = (d.counts || {})[k] || 0; return `<div class="v-bar"><span class="v-bar-name">${NAMES[k]}</span><span class="v-bar-track"><i style="width:${Math.round(n / max * 100)}%"></i></span><span class="v-bar-n">${n}</span></div>`; }).join('')
+    }</div>`;
+    if (!d.notes.length) html += `<div class="v-empty">Nothing here yet.<br>When you get a practice question wrong, tap why, and add a line to remember. It all collects here.</div>`;
+    else html += `<div class="v-h">Your mistakes (${d.notes.length}${total ? '' : ''})</div>` + d.notes.map(n => `<div class="v-card"><div class="v-q">${esc(n.q)}</div>
+      <div class="v-ans">Right answer: <b>${esc(n.answer)}</b></div>
+      <div class="v-meta">${n.why ? `<span class="v-pill">${NAMES[n.why]}</span>` : ''}${n.course ? `<span>${esc(String(n.course).toUpperCase())}</span>` : ''}${n.tag ? `<span>${esc(n.tag)}</span>` : ''}</div>
+      ${n.lesson ? `<div class="v-lesson">${esc(n.lesson)}</div>` : ''}</div>`).join('');
+    box.innerHTML = html; loaded = true;
+    if (window.PhqSci && PhqSci.render) PhqSci.render(box);   // questions may contain formulas
+  } catch (e) { box.innerHTML = '<div class="v-empty">Could not load your notebook. Check your connection and try again.</div>'; }
+}
+
+// first open: the shell only calls onShow() when you come BACK to a view, so load once here too
+load();
+
+return { onShow(){ window.scrollTo(0, 0); load(); } };
+//# sourceURL=view-mistakes.js
+</script>

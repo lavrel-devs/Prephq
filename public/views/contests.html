@@ -22,7 +22,7 @@
 }
 #view-contests .v-back-btn{
   width:38px;height:38px;border-radius:50%;
-  background:var(--bg);border:none;
+  background:var(--surf);border:none;
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;color:var(--brand);flex-shrink:0;
   box-shadow:var(--sh);
@@ -30,7 +30,7 @@
 }
 #view-contests .v-back-btn:active{transform:scale(.93);box-shadow:var(--sh-in);}
 #view-contests .pg-title{
-  font-family:var(--ff-h);font-size:20px;font-weight:800;
+  font-family:var(--ff-h);font-size:20px;font-weight:700;
   color:var(--t1);letter-spacing:-.4px;
 }
 
@@ -40,7 +40,7 @@
 #view-contests .tabs{
   display:flex;gap:5px;
   margin-bottom:18px;
-  background:var(--bg);
+  background:var(--fill);
   border-radius:16px;
   padding:5px;
   box-shadow:var(--sh-in-sm);
@@ -49,7 +49,7 @@
   flex:1;text-align:center;
   padding:10px 0;
   border-radius:12px;
-  font-size:12.5px;font-weight:800;
+  font-size:12.5px;font-weight:700;
   color:var(--t3);
   cursor:pointer;
   background:transparent;
@@ -57,7 +57,7 @@
 }
 #view-contests .tab:active{transform:scale(.98);}
 #view-contests .tab.on{
-  background:var(--bg);
+  background:var(--surf);
   color:var(--brand);
   box-shadow:var(--sh-sm);
 }
@@ -66,7 +66,7 @@
    CONTEST CARDS
 ═══════════════════════════════════════ */
 #view-contests .contest-card{
-  background:var(--bg);
+  background:var(--surf);
   border-radius:var(--r20);
   padding:18px;
   box-shadow:var(--sh);
@@ -85,18 +85,18 @@
   gap:10px;margin-bottom:8px;
 }
 #view-contests .cc-title{
-  font-family:var(--ff-h);font-weight:800;font-size:16px;
+  font-family:var(--ff-h);font-weight:700;font-size:16px;
   color:var(--t1);letter-spacing:-.2px;
   line-height:1.3;
 }
 
 #view-contests .cc-badge{
-  font-size:10.5px;font-weight:800;
+  font-size:10.5px;font-weight:700;
   padding:5px 11px;
   border-radius:var(--r8);
-  text-transform:uppercase;
-  letter-spacing:.05em;
-  background:var(--bg);
+  
+  
+  background:var(--surf);
   box-shadow:var(--sh-sm);
   flex-shrink:0;
 }
@@ -145,7 +145,7 @@
 #view-contests .v-modal-bg.on{display:flex;}
 
 #view-contests .v-modal{
-  background:var(--bg);
+  background:var(--surf);
   border-radius:var(--r24);
   padding:24px 22px;
   width:100%;max-width:440px;
@@ -178,11 +178,11 @@
   border:none;
   border-radius:var(--r12);
   padding:14px;
-  font-weight:800;
+  font-weight:700;
   font-size:14px;
   cursor:pointer;
   width:100%;
-  background:var(--bg);
+  background:var(--surf);
   color:var(--brand);
   box-shadow:var(--sh);
   font-family:var(--ff-h);
@@ -191,7 +191,7 @@
 }
 #view-contests .btn:active{transform:scale(.98);box-shadow:var(--sh-in);}
 #view-contests .btn.ghost{
-  background:var(--bg);
+  background:var(--surf);
   color:var(--t2);
   box-shadow:var(--sh);
 }
@@ -205,7 +205,7 @@
   padding:13px 16px;
   border-radius:var(--r12);
   border:none;
-  background:var(--bg);
+  background:var(--fill);
   font-size:14px;
   font-weight:600;
   color:var(--t1);
@@ -227,7 +227,7 @@
   cursor:pointer;
   font-size:13.5px;
   font-weight:600;
-  background:var(--bg);
+  background:var(--surf);
   color:var(--t1);
   box-shadow:var(--sh);
   transition:box-shadow .15s, color .15s, transform .15s;
@@ -330,13 +330,13 @@ async function openDetail(id){
       if(lr.ok) lb = await lr.json();
     }
     const joinedBlock = c.teamBased ? renderTeamState(c) : (c.myEntry ? renderJoinedState(c) : ((c.status === 'upcoming' || c.status === 'live') ? `<button class="btn" onclick="joinContest('${c._id}')" style="margin-bottom:14px;">Join Contest</button>` : ''));
-    const lbBlock = lb.length > 0 ? `<div style="font-size:12.5px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;margin-top:4px;">${c.teamBased?'Team ':''}Leaderboard</div>
+    const lbBlock = lb.length > 0 ? `<div style="font-size:12.5px;font-weight:700;color:var(--t3);margin-bottom:12px;margin-top:4px;">${c.teamBased?'Team ':''}Leaderboard</div>
         ${lb.slice(0,15).map(row => c.teamBased
-          ? `<div class="lb-row"><span style="font-weight:700;">#${row.rank} ${escapeHtml(row.teamName)} <span style="color:var(--t4);font-weight:500;">(${row.memberCount})</span></span><span style="font-weight:800;">${row.score}</span></div>`
-          : `<div class="lb-row"><span style="font-weight:700;">#${row.rank} ${escapeHtml(row.username||row.matric)}</span><span style="font-weight:800;">${row.score}</span></div>`
+          ? `<div class="lb-row"><span style="font-weight:600;">#${row.rank} ${escapeHtml(row.teamName)} <span style="color:var(--t4);font-weight:500;">(${row.memberCount})</span></span><span style="font-weight:700;">${row.score}</span></div>`
+          : `<div class="lb-row"><span style="font-weight:600;">#${row.rank} ${escapeHtml(row.username||row.matric)}</span><span style="font-weight:700;">${row.score}</span></div>`
         ).join('')}` : '';
     document.getElementById('detail-body').innerHTML = `
-      <div style="font-family:var(--ff-h);font-weight:800;font-size:18px;margin-bottom:6px;color:var(--t1);letter-spacing:-.3px;">${escapeHtml(c.title)}${c.teamBased?' <span style="font-size:10px;background:var(--brand-lt);color:var(--brand);padding:2px 8px;border-radius:99px;vertical-align:middle;">TEAMS</span>':''}</div>
+      <div style="font-family:var(--ff-h);font-weight:700;font-size:18px;margin-bottom:6px;color:var(--t1);letter-spacing:-.3px;">${escapeHtml(c.title)}${c.teamBased?' <span style="font-size:10px;background:var(--brand-lt);color:var(--brand);padding:2px 8px;border-radius:99px;vertical-align:middle;">TEAMS</span>':''}</div>
       <div style="font-size:12.5px;color:var(--t3);margin-bottom:16px;line-height:1.55;">${escapeHtml(c.description || '')}</div>
       <div style="display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--t3);font-weight:600;margin-bottom:18px;">
         <span>Entry: <b style="color:var(--t1);">${c.entryFee || 0} credits</b></span>
@@ -353,7 +353,7 @@ async function openDetail(id){
 
 function renderJoinedState(c){
   const alreadyScored = c.myEntry.score > 0;
-  let inner = `<div style="background:var(--bg);color:var(--ok);padding:12px 16px;border-radius:var(--r12);font-size:13px;font-weight:700;margin-bottom:12px;box-shadow:var(--sh-in-sm), 0 0 0 2px var(--ok-lt);">You're in!${alreadyScored ? ' Score: '+c.myEntry.score : ''}${c.myEntry.prizeAwarded ? ' · Won '+c.myEntry.prizeAwarded+' credits' : ''}</div>`;
+  let inner = `<div style="background:var(--fill);color:var(--ok);padding:12px 16px;border-radius:var(--r12);font-size:13px;font-weight:600;margin-bottom:12px;box-shadow:var(--sh-in-sm), 0 0 0 2px var(--ok-lt);">You're in!${alreadyScored ? ' Score: '+c.myEntry.score : ''}${c.myEntry.prizeAwarded ? ' · Won '+c.myEntry.prizeAwarded+' credits' : ''}</div>`;
   if(c.type === 'quiz' && c.status === 'live' && !alreadyScored){
     inner += `<button class="btn" style="margin-bottom:14px;" onclick="startContestQuiz('${c._id}')"><i class="fa-solid fa-pen"></i> Start Quiz</button>`;
   }
@@ -372,12 +372,12 @@ function renderTeamState(c){
     `;
   }
   const alreadyScored = c.myTeam.score > 0;
-  let inner = `<div style="background:var(--bg);color:var(--ok);padding:12px 16px;border-radius:var(--r12);font-size:13px;font-weight:700;margin-bottom:10px;box-shadow:var(--sh-in-sm), 0 0 0 2px var(--ok-lt);">
+  let inner = `<div style="background:var(--fill);color:var(--ok);padding:12px 16px;border-radius:var(--r12);font-size:13px;font-weight:600;margin-bottom:10px;box-shadow:var(--sh-in-sm), 0 0 0 2px var(--ok-lt);">
     Team "${escapeHtml(c.myTeam.teamName)}" · ${c.myTeam.members.length} member${c.myTeam.members.length!==1?'s':''}${alreadyScored ? ' · Score: '+c.myTeam.score : ''}${c.myTeam.prizeAwarded ? ' · Won '+c.myTeam.prizeAwarded+' credits (split)' : ''}
   </div>
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:12px;color:var(--t3);">
     <span>Invite code: <b style="font-family:monospace;color:var(--t1);">${c.myTeam.teamCode}</b></span>
-    <button style="border:none;background:var(--bg);padding:5px 10px;border-radius:var(--r8);font-size:11px;font-weight:700;cursor:pointer;color:var(--brand);box-shadow:var(--sh-sm);" onclick="navigator.clipboard?.writeText('${c.myTeam.teamCode}')">Copy</button>
+    <button style="border:none;background:var(--surf);padding:5px 10px;border-radius:var(--r8);font-size:11px;font-weight:600;cursor:pointer;color:var(--brand);box-shadow:var(--sh-sm);" onclick="navigator.clipboard?.writeText('${c.myTeam.teamCode}')">Copy</button>
   </div>`;
   if(c.type === 'quiz' && c.status === 'live' && !alreadyScored){
     inner += `<button class="btn" style="margin-bottom:14px;" onclick="startContestQuiz('${c._id}')"><i class="fa-solid fa-pen"></i> Start Quiz (for your team)</button>`;
@@ -393,7 +393,7 @@ function showCreateTeamForm(id){
 }
 function showJoinTeamForm(id){
   document.getElementById('team-form-area').innerHTML = `
-    <input class="v-modal-input" id="team-code-input" placeholder="Team code" style="margin-bottom:10px;text-transform:uppercase;">
+    <input class="v-modal-input" id="team-code-input" placeholder="Team code" style="margin-bottom:10px;">
     <button class="btn" style="width:100%;" onclick="submitJoinTeam('${id}')">Join</button>
   `;
 }
@@ -441,8 +441,8 @@ function renderQuizStep(){
   const { questions, idx, answers } = quizState;
   const q = questions[idx];
   document.getElementById('c-quiz-body').innerHTML = `
-    <div style="font-size:11.5px;color:var(--brand);font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Question ${idx+1} of ${questions.length}</div>
-    <div style="font-size:15px;font-weight:700;margin-bottom:18px;color:var(--t1);font-family:var(--ff-h);line-height:1.5;letter-spacing:-.2px;">${escapeHtml(q.q)}</div>
+    <div style="font-size:11.5px;color:var(--brand);font-weight:700;margin-bottom:8px;">Question ${idx+1} of ${questions.length}</div>
+    <div style="font-size:15px;font-weight:600;margin-bottom:18px;color:var(--t1);font-family:var(--ff-h);line-height:1.5;letter-spacing:-.2px;">${escapeHtml(q.q)}</div>
     ${q.opts.map((opt,i) => `<div onclick="selectAnswer(${i})" class="quiz-opt${answers[q._id]===i?' selected':''}">${escapeHtml(opt)}</div>`).join('')}
     <div style="display:flex;gap:10px;margin-top:18px;">
       ${idx>0 ? `<button class="btn ghost" style="flex:1;" onclick="quizNav(-1)">Back</button>` : ''}

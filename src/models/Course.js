@@ -19,7 +19,7 @@ const CourseSchema = new mongoose.Schema({
   department:  { type: String, default: '', trim: true },
   level:       { type: String, default: '', trim: true },
   topics:      { type: [String], default: [] },
-  color:       { type: String, default: '#0A5CF5' },
+  color:       { type: String, default: '#3E5C8A' },
   icon:        { type: String, default: 'star' },
   createdAt:   { type: Date, default: Date.now },
 });

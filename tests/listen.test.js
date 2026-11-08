@@ -1,0 +1,11 @@
+const assert = require('assert');
+const { buildSections } = require('../public/js/listen');
+const V = require('../public/js/voice-quiz');
+const secs = buildSections('Intro line about $\\ce{NaCl}$.\n\n## Ions\n- $\\ce{Ca^{2+}}$ is a cation\n- SO42- is sulphate\n\n## Units\nConcentration is 0.1 mol/dm3 at pH 7.', V.speakable, 'Test note');
+assert.strictEqual(secs.length, 3, JSON.stringify(secs));
+assert.ok(secs[0].text.includes('sodium chloride'), secs[0].text);
+assert.ok(secs[1].title === 'Ions' && secs[1].text.startsWith('Ions.') && secs[1].text.includes('calcium 2 plus ion') && secs[1].text.includes('sulphate ion'), secs[1].text);
+assert.ok(secs[2].text.includes('moles per decimetre cubed') && secs[2].text.includes('P H 7'), secs[2].text);
+assert.ok(!/[*#_$\\]/.test(secs.map(s => s.text).join(' ')), 'no markdown or TeX left to be read out');
+assert.deepStrictEqual(buildSections('   ', V.speakable, 'x'), [], 'empty note gives nothing to read');
+console.log('listen: note split into sections, headings spoken, chemistry said properly, no markup read out');

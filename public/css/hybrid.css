@@ -1,0 +1,226 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Wreddi — Apple × Material component layer (v1.10)
+   Loaded LAST on every student-facing page, after each page's own <style>.
+   tokens.css sets the palette / elevation / type; this file only restyles components that need more
+   than a token swap (buttons, switches, selected states, bars, sheets). Every selector is prefixed with
+   `body` so it out-ranks the page's own single-class rules without !important.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+
+/* ── Sticky top bars: translucent + blurred, hairline instead of a drop shadow ───────────────── */
+body .topbar, body .sub-topbar, body .quiz-topbar, body .res-topbar, body .lg-top {
+  background: var(--bar);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: 0 .5px 0 var(--bd);
+}
+body .quiz-actions {
+  background: var(--bar);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: 0 -.5px 0 var(--bd);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  body .topbar, body .sub-topbar, body .quiz-topbar, body .res-topbar, body .lg-top, body .quiz-actions { background: var(--bar-solid); }
+}
+html[data-lowpower] body .topbar, html[data-lowpower] body .sub-topbar, html[data-lowpower] body .quiz-topbar,
+html[data-lowpower] body .res-topbar, html[data-lowpower] body .lg-top, html[data-lowpower] body .quiz-actions { background: var(--bar-solid); }
+
+/* ── Buttons ────────────────────────────────────────────────────────────────────────────────
+   Primary  = filled brand (Material "filled" / iOS "prominent")
+   Secondary= tonal container (Material "filled tonal" / iOS "tinted")
+   Icon     = quiet circular fill, no shadow                                                    */
+body .btn-grad, body .qbtn.main {
+  background: var(--grad);
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(16,24,40,.16), 0 6px 14px -4px var(--brand-glow);
+  font-weight: 600;
+  letter-spacing: -.01em;
+  min-height: 50px;
+}
+body .btn-grad:active, body .qbtn.main:active { filter: brightness(.92); transform: scale(.985); box-shadow: 0 1px 2px rgba(16,24,40,.16); }
+body .btn-grad:disabled, body .qbtn.main:disabled { background: var(--fill); color: var(--t4); box-shadow: none; filter: none; }
+/* A .btn-grad that carries its own semantic text colour inline (log out = red, WhatsApp = green, …) is a
+   secondary action: draw it as a tonal container in that colour instead of a filled brand button. */
+body .btn-grad[style*="color:var(--brand)"], body .btn-grad[style*="color:var(--purple)"] { background: var(--brand-lt); box-shadow: none; }
+body .btn-grad[style*="color:var(--no)"] { background: var(--no-lt); box-shadow: none; }
+body .btn-grad[style*="color:var(--ok)"] { background: var(--ok-lt); box-shadow: none; }
+body .btn-grad[style*="color:var(--"]:active { filter: brightness(.94); }
+body .btn-surf, body .qbtn.skip, body .qbtn, body .np-btn, body .rexp-ai-btn {
+  background: var(--brand-lt);
+  color: var(--brand);
+  box-shadow: none;
+  font-weight: 600;
+}
+body .qbtn.main { background: var(--grad); color: #fff; }
+body .qbtn.skip { color: var(--t2); background: var(--fill); }
+body .qbtn.skip.on { color: var(--warn); background: var(--warn-lt); }
+body .btn-surf:active, body .qbtn.skip:active, body .np-btn:active, body .rexp-ai-btn:active { background: var(--brand-glow); box-shadow: none; }
+body .guess-btn { background: var(--fill); box-shadow: none; }
+body .guess-btn:active { background: var(--fill2); box-shadow: none; }
+body .ib, body .back-btn, body .timer-edit-btn, body .ap-voice {
+  background: var(--fill);
+  box-shadow: none;
+  color: var(--t2);
+}
+body .ib:active, body .back-btn:active { background: var(--fill2); box-shadow: none; }
+body .ib.compact { background: var(--brand-lt); color: var(--brand); }
+body .tb-avatar { background: var(--brand-lt); box-shadow: none; color: var(--brand); }
+
+/* ── Chips & badges: tonal, sentence case ───────────────────────────────────────────────── */
+body .hero-tag, body .sec-badge { background: var(--brand-lt); color: var(--brand); box-shadow: none; border-radius: var(--rpill); }
+body .hero-streak { background: var(--warn-lt); box-shadow: none; border-radius: var(--rpill); }
+body .qp, body .fb, body .why-chip, body .np-chip { background: var(--fill); box-shadow: none; color: var(--t2); }
+body .qp.on, body .qp.custom-pill.on, body .fb.on, body .why-chip.on {
+  background: var(--brand-lt); color: var(--brand); box-shadow: inset 0 0 0 1.5px var(--brand);
+}
+body .qp.custom-pill { background: var(--fill); }
+
+/* ── Selected / state rings (cards, rows, options) ──────────────────────────────────────── */
+body .cc.on, body .mode-btn.on {
+  background-image: linear-gradient(var(--brand-lt), var(--brand-lt));
+  box-shadow: inset 0 0 0 2px var(--brand);
+}
+body .cc:active, body .mode-btn:active, body .opt:active { transform: scale(.985); }
+body .opt { box-shadow: var(--sh); }
+body .opt.sel { background-image: linear-gradient(var(--brand-lt), var(--brand-lt)); box-shadow: inset 0 0 0 2px var(--brand); }
+body .opt.correct { background-image: linear-gradient(var(--ok-lt), var(--ok-lt)); box-shadow: inset 0 0 0 2px var(--ok); }
+body .opt.wrong { background-image: linear-gradient(var(--no-lt), var(--no-lt)); box-shadow: inset 0 0 0 2px var(--no); }
+body .opt .oletter { background: var(--fill); box-shadow: none; }
+body .fb-strip.ok { box-shadow: inset 0 0 0 1.5px var(--ok-bd); }
+body .fb-strip.no { box-shadow: inset 0 0 0 1.5px var(--no-bd); }
+body .fb-strip.timeout { box-shadow: inset 0 0 0 1.5px var(--warn); }
+body .dot { background: var(--fill); box-shadow: none; }
+body .dot.curr { background: var(--brand-lt); box-shadow: inset 0 0 0 2px var(--brand); transform: scale(1.06); }
+body .cc-check { background: transparent; box-shadow: inset 0 0 0 2px var(--t4); }
+body .cc.on .cc-check { background: var(--brand); box-shadow: none; }
+body .eb-icon, body .oc-icon { background: var(--brand-lt); box-shadow: none; }
+
+/* ── Form fields: filled wells, accent ring on focus ────────────────────────────────────── */
+body .f-input, body .modal-input, body .neu-inline-input, body .rnote textarea, body .why-lesson {
+  box-shadow: none;
+  transition: box-shadow .18s var(--ease-o), background .18s;
+}
+body .f-input:focus, body .modal-input:focus, body .neu-inline-input:focus, body .rnote textarea:focus, body .why-lesson:focus {
+  background: var(--surf);
+  box-shadow: inset 0 0 0 2px var(--brand), 0 0 0 4px var(--brand-lt);
+}
+body .f-input.err { box-shadow: inset 0 0 0 2px var(--no), 0 0 0 4px var(--no-lt); }
+body .err-banner { background: var(--no-lt); box-shadow: none; }
+body .f-label { font-weight: 600; color: var(--t3); }
+
+body .neu-select-trigger { background: var(--fill); box-shadow: none; font-weight: 600; }
+body .neu-select.open .neu-select-trigger { background: var(--brand-lt); box-shadow: none; }
+body .neu-select-menu { background: var(--surf); box-shadow: var(--sh-lg); border-radius: 14px; }
+body .neu-select-option:hover, body .neu-select-option:active { background: var(--fill); box-shadow: none; }
+body .neu-select-option.selected { background: var(--brand-lt); box-shadow: none; }
+
+/* iOS-style switch with a Material tonal track when on */
+body .toggle { width: 51px; height: 31px; background: var(--fill2); box-shadow: none; }
+body .toggle::after {
+  top: 2px; left: 2px; width: 27px; height: 27px; background: #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,.22), 0 0 0 .5px rgba(0,0,0,.06);
+}
+body .toggle.on { background: var(--brand); box-shadow: none; }
+body .toggle.on::after { transform: translateX(20px); box-shadow: 0 2px 4px rgba(0,0,0,.22), 0 0 0 .5px rgba(0,0,0,.06); }
+
+/* radio / check dots */
+body .neu-check { background: transparent; box-shadow: inset 0 0 0 2px var(--t4); }
+body .neu-check:checked { background: var(--brand); box-shadow: none; }
+body .neu-check:checked::after { background: #fff; box-shadow: none; inset: 6px; }
+
+/* progress tracks */
+body .gc-bar, body .bar-track, body .prog-track, body .np-bar { background: var(--fill); box-shadow: none; }
+
+/* login / register segmented control */
+body .tabs { background: var(--fill); box-shadow: none; border-radius: 12px; padding: 3px; }
+body .tab { border-radius: 9px; font-weight: 600; }
+body .tab.on { background: var(--surf); color: var(--t1); box-shadow: 0 1px 3px rgba(0,0,0,.12), 0 0 0 .5px rgba(0,0,0,.04); }
+[data-theme=dark] body .tab.on { background: #636366; color: #fff; }
+
+/* ── Sheets, menus, modals, toast ───────────────────────────────────────────────────────── */
+body .sheet-bg, body .modal-bg { background: var(--scrim); }
+body .sheet {
+  background: var(--surf);
+  border-radius: 22px 22px 0 0;
+  box-shadow: var(--sh-lg);
+  transition: transform .42s var(--ease-sheet);
+}
+body .sheet-handle { width: 36px; height: 5px; background: var(--fill2); box-shadow: none; margin-bottom: 14px; }
+body .menu-item { border-radius: 12px; font-weight: 500; }
+body .menu-item:active { background: var(--fill); box-shadow: none; }
+body .menu-sep, body .divider { height: .5px; background: var(--bd); box-shadow: none; border-radius: 0; }
+body .modal-bg .modal { border-radius: 22px; }
+body #toast {
+  background: var(--inv-bg);
+  color: var(--inv-fg);
+  box-shadow: var(--sh-md);
+  font-weight: 600;
+  bottom: calc(var(--nav-space, 92px) + 8px);
+}
+
+/* ── Keyboard focus (touch users never see it) ──────────────────────────────────────────── */
+body :is(button, a, [role=button], [tabindex]):focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+/* ── Material state layer: a quick ripple from the touch point (see /js/ripple.js) ──────── */
+.rpl-host { position: relative; overflow: hidden; }
+.rpl {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  background: currentColor;
+  opacity: .16;
+  transform: scale(0);
+  animation: rpl .55s var(--ease-o) forwards;
+}
+@keyframes rpl { to { transform: scale(1); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .rpl { display: none; }
+  body .sheet, body .toggle::after { transition-duration: .01ms; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Views (Contests, Rooms, Assistant, Profile, …) — these are injected by js/shell.js with their own
+   #view-<name>-scoped <style>, so each rule here is scoped through :is(#view-…) to out-rank them.
+   ══════════════════════════════════════════════════════════════════════════ */
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .v-back-btn, .wx-back { background: var(--fill); box-shadow: none; color: var(--t2); }
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .v-back-btn:active, .wx-back:active { background: var(--fill2); box-shadow: none; }
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .v-tab, .v-preset, .wx-chip, .wx-pill, .quota { background: var(--fill); box-shadow: none; color: var(--t2); font-weight: 600; }
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .v-tab.on, .v-preset.on { background: var(--brand-lt); color: var(--brand); box-shadow: inset 0 0 0 1.5px var(--brand); }
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .wx-chip.wx-on { background: var(--grad); color: #fff; box-shadow: none; }
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .btn { background: var(--grad); color: #fff; box-shadow: 0 1px 2px rgba(16,24,40,.16), 0 6px 14px -4px var(--brand-glow); font-weight: 600; letter-spacing: -.01em; }
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .btn:active { filter: brightness(.92); box-shadow: 0 1px 2px rgba(16,24,40,.16); }
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .btn.ghost { background: var(--fill); color: var(--t1); box-shadow: none; }
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .btn.ghost:active { background: var(--fill2); filter: none; box-shadow: none; }
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .btn:disabled { background: var(--fill); color: var(--t4); box-shadow: none; filter: none; }
+body #view-profile .btn { background: var(--brand-lt); color: var(--brand); box-shadow: none; }
+body #view-profile .btn:hover { box-shadow: none; }
+body #view-profile .btn:active { background: var(--brand-glow); filter: none; box-shadow: none; transform: scale(.97); }
+body #view-profile .btn.primary { background: var(--grad); color: #fff; box-shadow: 0 1px 2px rgba(16,24,40,.16), 0 6px 14px -4px var(--brand-glow); }
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .v-btn { background: var(--fill); box-shadow: none; color: var(--t1); font-weight: 600; }
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .v-btn.v-main { background: var(--grad); color: #fff; box-shadow: 0 1px 2px rgba(16,24,40,.16), 0 6px 14px -4px var(--brand-glow); }
+body #view-wrapped .v-btn { background: var(--grad); color: #fff; }
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .wx-btn.wx-plain { background: var(--fill); color: var(--t1); box-shadow: none; }
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .send-btn, .mic-btn, .listen-btn { background: var(--fill); box-shadow: none; color: var(--t2); }
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .send-btn:not(:disabled) { background: var(--grad); color: #fff; }
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .input-bar input { background: var(--fill); box-shadow: none; }
+body #view-chat .msg.user { background: var(--grad); color: #fff; box-shadow: none; }
+body #view-chat .msg.assistant { background: var(--surf); box-shadow: var(--sh); }
+body #view-contests .tabs { background: var(--fill); box-shadow: none; border-radius: 12px; padding: 3px; }
+body #view-contests .tab { border-radius: 9px; font-weight: 600; }
+body #view-contests .tab.on { background: var(--surf); color: var(--t1); box-shadow: 0 1px 3px rgba(0,0,0,.12), 0 0 0 .5px rgba(0,0,0,.04); }
+[data-theme=dark] body #view-contests .tab.on { background: #636366; color: #fff; }
+body #view-leaderboard .v-toggle { width: 51px; height: 31px; background: var(--fill2); box-shadow: none; }
+body #view-leaderboard .v-toggle::after { top: 2px; left: 2px; width: 27px; height: 27px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.22), 0 0 0 .5px rgba(0,0,0,.06); }
+body #view-leaderboard .v-toggle.on { background: var(--brand); box-shadow: none; }
+body #view-leaderboard .v-toggle.on::after { transform: translateX(20px); box-shadow: 0 2px 4px rgba(0,0,0,.22), 0 0 0 .5px rgba(0,0,0,.06); }
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) input:focus, textarea:focus, select:focus { box-shadow: inset 0 0 0 2px var(--brand), 0 0 0 4px var(--brand-lt); background: var(--surf); }
+
+/* Long messages must wrap inside the screen */
+body #toast, body #p-toast { max-width: calc(100vw - 32px); white-space: normal; text-align: center; line-height: 1.35; }
+
+/* ── Brand wordmark: navy on light, white on dark (swap with the in-app theme) ── */
+.wm-dark { display: none !important; }
+[data-theme=dark] .wm-light { display: none !important; }
+[data-theme=dark] .wm-dark { display: block !important; }

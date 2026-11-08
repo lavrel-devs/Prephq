@@ -1,0 +1,155 @@
+<!-- View: Chemistry Cheat Sheet. Loaded once by js/shell.js into <div class="scr" id="view-cheatsheet">, then only shown and hidden.
+     All static data: no backend, no AI. CSS is scoped to #view-cheatsheet; the script runs with a scoped `document`. -->
+<style>
+#view-cheatsheet *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+#view-cheatsheet{font-family:var(--ff-b);color:var(--t1);min-height:calc(100dvh - var(--nav-space,96px));-webkit-font-smoothing:antialiased;}
+#view-cheatsheet .v-wrap{max-width:560px;margin:0 auto;padding:18px 18px 120px;}
+#view-cheatsheet .v-topbar{display:flex;align-items:center;gap:12px;padding:6px 0 16px;}
+#view-cheatsheet .v-back-btn{width:38px;height:38px;border-radius:50%;background:var(--surf);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--brand);flex-shrink:0;box-shadow:var(--sh);}
+#view-cheatsheet .v-back-btn:active{box-shadow:var(--sh-in);}
+#view-cheatsheet .v-title{font-family:var(--ff-h);font-weight:700;font-size:20px;letter-spacing:-.4px;}
+#view-cheatsheet .v-tabs{display:flex;gap:8px;margin-bottom:16px;}
+#view-cheatsheet .v-tab{flex:1;border:none;cursor:pointer;padding:11px 6px;border-radius:12px;background:var(--surf);box-shadow:var(--sh-sm);color:var(--t3);font-weight:700;font-size:13px;font-family:inherit;}
+#view-cheatsheet .v-tab.on{color:var(--brand);box-shadow:var(--sh-in-sm);}
+#view-cheatsheet .v-off{display:none;}
+#view-cheatsheet .v-search{width:100%;border:none;outline:none;padding:12px 14px;border-radius:12px;background:var(--fill);box-shadow:var(--sh-in-sm);color:var(--t1);font-size:14px;font-family:inherit;margin-bottom:12px;}
+#view-cheatsheet .v-scroll{overflow-x:auto;padding:4px 2px 10px;}
+#view-cheatsheet .v-pt{display:grid;grid-template-columns:repeat(18,34px);grid-auto-rows:38px;gap:3px;width:max-content;}
+#view-cheatsheet .v-el{border:none;cursor:pointer;border-radius:7px;background:var(--surf);box-shadow:var(--sh-sm);font-family:var(--ff-h);font-weight:700;font-size:12px;color:var(--t1);position:relative;padding:0;}
+#view-cheatsheet .v-el small{position:absolute;top:1px;left:3px;font-size:7px;font-weight:600;color:var(--t3);}
+#view-cheatsheet .v-el.v-dim{opacity:.22;}
+#view-cheatsheet .v-el.v-sel{box-shadow:var(--sh-in-sm),0 0 0 2px var(--brand);}
+#view-cheatsheet .v-c-alkali{color:#B5654A;} #view-cheatsheet .v-c-alkaline{color:#B98A2E;} #view-cheatsheet .v-c-transition{color:#3E5C8A;}
+#view-cheatsheet .v-c-post{color:#5D7FB0;} #view-cheatsheet .v-c-metalloid{color:#2E8B6A;} #view-cheatsheet .v-c-nonmetal{color:#3A8FB0;}
+#view-cheatsheet .v-c-halogen{color:#8a5a9c;} #view-cheatsheet .v-c-noble{color:#6B7089;} #view-cheatsheet .v-c-lanth{color:#a0533f;} #view-cheatsheet .v-c-actin{color:#7a6a2e;}
+#view-cheatsheet .v-card{background:var(--surf);border-radius:18px;box-shadow:var(--sh);padding:14px 16px;margin-bottom:12px;}
+#view-cheatsheet .v-detail{display:flex;align-items:center;gap:14px;min-height:64px;}
+#view-cheatsheet .v-big{width:56px;height:56px;border-radius:14px;box-shadow:var(--sh-in-sm);display:flex;align-items:center;justify-content:center;font-family:var(--ff-h);font-weight:700;font-size:22px;flex-shrink:0;}
+#view-cheatsheet .v-note{font-size:11.5px;color:var(--t3);line-height:1.5;margin:4px 2px 12px;}
+#view-cheatsheet .v-h{font-family:var(--ff-h);font-weight:700;font-size:14px;margin:6px 2px 8px;color:var(--t2);}
+#view-cheatsheet .v-row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--bd2,rgba(0,0,0,.05));font-size:13.5px;}
+#view-cheatsheet .v-row:last-child{border-bottom:none;}
+#view-cheatsheet .v-row b{font-weight:600;color:var(--t2);}
+#view-cheatsheet .v-row span{text-align:right;color:var(--t1);font-weight:600;}
+</style>
+
+<div class="v-wrap">
+  <div class="v-topbar">
+    <div class="v-back-btn" onclick="PhqShell.go('/dashboard')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></div>
+    <div class="v-title">Chemistry Cheat Sheet</div>
+  </div>
+  <div class="v-tabs">
+    <button class="v-tab on" data-t="el" onclick="chsTab('el')">Elements</button>
+    <button class="v-tab" data-t="co" onclick="chsTab('co')">Constants</button>
+    <button class="v-tab" data-t="fo" onclick="chsTab('fo')">Formulas</button>
+  </div>
+
+  <div id="chs-el">
+    <input id="chs-search" class="v-search" type="search" placeholder="Search by name, symbol or number" oninput="chsSearch()" autocomplete="off">
+    <div class="v-card v-detail" id="chs-detail"><div style="color:var(--t3);font-size:13px;">Tap an element to see its details.</div></div>
+    <div class="v-scroll"><div class="v-pt" id="chs-pt"></div></div>
+    <div class="v-note">Swipe sideways to see the whole table. Masses in brackets are the mass number of the longest-lived isotope.</div>
+  </div>
+  <div id="chs-co" class="v-off"></div>
+  <div id="chs-fo" class="v-off"></div>
+</div>
+
+<script>
+const document = PhqShell.scope(root); // every getElementById/querySelector in this view only sees this view
+
+// symbol, name, atomic mass (a number in brackets = mass number of the longest-lived isotope)
+const EL = 'H,Hydrogen,1.008;He,Helium,4.0026;Li,Lithium,6.94;Be,Beryllium,9.0122;B,Boron,10.81;C,Carbon,12.011;N,Nitrogen,14.007;O,Oxygen,15.999;F,Fluorine,18.998;Ne,Neon,20.180;Na,Sodium,22.990;Mg,Magnesium,24.305;Al,Aluminium,26.982;Si,Silicon,28.085;P,Phosphorus,30.974;S,Sulfur,32.06;Cl,Chlorine,35.45;Ar,Argon,39.95;K,Potassium,39.098;Ca,Calcium,40.078;Sc,Scandium,44.956;Ti,Titanium,47.867;V,Vanadium,50.942;Cr,Chromium,51.996;Mn,Manganese,54.938;Fe,Iron,55.845;Co,Cobalt,58.933;Ni,Nickel,58.693;Cu,Copper,63.546;Zn,Zinc,65.38;Ga,Gallium,69.723;Ge,Germanium,72.630;As,Arsenic,74.922;Se,Selenium,78.971;Br,Bromine,79.904;Kr,Krypton,83.798;Rb,Rubidium,85.468;Sr,Strontium,87.62;Y,Yttrium,88.906;Zr,Zirconium,91.224;Nb,Niobium,92.906;Mo,Molybdenum,95.95;Tc,Technetium,[98];Ru,Ruthenium,101.07;Rh,Rhodium,102.91;Pd,Palladium,106.42;Ag,Silver,107.87;Cd,Cadmium,112.41;In,Indium,114.82;Sn,Tin,118.71;Sb,Antimony,121.76;Te,Tellurium,127.60;I,Iodine,126.90;Xe,Xenon,131.29;Cs,Caesium,132.91;Ba,Barium,137.33;La,Lanthanum,138.91;Ce,Cerium,140.12;Pr,Praseodymium,140.91;Nd,Neodymium,144.24;Pm,Promethium,[145];Sm,Samarium,150.36;Eu,Europium,151.96;Gd,Gadolinium,157.25;Tb,Terbium,158.93;Dy,Dysprosium,162.50;Ho,Holmium,164.93;Er,Erbium,167.26;Tm,Thulium,168.93;Yb,Ytterbium,173.05;Lu,Lutetium,174.97;Hf,Hafnium,178.49;Ta,Tantalum,180.95;W,Tungsten,183.84;Re,Rhenium,186.21;Os,Osmium,190.23;Ir,Iridium,192.22;Pt,Platinum,195.08;Au,Gold,196.97;Hg,Mercury,200.59;Tl,Thallium,204.38;Pb,Lead,207.2;Bi,Bismuth,208.98;Po,Polonium,[209];At,Astatine,[210];Rn,Radon,[222];Fr,Francium,[223];Ra,Radium,[226];Ac,Actinium,[227];Th,Thorium,232.04;Pa,Protactinium,231.04;U,Uranium,238.03;Np,Neptunium,[237];Pu,Plutonium,[244];Am,Americium,[243];Cm,Curium,[247];Bk,Berkelium,[247];Cf,Californium,[251];Es,Einsteinium,[252];Fm,Fermium,[257];Md,Mendelevium,[258];No,Nobelium,[259];Lr,Lawrencium,[266];Rf,Rutherfordium,[267];Db,Dubnium,[268];Sg,Seaborgium,[269];Bh,Bohrium,[270];Hs,Hassium,[277];Mt,Meitnerium,[278];Ds,Darmstadtium,[281];Rg,Roentgenium,[282];Cn,Copernicium,[285];Nh,Nihonium,[286];Fl,Flerovium,[289];Mc,Moscovium,[290];Lv,Livermorium,[293];Ts,Tennessine,[294];Og,Oganesson,[294]'
+  .split(';').map((r, i) => { const p = r.split(','); return { z: i + 1, sym: p[0], name: p[1], mass: p[2] }; });
+
+const CATS = {
+  alkali: ['Alkali metal', [3, 11, 19, 37, 55, 87]], alkaline: ['Alkaline earth metal', [4, 12, 20, 38, 56, 88]],
+  metalloid: ['Metalloid', [5, 14, 32, 33, 51, 52]], halogen: ['Halogen', [9, 17, 35, 53, 85, 117]],
+  noble: ['Noble gas', [2, 10, 18, 36, 54, 86, 118]], nonmetal: ['Nonmetal', [1, 6, 7, 8, 15, 16, 34]],
+  post: ['Post-transition metal', [13, 31, 49, 50, 81, 82, 83, 84, 113, 114, 115, 116]],
+};
+function catOf(z){
+  if (z >= 57 && z <= 71) return ['lanth', 'Lanthanide'];
+  if (z >= 89 && z <= 103) return ['actin', 'Actinide'];
+  for (const k in CATS) if (CATS[k][1].includes(z)) return [k, CATS[k][0]];
+  return ['transition', 'Transition metal'];
+}
+// [row, column] of each element on the standard 18-column table; lanthanides and actinides sit in rows 9 and 10
+function posOf(z){
+  if (z === 1) return [1, 1];
+  if (z === 2) return [1, 18];
+  if (z <= 18) { const k = z <= 10 ? z - 2 : z - 10; return [z <= 10 ? 2 : 3, k <= 2 ? k : k + 10]; }
+  if (z <= 36) return [4, z - 18];
+  if (z <= 54) return [5, z - 36];
+  if (z <= 56) return [6, z - 54];
+  if (z <= 71) return [9, z - 54];
+  if (z <= 86) return [6, z - 68];
+  if (z <= 88) return [7, z - 86];
+  if (z <= 103) return [10, z - 86];
+  return [7, z - 100];
+}
+
+const CONSTANTS = [
+  ['Avogadro constant, N<sub>A</sub>', '6.022 × 10<sup>23</sup> mol<sup>−1</sup>'],
+  ['Gas constant, R', '8.314 J mol<sup>−1</sup> K<sup>−1</sup>'], ['Gas constant, R', '0.0821 L atm mol<sup>−1</sup> K<sup>−1</sup>'],
+  ['Planck constant, h', '6.626 × 10<sup>−34</sup> J s'], ['Speed of light, c', '3.00 × 10<sup>8</sup> m s<sup>−1</sup>'],
+  ['Faraday constant, F', '96 485 C mol<sup>−1</sup>'], ['Boltzmann constant, k<sub>B</sub>', '1.381 × 10<sup>−23</sup> J K<sup>−1</sup>'],
+  ['Elementary charge, e', '1.602 × 10<sup>−19</sup> C'], ['Electron mass', '9.109 × 10<sup>−31</sup> kg'], ['Proton mass', '1.673 × 10<sup>−27</sup> kg'],
+  ['Rydberg constant, R<sub>∞</sub>', '1.097 × 10<sup>7</sup> m<sup>−1</sup>'],
+  ['Molar volume of a gas at STP', '22.4 L mol<sup>−1</sup> (273.15 K, 1 atm)'], ['Ion product of water, K<sub>w</sub>', '1.0 × 10<sup>−14</sup> at 25 °C'],
+  ['1 atm', '101.325 kPa = 760 mmHg = 760 torr'], ['1 calorie', '4.184 J'], ['0 °C', '273.15 K'],
+];
+const FORMULAS = [
+  ['Moles and concentration', [['Moles from mass', 'n = m / M'], ['Moles from particles', 'n = N / N<sub>A</sub>'], ['Molarity', 'c = n / V'], ['Dilution', 'c<sub>1</sub>V<sub>1</sub> = c<sub>2</sub>V<sub>2</sub>'], ['Percentage yield', '(actual / theoretical) × 100']]],
+  ['Gases', [['Ideal gas law', 'PV = nRT'], ['Boyle’s law', 'P<sub>1</sub>V<sub>1</sub> = P<sub>2</sub>V<sub>2</sub>'], ['Charles’s law', 'V<sub>1</sub>/T<sub>1</sub> = V<sub>2</sub>/T<sub>2</sub>'], ['Combined gas law', 'P<sub>1</sub>V<sub>1</sub>/T<sub>1</sub> = P<sub>2</sub>V<sub>2</sub>/T<sub>2</sub>'], ['Dalton’s law', 'P<sub>total</sub> = ΣP<sub>i</sub>'], ['Graham’s law', 'r<sub>1</sub>/r<sub>2</sub> = √(M<sub>2</sub>/M<sub>1</sub>)']]],
+  ['Thermochemistry', [['Heat', 'q = mcΔT'], ['Enthalpy of reaction', 'ΔH = ΣΔH<sub>f</sub>(products) − ΣΔH<sub>f</sub>(reactants)'], ['Gibbs energy', 'ΔG = ΔH − TΔS'], ['Gibbs and K', 'ΔG° = −RT ln K']]],
+  ['Kinetics and equilibrium', [['Rate law', 'rate = k[A]<sup>m</sup>[B]<sup>n</sup>'], ['First order', 'ln[A] = ln[A]<sub>0</sub> − kt'], ['Half-life (first order)', 't<sub>½</sub> = 0.693 / k'], ['Arrhenius', 'k = A e<sup>−E<sub>a</sub>/RT</sup>'], ['Equilibrium constant', 'K<sub>c</sub> = [C]<sup>c</sup>[D]<sup>d</sup> / [A]<sup>a</sup>[B]<sup>b</sup>']]],
+  ['Acids and bases', [['pH', 'pH = −log[H<sup>+</sup>]'], ['pH and pOH', 'pH + pOH = 14 (25 °C)'], ['Conjugate pair', 'K<sub>a</sub> × K<sub>b</sub> = K<sub>w</sub>'], ['Buffer', 'pH = pK<sub>a</sub> + log([A<sup>−</sup>]/[HA])']]],
+  ['Electrochemistry', [['Cell potential', 'E°<sub>cell</sub> = E°<sub>cathode</sub> − E°<sub>anode</sub>'], ['Work and potential', 'ΔG° = −nFE°'], ['Nernst (25 °C)', 'E = E° − (0.0592 / n) log Q'], ['Charge passed', 'Q = It']]],
+  ['Atomic structure', [['Photon energy', 'E = hν'], ['Wave relation', 'c = λν'], ['Hydrogen energy levels', 'E<sub>n</sub> = −2.18 × 10<sup>−18</sup> / n<sup>2</sup> J'], ['de Broglie wavelength', 'λ = h / mv'], ['Rydberg equation', '1/λ = R(1/n<sub>1</sub><sup>2</sup> − 1/n<sub>2</sub><sup>2</sup>)']]],
+];
+
+let selZ = 0;
+function buildTable(){
+  const g = document.getElementById('chs-pt');
+  g.innerHTML = EL.map(e => {
+    const [r, c] = posOf(e.z), k = catOf(e.z)[0];
+    return `<button class="v-el v-c-${k}" id="chs-e${e.z}" style="grid-row:${r};grid-column:${c};" onclick="chsPick(${e.z})" aria-label="${e.name}"><small>${e.z}</small>${e.sym}</button>`;
+  }).join('');
+}
+function chsPick(z){
+  selZ = z;
+  const e = EL[z - 1], [k, label] = catOf(z);
+  document.querySelectorAll('#chs-pt .v-el').forEach(b => b.classList.remove("v-sel"));
+  const b = document.getElementById('chs-e' + z); if (b) b.classList.add("v-sel");
+  document.getElementById('chs-detail').innerHTML = `<div class="v-big v-c-${k}">${e.sym}</div>
+    <div><div style="font-weight:700;font-size:16px;font-family:var(--ff-h);">${e.name}</div>
+    <div style="font-size:12.5px;color:var(--t3);margin-top:3px;line-height:1.5;">Atomic number ${e.z} · Mass ${e.mass}<br>${label}</div></div>`;
+}
+function chsSearch(){
+  const q = document.getElementById('chs-search').value.trim().toLowerCase();
+  document.querySelectorAll('#chs-pt .v-el').forEach((b, i) => {
+    const e = EL[i];
+    b.classList.toggle("v-dim", !!q && !(e.name.toLowerCase().includes(q) || e.sym.toLowerCase() === q || String(e.z) === q));
+  });
+  if (q) { const hit = EL.find(e => e.name.toLowerCase().startsWith(q) || e.sym.toLowerCase() === q || String(e.z) === q); if (hit) chsPick(hit.z); }
+}
+function chsTab(t){
+  document.querySelectorAll('.v-tab').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+  ['el', 'co', 'fo'].forEach(k => document.getElementById('chs-' + k).classList.toggle('v-off', k !== t));
+}
+function buildLists(){
+  document.getElementById('chs-co').innerHTML = `<div class="v-card">${CONSTANTS.map(c => `<div class="v-row"><b>${c[0]}</b><span>${c[1]}</span></div>`).join('')}</div>`;
+  document.getElementById('chs-fo').innerHTML = FORMULAS.map(g => `<div class="v-h">${g[0]}</div><div class="v-card">${g[1].map(f => `<div class="v-row"><b>${f[0]}</b><span>${f[1]}</span></div>`).join('')}</div>`).join('');
+}
+
+buildTable();
+buildLists();
+
+// inline onclick="…" handlers run in the global scope, so the functions they call are exposed
+window.chsTab = chsTab;
+window.chsPick = chsPick;
+window.chsSearch = chsSearch;
+
+return { onShow(){ window.scrollTo(0, 0); } };
+//# sourceURL=view-cheatsheet.js
+</script>

@@ -1,4 +1,4 @@
-# PrepHQ v1.4 — Exam Prep Platform
+# Wreddi v1.4 — Exam Prep Platform
 
 > Note: the changelog sections below are historical (last fully updated at v1.1.5) and don't yet cover v1.2–v1.4 (credit-tier economy, contests, study rooms, chat, GPA/grading tools, transfers, admin analytics). File structure and API route tables below are also out of date relative to `src/routes/`.
 
@@ -96,7 +96,7 @@ Log in as admin, then **change your admin password** from the panel (Settings �
 ## File Structure
 
 ```
-prephq/
+wreddi/
 ├── server.js                    ← slim entrypoint: middleware, admin bootstrap, route mounting
 ├── package.json
 ├── .env.example

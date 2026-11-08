@@ -1,5 +1,5 @@
 /**
- * PrepHQ chemistry text fixer — v1.8.7
+ * Wreddi chemistry text fixer — v1.8.7
  * The AI writes formulas as mhchem, e.g. $\ce{Cu^{2+}}$. Anywhere the page does not run the maths renderer
  * (the admin review queue, plain-text chat, old saved questions) that shows up as junk like "ceCu2+".
  * fix() turns those into ordinary readable text with Unicode sub/superscripts: Cu²⁺, H₂SO₄, 2H₂ + O₂ → 2H₂O.

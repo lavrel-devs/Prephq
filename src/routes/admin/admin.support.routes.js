@@ -113,7 +113,7 @@ router.post('/support/:id/recovery/temp-password', async (req, res) => {
     await close(r, req.admin.sub, 'resolved', 'Temporary password issued');
     logActivity({ actorType: 'admin', actor: req.admin.sub, action: 'support.recovery_temp_password', detail: { matric: student.matric, request: r.code } });
 
-    const msg = `Hi ${student.name}, this is PrepHQ support. Your temporary password is: ${temp}\nLog in with it, then you'll be asked to choose your own new password. (Request ${r.code})`;
+    const msg = `Hi ${student.name}, this is Wreddi support. Your temporary password is: ${temp}\nLog in with it, then you'll be asked to choose your own new password. (Request ${r.code})`;
     res.json({ tempPassword: temp, matric: student.matric, name: student.name, whatsappUrl: waUrl(student.whatsapp || student.phone, msg), message: msg });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -150,7 +150,7 @@ router.post('/support/:id/upgrade/grant', async (req, res) => {
     notify({ matric: student.matric, type: 'announcement', title: '⭐ Premium activated', message: `Your Premium ${label} plan is now active.` }).catch(() => {});
     logActivity({ actorType: 'admin', actor: req.admin.sub, action: 'support.upgrade_granted', detail: { matric: student.matric, plan, days, request: r.code } });
 
-    const msg = `Hi ${student.name}, your PrepHQ Premium ${label} plan is now active. Thank you! (Request ${r.code})`;
+    const msg = `Hi ${student.name}, your Wreddi Premium ${label} plan is now active. Thank you! (Request ${r.code})`;
     res.json({ success: true, matric: student.matric, plan, label, whatsappUrl: waUrl(student.whatsapp || student.phone, msg) });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -177,7 +177,7 @@ router.post('/support/:id/upgrade/code', async (req, res) => {
     const label = planText(c.plan, c.days);
     logActivity({ actorType: 'admin', actor: req.admin.sub, action: 'support.upgrade_code_issued', detail: { matric: student.matric, plan: c.plan, days: c.days, request: r.code } });
 
-    const msg = `Hi ${student.name}, thanks for your payment! Your PrepHQ Premium ${label} activation code is:\n\n${c.code}\n\nOpen PrepHQ → Profile → "Activation code", paste it and tap Activate. (Request ${r.code})`;
+    const msg = `Hi ${student.name}, thanks for your payment! Your Wreddi Premium ${label} activation code is:\n\n${c.code}\n\nOpen Wreddi → Profile → "Activation code", paste it and tap Activate. (Request ${r.code})`;
     res.status(201).json({ code: c.code, label, whatsappUrl: waUrl(student.whatsapp || student.phone, msg), message: msg });
   } catch (e) { res.status(e instanceof CodeError ? e.status : 500).json({ error: e.message }); }
 });

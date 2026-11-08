@@ -1,5 +1,5 @@
 /**
- * PrepHQ Brainiac — v1.8.3
+ * Wreddi Brainiac — v1.8.3
  * The floating study companion. One script, no assets: the mascot is inline SVG, sounds are tiny WebAudio blips.
  * Talks to /api/brainiac/*. The page (dashboard.html) feeds it events and tells it what screen/question is showing
  * through window.PhqBrainiacHost; this file never reaches into the quiz code itself.
@@ -31,7 +31,7 @@
   function mascot(initial) {
     const g = 'bnG' + (++gid);
     return `<svg class="bn-m" data-mood="${initial || 'happy'}" viewBox="0 0 100 100" aria-hidden="true">
-<defs><linearGradient id="${g}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8B5CF6"/><stop offset="1" stop-color="#2F6BFF"/></linearGradient></defs>
+<defs><linearGradient id="${g}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5D7FB0"/><stop offset="1" stop-color="#3E5C8A"/></linearGradient></defs>
 <ellipse class="bn-shadow" cx="50" cy="94" rx="26" ry="4" fill="#1d2140" opacity=".14"/>
 <g class="bn-wrap">
  <path d="M50 11C34 5 14 15 14 35C6 39 6 58 16 63C16 78 32 88 46 84L46 88L54 88L54 84C68 88 84 78 84 63C94 58 94 39 86 35C86 15 66 5 50 11Z" fill="url(#${g})"/>
@@ -63,7 +63,7 @@
 .bn-root[hidden]{display:none}
 .bn-fab{all:unset;box-sizing:border-box;width:${SIZE}px;height:${SIZE}px;border-radius:50%;cursor:grab;position:relative;display:block;-webkit-tap-highlight-color:transparent;background:var(--bg,#f1f3fa);box-shadow:var(--sh,6px 6px 14px rgba(120,130,170,.35),-6px -6px 14px rgba(255,255,255,.85));transition:transform .15s}
 .bn-fab:active{cursor:grabbing;transform:scale(.94)}
-.bn-fab:focus-visible{outline:3px solid #8B5CF6;outline-offset:3px}
+.bn-fab:focus-visible{outline:3px solid #5D7FB0;outline-offset:3px}
 .bn-fab .bn-m{width:100%;height:100%;display:block;overflow:visible}
 .bn-dot{position:absolute;top:2px;right:2px;width:15px;height:15px;border-radius:50%;background:#FF5D73;border:2.5px solid var(--bg,#f1f3fa);transform:scale(0);transition:transform .25s cubic-bezier(.3,1.6,.5,1)}
 .bn-root.has-note .bn-dot{transform:scale(1)}
@@ -91,7 +91,7 @@ ${show}
 .bn-root[data-side="right"] .bn-say{right:${SIZE + 10}px;transform-origin:100% 100%}
 .bn-root[data-side="left"] .bn-say{left:${SIZE + 10}px;transform-origin:0 100%}
 .bn-say-x{all:unset;position:absolute;top:-8px;right:-4px;width:22px;height:22px;border-radius:50%;text-align:center;line-height:22px;font-size:14px;color:var(--t3,#7b82a6);background:var(--bg,#f1f3fa);box-shadow:var(--sh-sm,3px 3px 7px rgba(120,130,170,.3),-3px -3px 7px rgba(255,255,255,.8));cursor:pointer}
-.bn-say-cta{all:unset;display:inline-block;margin-top:8px;padding:6px 13px;border-radius:999px;font-size:12.5px;font-weight:800;color:#fff;cursor:pointer;background:linear-gradient(135deg,#8B5CF6,#2F6BFF);box-shadow:0 3px 0 rgba(47,40,140,.35)}
+.bn-say-cta{all:unset;display:inline-block;margin-top:8px;padding:6px 13px;border-radius:999px;font-size:12.5px;font-weight:800;color:#fff;cursor:pointer;background:linear-gradient(135deg,#5D7FB0,#3E5C8A);box-shadow:0 3px 0 rgba(40,60,95,.35)}
 .bn-say-cta:active{transform:translateY(2px);box-shadow:none}
 @keyframes bnPop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
 .bn-conf{position:fixed;z-index:9100;width:9px;height:13px;border-radius:2px;pointer-events:none;animation:bnConf 1.15s cubic-bezier(.2,.7,.4,1) forwards}
@@ -111,17 +111,17 @@ ${show}
 .bn-msgs{flex:1;overflow-y:auto;padding:6px 14px 10px;display:flex;flex-direction:column;gap:9px;-webkit-overflow-scrolling:touch}
 .bn-msg{max-width:86%;padding:10px 13px;border-radius:18px;font-size:14.5px;line-height:1.45;white-space:pre-wrap;word-wrap:break-word;animation:bnPop .25s}
 .bn-msg.b{align-self:flex-start;border-bottom-left-radius:6px;background:var(--bg,#f1f3fa);box-shadow:var(--sh-sm,3px 3px 7px rgba(120,130,170,.3),-3px -3px 7px rgba(255,255,255,.8))}
-.bn-msg.u{align-self:flex-end;border-bottom-right-radius:6px;color:#fff;background:linear-gradient(135deg,#8B5CF6,#2F6BFF)}
+.bn-msg.u{align-self:flex-end;border-bottom-right-radius:6px;color:#fff;background:linear-gradient(135deg,#5D7FB0,#3E5C8A)}
 .bn-msg.err{color:#b4233a}
 .bn-typing span{display:inline-block;width:7px;height:7px;margin:0 2px;border-radius:50%;background:var(--t3,#9aa1c2);animation:bnDot 1s infinite}.bn-typing span:nth-child(2){animation-delay:.15s}.bn-typing span:nth-child(3){animation-delay:.3s}
 @keyframes bnDot{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-5px);opacity:1}}
 .bn-chips{display:flex;gap:8px;overflow-x:auto;padding:2px 14px 8px;scrollbar-width:none}.bn-chips::-webkit-scrollbar{display:none}
 .bn-chip{all:unset;flex-shrink:0;padding:8px 14px;border-radius:999px;font-size:13px;font-weight:800;color:var(--brand,#5b3df5);cursor:pointer;background:var(--bg,#f1f3fa);box-shadow:var(--sh-sm,3px 3px 7px rgba(120,130,170,.3),-3px -3px 7px rgba(255,255,255,.8));white-space:nowrap}
 .bn-chip:active{box-shadow:var(--sh-in-sm,inset 2px 2px 5px rgba(120,130,170,.35),inset -2px -2px 5px rgba(255,255,255,.8))}
-.bn-chip.go{color:#fff;background:linear-gradient(135deg,#8B5CF6,#2F6BFF);box-shadow:0 3px 0 rgba(47,40,140,.35)}
+.bn-chip.go{color:#fff;background:linear-gradient(135deg,#5D7FB0,#3E5C8A);box-shadow:0 3px 0 rgba(40,60,95,.35)}
 .bn-in{display:flex;gap:9px;padding:4px 14px 12px}
 .bn-in input{flex:1;min-width:0;border:none;outline:none;border-radius:999px;padding:12px 16px;font:inherit;font-size:14.5px;color:var(--t1,#1d2140);background:var(--bg,#f1f3fa);box-shadow:var(--sh-in-sm,inset 2px 2px 5px rgba(120,130,170,.35),inset -2px -2px 5px rgba(255,255,255,.8))}
-.bn-send{all:unset;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#fff;background:linear-gradient(135deg,#8B5CF6,#2F6BFF);box-shadow:0 3px 0 rgba(47,40,140,.35);flex-shrink:0}
+.bn-send{all:unset;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#fff;background:linear-gradient(135deg,#5D7FB0,#3E5C8A);box-shadow:0 3px 0 rgba(40,60,95,.35);flex-shrink:0}
 .bn-send:disabled{opacity:.5;cursor:default}
 .bn-set{position:absolute;inset:0;background:var(--bg,#f1f3fa);border-radius:26px 26px 0 0;display:flex;flex-direction:column;padding:14px;gap:10px;overflow-y:auto;animation:bnFade .18s}
 .bn-set[hidden]{display:none}
@@ -129,7 +129,7 @@ ${show}
 .bn-row b{display:block;font-size:14px}.bn-row small{display:block;font-size:12px;color:var(--t3,#7b82a6);margin-top:1px}
 .bn-sw{all:unset;margin-left:auto;flex-shrink:0;width:46px;height:27px;border-radius:99px;cursor:pointer;position:relative;background:var(--bg,#f1f3fa);box-shadow:var(--sh-in-sm,inset 2px 2px 5px rgba(120,130,170,.35),inset -2px -2px 5px rgba(255,255,255,.8))}
 .bn-sw::after{content:'';position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#aab0cc;transition:all .2s}
-.bn-sw[aria-checked="true"]::after{left:22px;background:linear-gradient(135deg,#8B5CF6,#2F6BFF)}
+.bn-sw[aria-checked="true"]::after{left:22px;background:linear-gradient(135deg,#5D7FB0,#3E5C8A)}
 .bn-h2{font-weight:800;font-size:13px;color:var(--t3,#7b82a6);text-transform:uppercase;letter-spacing:.05em;margin:6px 2px 0}
 .bn-fact{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;font-size:13.5px;background:var(--bg,#f1f3fa);box-shadow:var(--sh-in-sm,inset 2px 2px 5px rgba(120,130,170,.35),inset -2px -2px 5px rgba(255,255,255,.8))}
 .bn-fact button{all:unset;margin-left:auto;cursor:pointer;color:var(--t3,#7b82a6);padding:2px 6px;font-size:16px}
@@ -185,7 +185,7 @@ body.quiz-active .bn-root{z-index:30}
   function confetti(n) {
     if (global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const r = fab.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-    const cols = ['#8B5CF6', '#2F6BFF', '#FDE68A', '#FF8FB1', '#34D399', '#FB923C'];
+    const cols = ['#5D7FB0', '#3E5C8A', '#FDE68A', '#A9BEDD', '#34D399', '#7F9BC2'];
     for (let i = 0; i < (n || 26); i++) {
       const el = document.createElement('i'); el.className = 'bn-conf';
       const a = Math.random() * Math.PI * 2, d = 70 + Math.random() * 130;

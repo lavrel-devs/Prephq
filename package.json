@@ -1,7 +1,7 @@
 {
-  "name": "prephq",
-  "version": "1.8.7",
-  "description": "PrepHQ \u2014 Exam Prep Platform",
+  "name": "wreddi",
+  "version": "1.10.0",
+  "description": "Wreddi \u2014 Exam Prep Platform",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

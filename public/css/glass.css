@@ -1,155 +1,127 @@
 /* ══════════════════════════════════════════════════════════════
-   PrepHQ Glassmorphism Layer — v1.3.1 "Liquid Glass"
-   Additive on top of the existing --brand/--purple/--teal token
-   system. Stronger blur + saturation than v1.1 for a more visibly
-   "liquid" frosted look; still uses only existing brand tokens.
+   Wreddi shell chrome — v1.10 "Apple × Material"
+   The file keeps its old name (every page links it) but the neumorphic / liquid-glass look is gone.
+   It now holds only the shared chrome: the bottom tab bar, the page wash and a few reusable surfaces.
+   Blur is used in exactly two places — the tab bar and sticky top bars — instead of on every card,
+   which is what made the old version heavy on low-end phones.
    ══════════════════════════════════════════════════════════════ */
 
-.glass {
-  background: rgba(255, 255, 255, 0.10);
-  backdrop-filter: blur(28px) saturate(160%);
-  -webkit-backdrop-filter: blur(28px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 24px;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 4px 24px rgba(13,15,26,.06);
-}
-[data-theme=dark] .glass {
-  background: rgba(26, 30, 53, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 4px 24px rgba(0,0,0,.3);
-}
-
-/* Glass surfaces need something colorful behind them to actually read
-   as "frosted glass" rather than flat gray — this wash uses only the
-   existing brand/purple/teal tokens, positioned behind glass regions. */
+/* ── Page wash: a barely-there brand tint at the top, like Apple's large-title headers ── */
 .glass-backdrop {
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background:
-    radial-gradient(600px 400px at 15% 0%, var(--brand-glow, rgba(10,92,245,.22)), transparent 60%),
-    radial-gradient(500px 380px at 100% 20%, rgba(123, 44, 245, .18), transparent 60%),
-    radial-gradient(480px 360px at 50% 100%, rgba(10, 188, 245, .14), transparent 60%);
+  background: radial-gradient(900px 360px at 50% -120px, var(--brand-lt), transparent 70%);
 }
 
-/* ── Pill nav (shared across every page via /js/nav.js) ─────────── */
+/* ── Tab bar (shared across every page via /js/shared-nav.js) ────
+   A floating, fully rounded capsule (iOS 26 / Material 3 expressive style): translucent + blurred,
+   inset from the screen edges. The active tab gets a tonal capsule behind its icon and label. */
 .glass-nav {
   position: fixed;
   left: 50%;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
   transform: translateX(-50%);
+  width: min(calc(100vw - 24px), 440px);
   z-index: 60;
   display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 8px;
-  background: rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(34px) saturate(170%);
-  -webkit-backdrop-filter: blur(34px) saturate(170%);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 40px;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 10px 36px rgba(13, 15, 26, .16);
-  max-width: calc(100vw - 24px);
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 2px;
+  padding: 6px;
+  border-radius: 999px;
+  background: var(--bar);
+  backdrop-filter: saturate(180%) blur(24px);
+  -webkit-backdrop-filter: saturate(180%) blur(24px);
+  box-shadow: 0 0 0 .5px var(--bd), 0 2px 6px rgba(16,24,40,.06), 0 12px 32px rgba(16,24,40,.16);
 }
 [data-theme=dark] .glass-nav {
-  background: rgba(26, 30, 53, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 10px 36px rgba(0, 0, 0, .5);
+  box-shadow: 0 0 0 .5px rgba(255,255,255,.10), 0 12px 32px rgba(0,0,0,.65);
 }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass-nav { background: var(--bar-solid); }
+}
+html[data-lowpower] .glass-nav { background: var(--bar-solid); }
 
 .glass-nav-item {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
-  width: 56px;
-  height: 52px;
-  border-radius: 32px;
+  padding: 7px 2px 6px;
+  border-radius: 999px;
   color: var(--t3);
-  cursor: pointer;
   text-decoration: none;
-  transition: all .18s var(--ease-o, ease);
+  cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+}
+/* the active capsule */
+.glass-nav-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: var(--brand-lt);
+  opacity: 0;
+  transform: scale(.82);
+  transition: opacity .2s var(--ease-o), transform .32s var(--ease-s);
+}
+.glass-nav-item.on::before { opacity: 1; transform: scale(1); }
+.glass-nav-item:active::before { opacity: 1; transform: scale(1); background: var(--fill); }
+.glass-nav-item.on:active::before { background: var(--brand-glow); }
+
+.glass-nav-item i, .glass-nav-item svg {
   position: relative;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  font-size: 20px;
+  line-height: 1;
+  transition: transform .25s var(--ease-s), color .2s;
 }
-.glass-nav-item i, .glass-nav-item svg { font-size: 17px; line-height: 1; width: 17px; height: 17px; }
-.glass-nav-item span { font-size: 9px; font-weight: 700; letter-spacing: .02em; }
-.glass-nav-item.on {
-  color: var(--brand);
-  background: rgba(255, 255, 255, 0.22);
+.glass-nav-item.on svg, .glass-nav-item.on i { transform: scale(1.06); }
+.glass-nav-item span {
+  position: relative;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .01em;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
-[data-theme=dark] .glass-nav-item.on { background: rgba(255, 255, 255, 0.1); }
-.glass-nav-item:active { transform: scale(.92); }
+.glass-nav-item.on { color: var(--brand); }
+.glass-nav-item.on span { font-weight: 700; }
+.glass-nav-item:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
+
 .glass-nav-badge {
   position: absolute;
-  top: 4px;
-  right: 10px;
-  width: 8px;
-  height: 8px;
+  top: 8px;
+  left: calc(50% + 7px);
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
-  background: var(--no, #F5340A);
-  border: 1.5px solid var(--surf);
+  background: var(--no);
+  box-shadow: 0 0 0 2px var(--bar-solid);
+  z-index: 1;
 }
 
-/* ── Glass cards for stat pills / course cards / quiz cards ─────── */
-.glass-card {
-  background: rgba(255, 255, 255, 0.10);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 24px;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 4px 24px rgba(13, 15, 26, .06);
-}
-[data-theme=dark] .glass-card {
-  background: rgba(26, 30, 53, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 4px 24px rgba(0, 0, 0, .35);
+/* ── Reusable surfaces (kept for pages that still use the old class names) ── */
+.glass, .glass-card, .liquid-card {
+  background: var(--surf);
+  border-radius: var(--r20);
+  box-shadow: var(--sh);
 }
 
-/* ── Liquid-glass page surface (v1.3.1) ──────────────────────────
-   Drop-in replacement for the plain `.card` rule each standalone page
-   (profile/contests/leaderboard/study-rooms/chat) previously defined
-   locally as a flat var(--surf) block. Adding this class keeps each
-   page's existing layout/spacing untouched while giving it the same
-   blurred, translucent surface as the rest of the app. */
-.liquid-card {
-  background: rgba(255, 255, 255, 0.55);
-  backdrop-filter: blur(22px) saturate(160%);
-  -webkit-backdrop-filter: blur(22px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 4px 24px rgba(13,15,26,.07);
-}
-[data-theme=dark] .liquid-card {
-  background: rgba(26, 30, 53, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 4px 24px rgba(0,0,0,.35);
-}
+/* Keeps content from sitting underneath the tab bar on every screen */
+.scr.on { padding-bottom: var(--nav-space, 92px); }
+body.has-glass-nav { padding-bottom: var(--nav-space, 92px); }
 
-/* ── Full liquid-glass coverage (v1.3.1) ──────────────────────────
-   Every page's --surf/--surf2/--surf3 tokens were changed from flat
-   opaque colors to translucent rgba (see each page's :root block) —
-   that alone makes backgrounds see-through, but without a matching
-   backdrop-filter it just looks washed-out, not "glass". Rather than
-   hand-editing backdrop-filter onto every card-ish class in every
-   page individually, this single rule covers all of them (harmless
-   no-op on any page/class that isn't present) plus a catch-all for
-   any inline `background:var(--surf)` usage that isn't captured by a
-   named class at all. This is what makes the blur genuinely "full"
-   across the app rather than limited to a few hand-picked surfaces. */
-.card, .tw, .modal, .v-modal, .stat-pill, .stat-box, .sc, .code-card, .contest-card,
-.optin-card, .bcard, .hcard, .cc, .pcard, .qcard, .rcard, .sbox, .note-card,
-.opt-card, .msg.assistant, .lb-row, .p-row, .glass-card,
-[style*="background:var(--surf)"], [style*="background: var(--surf)"] {
-  backdrop-filter: blur(22px) saturate(165%);
-  -webkit-backdrop-filter: blur(22px) saturate(165%);
-}
-
-/* Keeps content from sitting underneath the floating pill nav on every screen */
-.scr.on{padding-bottom:96px;}
-body.has-glass-nav{padding-bottom:var(--nav-space,96px);}
-
-
-/* Font Awesome icon sizing helpers used across the redesigned UI */
+/* Font Awesome icon sizing helper used across the UI */
 .fa-ico { width: 1em; text-align: center; }

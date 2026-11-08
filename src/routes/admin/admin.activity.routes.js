@@ -58,7 +58,7 @@ router.get('/activity/download', async (req, res) => {
     const asJson = req.query.format === 'jsonl';
 
     res.setHeader('Content-Type', asJson ? 'application/x-ndjson; charset=utf-8' : 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', `attachment; filename="prephq-activity-${date}.${asJson ? 'jsonl' : 'csv'}"`);
+    res.setHeader('Content-Disposition', `attachment; filename="wreddi-activity-${date}.${asJson ? 'jsonl' : 'csv'}"`);
     if (!asJson) {
       res.write('\ufeff'); // BOM so Excel opens it as UTF-8
       res.write('time_wat,time_utc,source,actor_type,actor,action,method,path,query,status,duration_ms,ip,user_agent,detail\n');

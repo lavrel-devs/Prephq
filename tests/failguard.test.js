@@ -1,0 +1,14 @@
+const assert = require('assert');
+const { makeFailGuard } = require('../src/utils/failGuard');
+let t = 1000; const g = makeFailGuard({ max: 3, windowMs: 60000, now: () => t });
+assert.strictEqual(g.blocked('a'), false);
+g.fail('a'); g.fail('a');
+assert.strictEqual(g.blocked('a'), false, 'two failures of three allowed: not blocked yet');
+g.fail('a');
+assert.strictEqual(g.blocked('a'), true, 'third failure blocks');
+assert.strictEqual(g.blocked('b'), false, 'other keys are unaffected');
+t += 59000; assert.strictEqual(g.blocked('a'), true, 'still blocked inside the window');
+t += 2000;  assert.strictEqual(g.blocked('a'), false, 'block lifts once the window passes');
+g.fail('c'); g.clear('c'); g.fail('c'); g.fail('c');
+assert.strictEqual(g.blocked('c'), false, 'clear() resets the count');
+console.log('fail guard: blocks after N failures, per key, lifts after the window, clear() resets');

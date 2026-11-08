@@ -4,18 +4,18 @@
 <script src="/js/theme.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>PrepHQ Admin</title>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<title>Wreddi Admin</title>
+<link rel="stylesheet" href="/vendor/fonts.css">
+<link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
 <link rel="stylesheet" href="/css/glass.css">
 <style>
 :root{
   --bg:#F0F2F8;--surf:rgba(255,255,255,.6);--surf2:rgba(245,246,250,.55);--surf3:rgba(235,236,242,.55);
-  --brand:#0A5CF5;--brand-lt:rgba(10,92,245,.10);--brand-glow:rgba(10,92,245,.20);
+  --brand:#E2507A;--brand-lt:rgba(226,80,122,.10);--brand-glow:rgba(226,80,122,.20);
   --ok:#00C96B;--ok-lt:rgba(0,201,107,.10);--ok-bd:rgba(0,201,107,.30);
   --no:#F5340A;--no-lt:rgba(245,52,10,.10);--no-bd:rgba(245,52,10,.28);
   --warn:#F5930A;--warn-lt:rgba(245,147,10,.10);
-  --purple:#7B2CF5;--purple-lt:rgba(123,44,245,.10);
+  --purple:#FF9A62;--purple-lt:rgba(255,154,98,.10);
   --teal:#0ABCF5;--teal-lt:rgba(10,188,245,.10);
   --t1:#0D0F1A;--t2:#2E3247;--t3:#6B7089;--t4:#A8ADCA;
   --bd:rgba(13,15,26,.09);--bd2:rgba(13,15,26,.14);
@@ -247,7 +247,7 @@ tbody td{padding:11px 16px;font-size:13px;font-weight:500;}
   --press-sm:inset 2px 2px 5px var(--nu-lo),inset -2px -2px 5px var(--nu-hi);
   --sh:var(--raise);--sh-md:10px 10px 24px var(--nu-lo),-10px -10px 24px var(--nu-hi);
   --bd:transparent;--bd2:transparent;
-  --brand-lt:rgba(10,92,245,.09);
+  --brand-lt:rgba(226,80,122,.09);
 }
 [data-theme=dark]{
   --bg:#242938;--surf:#242938;--surf2:#202432;--surf3:#1B1F2B;
@@ -314,6 +314,10 @@ input[type=checkbox]{accent-color:var(--brand);}
 .modal-bg{background:rgba(20,24,40,.35)!important;}
 select.f-input option{background:var(--bg);color:var(--t1);}
 </style>
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/icons/favicon-48.png">
+<link rel="shortcut icon" href="/icons/favicon.ico">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 </head>
 <body>
 <div class="glass-backdrop"></div>
@@ -324,8 +328,8 @@ select.f-input option{background:var(--bg);color:var(--t1);}
 <div id="login-screen">
   <div class="lc fade-up">
     <div class="lc-logo"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg></div>
-    <div class="lc-title">PrepHQ Admin</div>
-    <div class="lc-sub">Sign in to manage PrepHQ</div>
+    <div class="lc-title">Wreddi Admin</div>
+    <div class="lc-sub">Sign in to manage Wreddi</div>
     <div class="err" id="login-err">Invalid username or password.</div>
     <div class="field">
       <label>Username</label>
@@ -349,7 +353,7 @@ select.f-input option{background:var(--bg);color:var(--t1);}
   <div class="topbar">
     <div class="tb-brand">
       <div class="tb-dot"><svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg></div>
-      <span class="tb-name">PrepHQ</span>
+      <span class="tb-name">Wreddi</span>
       <span class="tb-badge">Admin</span>
     </div>
     <div class="tb-right">
@@ -432,7 +436,7 @@ select.f-input option{background:var(--bg);color:var(--t1);}
 
       <!-- ═══ DASHBOARD ════════════════════════════════════ -->
       <div id="v-dashboard" class="view on">
-        <div class="ph"><div><div class="ph-title">Dashboard</div><div class="ph-sub">PrepHQ overview</div></div></div>
+        <div class="ph"><div><div class="ph-title">Dashboard</div><div class="ph-sub">Wreddi overview</div></div></div>
         <div class="sg" id="dash-sg">
           <div class="sc"><div class="sc-ico" style="background:var(--brand-lt);color:var(--brand)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div><div class="sc-val" id="ds-students">—</div><div class="sc-lbl">Students</div></div>
           <div class="sc"><div class="sc-ico" style="background:var(--ok-lt);color:var(--ok)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg></div><div class="sc-val" id="ds-revenue">—</div><div class="sc-lbl">Revenue (₦)</div></div>
@@ -461,6 +465,7 @@ select.f-input option{background:var(--bg);color:var(--t1);}
           <div><div class="ph-title">Students</div><div class="ph-sub" id="st-count">—</div></div>
           <div style="display:flex;gap:8px;">
             <button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;background:var(--surf3);color:var(--t1);" id="bulk-grant-btn" onclick="openBulkGrant()" disabled>Bulk Grant (<span id="bulk-sel-count">0</span>)</button>
+            <button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;background:var(--surf3);color:var(--t1);" onclick="downloadCsv('/api/admin/export/students','wreddi-students.csv')">Export CSV</button>
             <button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;" onclick="openAddStudent()">+ Add Student</button>
           </div>
         </div>
@@ -547,6 +552,7 @@ select.f-input option{background:var(--bg);color:var(--t1);}
               <select id="bc-course-select" style="padding:8px 12px;border-radius:var(--rpill);border:1.5px solid var(--bd2);background:var(--surf2);font-size:12px;font-weight:600;" onchange="loadStudentsByCourse(this.value)">
                 <option value="">Select a course…</option>
               </select>
+              <button class="btn-main" style="width:auto;padding:8px 14px;font-size:12px;background:var(--surf3);color:var(--t1);" onclick="exportCourseCsv()">CSV</button>
             </div>
           </div>
           <div class="tbl-wrap"><table>
@@ -900,7 +906,7 @@ select.f-input option{background:var(--bg);color:var(--t1);}
       <div id="v-transfers" class="view">
         <div class="ph">
           <div><div class="ph-title">Transfer Log</div><div class="ph-sub">In-app credit transfers between students</div></div>
-          <button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;" onclick="downloadCsv('/api/admin/export/transfers','prephq-transfers.csv')">Export CSV</button>
+          <button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;" onclick="downloadCsv('/api/admin/export/transfers','wreddi-transfers.csv')">Export CSV</button>
         </div>
         <div class="tw">
           <div class="th">
@@ -1388,7 +1394,7 @@ select.f-input option{background:var(--bg);color:var(--t1);}
     </div>
     <div class="field"><label style="display:flex;align-items:center;gap:8px;">Topics <span style="color:var(--t4);font-weight:400">(comma-separated)</span><button type="button" id="ai-topics-btn" class="ab ab-edit" style="margin-left:auto;" onclick="aiTopicsForForm()">✨ Generate with AI</button></label><textarea id="course-topics" rows="2" placeholder="e.g. Atomic structure, Bonding, Stoichiometry"></textarea></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-      <div class="field"><label>Color</label><input id="course-color" type="color" value="#0A5CF5" style="height:42px;padding:4px;"></div>
+      <div class="field"><label>Color</label><input id="course-color" type="color" value="#E2507A" style="height:42px;padding:4px;"></div>
       <div class="field"><label>Icon</label>
         <select id="course-icon">
           <option value="translate">Translate</option>
@@ -1501,7 +1507,7 @@ select.f-input option{background:var(--bg);color:var(--t1);}
 </div>
 
 <script src="/js/auth-guard.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="/vendor/chartjs/chart.umd.js"></script>
 <script>
 const API = '';
 let allStudents = [], allPayments = [], allQuestions = [];
@@ -1542,6 +1548,7 @@ async function loadStudentsByCourse(course){
   try{
     const r = await adminFetch(`/api/admin/users/by-course/${encodeURIComponent(course)}`, { headers: {} });
     const d = await r.json();
+    window._bcLast = { course, students: d.students || [] };
     if(!d.students.length){ body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--t3);padding:20px;">No students registered for this course yet</td></tr>'; return; }
     body.innerHTML = d.students.map(s => `
       <tr>
@@ -1554,6 +1561,18 @@ async function loadStudentsByCourse(course){
       </tr>
     `).join('');
   }catch(e){ body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--no);padding:20px;">Failed to load</td></tr>'; }
+}
+
+// v1.9.1 CSV of the course currently shown in "Students by Course" (built from what is already on screen)
+function exportCourseCsv(){
+  const d = window._bcLast;
+  if(!d || !d.students.length){ toast('Pick a course with students first'); return; }
+  const cell = v => { let t = v == null ? '' : String(v); if(/^[=+\-@\t\r]/.test(t)) t = "'" + t; return /[",\n\r]/.test(t) ? '"' + t.replace(/"/g,'""') + '"' : t; };
+  const rows = ['name,matric,username,plan,attempts,accuracyPct'].concat(d.students.map(s => [s.name, s.matric, s.username || '', planLabel(s), s.attempts, s.accuracy == null ? '' : s.accuracy].map(cell).join(',')));
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([rows.join('\n')], { type: 'text/csv' }));
+  a.download = 'wreddi-course-' + String(d.course).replace(/[^A-Za-z0-9._-]/g,'_') + '.csv';
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
 
 // "Free" / "Premium · Weekly" / "Premium · Lifetime" (premiumPlan is null for old manual grants).
@@ -1924,7 +1943,7 @@ async function actLoad(page){
 function actDownload(fmt){
   const date = document.getElementById('act-date').value;
   if(!date) return toast('Pick a day first');
-  downloadCsv(`/api/admin/activity/download?date=${encodeURIComponent(date)}&format=${fmt}`, `prephq-activity-${date}.${fmt}`);
+  downloadCsv(`/api/admin/activity/download?date=${encodeURIComponent(date)}&format=${fmt}`, `wreddi-activity-${date}.${fmt}`);
 }
 
 
@@ -2124,11 +2143,11 @@ async function loadSupport(){
         detail = `<div style="font-size:12px;">Code <b>${escHtml(x.code)}</b></div>`
           + (x.studentFound===false ? '<div class="badge b-no" style="margin-top:4px;">No account with this matric</div>'
             : `<div style="font-size:12px;color:var(--t3)">Typed name: ${escHtml(x.name||'—')} ${mismatch?'<span class="badge b-warn">≠ account name</span>':''}</div>`);
-        act = open ? `${x.student&&x.student.contact?`<a class="ab ab-ok" href="${escHtml(waOpen(x.student.contact,'Hi '+(x.student.name||'')+', this is PrepHQ support about request '+x.code+'. '))}" target="_blank" rel="noopener">WhatsApp</a>`:''}
+        act = open ? `${x.student&&x.student.contact?`<a class="ab ab-ok" href="${escHtml(waOpen(x.student.contact,'Hi '+(x.student.name||'')+', this is Wreddi support about request '+x.code+'. '))}" target="_blank" rel="noopener">WhatsApp</a>`:''}
           ${x.studentFound!==false?`<button class="ab ab-edit" onclick="supTemp('${x._id}')">Temp password</button>`:''}` : '';
       } else if(x.type==='upgrade'){
         detail = `<div style="font-size:12px;">Code <b>${escHtml(x.code)}</b></div><div style="font-weight:800;text-transform:capitalize">${escHtml(x.plan)} Premium</div>`;
-        act = open ? `${x.student&&x.student.contact?`<a class="ab ab-ok" href="${escHtml(waOpen(x.student.contact,'Hi '+(x.student.name||'')+', this is PrepHQ about your Premium request '+x.code+'. '))}" target="_blank" rel="noopener">WhatsApp</a>`:''}
+        act = open ? `${x.student&&x.student.contact?`<a class="ab ab-ok" href="${escHtml(waOpen(x.student.contact,'Hi '+(x.student.name||'')+', this is Wreddi about your Premium request '+x.code+'. '))}" target="_blank" rel="noopener">WhatsApp</a>`:''}
           <button class="ab ab-edit" onclick="supGrant('${x._id}')">Grant / send code</button>` : '';
       } else {
         const r = x.report||{};
@@ -2239,10 +2258,10 @@ function fuRender(){
     if(fuMode==='expiring'){
       const dt = new Date(s.tierExpiresAt).toLocaleDateString(undefined,{day:'numeric',month:'short'});
       when = s.state==='expired' ? `<span class="badge b-no">Ended ${dt}</span>` : `<span class="badge b-warn">${dt} · ${s.daysLeft}d left</span>`;
-      msg = `Hi ${s.name}, your PrepHQ Premium ${s.state==='expired'?'ended on':'ends on'} ${dt}. Would you like to renew? Reply here and we'll sort it out.`;
+      msg = `Hi ${s.name}, your Wreddi Premium ${s.state==='expired'?'ended on':'ends on'} ${dt}. Would you like to renew? Reply here and we'll sort it out.`;
     } else {
       when = s.inactiveDays==null ? '<span class="badge b-gray">Never</span>' : `<span class="badge b-gray">${s.inactiveDays}d ago</span>`;
-      msg = `Hi ${s.name}, we haven't seen you on PrepHQ ${s.inactiveDays==null?'yet':'for '+s.inactiveDays+' days'}. Your exams are coming — come back and keep practising! Need any help getting started?`;
+      msg = `Hi ${s.name}, we haven't seen you on Wreddi ${s.inactiveDays==null?'yet':'for '+s.inactiveDays+' days'}. Your exams are coming — come back and keep practising! Need any help getting started?`;
     }
     const m = escHtml(s.matric).replace(/'/g,'&#39;');
     const fu = s.followedUp
@@ -2862,7 +2881,7 @@ function copyLogin() {
   const matric = document.getElementById('rv-matric').textContent;
   const pass   = document.getElementById('rv-pass').textContent;
   const url    = document.getElementById('rv-url').textContent;
-  const text = `🎓 *PrepHQ Login Details*\n\nMatric: *${matric}*\nPassword: *${pass}*\nLink: ${url}\n\nLogin with your matric and password. Your password is your matric number unless changed.`;
+  const text = `🎓 *Wreddi Login Details*\n\nMatric: *${matric}*\nPassword: *${pass}*\nLink: ${url}\n\nLogin with your matric and password. Your password is your matric number unless changed.`;
   navigator.clipboard.writeText(text).then(() => toast('Copied! Paste on WhatsApp'));
 }
 
@@ -2998,7 +3017,7 @@ function openAddCourse() {
   document.getElementById('m-course-err').classList.remove('on');
   ['course-code','course-title','course-dept','course-level','course-topics'].forEach(id => document.getElementById(id).value='');
   document.getElementById('course-code').disabled = false;
-  document.getElementById('course-color').value = '#0A5CF5';
+  document.getElementById('course-color').value = '#E2507A';
   document.getElementById('course-icon').value = 'star';
   document.getElementById('m-add-course').classList.add('on');
 }
@@ -3015,7 +3034,7 @@ function editCourse(id) {
   document.getElementById('course-dept').value = c.department||'';
   document.getElementById('course-level').value = c.level||'';
   document.getElementById('course-topics').value = (c.topics||[]).join(', ');
-  document.getElementById('course-color').value = c.color || '#0A5CF5';
+  document.getElementById('course-color').value = c.color || '#E2507A';
   document.getElementById('course-icon').value = c.icon || 'star';
   document.getElementById('m-course-err').classList.remove('on');
   document.getElementById('m-add-course').classList.add('on');
@@ -3714,11 +3733,11 @@ function bpTemplate(kind) {
   let body, type, name;
   if (kind === 'json') {
     body = JSON.stringify(rows.map(r => ({ course: r.course, question: r.question, options: [r.optionA, r.optionB, r.optionC, r.optionD], answer: r.answer, tag: r.tag, explanation: r.explanation })), null, 2);
-    type = 'application/json'; name = 'prephq-questions-template.json';
+    type = 'application/json'; name = 'wreddi-questions-template.json';
   } else {
     const cols = Object.keys(rows[0]), esc = v => /[",\n]/.test(v) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v);
     body = [cols.join(','), ...rows.map(r => cols.map(c => esc(r[c])).join(','))].join('\n');
-    type = 'text/csv'; name = 'prephq-questions-template.csv';
+    type = 'text/csv'; name = 'wreddi-questions-template.csv';
   }
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([body], { type })); a.download = name; document.body.appendChild(a); a.click();
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
@@ -4295,7 +4314,7 @@ async function loadEngagement(){
     const ctx = document.getElementById('chart-engagement').getContext('2d');
     if(chartEng) chartEng.destroy();
     chartEng = new Chart(ctx, { type:'bar',
-      data:{ labels:d.weekly.map(w=>w.week.slice(5)+(w.partial?' (so far)':'')), datasets:[{ label:'Students answering questions', data:d.weekly.map(w=>w.active), backgroundColor:d.weekly.map(w=>w.partial?'rgba(10,92,245,.35)':'#0A5CF5') }] },
+      data:{ labels:d.weekly.map(w=>w.week.slice(5)+(w.partial?' (so far)':'')), datasets:[{ label:'Students answering questions', data:d.weekly.map(w=>w.active), backgroundColor:d.weekly.map(w=>w.partial?'rgba(226,80,122,.35)':'#E2507A') }] },
       options:{ responsive:true, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true, ticks:{ precision:0 } } } } });
     document.getElementById('eng-note').textContent = d.concentration.attempts
       ? `The top 5 accounts account for ${d.concentration.top5Pct}% of all answers (the top 1 alone: ${d.concentration.top1Pct}%). If one of them is you, add it to the list below.` : '';
@@ -4318,7 +4337,7 @@ function renderSignupsChart(rows){
   if(chartSignups) chartSignups.destroy();
   chartSignups = new Chart(ctx, {
     type: 'line',
-    data: { labels: rows.map(r=>r.date), datasets: [{ label: 'New signups', data: rows.map(r=>r.count), borderColor: '#0A5CF5', backgroundColor: 'rgba(10,92,245,.12)', fill: true, tension: 0.3 }] },
+    data: { labels: rows.map(r=>r.date), datasets: [{ label: 'New signups', data: rows.map(r=>r.count), borderColor: '#E2507A', backgroundColor: 'rgba(226,80,122,.12)', fill: true, tension: 0.3 }] },
     options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } },
   });
 }
@@ -4344,7 +4363,7 @@ function renderContestsChart(rows){
   if(chartContests) chartContests.destroy();
   chartContests = new Chart(ctx, {
     type: 'bar',
-    data: { labels: rows.map(r=>r.date), datasets: [{ label: 'Contest joins', data: rows.map(r=>r.count), backgroundColor: '#7B2CF5' }] },
+    data: { labels: rows.map(r=>r.date), datasets: [{ label: 'Contest joins', data: rows.map(r=>r.count), backgroundColor: '#FF9A62' }] },
     options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } },
   });
 }

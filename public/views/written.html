@@ -5,23 +5,23 @@
 #view-written *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 #view-written{font-family:var(--ff-b);color:var(--t1);-webkit-font-smoothing:antialiased;min-height:calc(100dvh - var(--nav-space,96px));padding-bottom:28px;}
 #view-written .wx-top{display:flex;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top,0px) + 14px) 18px 14px;background:var(--bg);box-shadow:0 4px 12px -8px var(--sd);position:sticky;top:0;z-index:5;}
-#view-written .wx-back{width:38px;height:38px;border-radius:50%;background:var(--bg);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--brand);flex-shrink:0;box-shadow:var(--sh);}
+#view-written .wx-back{width:38px;height:38px;border-radius:50%;background:var(--surf);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--brand);flex-shrink:0;box-shadow:var(--sh);}
 #view-written .wx-back:active{transform:scale(.93);box-shadow:var(--sh-in);}
-#view-written .wx-title{font-family:var(--ff-h);font-size:18px;font-weight:800;flex:1;letter-spacing:-.4px;}
-#view-written .wx-pill{font-size:11px;font-weight:800;color:var(--brand);padding:7px 12px;border-radius:10px;background:var(--bg);box-shadow:var(--sh-sm);white-space:nowrap;}
+#view-written .wx-title{font-family:var(--ff-h);font-size:18px;font-weight:700;flex:1;letter-spacing:-.4px;}
+#view-written .wx-pill{font-size:11px;font-weight:700;color:var(--brand);padding:7px 12px;border-radius:10px;background:var(--surf);box-shadow:var(--sh-sm);white-space:nowrap;}
 #view-written .wx-pill.wx-warn{color:var(--no);}
 #view-written .wx-wrap{max-width:640px;margin:0 auto;padding:16px 18px 0;}
-#view-written .wx-card{background:var(--bg);border-radius:20px;padding:18px;box-shadow:var(--sh);margin-bottom:16px;}
-#view-written .wx-h{font-family:var(--ff-h);font-size:15px;font-weight:800;margin-bottom:4px;}
+#view-written .wx-card{background:var(--surf);border-radius:20px;padding:18px;box-shadow:var(--sh);margin-bottom:16px;}
+#view-written .wx-h{font-family:var(--ff-h);font-size:15px;font-weight:700;margin-bottom:4px;}
 #view-written .wx-sub{font-size:12.5px;color:var(--t3);line-height:1.5;margin-bottom:12px;}
-#view-written .wx-lbl{font-size:12px;font-weight:800;color:var(--t2);margin:14px 0 6px;}
-#view-written .wx-field,#view-written .wx-text{width:100%;border:none;outline:none;background:var(--bg);color:var(--t1);font-family:inherit;font-size:14px;font-weight:600;padding:13px 14px;border-radius:14px;box-shadow:var(--sh-in-sm);}
+#view-written .wx-lbl{font-size:12px;font-weight:700;color:var(--t2);margin:14px 0 6px;}
+#view-written .wx-field,#view-written .wx-text{width:100%;border:none;outline:none;background:var(--fill);color:var(--t1);font-family:inherit;font-size:14px;font-weight:600;padding:13px 14px;border-radius:14px;box-shadow:var(--sh-in-sm);}
 #view-written .wx-text{min-height:150px;resize:vertical;line-height:1.55;font-weight:500;}
 #view-written .wx-field:focus,#view-written .wx-text:focus{box-shadow:var(--sh-in),0 0 0 2px var(--brand-lt);}
 #view-written .wx-chips{display:flex;gap:8px;flex-wrap:wrap;}
-#view-written .wx-chip{border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:800;color:var(--t2);background:var(--bg);padding:10px 16px;border-radius:12px;box-shadow:var(--sh-sm);}
-#view-written .wx-chip.wx-on{color:#fff;background:linear-gradient(140deg,var(--brand),var(--purple));box-shadow:var(--sh-in-sm);}
-#view-written .wx-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:none;cursor:pointer;font-family:inherit;font-size:15px;font-weight:800;padding:15px;border-radius:16px;margin-top:16px;color:#fff;background:linear-gradient(140deg,var(--brand),var(--purple));box-shadow:var(--sh);}
+#view-written .wx-chip{border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;color:var(--t2);background:var(--surf);padding:10px 16px;border-radius:12px;box-shadow:var(--sh-sm);}
+#view-written .wx-chip.wx-on{color:#fff;background:var(--grad);box-shadow:var(--sh-in-sm);}
+#view-written .wx-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:none;cursor:pointer;font-family:inherit;font-size:15px;font-weight:700;padding:15px;border-radius:16px;margin-top:16px;color:#fff;background:var(--grad);box-shadow:var(--sh);}
 #view-written .wx-btn:active{transform:scale(.98);}
 #view-written .wx-btn:disabled{opacity:.6;cursor:default;}
 #view-written .wx-btn.wx-plain{color:var(--t2);background:var(--bg);}
@@ -29,32 +29,32 @@
 #view-written .wx-hist{display:flex;align-items:center;gap:12px;padding:12px 4px;border-top:1px solid rgba(127,127,127,.12);cursor:pointer;}
 #view-written .wx-hist:first-of-type{border-top:none;}
 #view-written .wx-hist-main{flex:1;min-width:0;}
-#view-written .wx-hist-t{font-size:13.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#view-written .wx-hist-t{font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 #view-written .wx-hist-s{font-size:11.5px;color:var(--t3);margin-top:2px;}
-#view-written .wx-score{font-family:var(--ff-h);font-weight:800;font-size:16px;color:var(--brand);}
-#view-written .wx-timer{font-family:var(--ff-h);font-weight:800;font-size:15px;color:var(--brand);padding:7px 12px;border-radius:10px;background:var(--bg);box-shadow:var(--sh-sm);font-variant-numeric:tabular-nums;}
+#view-written .wx-score{font-family:var(--ff-h);font-weight:700;font-size:16px;color:var(--brand);}
+#view-written .wx-timer{font-family:var(--ff-h);font-weight:700;font-size:15px;color:var(--brand);padding:7px 12px;border-radius:10px;background:var(--surf);box-shadow:var(--sh-sm);font-variant-numeric:tabular-nums;}
 #view-written .wx-timer.wx-low{color:var(--no);animation:vwritten-pulse 1s ease-in-out infinite;}
 @keyframes vwritten-pulse{0%,100%{opacity:1;}50%{opacity:.55;}}
 #view-written .wx-qhead{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;}
-#view-written .wx-qn{width:28px;height:28px;border-radius:9px;background:linear-gradient(140deg,var(--brand),var(--purple));color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-#view-written .wx-qt{flex:1;font-size:14.5px;font-weight:700;line-height:1.5;white-space:pre-wrap;}
-#view-written .wx-marks{font-size:11px;font-weight:800;color:var(--t3);white-space:nowrap;padding-top:4px;}
+#view-written .wx-qn{width:28px;height:28px;border-radius:9px;background:var(--grad);color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+#view-written .wx-qt{flex:1;font-size:14.5px;font-weight:600;line-height:1.5;white-space:pre-wrap;}
+#view-written .wx-marks{font-size:11px;font-weight:700;color:var(--t3);white-space:nowrap;padding-top:4px;}
 #view-written .wx-count{font-size:11px;color:var(--t3);text-align:right;margin-top:6px;}
 #view-written .wx-center{text-align:center;padding:60px 20px;}
 #view-written .wx-spin{width:42px;height:42px;border-radius:50%;border:4px solid var(--brand-lt);border-top-color:var(--brand);margin:0 auto 18px;animation:vwritten-spin .9s linear infinite;}
 @keyframes vwritten-spin{to{transform:rotate(360deg);}}
 #view-written .wx-big{text-align:center;padding:8px 0 4px;}
-#view-written .wx-big-n{font-family:var(--ff-h);font-size:44px;font-weight:800;color:var(--brand);line-height:1;}
-#view-written .wx-big-s{font-size:13px;color:var(--t3);margin-top:6px;font-weight:700;}
-#view-written .wx-ans{white-space:pre-wrap;font-size:13.5px;line-height:1.55;padding:12px 14px;border-radius:14px;background:var(--bg);box-shadow:var(--sh-in-sm);margin:8px 0 12px;}
+#view-written .wx-big-n{font-family:var(--ff-h);font-size:44px;font-weight:700;color:var(--brand);line-height:1;}
+#view-written .wx-big-s{font-size:13px;color:var(--t3);margin-top:6px;font-weight:600;}
+#view-written .wx-ans{white-space:pre-wrap;font-size:13.5px;line-height:1.55;padding:12px 14px;border-radius:14px;background:var(--fill);box-shadow:var(--sh-in-sm);margin:8px 0 12px;}
 #view-written .wx-pt{display:flex;gap:9px;align-items:flex-start;font-size:13px;line-height:1.45;padding:6px 0;}
 #view-written .wx-pt i{margin-top:3px;flex-shrink:0;}
 #view-written .wx-pt.wx-got i{color:var(--ok);}
 #view-written .wx-pt.wx-miss i{color:var(--no);}
 #view-written .wx-pt.wx-miss{color:var(--t2);}
 #view-written .wx-fb{font-size:13px;line-height:1.55;margin-top:10px;padding:12px 14px;border-radius:14px;background:var(--brand-lt);}
-#view-written .wx-model{font-size:13px;line-height:1.55;margin-top:10px;padding:12px 14px;border-radius:14px;background:var(--bg);box-shadow:var(--sh-in-sm);white-space:pre-wrap;}
-#view-written .wx-late{font-size:12px;font-weight:700;color:var(--no);text-align:center;margin-top:8px;}
+#view-written .wx-model{font-size:13px;line-height:1.55;margin-top:10px;padding:12px 14px;border-radius:14px;background:var(--fill);box-shadow:var(--sh-in-sm);white-space:pre-wrap;}
+#view-written .wx-late{font-size:12px;font-weight:600;color:var(--no);text-align:center;margin-top:8px;}
 </style>
 
 <div class="wx-top">
@@ -141,7 +141,7 @@ const post = (url, body) => api(url, { method: 'POST', headers: { 'Content-Type'
 function paintChips(){
   $('wx-counts').innerHTML = [1, 2, 3, 4, 5].map(n => `<button type="button" class="wx-chip ${n === count ? 'wx-on' : ''}" onclick="wxSetCount(${n})">${n}</button>`).join('');
   $('wx-diffs').innerHTML = [['easy', 'Easy'], ['medium', 'Medium'], ['hard', 'Hard']].map(([k, l]) => `<button type="button" class="wx-chip ${k === diff ? 'wx-on' : ''}" onclick="wxSetDiff('${k}')">${l}</button>`).join('');
-  $('wx-hint').textContent = `About ${count * 8} minutes (8 per question). Starting an exam uses one of today's written exams. Questions the AI writes may be reviewed by PrepHQ and added to the practice bank.`;
+  $('wx-hint').textContent = `About ${count * 8} minutes (8 per question). Starting an exam uses one of today's written exams. Questions the AI writes may be reviewed by Wreddi and added to the practice bank.`;
 }
 function wxSetCount(n){ count = n; paintChips(); }
 function wxSetDiff(k){ diff = k; paintChips(); }
@@ -263,8 +263,8 @@ function renderResult(d){
       <div class="wx-lbl" style="margin-top:4px;">Your answer</div>
       <div class="wx-ans">${q.answer ? esc(q.answer) : '<span style="color:var(--t3)">(no answer)</span>'}</div>
       <div class="wx-lbl" style="margin-top:0;">Marking scheme</div>
-      ${q.rubric.map(p => `<div class="wx-pt ${p.earned ? 'wx-got' : 'wx-miss'}"><i class="fa-solid ${p.earned ? 'fa-circle-check' : 'fa-circle-xmark'}"></i><div>${esc(p.point)} <span style="color:var(--t3);font-weight:700;">(${p.marks})</span></div></div>`).join('')}
-      ${q.feedback ? `<div class="wx-fb">${esc(q.feedback)}${q.tip ? `<div style="margin-top:6px;font-weight:700;">💡 ${esc(q.tip)}</div>` : ''}</div>` : ''}
+      ${q.rubric.map(p => `<div class="wx-pt ${p.earned ? 'wx-got' : 'wx-miss'}"><i class="fa-solid ${p.earned ? 'fa-circle-check' : 'fa-circle-xmark'}"></i><div>${esc(p.point)} <span style="color:var(--t3);font-weight:600;">(${p.marks})</span></div></div>`).join('')}
+      ${q.feedback ? `<div class="wx-fb">${esc(q.feedback)}${q.tip ? `<div style="margin-top:6px;font-weight:600;">💡 ${esc(q.tip)}</div>` : ''}</div>` : ''}
       <div class="wx-lbl">Model answer</div><div class="wx-model">${esc(q.model)}</div></div>`).join('');
   show('result'); loadQuota(); loadHistory();
 }
@@ -291,6 +291,8 @@ async function resumeIfAny(){
 window.addEventListener('phq:route', (e) => { if(e.detail && e.detail.path !== '/written') clearInterval(timerId); });
 
 paintChips();
+// first open: the shell only calls onShow() when you come BACK to a view, so load once here too
+loadCourses(); loadQuota(); loadHistory(); resumeIfAny();
 
 // inline onclick="..." handlers run in the global scope, so the functions they call are exposed
 window.wxStart = wxStart;

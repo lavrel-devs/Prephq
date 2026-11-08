@@ -140,11 +140,20 @@ async function requireStudent(req, res, next) {
 //   a) Authorization: Bearer <admin JWT>   (used by admin.html going forward)
 //   b) x-admin-key: <ADMIN_KEY from .env>  (legacy, kept alive for
 //      external scripts)
+// v1.9.1: wrong ADMIN_KEY guesses are counted per IP; 10 misses in 15 minutes locks that IP out of the key (not of the JWT login).
+const { makeFailGuard } = require('../utils/failGuard');
+const adminKeyGuard = makeFailGuard({ max: 10, windowMs: 15 * 60 * 1000 });
+
 async function requireAdmin(req, res, next) {
   const legacyKey = req.headers['x-admin-key'] || req.body?.adminKey;
-  if (legacyKey && process.env.ADMIN_KEY && typeof legacyKey === 'string' && safeEqual(legacyKey, process.env.ADMIN_KEY)) {
-    req.admin = { username: 'legacy-key', sub: 'legacy-key', role: 'admin', access: { full: true, permissions: [], owner: true } }; // the ADMIN_KEY is the owner's secret
-    return next();
+  if (legacyKey) {
+    if (adminKeyGuard.blocked(req.ip)) return res.status(429).json({ error: 'Too many wrong keys. Try again in a few minutes.' });
+    if (process.env.ADMIN_KEY && typeof legacyKey === 'string' && safeEqual(legacyKey, process.env.ADMIN_KEY)) {
+      adminKeyGuard.clear(req.ip);
+      req.admin = { username: 'legacy-key', sub: 'legacy-key', role: 'admin', access: { full: true, permissions: [], owner: true } }; // the ADMIN_KEY is the owner's secret
+      return next();
+    }
+    adminKeyGuard.fail(req.ip);
   }
 
   const token = getBearerToken(req);

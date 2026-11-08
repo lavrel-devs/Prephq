@@ -318,7 +318,30 @@ router.get('/export/users', async (req, res) => {
     const rows = ['matric,name,username,credits,active,createdAt'];
     students.forEach(s => rows.push(csvRow([s.matric, s.name, s.username || '', s.credits || 0, s.active !== false, s.createdAt])));
     res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', 'attachment; filename="prephq-users.csv"');
+    res.setHeader('Content-Disposition', 'attachment; filename="wreddi-users.csv"');
+    res.send(rows.join('\n'));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// GET /api/admin/export/students — v1.9.1: every student with plan and quiz stats, as CSV (the plain /export/users has no performance columns)
+router.get('/export/students', async (req, res) => {
+  try {
+    const [students, statsAgg] = await Promise.all([
+      Student.find().sort({ createdAt: -1 }).select('-password -passwordHash -devices').lean(),
+      Score.aggregate([{ $group: { _id: '$matric', n: { $sum: 1 }, best: { $max: { $ifNull: ['$pct', 0] } }, avg: { $avg: { $ifNull: ['$pct', 0] } } } }]),
+    ]);
+    const stats = Object.fromEntries(statsAgg.map(r => [r._id, r]));
+    const now = Date.now();
+    const rows = ['matric,name,username,phone,plan,planEnds,credits,quizzes,bestPct,avgPct,active,joined'];
+    students.forEach(s => {
+      const st = stats[s.matric];
+      const paid = s.premiumPlan || (s.tier && s.tier !== 'free' ? s.tier : '');
+      const expired = paid && s.premiumPlan !== 'lifetime' && s.tierExpiresAt && new Date(s.tierExpiresAt).getTime() < now;
+      rows.push(csvRow([s.matric, s.name, s.username || '', s.phone || '', paid && !expired ? paid : (expired ? 'free (expired)' : 'free'),
+        paid && s.premiumPlan !== 'lifetime' ? (s.tierExpiresAt || '') : '', s.credits || 0, st ? st.n : 0, st ? st.best : 0, st ? Math.round(st.avg) : 0, s.active !== false, s.createdAt]));
+    });
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="wreddi-students.csv"');
     res.send(rows.join('\n'));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -330,7 +353,7 @@ router.get('/export/transactions', async (req, res) => {
     const rows = ['matric,delta,balanceAfter,reason,note,actor,createdAt'];
     txs.forEach(t => rows.push(csvRow([t.matric, t.delta, t.balanceAfter, t.reason, t.note || '', t.actor, t.createdAt])));
     res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', 'attachment; filename="prephq-transactions.csv"');
+    res.setHeader('Content-Disposition', 'attachment; filename="wreddi-transactions.csv"');
     res.send(rows.join('\n'));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -342,7 +365,7 @@ router.get('/export/transfers', async (req, res) => {
     const rows = ['fromMatric,toMatric,amount,fee,totalDebited,status,createdAt'];
     transfers.forEach(t => rows.push(csvRow([t.fromMatric, t.toMatric, t.amount, t.fee, t.totalDebited, t.status, t.createdAt])));
     res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', 'attachment; filename="prephq-transfers.csv"');
+    res.setHeader('Content-Disposition', 'attachment; filename="wreddi-transfers.csv"');
     res.send(rows.join('\n'));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });

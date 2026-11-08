@@ -1,0 +1,105 @@
+<!-- View: Wreddi Wrapped. Loaded once by js/shell.js into <div class="scr" id="view-wrapped">, then only shown and hidden.
+     A semester recap built from the student's own answers, with a share button that draws a 1080x1350 picture on a canvas. -->
+<style>
+#view-wrapped *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+#view-wrapped{font-family:var(--ff-b);color:var(--t1);min-height:calc(100dvh - var(--nav-space,96px));-webkit-font-smoothing:antialiased;}
+#view-wrapped .v-wrap{max-width:480px;margin:0 auto;padding:18px 18px 120px;}
+#view-wrapped .v-topbar{display:flex;align-items:center;gap:12px;padding:6px 0 16px;}
+#view-wrapped .v-back-btn{width:38px;height:38px;border-radius:50%;background:var(--surf);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--brand);flex-shrink:0;box-shadow:var(--sh);}
+#view-wrapped .v-title{font-family:var(--ff-h);font-weight:700;font-size:20px;letter-spacing:-.4px;}
+#view-wrapped .v-hero{border-radius:26px;padding:26px 20px;text-align:center;color:#fff;background:var(--grad);box-shadow:var(--sh-lg);}
+#view-wrapped .v-hero small{display:block;font-size:12px;font-weight:700;opacity:.85;}
+#view-wrapped .v-big{font-family:var(--ff-h);font-weight:700;font-size:68px;letter-spacing:-2px;line-height:1.05;margin:8px 0 2px;}
+#view-wrapped .v-sub{font-size:14px;font-weight:600;opacity:.92;}
+#view-wrapped .v-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0;}
+#view-wrapped .v-tile{background:var(--surf);border-radius:16px;box-shadow:var(--sh);padding:14px 8px;text-align:center;}
+#view-wrapped .v-tile b{display:block;font-family:var(--ff-h);font-size:24px;letter-spacing:-.6px;color:var(--brand);}
+#view-wrapped .v-tile span{font-size:11.5px;font-weight:600;color:var(--t3);}
+#view-wrapped .v-card{background:var(--surf);border-radius:18px;box-shadow:var(--sh);padding:16px;margin-bottom:14px;}
+#view-wrapped .v-h{font-family:var(--ff-h);font-weight:700;font-size:14px;color:var(--t2);margin-bottom:8px;}
+#view-wrapped .v-row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;font-size:13.5px;font-weight:600;}
+#view-wrapped .v-row span:last-child{color:var(--ok);font-weight:700;white-space:nowrap;}
+#view-wrapped .v-btn{width:100%;border:none;cursor:pointer;padding:15px;border-radius:14px;background:var(--surf);box-shadow:var(--sh);color:var(--brand);font-weight:700;font-size:15px;font-family:var(--ff-h);}
+#view-wrapped .v-btn:active{box-shadow:var(--sh-in);}
+#view-wrapped .v-empty{text-align:center;color:var(--t3);font-size:13.5px;line-height:1.6;padding:30px 10px;}
+</style>
+
+<div class="v-wrap">
+  <div class="v-topbar">
+    <div class="v-back-btn" onclick="PhqShell.go('/dashboard')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></div>
+    <div class="v-title">Wreddi Wrapped</div>
+  </div>
+  <div id="wrp-body"><div class="v-empty">Building your recap…</div></div>
+</div>
+
+<script>
+const document = PhqShell.scope(root); // every getElementById/querySelector in this view only sees this view
+
+const esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const MIN = 20; // answers needed before a recap is worth showing
+let data = null;
+const prettyDay = k => { try { return new Date(k + 'T12:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }); } catch (e) { return k; } };
+const topic = t => `${String(t.course).toUpperCase()}: ${t.tag}`;
+
+async function load(){
+  const box = document.getElementById('wrp-body');
+  try {
+    const r = await PhqAuth.authFetch('/api/wrapped', {}, 'student');
+    if (!r.ok) throw new Error('bad');
+    data = await r.json();
+  } catch (e) { box.innerHTML = '<div class="v-empty">Could not build your recap. Check your connection and try again.</div>'; return; }
+  const d = data;
+  if (d.answered < MIN) { box.innerHTML = `<div class="v-empty">You have answered ${d.answered} question${d.answered === 1 ? '' : 's'} so far.<br>Answer ${MIN - d.answered} more and your semester recap unlocks.</div>`; return; }
+  box.innerHTML = `<div class="v-hero"><small>${esc(d.name ? d.name + "'s semester" : 'My semester')}</small><div class="v-big">${d.answered.toLocaleString()}</div><div class="v-sub">questions answered · ${d.accuracy}% correct</div></div>
+    <div class="v-tiles">
+      <div class="v-tile"><b>${d.longestStreak}</b><span>day best streak</span></div>
+      <div class="v-tile"><b>${d.activeDays}</b><span>days studied</span></div>
+      <div class="v-tile"><b>${d.bestDay ? d.bestDay.answered : 0}</b><span>on your best day</span></div>
+    </div>
+    ${d.bestDay ? `<div class="v-card"><div class="v-h">Your best day</div><div class="v-row"><span>${esc(prettyDay(d.bestDay.date))}</span><span>${d.bestDay.answered} questions</span></div></div>` : ''}
+    ${d.improved.length ? `<div class="v-card"><div class="v-h">Weak to strong</div>${d.improved.map(t => `<div class="v-row"><span>${esc(topic(t))}</span><span>${t.from}% → ${t.to}%</span></div>`).join('')}</div>` : ''}
+    <button class="v-btn" onclick="wrpShare()">Share my recap</button>`;
+}
+
+// The picture: same look as the result card, drawn on a canvas so it works with no server and no data
+async function drawCard(){
+  try { await (window.document.fonts && window.document.fonts.load ? window.document.fonts.load("800 90px 'Bricolage Grotesque'") : Promise.resolve()); } catch (e) {}
+  const W = 1080, H = 1350, c = window.document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d');
+  const css = getComputedStyle(window.document.documentElement), v = n => css.getPropertyValue(n).trim(), F = "'Bricolage Grotesque',system-ui,sans-serif";
+  x.fillStyle = v('--bg') || '#e0e5ec'; x.fillRect(0, 0, W, H);
+  const g = x.createLinearGradient(0, 0, W, H); g.addColorStop(0, v('--brand') || '#3E5C8A'); g.addColorStop(1, v('--purple') || '#5D7FB0');
+  x.fillStyle = g; x.beginPath(); x.roundRect ? x.roundRect(70, 150, W - 140, 1010, 56) : x.rect(70, 150, W - 140, 1010); x.fill();
+  x.textAlign = 'center'; x.fillStyle = v('--brand') || '#3E5C8A'; x.font = `800 48px ${F}`; x.fillText('Wreddi Wrapped', W / 2, 100);
+  x.fillStyle = '#fff'; x.globalAlpha = .85; x.font = `700 34px ${F}`; x.fillText((data.name ? data.name.toUpperCase() + "'S SEMESTER" : 'MY SEMESTER'), W / 2, 250); x.globalAlpha = 1;
+  x.font = `800 230px ${F}`; x.fillText(data.answered.toLocaleString(), W / 2, 470);
+  x.font = `700 46px ${F}`; x.fillText(`questions answered · ${data.accuracy}% correct`, W / 2, 545);
+  const tiles = [[data.longestStreak, 'day best streak'], [data.activeDays, 'days studied'], [data.bestDay ? data.bestDay.answered : 0, 'best day']];
+  tiles.forEach((t, i) => { const cx = 215 + i * 325; x.fillStyle = 'rgba(255,255,255,.16)'; x.beginPath(); x.roundRect ? x.roundRect(cx - 140, 620, 280, 170, 30) : x.rect(cx - 140, 620, 280, 170); x.fill();
+    x.fillStyle = '#fff'; x.font = `800 72px ${F}`; x.fillText(String(t[0]), cx, 710); x.font = `600 28px ${F}`; x.globalAlpha = .9; x.fillText(t[1], cx, 760); x.globalAlpha = 1; });
+  if (data.improved.length) {
+    x.font = `700 34px ${F}`; x.globalAlpha = .85; x.fillText('WEAK TO STRONG', W / 2, 870); x.globalAlpha = 1; x.font = `700 38px ${F}`;
+    data.improved.slice(0, 3).forEach((t, i) => { const line = `${topic(t)}  ${t.from}% → ${t.to}%`; x.fillText(line.length > 40 ? line.slice(0, 39) + '…' : line, W / 2, 935 + i * 60); });
+  }
+  x.fillStyle = v('--t2') || '#4a5568'; x.font = `700 40px ${F}`; x.fillText('What did your semester look like?', W / 2, 1250);
+  x.fillStyle = v('--t3') || '#7a8296'; x.font = `600 34px ${F}`; x.fillText(location.host, W / 2, 1310);
+  const blob = await new Promise(r => c.toBlob(r, 'image/png')); if (!blob) return null;
+  return new File([blob], 'wreddi-wrapped.png', { type: 'image/png' });
+}
+async function wrpShare(){
+  if (!data) return;
+  const text = `My semester on Wreddi: ${data.answered} questions answered, ${data.accuracy}% correct, ${data.longestStreak}-day best streak. ${location.origin}`;
+  const file = await drawCard();
+  if (file && navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ title: 'Wreddi Wrapped', text, files: [file] }); return; } catch (e) { if (e && e.name === 'AbortError') return; } }
+  if (file) { const a = window.document.createElement('a'); a.href = URL.createObjectURL(file); a.download = 'wreddi-wrapped.png'; window.document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); window.toast && window.toast('Picture saved to your phone'); return; }
+  if (navigator.share) navigator.share({ title: 'Wreddi Wrapped', text }).catch(() => {}); else if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => window.toast && window.toast('Copied'));
+}
+
+// inline onclick="…" handlers run in the global scope, so the functions they call are exposed
+window.wrpShare = wrpShare;
+
+// first open: the shell only calls onShow() when you come BACK to a view, so load once here too
+load();
+
+return { onShow(){ window.scrollTo(0, 0); load(); } };
+//# sourceURL=view-wrapped.js
+</script>

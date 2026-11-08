@@ -1,0 +1,10 @@
+const assert = require('assert');
+const { adviceFor, REASONS } = require('../src/utils/mistakes');
+assert.strictEqual(adviceFor({}).top, null, 'no data: no pattern yet');
+assert.strictEqual(adviceFor({ careless: 2, misread: 1 }).top, null, 'under 5 tagged mistakes: too early');
+let a = adviceFor({ careless: 6, didnt_know: 2, time: 1, misread: 1 });
+assert.strictEqual(a.top, 'careless'); assert.strictEqual(a.pct, 60); assert.ok(a.text.startsWith('60%') && /first read/.test(a.text), a.text);
+a = adviceFor({ didnt_know: 3, careless: 3, time: 2, misread: 2 }); assert.strictEqual(a.top, null, 'an even spread has no single cause'); assert.ok(/mix/.test(a.text));
+assert.strictEqual(adviceFor({ misread: 5 }).top, 'misread'); assert.strictEqual(adviceFor({ time: 5 }).top, 'time'); assert.strictEqual(adviceFor({ didnt_know: 5 }).top, 'didnt_know');
+assert.deepStrictEqual(REASONS.slice().sort(), ['careless', 'didnt_know', 'misread', 'time'], 'the four reasons the quiz offers');
+console.log('mistakes: pattern needs 5+ tagged, names the top cause at 40%+, calls an even spread a mix');

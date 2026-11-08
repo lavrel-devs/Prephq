@@ -4,6 +4,7 @@ const Student = require('../models/Student');
 const Course = require('../models/Course');
 const Score = require('../models/Score');
 const QuestionAttempt = require('../models/QuestionAttempt');
+const { reviewState } = require('../utils/spaced');
 const { getCourseCounts } = require('../services/questionBank.service');
 const Transfer = require('../models/Transfer');
 const CreditTransaction = require('../models/CreditTransaction');
@@ -29,9 +30,11 @@ async (req, res) => {
   catch (e) { res.status(500).json({ error: 'Could not load question counts' }); }
 });
 
-// GET /api/questions/missed[?course=chm141][&count=1] — bank questions this student got wrong the LAST time they
+// GET /api/questions/missed[?course=chm141][&count=1][&due=1] — bank questions this student got wrong the LAST time they
 // answered them (answering one correctly later drops it off the list). Most recently missed first, max 30.
 // Only attempts recorded with a question id count, so AI-quiz questions and older history don't appear.
+// v1.9.1 spaced review: each missed question comes back after 1, 3 or 7 days (see utils/spaced.js). ?count=1 also
+// returns `due` (how many are ready now) and ?due=1 returns only those.
 router.get('/questions/missed', requireStudent, requireFeature('practiceQuestions'), async (req, res) => {
   try {
     const match = { matric: req.student.sub, qid: { $ne: null } };
@@ -39,15 +42,20 @@ router.get('/questions/missed', requireStudent, requireFeature('practiceQuestion
     const latest = await QuestionAttempt.aggregate([
       { $match: match },
       { $sort: { ts: -1 } },
-      { $group: { _id: '$qid', correct: { $first: '$correct' }, ts: { $first: '$ts' } } },
+      { $group: { _id: '$qid', correct: { $first: '$correct' }, ts: { $first: '$ts' }, hist: { $push: { correct: '$correct', ts: '$ts' } } } },
       { $match: { correct: false } },
       { $sort: { ts: -1 } }, { $limit: 30 },
+      { $project: { correct: 1, ts: 1, hist: { $slice: ['$hist', 8] } } },
     ]);
-    if (req.query.count) return res.json({ count: latest.length }); // the home-screen card only needs the number
-    if (!latest.length) return res.json([]);
-    const docs = await Question.find({ _id: { $in: latest.map(l => l._id) } }).lean();
+    const now = Date.now();
+    latest.forEach(l => { l.due = reviewState(l.hist, now).due; });
+    const dueCount = latest.filter(l => l.due).length;
+    if (req.query.count) return res.json({ count: latest.length, due: dueCount }); // the home-screen card only needs the numbers
+    const wanted = req.query.due ? latest.filter(l => l.due) : latest;
+    if (!wanted.length) return res.json([]);
+    const docs = await Question.find({ _id: { $in: wanted.map(l => l._id) } }).lean();
     const byId = new Map(docs.map(d => [String(d._id), d]));
-    res.json(latest.map(l => byId.get(String(l._id))).filter(Boolean)); // a question an admin deleted just disappears
+    res.json(wanted.map(l => byId.get(String(l._id))).filter(Boolean)); // a question an admin deleted just disappears
   } catch (e) { res.status(500).json({ error: 'Could not load your missed questions' }); }
 });
 

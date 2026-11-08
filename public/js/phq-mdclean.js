@@ -1,6 +1,6 @@
 /**
- * PrepHQ plain-text cleaner — v1.8.5
- * The AI sometimes answers in markdown (**bold**, *italic*, _italic_, `code`, # headings). PrepHQ shows AI text as
+ * Wreddi plain-text cleaner — v1.8.5
+ * The AI sometimes answers in markdown (**bold**, *italic*, _italic_, `code`, # headings). Wreddi shows AI text as
  * plain text, so those marks appear as stray asterisks and underscores. strip() removes them and keeps the words.
  *
  * Works in Node (server, before text is saved/sent) and in the browser (safety net, also fixes old saved messages).

@@ -19,6 +19,10 @@
     '/profile':     { id: 'view-profile',     file: '/views/profile.html',     title: 'Profile' },
     '/leaderboard': { id: 'view-leaderboard', file: '/views/leaderboard.html', title: 'Leaderboard' },
     '/written':     { id: 'view-written',     file: '/views/written.html',     title: 'Written Exam' },
+    '/cheatsheet':  { id: 'view-cheatsheet',  file: '/views/cheatsheet.html',  title: 'Chemistry Cheat Sheet' },
+    '/focus':       { id: 'view-focus',       file: '/views/focus.html',       title: 'Focus Timer' },
+    '/mistakes':    { id: 'view-mistakes',    file: '/views/mistakes.html',    title: 'Mistake Notebook' },
+    '/wrapped':     { id: 'view-wrapped',     file: '/views/wrapped.html',     title: 'Wreddi Wrapped' },
   };
 
   const state = { current: null, seq: 0, mounted: {}, texts: {}, pending: {}, deps: {} };
@@ -102,7 +106,7 @@
 
   function announce(path) {
     const v = VIEWS[path];
-    document.title = v ? v.title + ' · PrepHQ' : 'PrepHQ';
+    document.title = v ? v.title + ' · Wreddi' : 'Wreddi';
     document.querySelectorAll('#shared-glass-nav .glass-nav-item').forEach(a => a.classList.toggle('on', norm(a.getAttribute('href')) === path));
     window.dispatchEvent(new CustomEvent('phq:route', { detail: { path } }));
   }

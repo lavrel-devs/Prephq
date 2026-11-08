@@ -1,5 +1,5 @@
 /**
- * PrepHQ Boot Kit — v1.2.0 "Liquid Glass"
+ * Wreddi Boot Kit — v1.2.0 "Liquid Glass"
  * Shared by every page (landing, login, register, dashboard, admin). Pure vanilla JS, no dependencies, no build step.
  *
  * Responsibilities:
@@ -54,7 +54,7 @@
       <div class="phq-boot-blob phq-boot-blob-b"></div>
       <div class="phq-boot-card">
         <div class="phq-boot-mark"><i class="fa-solid fa-graduation-cap"></i></div>
-        <div class="phq-boot-word">PrepHQ</div>
+        <div class="phq-boot-word">Wreddi</div>
         <div class="phq-boot-bar"><div class="phq-boot-bar-fill"></div></div>
       </div>`;
     // Insert as the very first element so it sits on top of everything

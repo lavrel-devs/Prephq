@@ -1,0 +1,130 @@
+<!-- View: Focus Timer. Loaded once by js/shell.js into <div class="scr" id="view-focus">, then only shown and hidden.
+     Runs entirely in the browser: the last choice and today's session count are saved on the phone. No backend, no AI.
+     CSS is scoped to #view-focus; the script runs with a scoped `document`. -->
+<style>
+#view-focus *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+#view-focus{font-family:var(--ff-b);color:var(--t1);min-height:calc(100dvh - var(--nav-space,96px));-webkit-font-smoothing:antialiased;}
+#view-focus .v-wrap{max-width:460px;margin:0 auto;padding:18px 18px 120px;}
+#view-focus .v-topbar{display:flex;align-items:center;gap:12px;padding:6px 0 18px;}
+#view-focus .v-back-btn{width:38px;height:38px;border-radius:50%;background:var(--surf);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--brand);flex-shrink:0;box-shadow:var(--sh);}
+#view-focus .v-back-btn:active{box-shadow:var(--sh-in);}
+#view-focus .v-title{font-family:var(--ff-h);font-weight:700;font-size:20px;letter-spacing:-.4px;}
+#view-focus .v-presets{display:flex;gap:8px;margin-bottom:22px;}
+#view-focus .v-preset{flex:1;border:none;cursor:pointer;padding:12px 6px;border-radius:12px;background:var(--surf);box-shadow:var(--sh-sm);color:var(--t3);font-weight:700;font-size:14px;font-family:inherit;}
+#view-focus .v-preset.on{color:var(--brand);box-shadow:var(--sh-in-sm);}
+#view-focus .v-dial{width:min(76vw,280px);aspect-ratio:1;margin:0 auto 22px;border-radius:50%;background:var(--surf);box-shadow:var(--sh-lg);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;}
+#view-focus .v-ring{position:absolute;inset:10px;width:calc(100% - 20px);height:calc(100% - 20px);transform:rotate(-90deg);}
+#view-focus .v-ring circle{fill:none;stroke-width:6;}
+#view-focus .v-ring .v-track{stroke:var(--sd);opacity:.35;}
+#view-focus .v-ring .v-prog{stroke:var(--brand);stroke-linecap:round;transition:stroke-dashoffset .4s linear;}
+#view-focus .v-time{font-family:var(--ff-h);font-weight:700;font-size:clamp(42px,14vw,58px);letter-spacing:-1.5px;font-variant-numeric:tabular-nums;}
+#view-focus .v-phase{font-size:12px;font-weight:700;color:var(--t3);margin-top:2px;}
+#view-focus .v-btns{display:flex;gap:12px;margin-bottom:18px;}
+#view-focus .v-btn{flex:1;border:none;cursor:pointer;padding:15px;border-radius:14px;background:var(--surf);box-shadow:var(--sh);color:var(--t2);font-weight:700;font-size:15px;font-family:var(--ff-h);}
+#view-focus .v-btn:active{box-shadow:var(--sh-in);}
+#view-focus .v-btn.v-main{color:var(--brand);flex:2;}
+#view-focus .v-card{background:var(--surf);border-radius:18px;box-shadow:var(--sh);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:13px;color:var(--t3);line-height:1.5;}
+#view-focus .v-card b{font-family:var(--ff-h);font-size:20px;color:var(--t1);}
+</style>
+
+<div class="v-wrap">
+  <div class="v-topbar">
+    <div class="v-back-btn" onclick="PhqShell.go('/dashboard')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></div>
+    <div class="v-title">Focus Timer</div>
+  </div>
+  <div class="v-presets" id="tmr-presets">
+    <button class="v-preset" data-p="25-5" onclick="tmrPreset('25-5')">25 / 5</button>
+    <button class="v-preset" data-p="50-10" onclick="tmrPreset('50-10')">50 / 10</button>
+    <button class="v-preset" data-p="60-20" onclick="tmrPreset('60-20')">60 / 20</button>
+  </div>
+  <div class="v-dial">
+    <svg class="v-ring" viewBox="0 0 100 100" aria-hidden="true"><circle class="v-track" cx="50" cy="50" r="46"/><circle class="v-prog" id="tmr-prog" cx="50" cy="50" r="46" stroke-dasharray="289.03" stroke-dashoffset="0"/></svg>
+    <div class="v-time" id="tmr-time" role="timer">25:00</div>
+    <div class="v-phase" id="tmr-phase">Focus</div>
+  </div>
+  <div class="v-btns">
+    <button class="v-btn" onclick="tmrReset()">Reset</button>
+    <button class="v-btn v-main" id="tmr-go" onclick="tmrToggle()">Start</button>
+  </div>
+  <div class="v-card">
+    <div>Focus sessions finished today<br><span style="font-size:11.5px;">The screen stays awake while the timer runs.</span></div>
+    <b id="tmr-count">0</b>
+  </div>
+</div>
+
+<script>
+const document = PhqShell.scope(root); // every getElementById/querySelector in this view only sees this view
+
+const KEY = 'phq-focus', CIRC = 289.03;
+let preset = '25-5', phase = 'focus', running = false, endAt = 0, leftMs = 25 * 60000, tick = null, lock = null;
+
+function load(){ try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { return {}; } }
+function save(o){ try { localStorage.setItem(KEY, JSON.stringify(Object.assign(load(), o))); } catch (e) {} }
+function today(){ return new Date().toISOString().slice(0, 10); }
+function minsFor(ph){ const p = preset.split('-'); return +(ph === 'focus' ? p[0] : p[1]); }
+function totalMs(){ return minsFor(phase) * 60000; }
+
+function paint(){
+  const s = Math.max(0, Math.ceil(leftMs / 1000)), m = Math.floor(s / 60), r = s % 60;
+  document.getElementById('tmr-time').textContent = String(m).padStart(2, '0') + ':' + String(r).padStart(2, '0');
+  document.getElementById('tmr-phase').textContent = phase === 'focus' ? 'Focus' : 'Break';
+  document.getElementById('tmr-go').textContent = running ? 'Pause' : (leftMs < totalMs() ? 'Resume' : 'Start');
+  document.getElementById('tmr-prog').style.strokeDashoffset = String(CIRC * (1 - leftMs / totalMs()));
+  document.querySelectorAll('.v-preset').forEach(b => b.classList.toggle('on', b.dataset.p === preset));
+  const st = load(); document.getElementById('tmr-count').textContent = st.day === today() ? (st.done || 0) : 0;
+}
+async function keepAwake(on){
+  try {
+    if (on && 'wakeLock' in navigator && !lock) { lock = await navigator.wakeLock.request('screen'); lock.addEventListener('release', () => { lock = null; }); }
+    else if (!on && lock) { await lock.release(); lock = null; }
+  } catch (e) { lock = null; }
+}
+function beep(){
+  try {
+    const C = window.AudioContext || window.webkitAudioContext, a = new C(), o = a.createOscillator(), g = a.createGain();
+    o.frequency.value = 880; g.gain.value = 0.15; o.connect(g); g.connect(a.destination); o.start(); o.stop(a.currentTime + 0.35);
+  } catch (e) {}
+  try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch (e) {}
+}
+function onDone(){
+  beep();
+  if (phase === 'focus') { const st = load(); save({ day: today(), done: (st.day === today() ? (st.done || 0) : 0) + 1 }); }
+  phase = phase === 'focus' ? 'break' : 'focus';
+  leftMs = totalMs();
+  if (running) endAt = Date.now() + leftMs;   // the next phase starts by itself
+  try { window.toast && window.toast(phase === 'break' ? 'Focus done. Take a break.' : 'Break over. Back to it.'); } catch (e) {}
+  paint();
+}
+function step(){
+  leftMs = endAt - Date.now();
+  if (leftMs <= 0) onDone(); else paint();
+}
+function tmrToggle(){
+  if (running) { leftMs = Math.max(0, endAt - Date.now()); running = false; clearInterval(tick); tick = null; keepAwake(false); }
+  else { running = true; endAt = Date.now() + leftMs; tick = setInterval(step, 500); keepAwake(true); }
+  paint();
+}
+function tmrReset(){
+  running = false; clearInterval(tick); tick = null; keepAwake(false);
+  phase = 'focus'; leftMs = totalMs(); paint();
+}
+function tmrPreset(p){
+  preset = p; save({ preset: p });
+  running = false; clearInterval(tick); tick = null; keepAwake(false);
+  phase = 'focus'; leftMs = totalMs(); paint();
+}
+// the browser drops the screen lock when the page is hidden; take it again when the student comes back
+window.addEventListener('visibilitychange', () => { if (!window.document.hidden && running) { keepAwake(true); step(); } });
+
+preset = load().preset || '25-5';
+leftMs = totalMs();
+paint();
+
+// inline onclick="…" handlers run in the global scope, so the functions they call are exposed
+window.tmrToggle = tmrToggle;
+window.tmrReset = tmrReset;
+window.tmrPreset = tmrPreset;
+
+return { onShow(){ if (running) step(); else paint(); } };
+//# sourceURL=view-focus.js
+</script>

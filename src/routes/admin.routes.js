@@ -258,6 +258,8 @@ router.delete('/students/:matric', async (req, res) => {
       FlashcardProgress.deleteMany({ matric }),
       GeneratedQuestion.deleteMany({ matric }),
       StudyGuide.deleteMany({ matric }),
+      require('../models/MistakeNote').deleteMany({ matric }),   // v1.9.2
+      require('../models/SponsorLink').deleteMany({ matric }),   // v1.9.2: the public sponsor page must stop working too
     ]);
     forgetSubject('student', matric);
     res.json({ success: true });
@@ -388,7 +390,7 @@ router.post('/courses', async (req, res) => {
       department: department?.trim() || '',
       level: level?.trim() || '',
       topics: Array.isArray(topics) ? topics : (topics ? String(topics).split(',').map(t => t.trim()).filter(Boolean) : []),
-      color: color || '#0A5CF5',
+      color: color || '#3E5C8A',
       icon: icon || 'star',
     });
     res.status(201).json(course);

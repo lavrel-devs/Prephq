@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 //   - `password`     : legacy plaintext field, kept read-only for old
 //                       accounts. New/updated accounts use `passwordHash`.
 //   - `passwordHash` : bcrypt hash, used for all logins going forward.
-//   - `credits`      : new PrepHQ Credits balance, starts at 0.
+//   - `credits`      : new Wreddi Credits balance, starts at 0.
 //   - `devices`      : known device fingerprints seen at login, for
 //                       the "flag new device" security feature.
 const StudentSchema = new mongoose.Schema({
@@ -17,7 +17,7 @@ const StudentSchema = new mongoose.Schema({
   whatsapp:     { type: String, default: '' },
   role:         { type: String, default: 'student' },
   active:       { type: Boolean, default: true },
-  credits:      { type: Number, default: 0 },          // PrepHQ Credits — new users start at 0
+  credits:      { type: Number, default: 0 },          // Wreddi Credits — new users start at 0
   devices: [{
     fingerprint: String,
     firstSeenAt: { type: Date, default: Date.now },

@@ -1,5 +1,5 @@
 /**
- * PrepHQ Auth Guard — v1.1.0
+ * Wreddi Auth Guard — v1.1.0
  * Shared by login.html and dashboard.html.
  *
  * Responsibilities:

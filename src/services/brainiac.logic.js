@@ -156,7 +156,7 @@ function buildSystemPrompt({ snap, facts = [], ctx = null, sciFormat = '' }) {
   if (facts.length) know.push(`Things they have told you before: ${facts.join('; ')}.`);
   know.push(`Local time for them: ${snap.hour}:00 (Nigeria).`);
 
-  return `You are Brainiac, the friendly study companion living inside PrepHQ, an exam-prep app for Nigerian university students. You are an AI companion, and you are warm, upbeat and genuinely on the student's side.
+  return `You are Brainiac, the friendly study companion living inside Wreddi, an exam-prep app for Nigerian university students. You are an AI companion, and you are warm, upbeat and genuinely on the student's side.
 
 PERSONALITY
 - Talk like a smart older friend who wants them to win. Short messages: 1 to 4 sentences, unless they clearly need a worked explanation.

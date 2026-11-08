@@ -18,7 +18,7 @@
 #view-study-rooms .v-topbar{display:flex;align-items:center;gap:12px;padding:6px 0 20px;}
 #view-study-rooms .v-back-btn{
   width:38px;height:38px;border-radius:50%;
-  background:var(--bg);border:none;
+  background:var(--surf);border:none;
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;color:var(--brand);flex-shrink:0;
   box-shadow:var(--sh);
@@ -27,7 +27,7 @@
 #view-study-rooms .v-back-btn:active{transform:scale(.93);box-shadow:var(--sh-in);}
 #view-study-rooms .v-back-btn svg{stroke:currentColor;}
 #view-study-rooms .pg-title{
-  font-family:var(--ff-h);font-size:20px;font-weight:800;
+  font-family:var(--ff-h);font-size:20px;font-weight:700;
   color:var(--t1);letter-spacing:-.4px;
 }
 
@@ -35,7 +35,7 @@
    CARDS
 ═══════════════════════════════════════ */
 #view-study-rooms .card{
-  background:var(--bg);
+  background:var(--surf);
   border-radius:var(--r20);
   padding:20px;
   box-shadow:var(--sh);
@@ -51,7 +51,7 @@
   padding:13px 16px;
   border-radius:var(--r16);
   border:none;
-  background:var(--bg);
+  background:var(--fill);
   font-size:14px;
   font-weight:600;
   color:var(--t1);
@@ -82,11 +82,11 @@
   border:none;
   border-radius:var(--r16);
   padding:14px;
-  font-weight:800;
+  font-weight:700;
   font-size:14px;
   cursor:pointer;
   width:100%;
-  background:var(--bg);
+  background:var(--surf);
   color:var(--brand);
   box-shadow:var(--sh);
   font-family:var(--ff-h);
@@ -95,7 +95,7 @@
 }
 #view-study-rooms .btn:active{transform:scale(.98);box-shadow:var(--sh-in);}
 #view-study-rooms .btn.ghost{
-  background:var(--bg);
+  background:var(--surf);
   color:var(--t2);
   box-shadow:var(--sh);
 }
@@ -106,10 +106,10 @@
 ═══════════════════════════════════════ */
 #view-study-rooms .v-sec-title{
   font-size:11.5px;
-  font-weight:800;
+  font-weight:700;
   color:var(--t3);
-  text-transform:uppercase;
-  letter-spacing:.10em;
+  
+  
   margin-bottom:12px;
 }
 
@@ -119,14 +119,14 @@
 #view-study-rooms .lobby-code{
   font-family:var(--ff-h);
   font-size:34px;
-  font-weight:800;
+  font-weight:700;
   letter-spacing:6px;
   text-align:center;
   color:var(--brand);
   margin:18px 0;
   padding:16px 0;
   border-radius:var(--r16);
-  background:var(--bg);
+  background:var(--fill);
   box-shadow:var(--sh-in), 0 0 0 2px var(--brand-lt);
   letter-spacing:.10em;
 }
@@ -139,7 +139,7 @@
   padding:12px 0;
   box-shadow:0 -1px 0 var(--sd) inset;
   font-size:13.5px;
-  font-weight:700;
+  font-weight:600;
   color:var(--t1);
 }
 #view-study-rooms .p-row:first-child{box-shadow:none;}
@@ -155,7 +155,7 @@
 ═══════════════════════════════════════ */
 #view-study-rooms .q-timer{
   font-family:var(--ff-h);
-  font-weight:800;
+  font-weight:700;
   font-size:32px;
   text-align:center;
   color:var(--brand);
@@ -163,12 +163,12 @@
   letter-spacing:-1.5px;
   padding:12px;
   border-radius:var(--r16);
-  background:var(--bg);
+  background:var(--fill);
   box-shadow:var(--sh-in-sm), 0 0 0 2px var(--brand-lt);
 }
 #view-study-rooms .q-text{
   font-size:16px;
-  font-weight:700;
+  font-weight:600;
   text-align:center;
   margin-bottom:20px;
   color:var(--t1);
@@ -188,7 +188,7 @@
   border-radius:var(--r16);
   margin-bottom:10px;
   border:none;
-  background:var(--bg);
+  background:var(--surf);
   color:var(--t1);
   font-size:14px;
   font-weight:600;
@@ -252,7 +252,7 @@
     </div>
     <div class="card">
       <div class="v-sec-title">Join a Room</div>
-      <input class="v-f-input" id="join-code-input" placeholder="Room code" autocapitalize="none" style="text-transform:uppercase;">
+      <input class="v-f-input" id="join-code-input" placeholder="Room code" autocapitalize="none" style="">
       <button class="btn ghost" onclick="joinRoomByCode()">Join</button>
     </div>
   </div>
@@ -272,7 +272,7 @@
   <!-- ═══ SCREEN: LIVE QUESTION ═══ -->
   <div id="screen-question" class="hidden">
     <div class="card">
-      <div style="font-size:11.5px;color:var(--t3);text-align:center;margin-bottom:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;" id="q-progress">Question 1 of 10</div>
+      <div style="font-size:11.5px;color:var(--t3);text-align:center;margin-bottom:10px;font-weight:700;" id="q-progress">Question 1 of 10</div>
       <div class="q-timer" id="q-timer">20</div>
       <div class="q-text" id="q-text"></div>
       <div id="q-options"></div>

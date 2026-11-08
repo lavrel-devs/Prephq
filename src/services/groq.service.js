@@ -275,7 +275,7 @@ const VOICE_NOTE = `VOICE MODE: the student asked this by speaking, and your ans
 async function chatReply(history, opts = {}) {
   requireGroqKey();
   const model = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
-  const systemPrompt = `You are PrepHQ's academic study assistant, helping Nigerian university students. Answer academic/study questions clearly and concisely. Use plain prose, not markdown headers. ${SCI_FORMAT} ${PLAIN_TEXT_RULE} Keep answers focused — a few sentences to a short paragraph unless the student clearly wants a longer worked explanation (e.g. a multi-step calculation or proof). If asked something entirely unrelated to academics/studying, politely redirect to study topics.${opts.voice ? '\n\n' + VOICE_NOTE : ''}`;
+  const systemPrompt = `You are Wreddi's academic study assistant, helping Nigerian university students. Answer academic/study questions clearly and concisely. Use plain prose, not markdown headers. ${SCI_FORMAT} ${PLAIN_TEXT_RULE} Keep answers focused — a few sentences to a short paragraph unless the student clearly wants a longer worked explanation (e.g. a multi-step calculation or proof). If asked something entirely unrelated to academics/studying, politely redirect to study topics.${opts.voice ? '\n\n' + VOICE_NOTE : ''}`;
 
   const messages = [
     { role: 'system', content: systemPrompt },

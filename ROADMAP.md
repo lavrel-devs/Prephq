@@ -1,4 +1,4 @@
-# PrepHQ Roadmap
+# Wreddi Roadmap
 
 Last updated for **v1.7.0**. Effort: **S** = under a day, **M** = a few days, **L** = a week or more.
 Status: **Done**, **Next** (start here), **Planned**, **Idea** (needs a decision first).
@@ -56,23 +56,23 @@ Status: **Done**, **Next** (start here), **Planned**, **Idea** (needs a decision
 | 7 | Snap-a-question (photo to explanation) | M | Idea | Needs a vision-capable model; check what the AI provider offers. Confirm the text it read before answering. |
 | 8 | Department materials hub | M | Planned | Notes, PDFs, slides by department and level. Link out to curated videos rather than hosting video. |
 | 9 | Exam Radar | M | Planned | Needs `year` and `lecturer` fields on questions (add them as extra bulk-upload columns). Test against known past years before showing students. Label it "based on past patterns, not a guarantee". |
-| 10 | Notes as swipeable slides | S | Planned | |
-| 11 | Spaced repetition for missed questions | S | Planned | Resurface at 1, 3 and 7 days. |
-| 12 | CBT-style exam screen | S | Planned | Question grid, flag for review, submit confirmation. The timer already exists. |
-| 13 | Focus sessions and study tracker | M | Planned | 25/5, 50/10 or 60/20; screen stays awake; minutes logged per course; short check-in quiz at the end. |
+| 10 | Notes as swipeable slides | S | Done (v1.9.1) | |
+| 11 | Spaced repetition for missed questions | S | Done (v1.9.1) | Resurface at 1, 3 and 7 days. |
+| 12 | CBT-style exam screen | S | Done (v1.9.1) | Question grid, flag for review, submit confirmation. The timer already exists. |
+| 13 | Focus sessions and study tracker | M | Partly done (v1.9.1) | 25/5, 50/10 or 60/20; screen stays awake; minutes logged per course; short check-in quiz at the end. v1.9.1 shipped the timer, presets and wake lock; per-course minutes and the check-in quiz are still to do. |
 | 14 | Study reminders and weekly timetable | M | Planned | Push plus a WhatsApp link, built from exam date and courses. Needs #4. |
 | 15 | Offline course packs | L | Planned | Needs #4. Test on a real phone with a bad connection. |
 | 16 | Study buddy matching | M | Planned | "I can help with / I need help with" by course, opens a study room. In-app only, no phone numbers shared, block and report. |
 | 17 | Challenge links and department ladder | S–M | Planned | WhatsApp link opens the same questions and compares results. |
 | 18 | Campus contributors with a review queue | L | Idea | Start with a few trusted class reps. Think about copyright of submitted papers. |
-| 19 | "Premium ends in N days" banner | S | Planned | Admin already has expiry follow-ups; students see nothing. Add a renew-on-WhatsApp button. |
+| 19 | "Premium ends in N days" banner | S | Done (v1.9.1) | Admin already has expiry follow-ups; students see nothing. Add a renew-on-WhatsApp button. |
 | 20 | Students can download or delete their own data | S–M | Planned | You store names, matric and phone numbers. Check Nigeria's data-protection requirements with a lawyer. |
-| 21 | Live "courses covered" section on the landing page | S | Planned | From `/api/courses`. |
-| 22 | Rate-limit the legacy admin key | S | Planned | Login, refresh and recovery have limiters; the admin key does not. Count failed attempts only, so admins can't be locked out by normal use. |
-| 23 | Self-host Font Awesome and fonts | S | Planned | socket.io is already served by your own server (v1.7.0). Font Awesome and Google Fonts still load from CDNs, which blocks first paint and breaks offline. |
+| 21 | Live "courses covered" section on the landing page | S | Done (v1.9.1) | From `/api/courses`. |
+| 22 | Rate-limit the legacy admin key | S | Done (v1.9.1) | Login, refresh and recovery have limiters; the admin key does not. Count failed attempts only, so admins can't be locked out by normal use. |
+| 23 | Self-host Font Awesome and fonts | S | Done (v1.9.1) | socket.io is already served by your own server (v1.7.0). Font Awesome and Google Fonts still load from CDNs, which blocks first paint and breaks offline. |
 | 24 | Speed follow-ups | S–M | Planned | The activity log writes on every request; the quiz-start question lookup is still a case-insensitive scan (a collation index fixes it). |
 | 25 | Automated tests in the repo | S | **Done (v1.6.8)** | `npm test`. Covers bulk upload, counts, file import and the database pipelines. No database needed. |
-| 26 | Cleanup | S | Planned | Delete `td.html` and `testlatex.html`. If the old `bulk-upload-tool/` folder turns up, match its file format. |
+| 26 | Cleanup | S | Done (v1.9.1) | Delete `td.html` and `testlatex.html`. If the old `bulk-upload-tool/` folder turns up, match its file format. |
 | 27 | Decide whether the admin panel joins the shared design | S | Idea | Admin uses a different, more vivid palette and slightly different corner radii than the student app. Either bring it onto `tokens.css` (a visible change) or keep it separate on purpose. |
 
 **Already built, so not on this list:** exam countdown, AI explain per question, study-plan checklist, flashcard spaced repetition, study rooms, contests, referral card, question reports, missed-questions review, admin expiry follow-ups, bulk upload (paste, JSON, CSV) with duplicate skipping and undo.
@@ -117,3 +117,11 @@ From the July 2026 think-tank survey: 8 responses, mostly 100-level Physical Sci
 - At zero the quiz submits itself. Unanswered questions are marked "timed out" and count as skipped.
 - It runs on the wall clock, so a backgrounded tab cannot pause it.
 - Contests and study rooms keep their own per-question timers (the server controls those).
+
+## Shipped in v1.9.2
+- **Wreddi Wrapped** (`/wrapped`): semester recap from the student's own answers, with a shareable picture.
+- **Sponsor link** (`/s/:token`): opt-in, revocable, read-only weekly page for a parent or sponsor, with a WhatsApp upgrade/renew button.
+- **Why I got it wrong** (`/mistakes`): reason chips after a wrong practice answer, a one-line lesson, and a mistake notebook with pattern advice.
+- **Listen mode** for notes, plus `js/chem-speech.js`: formulas, ions, isotopes and chemistry units are now spoken properly in Listen mode and the voice quiz.
+- **Data meter and lite mode** (Profile > App Settings).
+

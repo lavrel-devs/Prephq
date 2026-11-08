@@ -1,4 +1,4 @@
-# PrepHQ — bug-fix pass (v1.4.1)
+# Wreddi — bug-fix pass (v1.4.1)
 
 Not run against a live MongoDB. Test the credit, contest and study-room changes on staging first.
 
@@ -94,7 +94,7 @@ Added `/api/version` and a clear message when the browser has newer files than t
 ## v1.6.0
 **Notes you write yourself (credits)**
 - Course Notes screen: "Need a topic that isn't here?" — type any topic, pick Quick / Standard / Detailed, the AI writes the notes now. Default costs 3 / 5 / 8 credits, editable in Admin → Credit Settings → "Student-written study notes" (or switch the feature off).
-- Credits are taken first and refunded automatically if the AI or the save fails. A topic that already has a published PrepHQ note is opened free; asking for the same topic + depth again reopens it free. Students can delete their own notes.
+- Credits are taken first and refunded automatically if the AI or the save fails. A topic that already has a published Wreddi note is opened free; asking for the same topic + depth again reopens it free. Students can delete their own notes.
 - New: `PersonalNote` model, `/api/my-notes/*`, ledger reason `note_generation`.
 
 **LaTeX, chemical equations and molecule structures**
@@ -167,7 +167,7 @@ Not run against a live MongoDB or a real Groq key: queue, charge/refund flow and
 ## v1.6.9 — shared design file (roadmap #2, step 1 of the single-page + liquid-glass work)
 - New `public/css/tokens.css`: the colours, shadows, corner radii and fonts for the 11 student-facing pages (dashboard, profile, leaderboard, contests, study rooms, assistant, login, register, forgot/change password, landing) now live in one file. Each page used to carry its own copy (51 tokens, about 55 declarations per page), so a redesign meant editing 11 files.
 - **No visual change, verified:** every resolved token value and every pixel of every page was compared before and after, in light and dark, on all 12 pages (including admin): 0 differing pixels.
-- Only tokens that every page agreed on were moved (all 51 did). The admin panel is deliberately untouched: it uses a different, more vivid palette (`#0A5CF5` blue, slightly different corner radii) and stays in `admin.html`.
+- Only tokens that every page agreed on were moved (all 51 did). The admin panel is deliberately untouched: it uses a different, more vivid palette (`#E2507A` blue, slightly different corner radii) and stays in `admin.html`.
 - `tests/tokens.test.js` fails if a page stops linking `tokens.css`, links it after its own `<style>`, or redefines a shared token with a different value.
 - Size impact is small and is not the point: the pages are about 20 KB smaller in total (under 1 KB gzipped per page), offset by one 3 KB stylesheet that the browser caches across pages. The win is that the liquid-glass migration becomes an edit to this one file.
 

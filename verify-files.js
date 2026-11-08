@@ -10,4 +10,4 @@ for (const [file, hash] of Object.entries(manifest)) {
   const h = crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
   if (h !== hash) { console.log('DIFFERENT', file); bad++; }
 }
-console.log(bad ? `\n${bad} problem file(s). Delete this folder and re-extract prephq-fixed.zip.` : `All ${Object.keys(manifest).length} files match the release.`);
+console.log(bad ? `\n${bad} problem file(s). Delete this folder and re-extract wreddi-fixed.zip.` : `All ${Object.keys(manifest).length} files match the release.`);

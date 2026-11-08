@@ -2,6 +2,7 @@ const cron = require('node-cron');
 const { runBulkDailyRefresh } = require('./credit.service');
 const { transitionContestStates, spawnRecurringContests } = require('./contest.service');
 const { logActivity, purgeOldActivity } = require('./activity.service');
+const { runNightly: runAutopilotNightly } = require('./autopilot.service');
 
 // ── Scheduler ─────────────────────────────────────────────────
 // New in v1.2. Two jobs:
@@ -17,6 +18,7 @@ const { logActivity, purgeOldActivity } = require('./activity.service');
 //      Contest the moment one's scheduled slot arrives.
 let contestTickRunning = false; // a slow tick must not overlap the next one (double settlement risk)
 let refreshRunning = false;
+let autopilotRunning = false;
 
 function startScheduler() {
   cron.schedule('0 0 * * *', async () => {
@@ -42,6 +44,19 @@ function startScheduler() {
     } finally { contestTickRunning = false; }
   });
 
+  // v1.9.0 Weakness Autopilot — builds every active student's plan for the new day. Runs just after the credit refresh.
+  cron.schedule('30 0 * * *', async () => {
+    if (autopilotRunning) return;
+    autopilotRunning = true;
+    try {
+      const r = await runAutopilotNightly();
+      console.log(`[scheduler] Autopilot plans for ${r.day}: ${r.built} built, ${r.skipped} skipped, ${r.failed} failed`);
+      logActivity({ actor: 'scheduler', action: 'system.autopilot_nightly', detail: r });
+    } catch (e) {
+      console.error('[scheduler] Autopilot nightly failed:', e.message);
+    } finally { autopilotRunning = false; }
+  }, { timezone: 'Africa/Lagos' });
+
   // Old activity-log rows are dropped after ACTIVITY_LOG_RETENTION_DAYS (default 365, 0 = keep forever).
   cron.schedule('30 3 * * *', async () => {
     try {
@@ -50,7 +65,7 @@ function startScheduler() {
     } catch (e) { console.error('[scheduler] Activity purge failed:', e.message); }
   }, { timezone: 'Africa/Lagos' });
 
-  console.log('[scheduler] Started: daily credit refresh (00:00 WAT), contest transitions + recurring spawns (every minute)');
+  console.log('[scheduler] Started: daily credit refresh (00:00 WAT), contest transitions + recurring spawns (every minute), Autopilot plans (00:30 WAT)');
 }
 
 module.exports = { startScheduler };

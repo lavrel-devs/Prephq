@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#e0e5ec">
 <link rel="manifest" href="/manifest.json">
-<title>PrepHQ — Profile</title>
+<title>Wreddi — Profile</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <link rel="stylesheet" href="/css/glass.css">
@@ -447,9 +447,9 @@ body{
 .loading-shimmer{
   background:linear-gradient(
     90deg,
-    rgba(74,103,209,.05) 25%,
-    rgba(74,103,209,.14) 37%,
-    rgba(74,103,209,.05) 63%
+    rgba(62,92,138,.05) 25%,
+    rgba(62,92,138,.14) 37%,
+    rgba(62,92,138,.05) 63%
   );
   background-size:400% 100%;
   animation:shimmer 1.3s ease-in-out infinite;
@@ -739,7 +739,7 @@ async function promptUpgrade(planName){
     const d = await r.json();
     if(!r.ok){ if(win) win.close(); alert(d.error || 'Could not send your request'); return; }
     if(d.whatsappUrl && win) win.location.href = d.whatsappUrl;
-    else { if(win) win.close(); alert('Your request ' + d.code + ' was saved. No admin WhatsApp is set up yet \u2014 please quote this code to PrepHQ support.'); }
+    else { if(win) win.close(); alert('Your request ' + d.code + ' was saved. No admin WhatsApp is set up yet \u2014 please quote this code to Wreddi support.'); }
   }catch(e){ if(win) win.close(); alert('Network error \u2014 please try again.'); }
 }
 

@@ -4,9 +4,9 @@
 <script src="/js/theme.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#e0e5ec">
-<title>PrepHQ — Register</title>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#f2f2f7">
+<title>Wreddi — Register</title>
+<link rel="stylesheet" href="/vendor/fonts.css">
 <link rel="stylesheet" href="/css/glass.css">
 <link rel="stylesheet" href="/css/tokens.css">
 <style>
@@ -30,7 +30,7 @@ body{
 
 .card{
   width:100%;max-width:440px;
-  background:var(--bg);
+  background:var(--surf);
   border-radius:28px;
   padding:38px 26px 30px;
   box-shadow:var(--sh-lg);
@@ -40,16 +40,16 @@ body{
 
 .logo{
   width:68px;height:68px;
-  border-radius:22px;
-  background:var(--bg);
+  border-radius:50%;
+  background:transparent;
   display:flex;align-items:center;justify-content:center;
   margin:0 auto 18px;
-  box-shadow:var(--sh);
+  box-shadow:0 4px 14px rgba(22,41,110,.25);
 }
 .logo svg{width:28px;height:28px;fill:var(--brand);}
 
 .title{
-  font-family:var(--ff-h);font-size:24px;font-weight:800;
+  font-family:var(--ff-h);font-size:24px;font-weight:700;
   text-align:center;letter-spacing:-.5px;
   color:var(--t1);
 }
@@ -70,7 +70,7 @@ body{
 
 /* Referral info box — inset card with brand ring */
 .code-box{
-  background:var(--bg);
+  background:var(--fill);
   border:none;
   border-radius:var(--r16);
   padding:14px 16px;
@@ -80,18 +80,18 @@ body{
 }
 .cb-icon{
   width:42px;height:42px;border-radius:12px;
-  background:var(--bg);
+  background:var(--surf);
   display:flex;align-items:center;justify-content:center;
   flex-shrink:0;
   box-shadow:var(--sh-sm);
 }
 .cb-icon svg{width:20px;height:20px;fill:var(--brand);}
 .cb-txt{font-size:13px;font-weight:600;color:var(--t2);line-height:1.45;}
-.cb-txt strong{color:var(--brand);font-weight:800;}
+.cb-txt strong{color:var(--brand);font-weight:700;}
 
 /* Error banner — inset with red ring */
 .err{
-  background:var(--bg);
+  background:var(--fill);
   box-shadow:var(--sh-in), 0 0 0 2px var(--no-lt);
   border-radius:var(--r12);
   padding:11px 14px;
@@ -107,8 +107,8 @@ body{
 .fg{margin-bottom:16px;}
 .fg label{
   display:block;
-  font-size:11px;font-weight:800;
-  text-transform:uppercase;letter-spacing:.08em;
+  font-size:11px;font-weight:700;
+  
   color:var(--t3);
   margin-bottom:8px;
 }
@@ -117,7 +117,7 @@ body{
   padding:14px 16px;
   border-radius:var(--r12);
   border:none;
-  background:var(--bg);
+  background:var(--fill);
   font-size:15px;font-weight:600;
   color:var(--t1);
   outline:none;
@@ -138,9 +138,9 @@ body{
 .code-inp{
   font-family:var(--ff-h) !important;
   font-size:18px !important;
-  letter-spacing:.15em !important;
+  !important;
   text-align:center;
-  text-transform:uppercase;
+  
 }
 
 /* Primary button — raised neutral with brand text */
@@ -148,9 +148,9 @@ body{
   width:100%;
   padding:16px;
   border-radius:var(--r12);
-  background:var(--bg);
+  background:var(--surf);
   color:var(--brand);
-  font-size:16px;font-weight:800;
+  font-size:16px;font-weight:700;
   border:none;cursor:pointer;
   font-family:var(--ff-h);
   box-shadow:var(--sh);
@@ -172,7 +172,7 @@ body{
   font-size:13px;color:var(--t3);font-weight:500;
 }
 .login-link a{
-  color:var(--brand);font-weight:800;
+  color:var(--brand);font-weight:700;
   text-decoration:none;
 }
 .login-link a:active{opacity:.7;}
@@ -186,7 +186,7 @@ body{
 .s-icon{
   width:80px;height:80px;
   border-radius:50%;
-  background:var(--bg);
+  background:var(--surf);
   display:flex;align-items:center;justify-content:center;
   margin:0 auto 20px;
   box-shadow:var(--sh), 0 0 0 3px var(--ok-lt);
@@ -194,7 +194,7 @@ body{
 .s-icon svg{width:38px;height:38px;fill:var(--ok);}
 
 .s-title{
-  font-family:var(--ff-h);font-size:24px;font-weight:800;
+  font-family:var(--ff-h);font-size:24px;font-weight:700;
   color:var(--t1);margin-bottom:8px;letter-spacing:-.5px;
 }
 .s-sub{
@@ -204,7 +204,7 @@ body{
 }
 
 .login-details{
-  background:var(--bg);
+  background:var(--fill);
   border:none;
   border-radius:var(--r16);
   padding:20px 18px;
@@ -212,8 +212,8 @@ body{
   text-align:left;
 }
 .ld-title{
-  font-size:11px;font-weight:800;
-  text-transform:uppercase;letter-spacing:.08em;
+  font-size:11px;font-weight:700;
+  
   color:var(--ok);
   margin-bottom:14px;
   text-align:center;
@@ -227,7 +227,7 @@ body{
 .ld-label{font-size:12px;color:var(--t3);font-weight:600;}
 .ld-val{
   font-family:var(--ff-h);
-  font-size:16px;font-weight:800;
+  font-size:16px;font-weight:700;
   color:var(--t1);letter-spacing:-.3px;
 }
 
@@ -245,8 +245,14 @@ body{
 }
 .pw-wrap{position:relative;display:flex;align-items:center;}
 .pw-wrap input{width:100%;padding-right:74px;box-sizing:border-box;}
-.pw-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:transparent;color:var(--brand,#0A5CF5);font-weight:800;font-size:12px;padding:8px 10px;cursor:pointer;border-radius:10px;font-family:inherit;}
+.pw-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:transparent;color:var(--brand,#3E5C8A);font-weight:700;font-size:12px;padding:8px 10px;cursor:pointer;border-radius:10px;font-family:inherit;}
 </style>
+<link rel="stylesheet" href="/css/hybrid.css">
+<script src="/js/ripple.js" defer></script>
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/icons/favicon-48.png">
+<link rel="shortcut icon" href="/icons/favicon.ico">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 </head>
 <body>
 <div class="glass-backdrop"></div>
@@ -257,9 +263,9 @@ body{
 
   <!-- REGISTER FORM -->
   <div id="reg-form">
-    <div class="logo"><svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg></div>
+    <div class="logo"><img src="/icons/logo-mark.png" alt="Wreddi" width="68" height="68" class="logo-img"></div>
     <div class="title">Create Account</div>
-    <div class="sub">PrepHQ — Exam Prep Platform</div>
+    <div class="sub">Wreddi — Exam Prep Platform</div>
     <div class="divider"></div>
 
     <div class="err" id="reg-err">
@@ -311,7 +317,7 @@ body{
       <div class="hint">Have a friend's referral link or code? Enter it here — you'll both get bonus credits.</div>
     </div>
 
-    <div style="font-size:12px;color:var(--t3);line-height:1.55;margin:4px 2px 14px;text-align:center;">By creating an account you agree to our <a href="/terms" target="_blank" rel="noopener" style="color:var(--brand);font-weight:700;">Terms &amp; Conditions</a>, <a href="/privacy" target="_blank" rel="noopener" style="color:var(--brand);font-weight:700;">Privacy Policy</a>, <a href="/cookies" target="_blank" rel="noopener" style="color:var(--brand);font-weight:700;">Cookies &amp; Storage</a>, <a href="/acceptable-use" target="_blank" rel="noopener" style="color:var(--brand);font-weight:700;">Acceptable Use</a>, <a href="/payments-refunds" target="_blank" rel="noopener" style="color:var(--brand);font-weight:700;">Payments &amp; Refunds</a> and <a href="/ai-disclaimer" target="_blank" rel="noopener" style="color:var(--brand);font-weight:700;">AI Disclaimer</a>, and you consent to the collection and use of your information as they describe.</div>
+    <div style="font-size:12px;color:var(--t3);line-height:1.55;margin:4px 2px 14px;text-align:center;">By creating an account you agree to our <a href="/terms" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600;">Terms &amp; Conditions</a>, <a href="/privacy" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600;">Privacy Policy</a>, <a href="/cookies" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600;">Cookies &amp; Storage</a>, <a href="/acceptable-use" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600;">Acceptable Use</a>, <a href="/payments-refunds" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600;">Payments &amp; Refunds</a> and <a href="/ai-disclaimer" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600;">AI Disclaimer</a>, and you consent to the collection and use of your information as they describe.</div>
 
     <button class="btn" id="reg-btn" onclick="doRegister()">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>

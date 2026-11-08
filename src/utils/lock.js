@@ -1,6 +1,6 @@
 // Tiny in-process, per-key mutex. Serializes async work that must not
 // interleave (a student double-tapping "Join", parallel transfer
-// requests from one sender, etc). PrepHQ runs as a single Node process,
+// requests from one sender, etc). Wreddi runs as a single Node process,
 // so this is enough; if it ever scales to several instances, replace
 // with a Mongo-backed or Redis lock and keep the same call signature.
 const tails = new Map();

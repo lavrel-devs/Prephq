@@ -5,15 +5,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#e0e5ec">
+<meta name="theme-color" content="#f2f2f7">
 <link rel="manifest" href="/manifest.json">
-<title>PrepHQ — Exam Prep</title>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/icons/favicon-48.png">
+<link rel="shortcut icon" href="/icons/favicon.ico">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<title>Wreddi — Exam Prep</title>
+<link rel="stylesheet" href="/vendor/fonts.css">
+<link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
 <link rel="stylesheet" href="/css/glass.css">
 <script src="/js/auth-guard.js"></script>
 <script src="/js/shared-nav.js"></script>
 <script src="/js/shell.js"></script>
+<script src="/js/install-prompt.js" defer></script>
 <script src="/js/phq-mdclean.js"></script>
 <script src="/js/brainiac.js"></script>
 <script>
@@ -44,9 +49,9 @@ button,input,select,textarea{font-family:var(--ff-b);}
 .scr.view:not(.on){display:none !important;}
 
 #toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%) translateY(16px);
-  background:var(--bg);color:var(--brand);
+  background:var(--surf);color:var(--brand);
   padding:12px 22px;border-radius:var(--rpill);
-  font-size:13px;font-weight:700;opacity:0;
+  font-size:13px;font-weight:600;opacity:0;
   transition:all .3s var(--ease-o);
   z-index:999;pointer-events:none;white-space:nowrap;
   box-shadow:var(--sh-md);}
@@ -59,7 +64,7 @@ button,input,select,textarea{font-family:var(--ff-b);}
 .neu-select-trigger{
   width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;
   padding:12px 14px;border:none;border-radius:var(--r12);
-  background:var(--bg);font-size:13px;font-weight:700;color:var(--t1);
+  background:var(--surf);font-size:13px;font-weight:600;color:var(--t1);
   cursor:pointer;box-shadow:var(--sh-sm);
   transition:box-shadow .18s,color .18s;
   font-family:var(--ff-b);white-space:nowrap;text-align:left;
@@ -70,7 +75,7 @@ button,input,select,textarea{font-family:var(--ff-b);}
 .neu-select.open .neu-select-chev{transform:rotate(180deg);fill:var(--brand);}
 .neu-select-menu{
   position:absolute;top:calc(100% + 8px);left:0;right:0;
-  padding:6px;border-radius:var(--r12);background:var(--bg);
+  padding:6px;border-radius:var(--r12);background:var(--surf);
   box-shadow:var(--sh-lg);z-index:50;
   opacity:0;visibility:hidden;transform:translateY(-6px);
   transition:opacity .18s,transform .18s,visibility .18s;
@@ -85,12 +90,12 @@ button,input,select,textarea{font-family:var(--ff-b);}
 }
 .neu-select-option:hover{box-shadow:var(--sh-sm);}
 .neu-select-option.selected{color:var(--brand);box-shadow:var(--sh-in-sm);}
-.neu-select-option.selected::after{content:'✓';font-size:12px;font-weight:800;color:var(--brand);}
+.neu-select-option.selected::after{content:'✓';font-size:12px;font-weight:700;color:var(--brand);}
 
 .neu-check{
   appearance:none;-webkit-appearance:none;
   width:22px;height:22px;border-radius:50%;
-  background:var(--bg);
+  background:var(--fill);
   box-shadow:var(--sh-in-sm);
   position:relative;cursor:pointer;flex-shrink:0;
   transition:box-shadow .18s;
@@ -129,7 +134,7 @@ button,input,select,textarea{font-family:var(--ff-b);}
   margin-top:10px;
   padding:8px;
   border-radius:var(--r12);
-  background:var(--bg);
+  background:var(--fill);
   box-shadow:var(--sh-in-sm);
   gap:8px;
   align-items:center;
@@ -141,11 +146,11 @@ button,input,select,textarea{font-family:var(--ff-b);}
   padding:10px 12px;
   border-radius:var(--r8);
   border:none;
-  background:var(--bg);
+  background:var(--fill);
   box-shadow:var(--sh-in-sm);
   color:var(--t1);
   font-size:14px;
-  font-weight:700;
+  font-weight:600;
   font-family:var(--ff-b);
   outline:none;
   -moz-appearance:textfield;
@@ -158,11 +163,11 @@ button,input,select,textarea{font-family:var(--ff-b);}
   padding:10px 16px;
   border-radius:var(--r8);
   border:none;
-  background:var(--bg);
+  background:var(--surf);
   color:var(--brand);
   box-shadow:var(--sh-sm);
   font-family:var(--ff-h);
-  font-weight:800;
+  font-weight:700;
   font-size:13px;
   cursor:pointer;
   transition:box-shadow .15s;
@@ -172,7 +177,7 @@ button,input,select,textarea{font-family:var(--ff-b);}
 
 .timer-edit-btn{
   width:30px;height:30px;border-radius:var(--r8);
-  background:var(--bg);border:none;
+  background:var(--surf);border:none;
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;box-shadow:var(--sh-sm);color:var(--brand);
   transition:box-shadow .15s;
@@ -191,30 +196,30 @@ button,input,select,textarea{font-family:var(--ff-b);}
 .blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:.18;pointer-events:none;}
 .b1{width:340px;height:340px;background:var(--brand);top:-80px;right:-80px;}
 .b2{width:280px;height:280px;background:var(--purple);bottom:-60px;left:-60px;}
-.login-card{width:100%;max-width:400px;background:var(--bg);border-radius:28px;padding:36px 26px 30px;box-shadow:var(--sh-lg);position:relative;z-index:1;}
-.lc-logo{width:68px;height:68px;border-radius:22px;background:var(--bg);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;box-shadow:var(--sh);}
+.login-card{width:100%;max-width:400px;background:var(--surf);border-radius:28px;padding:36px 26px 30px;box-shadow:var(--sh-lg);position:relative;z-index:1;}
+.lc-logo{width:68px;height:68px;border-radius:22px;background:var(--surf);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;box-shadow:var(--sh);}
 .lc-logo svg{width:30px;height:30px;fill:var(--brand);}
-.lc-title{font-size:24px;font-weight:800;text-align:center;font-family:var(--ff-h);letter-spacing:-.5px;color:var(--t1);}
+.lc-title{font-size:24px;font-weight:700;text-align:center;font-family:var(--ff-h);letter-spacing:-.5px;color:var(--t1);}
 .lc-sub{font-size:13px;color:var(--t3);text-align:center;margin-top:5px;margin-bottom:24px;}
 .divider{height:2px;background:transparent;box-shadow:var(--sh-in-sm);border-radius:2px;margin:0 0 22px;}
 .f-group{margin-bottom:14px;}
-.f-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);display:flex;align-items:center;gap:5px;margin-bottom:7px;}
+.f-label{font-size:11px;font-weight:600;color:var(--t3);display:flex;align-items:center;gap:5px;margin-bottom:7px;}
 .f-label svg{width:14px;height:14px;fill:var(--t3);}
 .f-input-wrap{position:relative;}
 .f-input-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--t4);pointer-events:none;width:18px;height:18px;}
-.f-input{width:100%;padding:13px 14px 13px 42px;border-radius:var(--r12);border:none;background:var(--bg);font-size:15px;font-weight:600;color:var(--t1);outline:none;transition:box-shadow .18s;letter-spacing:.3px;box-shadow:var(--sh-in);}
+.f-input{width:100%;padding:13px 14px 13px 42px;border-radius:var(--r12);border:none;background:var(--fill);font-size:15px;font-weight:600;color:var(--t1);outline:none;transition:box-shadow .18s;letter-spacing:.3px;box-shadow:var(--sh-in);}
 .f-input:focus{box-shadow:var(--sh-in),0 0 0 2px var(--brand-lt);}
 .f-input.err{box-shadow:var(--sh-in),0 0 0 2px var(--no-lt);}
 .f-hint{font-size:11px;color:var(--t4);margin-top:5px;display:flex;align-items:center;gap:3px;}
-.err-banner{background:var(--bg);box-shadow:var(--sh-in),0 0 0 2px var(--no-lt);border-radius:var(--r8);padding:11px 14px;font-size:13px;font-weight:600;color:var(--no);display:none;align-items:center;gap:7px;margin-bottom:14px;}
+.err-banner{background:var(--fill);box-shadow:var(--sh-in),0 0 0 2px var(--no-lt);border-radius:var(--r8);padding:11px 14px;font-size:13px;font-weight:600;color:var(--no);display:none;align-items:center;gap:7px;margin-bottom:14px;}
 .err-banner.on{display:flex;}
 
-.btn-grad{width:100%;padding:15px;border-radius:var(--r12);background:var(--bg);color:var(--brand);font-size:16px;font-weight:800;border:none;cursor:pointer;box-shadow:var(--sh);transition:all .15s;font-family:var(--ff-h);display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:-.2px;}
+.btn-grad{width:100%;padding:15px;border-radius:var(--r12);background:var(--surf);color:var(--brand);font-size:16px;font-weight:700;border:none;cursor:pointer;box-shadow:var(--sh);transition:all .15s;font-family:var(--ff-h);display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:-.2px;}
 .btn-grad:active{transform:scale(.98);box-shadow:var(--sh-in);}
 .btn-grad:disabled{color:var(--t4);box-shadow:var(--sh-in);cursor:default;transform:none;}
 .btn-grad svg{fill:currentColor;}
 
-.btn-surf{background:var(--bg);border:none;color:var(--t2);font-size:15px;font-weight:700;width:100%;padding:14px;border-radius:var(--r12);cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:7px;box-shadow:var(--sh);}
+.btn-surf{background:var(--surf);border:none;color:var(--t2);font-size:15px;font-weight:600;width:100%;padding:14px;border-radius:var(--r12);cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:7px;box-shadow:var(--sh);}
 .btn-surf:active{transform:scale(.98);box-shadow:var(--sh-in);}
 /* Compact inline variant. .btn-surf is width:100% (a full-width button); inside a flex row that made the
    Play button as wide as the whole card and push it out of it. Size to content instead. */
@@ -235,12 +240,12 @@ button,input,select,textarea{font-family:var(--ff-b);}
   display:flex;align-items:center;justify-content:space-between;gap:8px;
   box-shadow:0 4px 12px -8px var(--sd);}
 .tb-left{display:flex;align-items:center;gap:10px;flex:1;min-width:0;overflow:hidden;}
-.tb-avatar{width:34px;height:34px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-family:var(--ff-h);font-size:12px;font-weight:800;color:var(--brand);flex-shrink:0;box-shadow:var(--sh-sm);}
+.tb-avatar{width:34px;height:34px;border-radius:50%;background:var(--surf);display:flex;align-items:center;justify-content:center;font-family:var(--ff-h);font-size:12px;font-weight:700;color:var(--brand);flex-shrink:0;box-shadow:var(--sh-sm);}
 .tb-info{min-width:0;overflow:hidden;}
-.tb-name{font-size:13px;font-weight:800;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;}
+.tb-name{font-size:13px;font-weight:700;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;}
 .tb-right{display:flex;align-items:center;gap:6px;flex-shrink:0;}
 
-.ib{width:34px;height:34px;border-radius:50%;background:var(--bg);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;box-shadow:var(--sh-sm);color:var(--t3);}
+.ib{width:34px;height:34px;border-radius:50%;background:var(--surf);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;box-shadow:var(--sh-sm);color:var(--t3);}
 .ib:active{transform:scale(.95);box-shadow:var(--sh-in-sm);}
 .ib svg{width:17px;height:17px;}
 
@@ -249,35 +254,40 @@ button,input,select,textarea{font-family:var(--ff-b);}
   padding:0 11px;
   gap:5px;
   font-size:12px;
-  font-weight:800;
+  font-weight:700;
   color:var(--purple);
   border-radius:var(--r12);
 }
 .ib.compact i{font-size:11px;}
 
 .home-hero{padding:20px 18px 6px;}
-.hero-tag{display:inline-flex;align-items:center;gap:6px;background:var(--bg);color:var(--brand);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;padding:6px 13px;border-radius:var(--r8);margin-bottom:10px;box-shadow:var(--sh-sm);}
+.hero-tag{display:inline-flex;align-items:center;gap:6px;background:var(--surf);color:var(--brand);font-size:11px;font-weight:700;padding:6px 13px;border-radius:var(--r8);margin-bottom:10px;box-shadow:var(--sh-sm);}
 .hero-tag svg{width:14px;height:14px;fill:currentColor;}
-.hero-title{font-size:clamp(22px,5.5vw,28px);font-weight:800;color:var(--t1);letter-spacing:-.6px;line-height:1.2;font-family:var(--ff-h);}
-.hero-streak{display:inline-flex;align-items:center;gap:6px;margin-top:12px;padding:6px 12px;border-radius:var(--r8);background:var(--bg);box-shadow:var(--sh-sm);font-size:12px;font-weight:700;color:var(--warn);}
+.hero-title{font-size:clamp(22px,5.5vw,28px);font-weight:700;color:var(--t1);letter-spacing:-.6px;line-height:1.2;font-family:var(--ff-h);}
+.hero-streak{display:inline-flex;align-items:center;gap:6px;margin-top:12px;padding:6px 12px;border-radius:var(--r8);background:var(--surf);box-shadow:var(--sh-sm);font-size:12px;font-weight:600;color:var(--warn);}
 .hero-streak svg{width:14px;height:14px;fill:var(--warn);}
 
 .stats-row{display:flex;gap:12px;padding:16px 18px 14px;overflow-x:auto;}
-.stat-pill{background:var(--bg);border-radius:var(--r16);padding:14px 16px;flex-shrink:0;min-width:100px;box-shadow:var(--sh);position:relative;overflow:hidden;}
+.stat-pill{background:var(--surf);border-radius:var(--r16);padding:14px 16px;flex-shrink:0;min-width:100px;box-shadow:var(--sh);position:relative;overflow:hidden;}
 .sp-dot{width:8px;height:8px;border-radius:50%;margin-bottom:8px;}
-.sp-val{font-size:22px;font-weight:800;font-family:var(--ff-h);letter-spacing:-.5px;line-height:1;}
-.sp-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t4);margin-top:3px;}
+.sp-val{font-size:22px;font-weight:700;font-family:var(--ff-h);letter-spacing:-.5px;line-height:1;}
+.sp-lbl{font-size:10px;font-weight:600;color:var(--t4);margin-top:3px;}
 .sp-val.blue{color:var(--brand);}
 .sp-val.green{color:var(--ok);}
 .sp-val.orange{color:var(--warn);}
 .sp-val.purple{color:var(--purple);}
 
 .sec-h{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 8px;}
-.sec-title{font-size:16px;font-weight:800;color:var(--t1);font-family:var(--ff-h);letter-spacing:-.3px;}
-.sec-badge{font-size:11px;font-weight:700;background:var(--bg);color:var(--brand);padding:5px 11px;border-radius:var(--r8);box-shadow:var(--sh-sm);}
+.sec-title{font-size:16px;font-weight:700;color:var(--t1);font-family:var(--ff-h);letter-spacing:-.3px;}
+.sec-badge{font-size:11px;font-weight:600;background:var(--surf);color:var(--brand);padding:5px 11px;border-radius:var(--r8);box-shadow:var(--sh-sm);}
 
 .cg{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:0 18px;}
-.cc{background:var(--bg);border-radius:var(--r16);padding:16px 14px 14px;border:none;box-shadow:var(--sh);cursor:pointer;transition:box-shadow .18s var(--ease-o),transform .18s var(--ease-o);position:relative;overflow:hidden;}
+.cg-more{padding:12px 18px 0;}
+.cg-more-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px;border:none;border-radius:999px;background:var(--brand-lt);color:var(--brand);font-family:var(--ff-b);font-size:13.5px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .18s,transform .18s var(--ease-o);}
+.cg-more-btn:active{background:var(--brand-glow);transform:scale(.985);}
+.cg-more-btn i{font-size:12px;transition:transform .28s var(--ease-s);}
+.cg-more-btn[aria-expanded="true"] i{transform:rotate(180deg);}
+.cc{background:var(--surf);border-radius:var(--r16);padding:16px 14px 14px;border:none;box-shadow:var(--sh);cursor:pointer;transition:box-shadow .18s var(--ease-o),transform .18s var(--ease-o);position:relative;overflow:hidden;}
 .cc:active{transform:scale(.97);box-shadow:var(--sh-in);}
 .cc.on{box-shadow:var(--sh-in);}
 .cc.on .cc-code{color:var(--brand);}
@@ -285,64 +295,64 @@ button,input,select,textarea{font-family:var(--ff-b);}
 .cc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;}
 .cc-ico{width:36px;height:36px;border-radius:var(--r12);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:var(--sh-sm);}
 .cc-ico svg{fill:currentColor;}
-.cc-check{width:20px;height:20px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:all .18s;box-shadow:var(--sh-in-sm);}
+.cc-check{width:20px;height:20px;border-radius:50%;background:var(--fill);display:flex;align-items:center;justify-content:center;transition:all .18s;box-shadow:var(--sh-in-sm);}
 .cc-check svg{width:12px;height:12px;fill:transparent;transition:fill .18s;stroke:transparent;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
 .cc.on .cc-check{background:var(--brand);box-shadow:0 0 0 3px var(--brand-lt),var(--sh-sm);}
 .cc.on .cc-check svg{stroke:white;fill:none;}
-.cc-code{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--t4);margin-bottom:2px;transition:color .18s;}
-.cc-name{font-size:12px;font-weight:700;color:var(--t1);line-height:1.3;transition:color .18s;}
+.cc-code{font-size:10px;font-weight:700;color:var(--t4);margin-bottom:2px;transition:color .18s;}
+.cc-name{font-size:12px;font-weight:600;color:var(--t1);line-height:1.3;transition:color .18s;}
 .cc-n{font-size:11px;color:var(--t3);margin-top:3px;display:flex;align-items:center;gap:3px;}
 .cc-n svg{width:12px;height:12px;fill:var(--t3);}
 .cc-n.loading{color:var(--t4);font-style:italic;}
 .cc-bar{position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 var(--r16) var(--r16);opacity:.55;}
 
 .mode-row{display:flex;gap:12px;padding:0 18px;}
-.mode-btn{flex:1;background:var(--bg);border-radius:var(--r16);padding:14px 10px;border:none;box-shadow:var(--sh);cursor:pointer;transition:box-shadow .18s;text-align:center;}
+.mode-btn{flex:1;background:var(--surf);border-radius:var(--r16);padding:14px 10px;border:none;box-shadow:var(--sh);cursor:pointer;transition:box-shadow .18s;text-align:center;}
 .mode-btn:active{transform:scale(.97);}
 .mode-btn.on{box-shadow:var(--sh-in);}
 .mode-btn svg{width:20px;height:20px;margin-bottom:5px;color:var(--t4);transition:color .18s;stroke:currentColor;}
 .mode-btn.on svg{color:var(--brand);}
-.mode-lbl{font-size:12px;font-weight:800;color:var(--t2);font-family:var(--ff-h);}
+.mode-lbl{font-size:12px;font-weight:700;color:var(--t2);font-family:var(--ff-h);}
 .mode-sub{font-size:10px;color:var(--t4);margin-top:1px;}
 .mode-btn.on .mode-lbl,.mode-btn.on .mode-sub{color:var(--brand);}
 
 .qty-wrap{padding:0 18px;}
 .qty-row{display:flex;gap:10px;flex-wrap:wrap;}
-.qp{padding:9px 16px;border-radius:var(--r8);background:var(--bg);border:none;font-size:14px;font-weight:800;color:var(--t2);cursor:pointer;box-shadow:var(--sh-sm);transition:all .15s;font-family:var(--ff-h);}
+.qp{padding:9px 16px;border-radius:var(--r8);background:var(--surf);border:none;font-size:14px;font-weight:700;color:var(--t2);cursor:pointer;box-shadow:var(--sh-sm);transition:all .15s;font-family:var(--ff-h);}
 .qp:active{transform:scale(.95);}
 .qp.on{color:var(--brand);box-shadow:var(--sh-in-sm);}
 
-.opt-card{background:var(--bg);border-radius:var(--r16);padding:14px 16px;margin:0 18px;box-shadow:var(--sh);border:none;display:flex;align-items:center;justify-content:space-between;}
+.opt-card{background:var(--surf);border-radius:var(--r16);padding:14px 16px;margin:0 18px;box-shadow:var(--sh);border:none;display:flex;align-items:center;justify-content:space-between;}
 .oc-left{display:flex;align-items:center;gap:12px;}
-.oc-icon{width:38px;height:38px;border-radius:var(--r12);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--bg);box-shadow:var(--sh-sm);}
+.oc-icon{width:38px;height:38px;border-radius:var(--r12);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--surf);box-shadow:var(--sh-sm);}
 .oc-icon svg{fill:currentColor;}
-.oc-title{font-size:14px;font-weight:700;color:var(--t1);}
+.oc-title{font-size:14px;font-weight:600;color:var(--t1);}
 .oc-sub{font-size:11px;color:var(--t3);}
 
-.toggle{width:48px;height:26px;border-radius:var(--rpill);background:var(--bg);border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;box-shadow:var(--sh-in);}
-.toggle::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--bg);box-shadow:var(--sh-sm);transition:transform .2s var(--ease-s);}
-.toggle.on{background:var(--bg);box-shadow:var(--sh-in),0 0 0 2px var(--brand-lt);}
+.toggle{width:48px;height:26px;border-radius:var(--rpill);background:var(--fill);border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;box-shadow:var(--sh-in);}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--surf);box-shadow:var(--sh-sm);transition:transform .2s var(--ease-s);}
+.toggle.on{background:var(--fill);box-shadow:var(--sh-in),0 0 0 2px var(--brand-lt);}
 .toggle.on::after{transform:translateX(22px);box-shadow:var(--sh-sm),0 0 0 2px var(--brand-lt);}
 
 .font-btns{display:flex;gap:8px;}
-.fb{width:34px;height:34px;border-radius:var(--r8);background:var(--bg);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:var(--ff-h);font-weight:800;color:var(--t2);transition:all .15s;font-size:13px;box-shadow:var(--sh-sm);}
+.fb{width:34px;height:34px;border-radius:var(--r8);background:var(--surf);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:var(--ff-h);font-weight:700;color:var(--t2);transition:all .15s;font-size:13px;box-shadow:var(--sh-sm);}
 .fb:active{transform:scale(.92);}
 .fb.on{color:var(--brand);box-shadow:var(--sh-in-sm);}
 
-.exam-banner{margin:0 18px;background:var(--bg);border-radius:var(--r16);padding:16px;display:flex;align-items:center;gap:14px;box-shadow:var(--sh);}
-.eb-icon{width:44px;height:44px;background:var(--bg);border-radius:var(--r12);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:var(--sh-in-sm);color:var(--brand);}
+.exam-banner{margin:0 18px;background:var(--surf);border-radius:var(--r16);padding:16px;display:flex;align-items:center;gap:14px;box-shadow:var(--sh);}
+.eb-icon{width:44px;height:44px;background:var(--fill);border-radius:var(--r12);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:var(--sh-in-sm);color:var(--brand);}
 .eb-icon svg{width:22px;height:22px;fill:none;stroke:var(--brand);}
 .eb-txt{flex:1;}
-.eb-title{font-size:14px;font-weight:800;color:var(--t1);font-family:var(--ff-h);}
+.eb-title{font-size:14px;font-weight:700;color:var(--t1);font-family:var(--ff-h);}
 .eb-sub{font-size:12px;color:var(--t3);margin-top:2px;}
-.eb-days{font-size:28px;font-weight:800;color:var(--brand);font-family:var(--ff-h);letter-spacing:-1px;text-align:right;}
-.eb-days-lbl{font-size:10px;color:var(--t4);text-align:right;text-transform:uppercase;letter-spacing:.06em;}
+.eb-days{font-size:28px;font-weight:700;color:var(--brand);font-family:var(--ff-h);letter-spacing:-1px;text-align:right;}
+.eb-days-lbl{font-size:10px;color:var(--t4);text-align:right;}
 
-.goal-card{margin:0 18px;background:var(--bg);border-radius:var(--r16);padding:14px 16px;box-shadow:var(--sh);border:none;}
+.goal-card{margin:0 18px;background:var(--surf);border-radius:var(--r16);padding:14px 16px;box-shadow:var(--sh);border:none;}
 .gc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
-.gc-title{font-size:13px;font-weight:700;color:var(--t1);}
-.gc-count{font-size:13px;font-weight:800;color:var(--brand);font-family:var(--ff-h);}
-.gc-bar{height:10px;background:var(--bg);border-radius:var(--rpill);overflow:hidden;box-shadow:var(--sh-in-sm);}
+.gc-title{font-size:13px;font-weight:600;color:var(--t1);}
+.gc-count{font-size:13px;font-weight:700;color:var(--brand);font-family:var(--ff-h);}
+.gc-bar{height:10px;background:var(--fill);border-radius:var(--rpill);overflow:hidden;box-shadow:var(--sh-in-sm);}
 .gc-fill{height:100%;background:var(--brand);border-radius:var(--rpill);transition:width .5s var(--ease-s);}
 .gc-sub{font-size:11px;color:var(--t4);margin-top:6px;}
 
@@ -355,16 +365,16 @@ button,input,select,textarea{font-family:var(--ff-b);}
 .sheet-bg.on{opacity:1;pointer-events:all;}
 .sheet{position:absolute;bottom:0;left:0;right:0;background:var(--bg);border-radius:28px 28px 0 0;padding:8px 0 calc(20px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .35s var(--ease-s);max-height:90dvh;overflow-y:auto;box-shadow:0 -12px 28px var(--sd);}
 .sheet-bg.on .sheet{transform:translateY(0);}
-.sheet-handle{width:40px;height:5px;border-radius:var(--rpill);background:var(--bg);margin:0 auto 18px;box-shadow:var(--sh-in-sm);}
-.sheet-title{font-size:18px;font-weight:800;color:var(--t1);font-family:var(--ff-h);letter-spacing:-.4px;padding:0 20px;margin-bottom:4px;}
+.sheet-handle{width:40px;height:5px;border-radius:var(--rpill);background:var(--fill);margin:0 auto 18px;box-shadow:var(--sh-in-sm);}
+.sheet-title{font-size:18px;font-weight:700;color:var(--t1);font-family:var(--ff-h);letter-spacing:-.4px;padding:0 20px;margin-bottom:4px;}
 .sheet-sub{font-size:13px;color:var(--t3);padding:0 20px;margin-bottom:16px;}
 
 .menu-item{display:flex;align-items:center;gap:14px;padding:14px 20px;cursor:pointer;transition:box-shadow .12s;border-radius:14px;margin:0 10px;}
 .menu-item:active{box-shadow:var(--sh-in-sm);}
-.mi-icon{width:42px;height:42px;border-radius:var(--r12);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--bg);box-shadow:var(--sh-sm);}
+.mi-icon{width:42px;height:42px;border-radius:var(--r12);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--surf);box-shadow:var(--sh-sm);}
 .mi-icon svg{fill:currentColor;}
 .mi-body{flex:1;}
-.mi-title{font-size:15px;font-weight:700;color:var(--t1);}
+.mi-title{font-size:15px;font-weight:600;color:var(--t1);}
 .mi-sub{font-size:12px;color:var(--t3);margin-top:1px;}
 .mi-chev svg{width:18px;height:18px;fill:none;stroke:var(--t4);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
 .menu-sep{height:2px;background:transparent;box-shadow:var(--sh-in-sm);border-radius:2px;margin:10px 20px;}
@@ -374,33 +384,33 @@ button,input,select,textarea{font-family:var(--ff-b);}
 ═══════════════════════════════════════ */
 #history,#bookmarks,#notes-screen,#performance{background:var(--bg);overflow-y:auto;}
 .sub-topbar{position:sticky;top:0;z-index:40;background:var(--bg);padding:calc(env(safe-area-inset-top,0px)+10px) 16px 10px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 12px -8px var(--sd);}
-.back-btn{width:38px;height:38px;border-radius:50%;background:var(--bg);border:none;display:flex;align-items:center;justify-content:center;color:var(--brand);cursor:pointer;box-shadow:var(--sh);flex-shrink:0;transition:all .15s;}
+.back-btn{width:38px;height:38px;border-radius:50%;background:var(--surf);border:none;display:flex;align-items:center;justify-content:center;color:var(--brand);cursor:pointer;box-shadow:var(--sh);flex-shrink:0;transition:all .15s;}
 .back-btn:active{transform:scale(.93);box-shadow:var(--sh-in);}
 .back-btn svg{width:22px;height:22px;fill:currentColor;stroke:currentColor;}
-.scr-title{font-size:18px;font-weight:800;color:var(--t1);font-family:var(--ff-h);letter-spacing:-.4px;}
+.scr-title{font-size:18px;font-weight:700;color:var(--t1);font-family:var(--ff-h);letter-spacing:-.4px;}
 
 .hist-empty,.bmark-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:40px;text-align:center;}
 .hist-empty svg,.bmark-empty svg{width:52px;height:52px;fill:var(--t4);opacity:.5;}
-.empty-title{font-size:17px;font-weight:700;color:var(--t2);}
+.empty-title{font-size:17px;font-weight:600;color:var(--t2);}
 .empty-sub{font-size:13px;color:var(--t4);}
 .hist-list{padding:14px 16px calc(14px + env(safe-area-inset-bottom));}
-.hcard{background:var(--bg);border-radius:var(--r16);margin-bottom:12px;padding:14px;box-shadow:var(--sh);border:none;display:flex;align-items:center;gap:14px;animation:fadeUp .3s var(--ease-s) both;}
-.hc-badge{width:52px;height:52px;border-radius:var(--r12);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;background:var(--bg);box-shadow:var(--sh-in-sm);}
-.hc-score{font-size:17px;font-weight:800;font-family:var(--ff-h);line-height:1;}
-.hc-pct{font-size:9px;font-weight:700;text-transform:uppercase;color:var(--t3);}
+.hcard{background:var(--surf);border-radius:var(--r16);margin-bottom:12px;padding:14px;box-shadow:var(--sh);border:none;display:flex;align-items:center;gap:14px;animation:fadeUp .3s var(--ease-s) both;}
+.hc-badge{width:52px;height:52px;border-radius:var(--r12);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;background:var(--fill);box-shadow:var(--sh-in-sm);}
+.hc-score{font-size:17px;font-weight:700;font-family:var(--ff-h);line-height:1;}
+.hc-pct{font-size:9px;font-weight:600;color:var(--t3);}
 .hc-info{flex:1;min-width:0;}
-.hc-course{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--t4);}
-.hc-mode{font-size:13px;font-weight:700;color:var(--t1);margin-top:2px;}
+.hc-course{font-size:10px;font-weight:700;color:var(--t4);}
+.hc-mode{font-size:13px;font-weight:600;color:var(--t1);margin-top:2px;}
 .hc-date{font-size:11px;color:var(--t4);margin-top:2px;display:flex;align-items:center;gap:4px;}
 .hc-date svg{width:12px;height:12px;fill:var(--t4);}
 .hc-right{text-align:right;}
-.hc-cor{font-size:20px;font-weight:800;font-family:var(--ff-h);color:var(--ok);}
+.hc-cor{font-size:20px;font-weight:700;font-family:var(--ff-h);color:var(--ok);}
 .hc-tot{font-size:11px;color:var(--t4);}
 
 .bmark-list{padding:14px 16px 80px;}
-.bcard{background:var(--bg);border-radius:var(--r16);margin-bottom:12px;overflow:hidden;box-shadow:var(--sh);border:none;animation:fadeUp .3s var(--ease-s) both;}
+.bcard{background:var(--surf);border-radius:var(--r16);margin-bottom:12px;overflow:hidden;box-shadow:var(--sh);border:none;animation:fadeUp .3s var(--ease-s) both;}
 .bcard-head{padding:14px 16px;box-shadow:0 2px 6px -4px var(--sd);display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
-.bcard-q{font-size:14px;font-weight:700;color:var(--t1);line-height:1.4;flex:1;}
+.bcard-q{font-size:14px;font-weight:600;color:var(--t1);line-height:1.4;flex:1;}
 .bcard-rm{background:none;border:none;color:var(--t4);cursor:pointer;padding:2px;transition:color .15s;}
 .bcard-rm:active{color:var(--no);}
 .bcard-rm svg{width:18px;height:18px;}
@@ -410,18 +420,18 @@ button,input,select,textarea{font-family:var(--ff-b);}
 .bmark-actions{padding:0 16px 20px;}
 
 .perf-list{padding:14px 16px calc(14px + env(safe-area-inset-bottom));}
-.pcard{background:var(--bg);border-radius:var(--r16);margin-bottom:12px;padding:16px;box-shadow:var(--sh);border:none;animation:fadeUp .3s var(--ease-s) both;}
+.pcard{background:var(--surf);border-radius:var(--r16);margin-bottom:12px;padding:16px;box-shadow:var(--sh);border:none;animation:fadeUp .3s var(--ease-s) both;}
 .pc-top{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
 .pc-icon{width:40px;height:40px;border-radius:var(--r12);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:var(--sh-sm);}
 .pc-icon svg{fill:currentColor;}
-.pc-code{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--t4);}
-.pc-name{font-size:13px;font-weight:700;color:var(--t1);}
-.pc-pct{font-size:22px;font-weight:800;font-family:var(--ff-h);letter-spacing:-.5px;margin-left:auto;}
-.bar-track{height:10px;background:var(--bg);border-radius:var(--rpill);overflow:hidden;box-shadow:var(--sh-in-sm);}
+.pc-code{font-size:10px;font-weight:700;color:var(--t4);}
+.pc-name{font-size:13px;font-weight:600;color:var(--t1);}
+.pc-pct{font-size:22px;font-weight:700;font-family:var(--ff-h);letter-spacing:-.5px;margin-left:auto;}
+.bar-track{height:10px;background:var(--fill);border-radius:var(--rpill);overflow:hidden;box-shadow:var(--sh-in-sm);}
 .bar-fill{height:100%;border-radius:var(--rpill);transition:width 1s var(--ease-o);}
 .pc-meta{display:flex;justify-content:space-between;margin-top:8px;}
 .pc-meta-i{font-size:11px;color:var(--t4);}
-.pc-meta-i span{font-weight:700;color:var(--t2);}
+.pc-meta-i span{font-weight:600;color:var(--t2);}
 
 /* ═══════════════════════════════════════
    QUIZ SCREEN
@@ -430,38 +440,38 @@ button,input,select,textarea{font-family:var(--ff-b);}
 .quiz-topbar{position:sticky;top:0;z-index:50;background:var(--bg);padding:calc(env(safe-area-inset-top,0px)+8px) 16px 10px;box-shadow:0 4px 12px -8px var(--sd);}
 .qt-r1{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
 .qt-left{display:flex;align-items:center;gap:10px;}
-.qt-title{font-size:14px;font-weight:800;color:var(--t1);font-family:var(--ff-h);}
+.qt-title{font-size:14px;font-weight:700;color:var(--t1);font-family:var(--ff-h);}
 .qt-right{display:flex;align-items:center;gap:7px;}
-.qt-badge{background:var(--bg);color:var(--brand);font-size:12px;font-weight:800;padding:6px 13px;border-radius:var(--r8);box-shadow:var(--sh-sm);font-family:var(--ff-h);}
-.timer-pill{display:flex;align-items:center;gap:4px;background:var(--bg);border:none;padding:6px 12px;border-radius:var(--r8);font-size:13px;font-weight:800;color:var(--t2);font-family:var(--ff-h);box-shadow:var(--sh-sm);}
+.qt-badge{background:var(--surf);color:var(--brand);font-size:12px;font-weight:700;padding:6px 13px;border-radius:var(--r8);box-shadow:var(--sh-sm);font-family:var(--ff-h);}
+.timer-pill{display:flex;align-items:center;gap:4px;background:var(--surf);border:none;padding:6px 12px;border-radius:var(--r8);font-size:13px;font-weight:700;color:var(--t2);font-family:var(--ff-h);box-shadow:var(--sh-sm);}
 .timer-pill svg{width:15px;height:15px;fill:var(--t2);}
 .timer-pill.warn{color:var(--warn);}
 .timer-pill.warn svg{fill:var(--warn);}
 .timer-pill.danger{color:var(--no);}
 .timer-pill.danger svg{fill:var(--no);}
-.prog-track{height:8px;background:var(--bg);border-radius:var(--rpill);overflow:hidden;box-shadow:var(--sh-in-sm);}
+.prog-track{height:8px;background:var(--fill);border-radius:var(--rpill);overflow:hidden;box-shadow:var(--sh-in-sm);}
 .prog-fill{height:100%;border-radius:var(--rpill);background:var(--brand);transition:width .5s var(--ease-s);}
 
 .quiz-body{flex:1;overflow-y:auto;padding:14px 16px 230px;-webkit-overflow-scrolling:touch;}
 body.quiz-active #shared-glass-nav{display:none;}
 
-.qcard{background:var(--bg);border-radius:var(--r20);box-shadow:var(--sh-md);overflow:hidden;border:none;}
+.qcard{background:var(--surf);border-radius:var(--r20);box-shadow:var(--sh-md);overflow:hidden;border:none;}
 .qcard-head{padding:20px 18px 16px;}
 .qmeta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:10px;}
-.qnum{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--brand);}
-.qtag{font-size:10px;font-weight:700;padding:4px 9px;border-radius:var(--r8);background:var(--bg);color:var(--brand);text-transform:uppercase;letter-spacing:.05em;box-shadow:var(--sh-sm);}
-.qcourse{font-size:10px;font-weight:700;padding:4px 9px;border-radius:var(--r8);text-transform:uppercase;letter-spacing:.05em;background:var(--bg);box-shadow:var(--sh-sm);}
+.qnum{font-size:10px;font-weight:700;color:var(--brand);}
+.qtag{font-size:10px;font-weight:600;padding:4px 9px;border-radius:var(--r8);background:var(--surf);color:var(--brand);box-shadow:var(--sh-sm);}
+.qcourse{font-size:10px;font-weight:600;padding:4px 9px;border-radius:var(--r8);background:var(--surf);box-shadow:var(--sh-sm);}
 .bmark-btn{margin-left:auto;background:none;border:none;color:var(--t4);cursor:pointer;padding:2px;transition:all .15s;}
 .bmark-btn:active{transform:scale(.85);}
 .bmark-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;}
 .bmark-btn.on svg{fill:var(--warn);stroke:var(--warn);}
-.qtext{font-size:var(--qfont);font-weight:700;line-height:1.55;color:var(--t1);letter-spacing:-.2px;font-family:var(--ff-h);}
+.qtext{font-size:var(--qfont);font-weight:600;line-height:1.55;color:var(--t1);letter-spacing:-.2px;font-family:var(--ff-h);}
 
 .opts{padding:4px 14px 16px;display:flex;flex-direction:column;gap:12px;}
-.opt{display:flex;align-items:flex-start;gap:12px;padding:14px;border-radius:var(--r12);background:var(--bg);border:none;cursor:pointer;transition:box-shadow .15s,transform .15s;text-align:left;width:100%;position:relative;overflow:hidden;box-shadow:var(--sh);}
+.opt{display:flex;align-items:flex-start;gap:12px;padding:14px;border-radius:var(--r12);background:var(--surf);border:none;cursor:pointer;transition:box-shadow .15s,transform .15s;text-align:left;width:100%;position:relative;overflow:hidden;box-shadow:var(--sh);}
 .opt:active:not(.locked){transform:scale(.99);}
 .opt:hover:not(.locked){box-shadow:var(--sh-md);}
-.oletter{width:30px;height:30px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--t2);font-family:var(--ff-h);flex-shrink:0;transition:all .18s;box-shadow:var(--sh-sm);}
+.oletter{width:30px;height:30px;border-radius:50%;background:var(--surf);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--t2);font-family:var(--ff-h);flex-shrink:0;transition:all .18s;box-shadow:var(--sh-sm);}
 .otext{font-size:calc(var(--qfont) - 2px);font-weight:600;color:var(--t1);line-height:1.4;flex:1;padding-top:5px;}
 .omark{flex-shrink:0;padding-top:6px;opacity:0;transition:opacity .2s;}
 .omark svg{width:18px;height:18px;}
@@ -487,23 +497,23 @@ body.quiz-active #shared-glass-nav{display:none;}
 .fb-strip.ok .fb-icon svg{fill:var(--ok);}
 .fb-strip.no .fb-icon svg{fill:var(--no);}
 .fb-strip.timeout .fb-icon svg{fill:var(--warn);}
-.fb-title{font-size:13px;font-weight:800;color:var(--t1);font-family:var(--ff-h);}
+.fb-title{font-size:13px;font-weight:700;color:var(--t1);font-family:var(--ff-h);}
 .fb-strip.timeout .fb-title{color:var(--warn);}
 .fb-exp{font-size:12px;color:var(--t3);margin-top:3px;line-height:1.4;}
 
-.note-panel{margin:0 14px 14px;padding:12px 14px;border-radius:var(--r12);background:var(--bg);box-shadow:var(--sh-in);}
+.note-panel{margin:0 14px 14px;padding:12px 14px;border-radius:var(--r12);background:var(--fill);box-shadow:var(--sh-in);}
 .note-panel textarea{width:100%;border:none;background:transparent;font-family:var(--ff-b);font-size:13px;color:var(--t2);resize:none;outline:none;min-height:52px;line-height:1.5;}
 .note-panel textarea::placeholder{color:var(--t4);}
 
 .quiz-actions{position:fixed;bottom:0;left:0;right:0;z-index:60;background:var(--bg);padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;box-shadow:0 -6px 16px -8px var(--sd);}
 .dots-bar{display:flex;gap:8px;overflow-x:auto;padding:1px 0;}
-.dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;font-family:var(--ff-h);flex-shrink:0;cursor:pointer;transition:all .18s;background:var(--bg);box-shadow:var(--sh-sm);color:var(--no);}
+.dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:var(--ff-h);flex-shrink:0;cursor:pointer;transition:all .18s;background:var(--surf);box-shadow:var(--sh-sm);color:var(--no);}
 .dot.curr{color:var(--brand);box-shadow:var(--sh-in-sm),0 0 0 2px var(--brand-lt);transform:scale(1.08);}
 .dot.done{color:var(--ok);}
 .dot.unans{color:var(--no);}
 .dot.timeout{color:var(--warn);}
 .quiz-btns{display:flex;gap:8px;}
-.qbtn{flex:1;padding:15px;border-radius:var(--r12);font-size:15px;font-weight:800;border:none;cursor:pointer;transition:all .15s;font-family:var(--ff-h);display:flex;align-items:center;justify-content:center;gap:6px;letter-spacing:-.2px;background:var(--bg);}
+.qbtn{flex:1;padding:15px;border-radius:var(--r12);font-size:15px;font-weight:700;border:none;cursor:pointer;transition:all .15s;font-family:var(--ff-h);display:flex;align-items:center;justify-content:center;gap:6px;letter-spacing:-.2px;background:var(--bg);}
 .qbtn:active{transform:scale(.98);}
 .qbtn.main{color:var(--brand);box-shadow:var(--sh);}
 .qbtn.main:active{box-shadow:var(--sh-in);}
@@ -519,59 +529,59 @@ body.quiz-active #shared-glass-nav{display:none;}
 #results{background:var(--bg);overflow-y:auto;}
 .res-topbar{position:sticky;top:0;z-index:40;background:var(--bg);padding:calc(env(safe-area-inset-top,0px)+10px) 18px 10px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 12px -8px var(--sd);}
 
-.score-hero{margin:18px 16px 0;background:var(--bg);border-radius:var(--r20);padding:30px 22px;box-shadow:var(--sh-lg);text-align:center;position:relative;overflow:hidden;}
+.score-hero{margin:18px 16px 0;background:var(--surf);border-radius:var(--r20);padding:30px 22px;box-shadow:var(--sh-lg);text-align:center;position:relative;overflow:hidden;}
 .score-hero::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:var(--brand-lt);opacity:.6;}
-.sh-lbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--t4);margin-bottom:6px;position:relative;}
-.sh-big{font-size:clamp(52px,14vw,68px);font-weight:800;color:var(--brand);letter-spacing:-3px;line-height:1;font-family:var(--ff-h);position:relative;}
+.sh-lbl{font-size:10px;font-weight:700;color:var(--t4);margin-bottom:6px;position:relative;}
+.sh-big{font-size:clamp(52px,14vw,68px);font-weight:700;color:var(--brand);letter-spacing:-3px;line-height:1;font-family:var(--ff-h);position:relative;}
 .sh-denom{font-size:20px;font-weight:600;color:var(--t3);position:relative;}
-.sh-pct{font-size:16px;font-weight:700;color:var(--t2);margin-top:7px;font-family:var(--ff-h);position:relative;}
+.sh-pct{font-size:16px;font-weight:600;color:var(--t2);margin-top:7px;font-family:var(--ff-h);position:relative;}
 .sh-msg{font-size:13px;color:var(--t3);margin-top:4px;position:relative;}
 
 .sbox-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:16px 16px 0;}
-.sbox{background:var(--bg);border-radius:var(--r12);padding:14px 10px;text-align:center;box-shadow:var(--sh);border:none;}
-.sbox-val{font-size:24px;font-weight:800;font-family:var(--ff-h);letter-spacing:-.5px;}
+.sbox{background:var(--surf);border-radius:var(--r12);padding:14px 10px;text-align:center;box-shadow:var(--sh);border:none;}
+.sbox-val{font-size:24px;font-weight:700;font-family:var(--ff-h);letter-spacing:-.5px;}
 .sbox-val.g{color:var(--ok);}
 .sbox-val.r{color:var(--no);}
 .sbox-val.o{color:var(--warn);}
-.sbox-lbl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--t4);margin-top:3px;}
+.sbox-lbl{font-size:9px;font-weight:700;color:var(--t4);margin-top:3px;}
 
-.share-btn{margin:14px 16px 0;width:calc(100% - 32px);padding:15px;border-radius:var(--r12);background:var(--bg);border:none;color:var(--brand);font-size:15px;font-weight:800;font-family:var(--ff-h);display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;box-shadow:var(--sh);transition:all .15s;}
+.share-btn{margin:14px 16px 0;width:calc(100% - 32px);padding:15px;border-radius:var(--r12);background:var(--surf);border:none;color:var(--brand);font-size:15px;font-weight:700;font-family:var(--ff-h);display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;box-shadow:var(--sh);transition:all .15s;}
 .share-btn:active{transform:scale(.98);box-shadow:var(--sh-in);}
 .share-btn svg{width:20px;height:20px;fill:var(--brand);}
 
-.rev-title{font-size:16px;font-weight:800;color:var(--t1);font-family:var(--ff-h);letter-spacing:-.3px;padding:18px 16px 10px;}
-.rcard{background:var(--bg);border-radius:var(--r16);margin:0 16px 12px;overflow:hidden;box-shadow:var(--sh);border:none;}
+.rev-title{font-size:16px;font-weight:700;color:var(--t1);font-family:var(--ff-h);letter-spacing:-.3px;padding:18px 16px 10px;}
+.rcard{background:var(--surf);border-radius:var(--r16);margin:0 16px 12px;overflow:hidden;box-shadow:var(--sh);border:none;}
 .rcard-head{padding:14px 15px;display:flex;align-items:flex-start;gap:10px;box-shadow:0 2px 6px -4px var(--sd);}
-.rcard-badge{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;background:var(--bg);box-shadow:var(--sh-in-sm);}
+.rcard-badge{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;background:var(--fill);box-shadow:var(--sh-in-sm);}
 .rcard-badge svg{width:13px;height:13px;}
 .rcard-badge.p svg{stroke:var(--ok);fill:none;stroke-width:2.5;}
 .rcard-badge.f svg{stroke:var(--no);fill:none;stroke-width:2.5;}
 .rcard-badge.s svg{stroke:var(--t4);fill:none;stroke-width:2.5;}
 .rcard-badge.t svg{stroke:var(--warn);fill:none;stroke-width:2.5;}
-.rcard-q{font-size:13px;font-weight:700;color:var(--t1);line-height:1.4;flex:1;}
+.rcard-q{font-size:13px;font-weight:600;color:var(--t1);line-height:1.4;flex:1;}
 .rcard-body{padding:12px 15px;display:flex;flex-direction:column;gap:8px;}
 .rrow{display:flex;align-items:flex-start;gap:7px;font-size:13px;line-height:1.4;}
-.rtag{font-size:9px;font-weight:800;padding:3px 7px;border-radius:5px;text-transform:uppercase;letter-spacing:.06em;flex-shrink:0;margin-top:1px;background:var(--bg);box-shadow:var(--sh-in-sm);}
+.rtag{font-size:9px;font-weight:700;padding:3px 7px;border-radius:5px;flex-shrink:0;margin-top:1px;background:var(--fill);box-shadow:var(--sh-in-sm);}
 .rtag.y{color:var(--no);}
 .rtag.c{color:var(--ok);}
 .rtag.sk{color:var(--t4);}
 .rtag.to{color:var(--warn);}
 .rexp{font-size:12px;color:var(--t3);font-weight:500;padding-top:8px;box-shadow:0 -1px 0 var(--sd) inset;line-height:1.5;}
 .rexp-ai-wrap{padding-top:8px;box-shadow:0 -1px 0 var(--sd) inset;}
-.rexp-ai-btn{border:none;background:var(--bg);color:var(--purple);font-weight:700;font-size:11.5px;padding:8px 14px;border-radius:var(--r8);cursor:pointer;box-shadow:var(--sh-sm);}
+.rexp-ai-btn{border:none;background:var(--surf);color:var(--purple);font-weight:600;font-size:11.5px;padding:8px 14px;border-radius:var(--r8);cursor:pointer;box-shadow:var(--sh-sm);}
 .rexp-ai-btn:active{box-shadow:var(--sh-in-sm);}
 .rexp-ai-btn:disabled{opacity:.6;cursor:default;}
 
 .rnote{padding:8px 15px 12px;}
-.rnote textarea{width:100%;border:none;background:var(--bg);border-radius:var(--r8);padding:10px 12px;font-family:var(--ff-b);font-size:12px;color:var(--t2);resize:none;outline:none;min-height:48px;transition:box-shadow .18s;box-shadow:var(--sh-in-sm);}
+.rnote textarea{width:100%;border:none;background:var(--fill);border-radius:var(--r8);padding:10px 12px;font-family:var(--ff-b);font-size:12px;color:var(--t2);resize:none;outline:none;min-height:48px;transition:box-shadow .18s;box-shadow:var(--sh-in-sm);}
 .rnote textarea:focus{box-shadow:var(--sh-in-sm),0 0 0 2px var(--brand-lt);}
 
 .res-actions{padding:8px 16px calc(20px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px;}
 
 .notes-list{padding:14px 16px calc(14px + env(safe-area-inset-bottom));}
-.note-card{background:var(--bg);border-radius:var(--r16);margin-bottom:12px;padding:14px 16px;box-shadow:var(--sh);border:none;}
-.nc-q{font-size:13px;font-weight:700;color:var(--t1);margin-bottom:8px;line-height:1.35;}
-.nc-note{font-size:13px;color:var(--t2);line-height:1.5;background:var(--bg);border-radius:var(--r8);padding:10px 12px;box-shadow:var(--sh-in-sm);border-left:3px solid var(--brand);}
+.note-card{background:var(--surf);border-radius:var(--r16);margin-bottom:12px;padding:14px 16px;box-shadow:var(--sh);border:none;}
+.nc-q{font-size:13px;font-weight:600;color:var(--t1);margin-bottom:8px;line-height:1.35;}
+.nc-note{font-size:13px;color:var(--t2);line-height:1.5;background:var(--fill);border-radius:var(--r8);padding:10px 12px;box-shadow:var(--sh-in-sm);border-left:3px solid var(--brand);}
 .nc-del{float:right;background:none;border:none;color:var(--t4);cursor:pointer;padding:0;margin-left:8px;transition:color .15s;}
 .nc-del:active{color:var(--no);}
 
@@ -582,15 +592,38 @@ body.quiz-active #shared-glass-nav{display:none;}
 .fade-up{animation:fadeUp .38s var(--ease-s) both;}
 .pop-in{animation:popIn .42s var(--ease-s) both;}
 
+.why-box{margin:12px 0 2px;padding:12px 14px;border-radius:14px;background:var(--fill);box-shadow:var(--sh-in-sm);}
+.why-q{font-size:12.5px;font-weight:700;color:var(--t2);margin-bottom:8px;} .why-q span{font-weight:600;color:var(--t3);}
+.why-chips{display:flex;flex-wrap:wrap;gap:8px;}
+.why-chip{all:unset;box-sizing:border-box;cursor:pointer;padding:8px 12px;border-radius:999px;font-size:12.5px;font-weight:600;color:var(--t2);background:var(--surf);box-shadow:var(--sh-sm);}
+.why-chip.on{color:var(--brand);box-shadow:var(--sh-in-sm);}
+.why-lesson{width:100%;margin-top:10px;border:none;outline:none;padding:10px 12px;border-radius:10px;background:var(--fill);box-shadow:var(--sh-in-sm);font:inherit;font-size:13px;color:var(--t1);}
 .fs-sm{--qfont:14px;} .fs-md{--qfont:16px;} .fs-lg{--qfont:19px;}
+/* v1.9.1 CBT grid, flag-for-review, note slides */
+.qbtn.mini{padding:15px 13px;}
+.qbtn.skip.on{color:var(--warn);box-shadow:var(--sh-in);}
+.dot.flag{box-shadow:var(--sh-sm),inset 0 -3px 0 var(--warn);}
+.gr-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:14px 0;}
+.gr-cell{border:none;cursor:pointer;height:44px;border-radius:12px;background:var(--surf);box-shadow:var(--sh-sm);font-weight:700;font-family:var(--ff-h);font-size:13px;color:var(--no);position:relative;}
+.gr-cell.ans{color:var(--ok);}
+.gr-cell.now{box-shadow:var(--sh-in-sm),0 0 0 2px var(--brand-lt);color:var(--brand);}
+.gr-cell.flg::after{content:'';position:absolute;top:5px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--warn);}
+.gr-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11.5px;color:var(--t3);margin-bottom:12px;}
+.np-slides{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 14px;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.np-slides::-webkit-scrollbar{display:none;}
+.np-slide{flex:0 0 100%;min-width:0;scroll-snap-align:center;}
+.np-slide .np-card{min-height:240px;}
+.np-dots{display:flex;justify-content:center;gap:6px;margin:2px 0 12px;}
+.np-dots i{display:block;width:7px;height:7px;border-radius:99px;background:var(--sd);transition:all .2s;}
+.np-dots i.on{width:18px;background:var(--brand);}
 
 .modal-bg{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s;}
 .modal-bg.on{opacity:1;pointer-events:auto;}
-.modal-bg .modal{background:var(--bg);border-radius:var(--r20);padding:26px 22px;width:100%;max-width:420px;max-height:90dvh;overflow-y:auto;box-shadow:var(--sh-lg);transform:scale(.94) translateY(14px);transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
+.modal-bg .modal{background:var(--surf);border-radius:var(--r20);padding:26px 22px;width:100%;max-width:420px;max-height:90dvh;overflow-y:auto;box-shadow:var(--sh-lg);transform:scale(.94) translateY(14px);transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
 .modal-bg.on .modal{transform:scale(1) translateY(0);}
-.modal-title{font-family:var(--ff-h);font-size:18px;font-weight:800;color:var(--t1);margin-bottom:4px;}
+.modal-title{font-family:var(--ff-h);font-size:18px;font-weight:700;color:var(--t1);margin-bottom:4px;}
 .modal-sub{font-size:12.5px;color:var(--t3);margin-bottom:16px;line-height:1.5;}
-.modal-input{width:100%;padding:13px 14px;border-radius:12px;border:none;background:var(--bg);font-size:14px;font-weight:600;color:var(--t1);outline:none;margin-bottom:10px;box-shadow:var(--sh-in-sm);transition:box-shadow .18s;}
+.modal-input{width:100%;padding:13px 14px;border-radius:12px;border:none;background:var(--fill);font-size:14px;font-weight:600;color:var(--t1);outline:none;margin-bottom:10px;box-shadow:var(--sh-in-sm);transition:box-shadow .18s;}
 .modal-input:focus{box-shadow:var(--sh-in-sm),0 0 0 2px var(--brand-lt);}
 .modal-hint{font-size:11.5px;margin-top:-6px;margin-bottom:12px;min-height:14px;}
 .modal-hint.ok{color:var(--ok);}
@@ -604,7 +637,7 @@ body.quiz-active #shared-glass-nav{display:none;}
 @media (min-width: 640px){
   :root{ --page-w: 560px; }
   body{ background: var(--bg); }
-  .scr{ max-width: var(--page-w); margin: 0 auto; min-height: 100dvh; box-shadow:var(--sh-lg); background: var(--bg); }
+  .scr{ max-width: var(--page-w); margin: 0 auto; min-height: 100dvh; box-shadow:var(--sh-lg); background: var(--surf); }
   .quiz-actions{ max-width: var(--page-w); margin: 0 auto; }
   .sheet{ max-width: var(--page-w); margin: 0 auto; }
 }
@@ -641,32 +674,46 @@ body.quiz-active #shared-glass-nav{display:none;}
 }
 
 /* v1.5 screens */
-.np-card{background:var(--bg);border-radius:18px;box-shadow:var(--sh);padding:14px 16px;}
-.np-h{font-size:13px;font-weight:800;color:var(--t2);letter-spacing:.04em;text-transform:uppercase;margin:6px 2px 0;}
+.np-card{background:var(--surf);border-radius:18px;box-shadow:var(--sh);padding:14px 16px;}
+/* v1.9.0 Weakness Autopilot + Voice quiz cards (home screen) */
+.ap-k{font-size:11.5px;font-weight:700;letter-spacing:.4px;color:var(--t3);}
+.ap-h{font-size:15.5px;font-weight:700;margin-top:3px;line-height:1.35;}
+.ap-count{font-size:13px;font-weight:700;color:var(--brand);white-space:nowrap;}
+.ap-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid rgba(120,130,150,.14);}
+.ap-item:first-child{border-top:none;}
+.ap-item .ap-t{font-weight:700;font-size:14px;line-height:1.3;}
+.ap-item .ap-d{font-size:12px;color:var(--t3);margin-top:2px;line-height:1.35;}
+.ap-item.done .ap-t{text-decoration:line-through;opacity:.55;}
+.ap-min{font-size:11.5px;font-weight:700;color:var(--t3);white-space:nowrap;}
+.ap-voice{border:none;cursor:pointer;background:var(--surf);box-shadow:var(--sh);border-radius:99px;width:34px;height:34px;font-size:15px;flex:0 0 auto;}
+.ap-done{text-align:center;font-weight:700;padding:6px 0 2px;color:var(--ok);}
+.np-h{font-size:13px;font-weight:700;color:var(--t2);margin:6px 2px 0;}
 .np-empty{text-align:center;color:var(--t3);font-size:13.5px;padding:34px 16px;line-height:1.5;}
 .np-row{display:flex;align-items:center;gap:12px;}
-.np-btn{border:none;cursor:pointer;background:var(--bg);color:var(--brand);font-weight:800;font-size:12.5px;padding:9px 14px;border-radius:12px;box-shadow:var(--sh-sm,var(--sh));font-family:inherit;}
+.np-btn{border:none;cursor:pointer;background:var(--surf);color:var(--brand);font-weight:700;font-size:12.5px;padding:9px 14px;border-radius:12px;box-shadow:var(--sh-sm,var(--sh));font-family:inherit;}
 .np-btn:active{box-shadow:var(--sh-in-sm);}
-.np-bar{height:8px;border-radius:8px;background:var(--bg);box-shadow:var(--sh-in-sm);overflow:hidden;}
+.np-bar{height:8px;border-radius:8px;background:var(--fill);box-shadow:var(--sh-in-sm);overflow:hidden;}
 .np-bar>i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,var(--brand),var(--purple));}
-.np-chip{display:inline-block;font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:10px;background:var(--bg);box-shadow:var(--sh-in-sm);color:var(--t2);margin:3px 4px 0 0;}
-.np-check{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;background:var(--bg);box-shadow:var(--sh-in-sm);color:var(--t4);}
-.np-check.on{color:#fff;background:linear-gradient(140deg,var(--brand),var(--purple));box-shadow:none;}
+.np-chip{display:inline-block;font-size:11.5px;font-weight:600;padding:5px 10px;border-radius:10px;background:var(--fill);box-shadow:var(--sh-in-sm);color:var(--t2);margin:3px 4px 0 0;}
+.np-check{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;background:var(--fill);box-shadow:var(--sh-in-sm);color:var(--t4);}
+.np-check.on{color:#fff;background:var(--grad);box-shadow:none;}
 .np-note{font-size:13.5px;line-height:1.6;color:var(--t2);}
 .np-note ul{margin:6px 0 10px 18px;padding:0;}
 .np-note p{margin:0 0 10px;}
-.np-note h4{font-size:15px;font-weight:800;color:var(--t1);margin:16px 0 6px;}
+.np-note h4{font-size:15px;font-weight:700;color:var(--t1);margin:16px 0 6px;}
 .np-note li{margin-bottom:4px;}
-details.np-card>summary{cursor:pointer;font-weight:800;font-size:14px;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+details.np-card>summary{cursor:pointer;font-weight:700;font-size:14px;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;}
 details.np-card>summary::-webkit-details-marker{display:none;}
-.fb-links{margin-top:8px;display:flex;gap:16px;font-size:12px;font-weight:800;}
+.fb-links{margin-top:8px;display:flex;gap:16px;font-size:12px;font-weight:700;}
 .fb-links a{color:var(--brand);cursor:pointer;text-decoration:none;}
 .fb-links a.rep{color:var(--t3);}
 /* v1.8.6 "I guessed" toggle under the options */
-.guess-btn{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;margin:10px 0 2px auto;padding:8px 14px;border-radius:999px;font-size:12.5px;font-weight:800;color:var(--t3);cursor:pointer;background:var(--bg);box-shadow:var(--sh-sm,3px 3px 7px rgba(120,130,170,.3),-3px -3px 7px rgba(255,255,255,.8));-webkit-tap-highlight-color:transparent}
+.guess-btn{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;margin:10px 0 2px auto;padding:8px 14px;border-radius:999px;font-size:12.5px;font-weight:700;color:var(--t3);cursor:pointer;background:var(--bg);box-shadow:var(--sh-sm,3px 3px 7px rgba(120,130,170,.3),-3px -3px 7px rgba(255,255,255,.8));-webkit-tap-highlight-color:transparent}
 .guess-btn:active{box-shadow:var(--sh-in-sm,inset 2px 2px 5px rgba(120,130,170,.35),inset -2px -2px 5px rgba(255,255,255,.8))}
 .guess-btn.on{color:#7a4a00;background:linear-gradient(135deg,#FFE29A,#FFC24D);box-shadow:0 3px 0 rgba(160,100,0,.35)}
 </style>
+<link rel="stylesheet" href="/css/hybrid.css">
+<script src="/js/ripple.js" defer></script>
 </head>
 <body class="fs-md">
 
@@ -698,14 +745,14 @@ details.np-card>summary::-webkit-details-marker{display:none;}
   <div id="plan-banner" onclick="PhqShell.go('/profile')" style="display:none;margin:10px 18px 0;padding:12px 14px;border-radius:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;background:var(--bg);">
     <div style="display:flex;align-items:center;gap:8px;min-width:0;">
       <i id="plan-banner-icon" class="fa-solid fa-bolt" style="font-size:13px;flex-shrink:0;"></i>
-      <div id="plan-banner-text" style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Loading plan…</div>
+      <div id="plan-banner-text" style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Loading plan…</div>
     </div>
-    <div id="plan-banner-cta" style="font-size:11.5px;font-weight:800;flex-shrink:0;"></div>
+    <div id="plan-banner-cta" style="font-size:11.5px;font-weight:700;flex-shrink:0;"></div>
   </div>
 
-  <div id="onboard-card" style="display:none;margin:14px 18px 0;background:var(--bg);border-radius:var(--r16);padding:16px;box-shadow:var(--sh);">
+  <div id="onboard-card" style="display:none;margin:14px 18px 0;background:var(--surf);border-radius:var(--r16);padding:16px;box-shadow:var(--sh);">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-      <div style="font-weight:800;font-size:14px;font-family:var(--ff-h);flex:1;">Get started <span id="onb-count" style="color:var(--t3);font-weight:700;font-size:12px;"></span></div>
+      <div style="font-weight:700;font-size:14px;font-family:var(--ff-h);flex:1;">Get started <span id="onb-count" style="color:var(--t3);font-weight:600;font-size:12px;"></span></div>
       <button onclick="dismissOnboarding()" aria-label="Dismiss" style="background:none;border:none;color:var(--t3);font-size:18px;cursor:pointer;line-height:1;">&times;</button>
     </div>
     <div id="onb-list" style="display:flex;flex-direction:column;gap:8px;"></div>
@@ -747,14 +794,39 @@ details.np-card>summary::-webkit-details-marker{display:none;}
     </div>
   </div>
 
+  <div id="autopilot-wrap" style="padding:12px 18px 0;display:none;">
+    <div class="np-card">
+      <div class="np-row" style="justify-content:space-between;align-items:flex-start;">
+        <div style="min-width:0;"><div class="ap-k">TODAY'S <span id="ap-min">15</span> MINUTES</div><div class="ap-h" id="ap-headline"></div></div>
+        <div class="ap-count" id="ap-count"></div>
+      </div>
+      <div class="np-bar" style="margin:10px 0 4px;"><i id="ap-fill" style="width:0%"></i></div>
+      <div id="ap-list"></div>
+    </div>
+  </div>
+
+  <div id="voice-card" style="padding:12px 18px 0;display:none;">
+    <div class="np-card np-row" style="justify-content:space-between;gap:12px;">
+      <div style="min-width:0;"><div style="font-weight:700;font-size:14.5px;">🎧 Voice quiz</div>
+        <div style="font-size:12px;color:var(--t3);margin-top:2px;line-height:1.4;">Hands-free. Wreddi reads each question aloud and you answer out loud. Uses the course you selected below.</div></div>
+      <button class="np-btn" onclick="startVoiceQuiz({})">Start</button>
+    </div>
+  </div>
+
   <div class="sec-h"><div class="sec-title">Select Course</div><div class="sec-badge" id="sel-badge">1 selected</div></div>
   <div style="padding:0 18px 12px;">
     <div style="position:relative;">
       <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--t4);font-size:13px;z-index:1;"></i>
-      <input id="course-search" placeholder="Search for a course..." oninput="filterCourseGrid(this.value)" style="width:100%;background:var(--bg);border:none;border-radius:999px;padding:13px 20px 13px 42px;color:var(--t1);font-size:13.5px;font-weight:600;outline:none;box-shadow:var(--sh-in);">
+      <input id="course-search" placeholder="Search for a course..." oninput="filterCourseGrid(this.value)" style="width:100%;background:var(--fill);border:none;border-radius:999px;padding:13px 20px 13px 42px;color:var(--t1);font-size:13.5px;font-weight:600;outline:none;box-shadow:var(--sh-in);">
     </div>
   </div>
   <div class="cg" id="course-grid"></div>
+  <div class="cg-more" id="course-more" style="display:none;">
+    <button type="button" id="course-more-btn" class="cg-more-btn" aria-expanded="false" aria-controls="course-grid" onclick="toggleCourseGrid()">
+      <span id="course-more-label">Show all courses</span>
+      <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+    </button>
+  </div>
 
   <div class="sec-h" style="padding-top:20px;"><div class="sec-title">Quiz Mode</div></div>
   <div class="mode-row">
@@ -791,17 +863,17 @@ details.np-card>summary::-webkit-details-marker{display:none;}
     </div>
   </div>
 
-  <div onclick="PhqShell.go('/written')" style="margin:20px 18px 0;padding:14px 16px;border-radius:var(--r16);background:var(--bg);box-shadow:var(--sh);display:flex;align-items:center;gap:12px;cursor:pointer;">
-    <div style="width:42px;height:42px;border-radius:14px;background:linear-gradient(140deg,var(--brand),var(--purple));color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-pen-to-square"></i></div>
-    <div style="flex:1;min-width:0;"><div style="font-weight:800;font-size:14px;font-family:var(--ff-h);">Written Exam <span style="font-size:10px;font-weight:800;color:#fff;background:var(--purple);padding:2px 7px;border-radius:99px;vertical-align:middle;">NEW</span></div><div style="font-size:12px;color:var(--t3);margin-top:2px;">Theory questions you type, marked by AI against a marking scheme</div></div>
+  <div onclick="PhqShell.go('/written')" style="margin:20px 18px 0;padding:14px 16px;border-radius:var(--r16);background:var(--surf);box-shadow:var(--sh);display:flex;align-items:center;gap:12px;cursor:pointer;">
+    <div style="width:42px;height:42px;border-radius:14px;background:var(--grad);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-pen-to-square"></i></div>
+    <div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:14px;font-family:var(--ff-h);">Written Exam <span style="font-size:10px;font-weight:700;color:#fff;background:var(--purple);padding:2px 7px;border-radius:99px;vertical-align:middle;">NEW</span></div><div style="font-size:12px;color:var(--t3);margin-top:2px;">Theory questions you type, marked by AI against a marking scheme</div></div>
     <i class="fa-solid fa-chevron-right" style="color:var(--t3);font-size:12px;"></i>
   </div>
 
   <div class="sec-h" style="padding-top:20px;"><div class="sec-title"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--purple);margin-right:6px;"></i>AI Quiz Generator</div></div>
-  <div style="background:var(--bg);border-radius:var(--r16);margin:0 18px 18px;padding:16px;box-shadow:var(--sh);">
-    <div style="font-size:12.5px;color:var(--t3);margin-bottom:12px;">Generate a fresh set of questions for any course with AI. Costs <b id="ai-quiz-cost">5</b> credits per quiz. Questions the AI writes for you may be reviewed by PrepHQ and added to the practice bank (questions made from notes you paste are never shared).</div>
+  <div style="background:var(--surf);border-radius:var(--r16);margin:0 18px 18px;padding:16px;box-shadow:var(--sh);">
+    <div style="font-size:12.5px;color:var(--t3);margin-bottom:12px;">Generate a fresh set of questions for any course with AI. Costs <b id="ai-quiz-cost">5</b> credits per quiz. Questions the AI writes for you may be reviewed by Wreddi and added to the practice bank (questions made from notes you paste are never shared).</div>
     <div style="display:flex;gap:8px;margin-bottom:10px;">
-      <input id="ai-course-input" placeholder="Course code e.g. CHM142" style="flex:1;min-width:0;padding:12px;border-radius:12px;border:none;background:var(--bg);font-size:14px;font-weight:600;color:var(--t1);outline:none;box-shadow:var(--sh-in-sm);" autocapitalize="characters">
+      <input id="ai-course-input" placeholder="Course code e.g. CHM142" style="flex:1;min-width:0;padding:12px;border-radius:12px;border:none;background:var(--fill);font-size:14px;font-weight:600;color:var(--t1);outline:none;box-shadow:var(--sh-in-sm);" autocapitalize="characters">
       <div class="neu-select" id="ai-diff-select-wrap" data-value="medium" style="flex-shrink:0;width:104px;">
         <input type="hidden" id="ai-diff-select" value="medium">
         <button type="button" class="neu-select-trigger" onclick="toggleNeuSelect('ai-diff-select-wrap')">
@@ -817,18 +889,18 @@ details.np-card>summary::-webkit-details-marker{display:none;}
     </div>
 
     <div style="display:flex;gap:8px;margin-bottom:6px;align-items:stretch;">
-      <input id="ai-topic-input" maxlength="80" placeholder="Topic (optional) e.g. Chemical bonding" style="flex:1;min-width:0;padding:12px;border-radius:12px;border:none;background:var(--bg);font-size:13.5px;font-weight:600;color:var(--t1);outline:none;box-shadow:var(--sh-in-sm);">
-      <input id="ai-count-input" type="number" inputmode="numeric" min="5" max="20" step="1" value="10" aria-label="Number of questions" style="flex:0 0 74px;width:74px;padding:12px 8px;border-radius:12px;border:none;background:var(--bg);font-size:14px;font-weight:700;text-align:center;color:var(--t1);outline:none;box-shadow:var(--sh-in-sm);">
+      <input id="ai-topic-input" maxlength="80" placeholder="Topic (optional) e.g. Chemical bonding" style="flex:1;min-width:0;padding:12px;border-radius:12px;border:none;background:var(--fill);font-size:13.5px;font-weight:600;color:var(--t1);outline:none;box-shadow:var(--sh-in-sm);">
+      <input id="ai-count-input" type="number" inputmode="numeric" min="5" max="20" step="1" value="10" aria-label="Number of questions" style="flex:0 0 74px;width:74px;padding:12px 8px;border-radius:12px;border:none;background:var(--fill);font-size:14px;font-weight:600;text-align:center;color:var(--t1);outline:none;box-shadow:var(--sh-in-sm);">
     </div>
     <div id="ai-count-hint" style="font-size:11.5px;color:var(--t3);margin:0 2px 8px;">Choose 5–20 multiple-choice questions. The cost is the same whatever number you pick.</div>
-    <div id="material-toggle" onclick="toggleMaterialPanel()" style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:8px 2px;font-size:12.5px;font-weight:700;color:var(--purple);">
+    <div id="material-toggle" onclick="toggleMaterialPanel()" style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:8px 2px;font-size:12.5px;font-weight:600;color:var(--purple);">
       <i class="fa-solid fa-chevron-right" id="material-chevron" style="font-size:10px;transition:transform .2s;"></i>
       Add study material (optional)
     </div>
     <div id="material-panel" style="display:none;padding-top:4px;">
-      <textarea id="material-text" rows="4" placeholder="Paste your course outline, notes, or specific topics here..." style="width:100%;padding:12px;border-radius:12px;border:none;background:var(--bg);font-size:13px;color:var(--t1);outline:none;resize:vertical;font-family:var(--ff-b);margin-bottom:8px;box-shadow:var(--sh-in-sm);"></textarea>
+      <textarea id="material-text" rows="4" placeholder="Paste your course outline, notes, or specific topics here..." style="width:100%;padding:12px;border-radius:12px;border:none;background:var(--fill);font-size:13px;color:var(--t1);outline:none;resize:vertical;font-family:var(--ff-b);margin-bottom:8px;box-shadow:var(--sh-in-sm);"></textarea>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-        <label for="material-file" style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;border-radius:12px;border:none;background:var(--bg);font-size:12.5px;font-weight:700;color:var(--t3);cursor:pointer;box-shadow:var(--sh-sm);">
+        <label for="material-file" style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;border-radius:12px;border:none;background:var(--surf);font-size:12.5px;font-weight:600;color:var(--t3);cursor:pointer;box-shadow:var(--sh-sm);">
           <i class="fa-solid fa-file-arrow-up"></i> <span id="material-file-lbl">Upload PDF or .txt</span>
         </label>
         <input type="file" id="material-file" accept=".pdf,.txt" style="display:none;" onchange="handleMaterialFile(event)">
@@ -836,58 +908,58 @@ details.np-card>summary::-webkit-details-marker{display:none;}
       <div id="material-file-status" style="font-size:11.5px;color:var(--t3);min-height:14px;"></div>
     </div>
 
-    <button class="btn-grad" id="ai-quiz-btn" style="width:100%;padding:13px;border-radius:12px;color:var(--purple);font-weight:800;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;" onclick="generateAIQuiz()">
+    <button class="btn-grad" id="ai-quiz-btn" style="width:100%;padding:13px;border-radius:12px;color:var(--purple);font-weight:700;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;" onclick="generateAIQuiz()">
       <i class="fa-solid fa-bolt"></i> Generate Quiz
     </button>
   </div>
 
-  <div id="flashcards-card" style="margin:0 18px 16px;background:var(--bg);border-radius:var(--r16);padding:16px;box-shadow:var(--sh),0 0 0 2px var(--brand-lt);">
+  <div id="flashcards-card" style="margin:0 18px 16px;background:var(--surf);border-radius:var(--r16);padding:16px;box-shadow:var(--sh),0 0 0 2px var(--brand-lt);">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
       <i class="fa-solid fa-layer-group" style="color:var(--brand);"></i>
-      <div style="font-weight:800;font-size:14px;font-family:var(--ff-h);">Flashcards</div>
-      <span id="fc-due-badge" style="margin-left:auto;font-size:11px;font-weight:800;color:var(--brand);background:var(--bg);box-shadow:var(--sh-sm);padding:3px 9px;border-radius:var(--r8);"></span>
+      <div style="font-weight:700;font-size:14px;font-family:var(--ff-h);">Flashcards</div>
+      <span id="fc-due-badge" style="margin-left:auto;font-size:11px;font-weight:700;color:var(--brand);background:var(--surf);box-shadow:var(--sh-sm);padding:3px 9px;border-radius:var(--r8);"></span>
     </div>
     <div style="font-size:12.5px;color:var(--t3);margin-bottom:12px;">Spaced-repetition review of your registered courses — weak cards resurface sooner.</div>
-    <button class="btn-grad" style="width:100%;padding:12px;border-radius:11px;color:var(--brand);font-weight:700;font-size:13px;cursor:pointer;" onclick="openFlashcards()">Review Flashcards</button>
+    <button class="btn-grad" style="width:100%;padding:12px;border-radius:11px;color:var(--brand);font-weight:600;font-size:13px;cursor:pointer;" onclick="openFlashcards()">Review Flashcards</button>
   </div>
 
-  <div id="missed-card" style="display:none;margin:0 18px 16px;background:var(--bg);border-radius:var(--r16);padding:16px;box-shadow:var(--sh);box-shadow:var(--sh),0 0 0 2px var(--no-lt);">
+  <div id="missed-card" style="display:none;margin:0 18px 16px;background:var(--surf);border-radius:var(--r16);padding:16px;box-shadow:var(--sh);box-shadow:var(--sh),0 0 0 2px var(--no-lt);">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
       <i class="fa-solid fa-rotate-left" style="color:var(--no);"></i>
-      <div style="font-weight:800;font-size:14px;font-family:var(--ff-h);">Questions you missed</div>
+      <div style="font-weight:700;font-size:14px;font-family:var(--ff-h);">Questions you missed</div>
     </div>
     <div id="missed-sub" style="font-size:12.5px;color:var(--t3);margin-bottom:12px;"></div>
-    <button class="btn-grad" style="width:100%;padding:12px;border-radius:11px;color:var(--no);font-weight:700;font-size:13px;cursor:pointer;" onclick="startMissedReview()">Review them now</button>
+    <button class="btn-grad" style="width:100%;padding:12px;border-radius:11px;color:var(--no);font-weight:600;font-size:13px;cursor:pointer;" onclick="startMissedReview()">Review them now</button>
   </div>
 
-  <div id="guess-card" style="display:none;margin:0 18px 16px;background:var(--bg);border-radius:var(--r16);padding:16px;box-shadow:var(--sh),0 0 0 2px rgba(255,194,77,.55);">
+  <div id="guess-card" style="display:none;margin:0 18px 16px;background:var(--surf);border-radius:var(--r16);padding:16px;box-shadow:var(--sh),0 0 0 2px rgba(255,194,77,.55);">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
       <span style="font-size:16px;">🎲</span>
-      <div style="font-weight:800;font-size:14px;font-family:var(--ff-h);">Questions you guessed</div>
+      <div style="font-weight:700;font-size:14px;font-family:var(--ff-h);">Questions you guessed</div>
     </div>
     <div id="guess-sub" style="font-size:12.5px;color:var(--t3);margin-bottom:12px;"></div>
-    <button class="btn-grad" style="width:100%;padding:12px;border-radius:11px;font-weight:700;font-size:13px;cursor:pointer;" onclick="startGuessReview()">Learn them for real</button>
+    <button class="btn-grad" style="width:100%;padding:12px;border-radius:11px;font-weight:600;font-size:13px;cursor:pointer;" onclick="startGuessReview()">Learn them for real</button>
   </div>
 
-  <div id="invite-card" style="display:none;margin:0 18px 16px;background:var(--bg);border-radius:var(--r16);padding:16px;box-shadow:var(--sh);">
+  <div id="invite-card" style="display:none;margin:0 18px 16px;background:var(--surf);border-radius:var(--r16);padding:16px;box-shadow:var(--sh);">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
       <i class="fa-solid fa-user-plus" style="color:var(--brand);"></i>
-      <div style="font-weight:800;font-size:14px;font-family:var(--ff-h);">Study with friends</div>
+      <div style="font-weight:700;font-size:14px;font-family:var(--ff-h);">Study with friends</div>
     </div>
     <div style="font-size:12.5px;color:var(--t3);margin-bottom:12px;">Friends who join with your link earn you bonus credits.</div>
     <div style="display:flex;gap:8px;">
-      <button class="btn-grad" style="flex:1;padding:11px;border-radius:11px;color:var(--ok);font-weight:700;font-size:13px;cursor:pointer;" onclick="inviteWhatsApp()"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
-      <button class="btn-grad" style="flex:1;padding:11px;border-radius:11px;color:var(--brand);font-weight:700;font-size:13px;cursor:pointer;" onclick="inviteCopy()"><i class="fa-solid fa-link"></i> Copy link</button>
+      <button class="btn-grad" style="flex:1;padding:11px;border-radius:11px;color:var(--ok);font-weight:600;font-size:13px;cursor:pointer;" onclick="inviteWhatsApp()"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
+      <button class="btn-grad" style="flex:1;padding:11px;border-radius:11px;color:var(--brand);font-weight:600;font-size:13px;cursor:pointer;" onclick="inviteCopy()"><i class="fa-solid fa-link"></i> Copy link</button>
     </div>
   </div>
 
-  <div id="weak-topics-card" style="display:none;margin:0 18px 16px;background:var(--bg);border-radius:var(--r16);padding:16px;box-shadow:var(--sh),0 0 0 2px var(--no-lt);">
+  <div id="weak-topics-card" style="display:none;margin:0 18px 16px;background:var(--surf);border-radius:var(--r16);padding:16px;box-shadow:var(--sh),0 0 0 2px var(--no-lt);">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
       <i class="fa-solid fa-crosshairs" style="color:var(--no);"></i>
-      <div style="font-weight:800;font-size:14px;font-family:var(--ff-h);">Practice Weak Topics</div>
+      <div style="font-weight:700;font-size:14px;font-family:var(--ff-h);">Practice Weak Topics</div>
     </div>
     <div id="weak-topics-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;"></div>
-    <button class="btn-grad" style="width:100%;padding:12px;border-radius:11px;color:var(--no);font-weight:700;font-size:13px;cursor:pointer;" onclick="startWeakTopicQuiz()">Start Focused Quiz</button>
+    <button class="btn-grad" style="width:100%;padding:12px;border-radius:11px;color:var(--no);font-weight:600;font-size:13px;cursor:pointer;" onclick="startWeakTopicQuiz()">Start Focused Quiz</button>
   </div>
 
   <div class="sec-h" style="padding-top:18px;"><div class="sec-title">Options</div></div>
@@ -901,7 +973,7 @@ details.np-card>summary::-webkit-details-marker{display:none;}
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:6px;">
-        <span style="font-size:12px;font-weight:700;color:var(--brand);background:var(--bg);padding:6px 11px;border-radius:var(--r8);cursor:pointer;box-shadow:var(--sh-sm);" id="timer-min-btn" onclick="cycleTimer()">10 min</span>
+        <span style="font-size:12px;font-weight:600;color:var(--brand);background:var(--surf);padding:6px 11px;border-radius:var(--r8);cursor:pointer;box-shadow:var(--sh-sm);" id="timer-min-btn" onclick="cycleTimer()">10 min</span>
         <button type="button" class="timer-edit-btn" onclick="toggleCustomTimer()" aria-label="Set custom minutes">
           <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
         </button>
@@ -1043,32 +1115,32 @@ details.np-card>summary::-webkit-details-marker{display:none;}
     <div class="scr-title">Settings</div>
   </div>
   <div style="padding:16px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;">
-    <div style="background:var(--bg);border-radius:var(--r16);padding:18px;box-shadow:var(--sh);">
+    <div style="background:var(--surf);border-radius:var(--r16);padding:18px;box-shadow:var(--sh);">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-        <div style="font-size:15px;font-weight:800;color:var(--t1);font-family:var(--ff-h);">Wallet</div>
-        <div style="font-size:20px;font-weight:800;color:var(--purple);"><i class="fa-solid fa-coins" style="font-size:15px;margin-right:5px;"></i><span id="wallet-credits">0</span></div>
+        <div style="font-size:15px;font-weight:700;color:var(--t1);font-family:var(--ff-h);">Wallet</div>
+        <div style="font-size:20px;font-weight:700;color:var(--purple);"><i class="fa-solid fa-coins" style="font-size:15px;margin-right:5px;"></i><span id="wallet-credits">0</span></div>
       </div>
       <div style="font-size:13px;color:var(--t3);margin-bottom:14px;">@<span id="wallet-username">—</span></div>
       <div style="display:flex;gap:8px;margin-bottom:12px;">
         <button class="btn-grad" style="flex:1;font-size:14px;padding:12px;" onclick="openTransferModal()"><i class="fa-solid fa-paper-plane" style="margin-right:6px;"></i>Send Credits</button>
         <button class="btn-surf" style="flex:1;font-size:14px;padding:12px;" onclick="PhqShell.go('/profile')">View Profile</button>
       </div>
-      <div style="background:var(--bg);border-radius:12px;padding:12px;box-shadow:var(--sh-in-sm);">
-        <div style="font-size:11.5px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;">Your Referral Link</div>
+      <div style="background:var(--fill);border-radius:12px;padding:12px;box-shadow:var(--sh-in-sm);">
+        <div style="font-size:11.5px;font-weight:600;color:var(--t3);margin-bottom:6px;">Your Referral Link</div>
         <div style="display:flex;align-items:center;gap:8px;">
-          <div id="referral-code-txt" style="flex:1;font-size:12.5px;font-weight:700;color:var(--t1);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</div>
-          <button style="border:none;background:var(--bg);color:var(--brand);font-weight:700;font-size:12px;padding:8px 13px;border-radius:8px;cursor:pointer;flex-shrink:0;box-shadow:var(--sh-sm);" onclick="copyReferralCode()">Copy Link</button>
+          <div id="referral-code-txt" style="flex:1;font-size:12.5px;font-weight:600;color:var(--t1);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</div>
+          <button style="border:none;background:var(--surf);color:var(--brand);font-weight:600;font-size:12px;padding:8px 13px;border-radius:8px;cursor:pointer;flex-shrink:0;box-shadow:var(--sh-sm);" onclick="copyReferralCode()">Copy Link</button>
         </div>
         <div style="font-size:11px;color:var(--t3);margin-top:6px;">Or share just the code: <b id="referral-code-only">—</b></div>
       </div>
     </div>
-    <div style="background:var(--bg);border-radius:var(--r16);padding:18px;box-shadow:var(--sh);display:flex;align-items:center;gap:12px;">
-      <div style="flex:1;"><div style="font-size:15px;font-weight:800;color:var(--t1);font-family:var(--ff-h);">Brainiac</div>
+    <div style="background:var(--surf);border-radius:var(--r16);padding:18px;box-shadow:var(--sh);display:flex;align-items:center;gap:12px;">
+      <div style="flex:1;"><div style="font-size:15px;font-weight:700;color:var(--t1);font-family:var(--ff-h);">Brainiac</div>
       <div style="font-size:13px;color:var(--t3);margin-top:2px;">Your floating study buddy. Turn it on or off, and see or clear what it remembers.</div></div>
       <button class="btn-surf" style="padding:10px 16px;font-size:13px;flex-shrink:0;" onclick="PhqBrainiac.openSettings()">Manage</button>
     </div>
-    <div style="background:var(--bg);border-radius:var(--r16);padding:18px;box-shadow:var(--sh);">
-      <div style="font-size:15px;font-weight:800;color:var(--t1);font-family:var(--ff-h);margin-bottom:4px;">Exam Date Countdown</div>
+    <div style="background:var(--surf);border-radius:var(--r16);padding:18px;box-shadow:var(--sh);">
+      <div style="font-size:15px;font-weight:700;color:var(--t1);font-family:var(--ff-h);margin-bottom:4px;">Exam Date Countdown</div>
       <div style="font-size:13px;color:var(--t3);margin-bottom:14px;">Set your exam date to see a countdown on the home screen.</div>
       <div class="f-group" style="margin-bottom:12px;">
         <div class="f-label">Course</div>
@@ -1087,10 +1159,10 @@ details.np-card>summary::-webkit-details-marker{display:none;}
         <input type="text" class="f-input" id="exam-name-input" placeholder="e.g. GST 101 Final Exam" style="padding-left:14px;" oninput="saveExamDate()">
       </div>
     </div>
-    <div style="background:var(--bg);border-radius:var(--r16);padding:18px;box-shadow:var(--sh);">
+    <div style="background:var(--surf);border-radius:var(--r16);padding:18px;box-shadow:var(--sh);">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-        <div style="font-size:15px;font-weight:800;color:var(--t1);font-family:var(--ff-h);">My Courses</div>
-        <button style="border:none;background:var(--bg);color:var(--brand);font-weight:700;font-size:12px;padding:8px 13px;border-radius:8px;cursor:pointer;box-shadow:var(--sh-sm);" onclick="openCourseEditor()">Edit</button>
+        <div style="font-size:15px;font-weight:700;color:var(--t1);font-family:var(--ff-h);">My Courses</div>
+        <button style="border:none;background:var(--surf);color:var(--brand);font-weight:600;font-size:12px;padding:8px 13px;border-radius:8px;cursor:pointer;box-shadow:var(--sh-sm);" onclick="openCourseEditor()">Edit</button>
       </div>
       <div style="font-size:13px;color:var(--t3);margin-bottom:14px;">Only the courses you register here show on your dashboard.</div>
       <div id="settings-course-list" style="font-size:12.5px;color:var(--t1);line-height:1.7;margin-bottom:12px;">—</div>
@@ -1099,8 +1171,8 @@ details.np-card>summary::-webkit-details-marker{display:none;}
         <button class="toggle" id="show-all-courses-toggle" onclick="toggleShowAllCourses()"></button>
       </div>
     </div>
-    <div style="background:var(--bg);border-radius:var(--r16);padding:18px;box-shadow:var(--sh);">
-      <div style="font-size:15px;font-weight:800;color:var(--t1);font-family:var(--ff-h);margin-bottom:4px;">Daily Question Goal</div>
+    <div style="background:var(--surf);border-radius:var(--r16);padding:18px;box-shadow:var(--sh);">
+      <div style="font-size:15px;font-weight:700;color:var(--t1);font-family:var(--ff-h);margin-bottom:4px;">Daily Question Goal</div>
       <div style="font-size:13px;color:var(--t3);margin-bottom:14px;">How many questions do you want to answer each day?</div>
       <div class="qty-row">
         <div class="qp" data-goal="10" onclick="setGoal(this)">10</div>
@@ -1109,8 +1181,8 @@ details.np-card>summary::-webkit-details-marker{display:none;}
         <div class="qp" data-goal="50" onclick="setGoal(this)">50</div>
       </div>
     </div>
-    <div style="background:var(--bg);border-radius:var(--r16);padding:18px;box-shadow:var(--sh);">
-      <div style="font-size:15px;font-weight:800;color:var(--t1);font-family:var(--ff-h);margin-bottom:4px;">Study Reminders</div>
+    <div style="background:var(--surf);border-radius:var(--r16);padding:18px;box-shadow:var(--sh);">
+      <div style="font-size:15px;font-weight:700;color:var(--t1);font-family:var(--ff-h);margin-bottom:4px;">Study Reminders</div>
       <div style="font-size:13px;color:var(--t3);margin-bottom:14px;">Get a notification to remind you to study each day.</div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
         <div style="font-size:14px;font-weight:600;color:var(--t1);">Enable reminders</div>
@@ -1121,16 +1193,16 @@ details.np-card>summary::-webkit-details-marker{display:none;}
         <input type="time" class="f-input" id="notif-time" value="20:00" style="padding-left:14px;" onchange="saveNotifTime()">
       </div>
     </div>
-    <div style="background:var(--bg);border-radius:var(--r16);padding:18px;box-shadow:var(--sh);" id="pwa-install-wrap">
-      <div style="font-size:15px;font-weight:800;color:var(--t1);font-family:var(--ff-h);margin-bottom:4px;">Install App</div>
-      <div style="font-size:13px;color:var(--t3);margin-bottom:14px;">Add PrepHQ to your home screen for offline access.</div>
+    <div style="background:var(--surf);border-radius:var(--r16);padding:18px;box-shadow:var(--sh);" id="pwa-install-wrap">
+      <div style="font-size:15px;font-weight:700;color:var(--t1);font-family:var(--ff-h);margin-bottom:4px;">Install App</div>
+      <div style="font-size:13px;color:var(--t3);margin-bottom:14px;">Add Wreddi to your home screen for offline access.</div>
       <button class="btn-grad" id="pwa-btn" onclick="installPWA()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
         Install on Home Screen
       </button>
     </div>
-    <div style="background:var(--bg);border-radius:var(--r16);padding:18px;box-shadow:var(--sh);border:2px solid var(--no-lt);">
-      <div style="font-size:15px;font-weight:800;color:var(--no);font-family:var(--ff-h);margin-bottom:4px;">Sign Out</div>
+    <div style="background:var(--surf);border-radius:var(--r16);padding:18px;box-shadow:var(--sh);border:2px solid var(--no-lt);">
+      <div style="font-size:15px;font-weight:700;color:var(--no);font-family:var(--ff-h);margin-bottom:4px;">Sign Out</div>
       <div style="font-size:13px;color:var(--t3);margin-bottom:14px;">Log out of your account on this device.</div>
       <button class="btn-grad" style="color:var(--no);" onclick="doLogout()">
         <i class="fa-solid fa-arrow-right-from-bracket"></i>
@@ -1177,6 +1249,8 @@ details.np-card>summary::-webkit-details-marker{display:none;}
   <div class="quiz-actions">
     <div class="dots-bar" id="dots-bar"></div>
     <div class="quiz-btns">
+      <button class="qbtn skip mini" id="qbtn-flag" onclick="toggleReview()" title="Flag for review (F)" aria-label="Flag for review"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg></button>
+      <button class="qbtn skip mini" id="qbtn-grid" onclick="openGrid()" title="Question grid (G)" aria-label="Question grid"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 0h8v8h-8z"/></svg></button>
       <button class="qbtn skip" id="qbtn-skip" onclick="skipQ()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zm8.5-6L23 18V6z"/></svg>
       </button>
@@ -1194,7 +1268,7 @@ details.np-card>summary::-webkit-details-marker{display:none;}
     <div>
       <div class="scr-title">Results</div>
       <div style="font-size:12px;color:var(--t3);" id="res-sub">—</div>
-      <div style="font-size:12px;font-weight:800;color:var(--brand);display:none;" id="r-time"></div>
+      <div style="font-size:12px;font-weight:700;color:var(--brand);display:none;" id="r-time"></div>
     </div>
     <button class="back-btn" onclick="goHome()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></button>
   </div>
@@ -1209,9 +1283,9 @@ details.np-card>summary::-webkit-details-marker{display:none;}
     <div class="sbox"><div class="sbox-val r" id="r-wrg">0</div><div class="sbox-lbl">Wrong</div></div>
     <div class="sbox"><div class="sbox-val o" id="r-skp">0</div><div class="sbox-lbl">Skipped</div></div>
   </div>
-  <div id="r-guess" style="display:none;margin:0 16px 12px;padding:14px 16px;border-radius:var(--r16,18px);background:var(--bg);box-shadow:var(--sh);"></div>
-  <div id="cap-strip" style="display:none;margin:0 16px 12px;padding:12px 14px;border-radius:var(--r16,18px);background:var(--bg);box-shadow:var(--sh);align-items:center;gap:10px;"></div>
-  <div id="challenge-banner" style="display:none;margin:0 16px 12px;padding:14px 16px;border-radius:var(--r16,18px);background:var(--bg);box-shadow:var(--sh);text-align:center;"></div>
+  <div id="r-guess" style="display:none;margin:0 16px 12px;padding:14px 16px;border-radius:var(--r16,18px);background:var(--surf);box-shadow:var(--sh);"></div>
+  <div id="cap-strip" style="display:none;margin:0 16px 12px;padding:12px 14px;border-radius:var(--r16,18px);background:var(--surf);box-shadow:var(--sh);align-items:center;gap:10px;"></div>
+  <div id="challenge-banner" style="display:none;margin:0 16px 12px;padding:14px 16px;border-radius:var(--r16,18px);background:var(--surf);box-shadow:var(--sh);text-align:center;"></div>
   <button class="share-btn" onclick="shareResult()">
     <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92S19.61 16.08 18 16.08z"/></svg>
     Share Result
@@ -1223,7 +1297,7 @@ details.np-card>summary::-webkit-details-marker{display:none;}
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
       Save Quiz for Later
     </button>
-    <button class="btn-surf" onclick="challengeFriend()" id="challenge-btn" style="background:linear-gradient(140deg,var(--brand),var(--purple));color:#fff;">
+    <button class="btn-surf" onclick="challengeFriend()" id="challenge-btn" style="background:var(--grad);color:#fff;">
       <i class="fa-solid fa-bolt"></i>
       Challenge a Friend
     </button>
@@ -1243,6 +1317,16 @@ details.np-card>summary::-webkit-details-marker{display:none;}
 </div>
 
 <!-- ═══ MENU SHEET ════════════════════════════════════════════ -->
+<div class="sheet-bg" id="grid-sheet" onclick="closeSheet('grid-sheet',event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Question grid</div>
+    <div class="sheet-sub" id="grid-sub">—</div>
+    <div class="gr-grid" id="grid-body"></div>
+    <div class="gr-legend"><span style="color:var(--ok)">● Answered</span><span style="color:var(--no)">● Not answered</span><span style="color:var(--warn)">● Flagged</span></div>
+    <button class="btn-grad" style="width:100%;padding:13px;border-radius:12px;font-weight:700;cursor:pointer;" onclick="submitFromGrid()">Submit quiz</button>
+  </div>
+</div>
 <div class="sheet-bg" id="menu-sheet" onclick="closeSheet('menu-sheet')">
   <div class="sheet">
     <div class="sheet-handle"></div>
@@ -1286,6 +1370,26 @@ details.np-card>summary::-webkit-details-marker{display:none;}
     <div class="menu-item" onclick="closeSheet('menu-sheet');openStudy()">
       <div class="mi-icon" style="font-size:19px;">📅</div>
       <div class="mi-body"><div class="mi-title">Study Plan</div><div class="mi-sub">Today's tasks, revision & progress</div></div>
+      <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>
+    <div class="menu-item" onclick="closeSheet('menu-sheet');PhqShell.go('/wrapped')">
+      <div class="mi-icon" style="font-size:19px;">🎁</div>
+      <div class="mi-body"><div class="mi-title">Wreddi Wrapped</div><div class="mi-sub">Your semester recap, ready to share</div></div>
+      <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>
+    <div class="menu-item" onclick="closeSheet('menu-sheet');PhqShell.go('/mistakes')">
+      <div class="mi-icon" style="font-size:19px;">📓</div>
+      <div class="mi-body"><div class="mi-title">Mistake Notebook</div><div class="mi-sub">Why you miss questions, and what to do</div></div>
+      <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>
+    <div class="menu-item" onclick="closeSheet('menu-sheet');PhqShell.go('/cheatsheet')">
+      <div class="mi-icon" style="font-size:19px;">🧪</div>
+      <div class="mi-body"><div class="mi-title">Chemistry Cheat Sheet</div><div class="mi-sub">Periodic table, constants & formulas</div></div>
+      <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>
+    <div class="menu-item" onclick="closeSheet('menu-sheet');PhqShell.go('/focus')">
+      <div class="mi-icon" style="font-size:19px;">⏱️</div>
+      <div class="mi-body"><div class="mi-title">Focus Timer</div><div class="mi-sub">25/5 or 50/10 study sessions</div></div>
       <div class="mi-chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
     </div>
     <div class="menu-item" onclick="closeSheet('menu-sheet');openExamOverview()">
@@ -1351,9 +1455,9 @@ details.np-card>summary::-webkit-details-marker{display:none;}
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="share-title">Share this quiz</div>
-    <div class="sheet-sub" id="share-sub">Friends who open the link can take this quiz in PrepHQ.</div>
+    <div class="sheet-sub" id="share-sub">Friends who open the link can take this quiz in Wreddi.</div>
     <div style="padding:0 20px;">
-      <input id="share-link-input" type="text" readonly onclick="this.select()" style="width:100%;padding:13px 14px;border:none;border-radius:var(--r12);background:var(--bg);box-shadow:var(--sh-in-sm);color:var(--t1);font-size:13px;font-weight:600;outline:none;">
+      <input id="share-link-input" type="text" readonly onclick="this.select()" style="width:100%;padding:13px 14px;border:none;border-radius:var(--r12);background:var(--fill);box-shadow:var(--sh-in-sm);color:var(--t1);font-size:13px;font-weight:600;outline:none;">
       <div style="display:flex;gap:10px;margin-top:12px;">
         <button class="btn-grad" style="flex:1;" onclick="copyShareLink()"><i class="fa-solid fa-link"></i>&nbsp; Copy link</button>
         <button class="btn-surf" style="flex:1;" onclick="shareLinkWhatsApp()"><i class="fa-brands fa-whatsapp"></i>&nbsp; WhatsApp</button>
@@ -1380,7 +1484,7 @@ details.np-card>summary::-webkit-details-marker{display:none;}
 <div class="modal-bg" id="m-profile-setup" style="z-index:299;">
   <div class="modal" style="max-width:420px;">
     <div class="modal-title">Complete your profile</div>
-    <div class="modal-sub">A few details so PrepHQ can tailor your dashboard. Takes under a minute.</div>
+    <div class="modal-sub">A few details so Wreddi can tailor your dashboard. Takes under a minute.</div>
 
     <input class="modal-input" id="ps-university" placeholder="University (e.g. University of Abuja)" maxlength="120">
     <input class="modal-input" id="ps-department" placeholder="Department (e.g. Chemistry)" maxlength="120" style="margin-top:8px;">
@@ -1390,7 +1494,7 @@ details.np-card>summary::-webkit-details-marker{display:none;}
       <input class="modal-input" id="ps-target-gpa" type="number" min="0" max="5" step="0.01" placeholder="Target GPA (optional)">
     </div>
 
-    <div class="modal-sub" style="margin-top:14px;margin-bottom:6px;">Select the courses you're offering this semester <span id="ps-course-count" style="font-weight:800;color:var(--brand);"></span></div>
+    <div class="modal-sub" style="margin-top:14px;margin-bottom:6px;">Select the courses you're offering this semester <span id="ps-course-count" style="font-weight:700;color:var(--brand);"></span></div>
     <input class="modal-input" id="ps-course-search" placeholder="Search courses…" oninput="filterProfileSetupCourses(this.value)">
     <div id="ps-course-list" style="max-height:220px;overflow-y:auto;margin-top:8px;display:flex;flex-direction:column;gap:6px;"></div>
 
@@ -1403,26 +1507,26 @@ details.np-card>summary::-webkit-details-marker{display:none;}
 <!-- ═══ UPGRADE PAYWALL ═══════════════════════════════════════════ -->
 <div class="modal-bg" id="m-paywall" onclick="if(event.target===this)closePaywall()">
   <div class="modal" style="max-width:380px;text-align:center;">
-    <div style="width:60px;height:60px;border-radius:16px;background:var(--bg);color:var(--brand);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:24px;box-shadow:var(--sh);"><i class="fa-solid fa-bolt"></i></div>
+    <div style="width:60px;height:60px;border-radius:16px;background:var(--surf);color:var(--brand);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:24px;box-shadow:var(--sh);"><i class="fa-solid fa-bolt"></i></div>
     <div class="modal-title" id="pw-title">Daily limit reached</div>
     <div class="modal-sub" id="pw-sub">You've used everything your free plan gives you for today. Upgrade to keep going right now.</div>
     <!-- v1.7.9: shown only when a FREE student has used up today's questions -->
     <div id="pw-cap" style="display:none;margin:14px 0 2px;text-align:left;">
-      <div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:800;"><span id="pw-cap-used"></span><span id="pw-cap-reset" style="color:var(--t3);font-weight:700;"></span></div>
-      <div style="height:8px;border-radius:99px;background:var(--bg);box-shadow:var(--sh-in-sm);margin-top:6px;overflow:hidden;"><div style="height:100%;width:100%;background:linear-gradient(90deg,var(--brand),var(--purple));"></div></div>
-      <button type="button" id="pw-cap-daily" onclick="capGetDaily(event)" style="display:none;width:100%;margin-top:12px;border:none;cursor:pointer;text-align:left;padding:12px 14px;border-radius:14px;background:var(--bg);color:var(--t1);box-shadow:var(--sh);font-family:inherit;">
-        <div style="font-weight:800;font-size:13.5px;"><i class="fa-solid fa-bolt" style="color:var(--brand);"></i>&nbsp; Just need today?</div>
+      <div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:700;"><span id="pw-cap-used"></span><span id="pw-cap-reset" style="color:var(--t3);font-weight:600;"></span></div>
+      <div style="height:8px;border-radius:99px;background:var(--fill);box-shadow:var(--sh-in-sm);margin-top:6px;overflow:hidden;"><div style="height:100%;width:100%;background:linear-gradient(90deg,var(--brand),var(--purple));"></div></div>
+      <button type="button" id="pw-cap-daily" onclick="capGetDaily(event)" style="display:none;width:100%;margin-top:12px;border:none;cursor:pointer;text-align:left;padding:12px 14px;border-radius:14px;background:var(--surf);color:var(--t1);box-shadow:var(--sh);font-family:inherit;">
+        <div style="font-weight:700;font-size:13.5px;"><i class="fa-solid fa-bolt" style="color:var(--brand);"></i>&nbsp; Just need today?</div>
         <div id="pw-cap-daily-sub" style="font-size:12px;color:var(--t3);margin-top:2px;"></div>
       </button>
     </div>
-    <div style="background:var(--bg);border-radius:14px;padding:14px;text-align:left;box-shadow:var(--sh-in-sm),0 0 0 2px var(--brand-lt);margin:16px 0 12px;">
-      <div style="font-weight:800;font-size:15px;font-family:var(--ff-h);">Premium</div>
+    <div style="background:var(--fill);border-radius:14px;padding:14px;text-align:left;box-shadow:var(--sh-in-sm),0 0 0 2px var(--brand-lt);margin:16px 0 12px;">
+      <div style="font-weight:700;font-size:15px;font-family:var(--ff-h);">Premium</div>
       <div style="font-size:12px;color:var(--t3);margin-top:2px;">Unlimited questions, AI quizzes &amp; AI chat, plus every feature</div>
     </div>
     <div id="pw-periods" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:14px;"></div>
     <div class="modal-sub" style="font-size:12px;">To upgrade right now, reach out via WhatsApp — an admin will confirm your payment and activate your plan.</div>
     <a class="btn-grad" style="width:100%;display:block;box-sizing:border-box;text-decoration:none;margin-top:10px;" id="pw-whatsapp-link" href="#" onclick="requestUpgrade(event)">Message admin to upgrade</a>
-    <div style="text-align:center;margin-top:12px;font-size:12.5px;color:var(--t3);">Already have an activation code? <a href="/profile" style="color:var(--brand);font-weight:800;text-decoration:none;" onclick="closePaywall()">Enter it in Profile</a></div>
+    <div style="text-align:center;margin-top:12px;font-size:12.5px;color:var(--t3);">Already have an activation code? <a href="/profile" style="color:var(--brand);font-weight:700;text-decoration:none;" onclick="closePaywall()">Enter it in Profile</a></div>
     <div style="text-align:center;margin-top:10px;font-size:13px;color:var(--t3);cursor:pointer;" onclick="closePaywall()">Maybe later</div>
   </div>
 </div>
@@ -1493,12 +1597,13 @@ let quizQ = [], cur = 0, answers = [], confirmed = [];
 let timedOut = [];
 let lastWrong = [];
 let missedRun = false, missedPrevSel = null, missedPrevMode = 'practice', reviewKind = 'missed';
+let REVIEW = new Set(); // v1.9.1 question numbers flagged for review in the current quiz
 let GUESS = new WeakSet(); // v1.8.6 questions the student marked "I'm guessing" in the current quiz
 // Home-screen data is cached briefly and shared between simultaneous callers (initHome and showScr('home') both
 // run on first load), so opening the dashboard doesn't repeat the same request.
 const COUNTS = {}, BANK_AT = {};
 let countsAt = 0, countsInflight = null;
-const HOME_MEMO = { missedN: null, missedAt: 0, missedInflight: null, guessN: null, guessAt: 0 };
+const HOME_MEMO = { missedDue: 0, missedN: null, missedAt: 0, missedInflight: null, guessN: null, guessAt: 0 };
 const inflight = {};
 function singleFlight(key, fn){ return inflight[key] || (inflight[key] = Promise.resolve().then(fn).finally(() => { delete inflight[key]; })); }
 let logoTapCount = 0, logoTapTimer = null;
@@ -1597,6 +1702,7 @@ async function pushScore(entry){
     (saved.achievements||[]).forEach((a,i)=>setTimeout(()=>toast(`${a.icon} Achievement unlocked: ${a.title}`), 600*i));
     if(entry.perQuestion && entry.perQuestion.length) loadWeakTopics();
     loadPlanBanner();
+    loadAutopilot(true);   // v1.9.0: tick off whatever this quiz just completed
     showUsageStrip();
   }catch{}
 }
@@ -1903,9 +2009,9 @@ function renderPaywallPeriods(plans){
   if(!offered.find(x => x.key === pwPeriod)) pwPeriod = offered[0]?.key || 'monthly';
   box.innerHTML = periods.map(x => {
     const off = x.price == null, on = x.key === pwPeriod && !off;
-    return `<button type="button" ${off?'disabled':''} onclick="pwSelect('${x.key}')" style="border:none;cursor:${off?'not-allowed':'pointer'};text-align:left;padding:11px 12px;border-radius:14px;background:var(--bg);color:var(--t1);opacity:${off?.45:1};box-shadow:${on?'var(--sh-in-sm),0 0 0 2px var(--brand)':'var(--sh-sm)'};font-family:inherit;min-width:0;">
-      <div style="font-weight:800;font-size:13px;">${PERIOD_LABEL[x.key]}</div>
-      <div style="font-size:12px;color:${on?'var(--brand)':'var(--t3)'};font-weight:700;">${off ? 'Not available' : fmtNaira(x.price) + PERIOD_UNIT[x.key]}</div>
+    return `<button type="button" ${off?'disabled':''} onclick="pwSelect('${x.key}')" style="border:none;cursor:${off?'not-allowed':'pointer'};text-align:left;padding:11px 12px;border-radius:14px;background:var(--fill);color:var(--t1);opacity:${off?.45:1};box-shadow:${on?'var(--sh-in-sm),0 0 0 2px var(--brand)':'var(--sh-sm)'};font-family:inherit;min-width:0;">
+      <div style="font-weight:700;font-size:13px;">${PERIOD_LABEL[x.key]}</div>
+      <div style="font-size:12px;color:${on?'var(--brand)':'var(--t3)'};font-weight:600;">${off ? 'Not available' : fmtNaira(x.price) + PERIOD_UNIT[x.key]}</div>
     </button>`;
   }).join('');
   updatePaywallLink();
@@ -1914,7 +2020,7 @@ function pwSelect(k){ pwPeriod = k; renderPaywallPeriods(cachedPlans); }
 function updatePaywallLink(){
   const wa = cachedPlans?.support?.whatsapp;
   const price = (cachedPlans?.periods || []).find(x => x.key === pwPeriod)?.price;
-  const msg = `Hi, I want to upgrade my PrepHQ plan to Premium (${PERIOD_LABEL[pwPeriod]}${price!=null?', '+fmtNaira(price):''}) \u2014 my matric is ${curUser?.matric||''}`;
+  const msg = `Hi, I want to upgrade my Wreddi plan to Premium (${PERIOD_LABEL[pwPeriod]}${price!=null?', '+fmtNaira(price):''}) \u2014 my matric is ${curUser?.matric||''}`;
   document.getElementById('pw-whatsapp-link').href = wa ? `https://wa.me/${wa}?text=${encodeURIComponent(msg)}` : '#';
 }
 
@@ -1963,9 +2069,9 @@ async function showUsageStrip(){
     const left = Math.max(0, u.questions.limit - u.questions.used);
     if(left > 5) return;
     el.innerHTML = `<i class="fa-solid ${left ? 'fa-hourglass-half' : 'fa-moon'}" style="color:var(--brand);font-size:18px;"></i>
-      <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:800;">${left ? `${left} free question${left===1?'':'s'} left today` : "You've used today's free questions"}</div>
+      <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:700;">${left ? `${left} free question${left===1?'':'s'} left today` : "You've used today's free questions"}</div>
       <div style="font-size:11.5px;color:var(--t3);">Resets at midnight · in ${fmtDuration(msUntilWatMidnight())}</div></div>
-      <button type="button" onclick="showPaywall()" style="border:none;cursor:pointer;font-size:12px;font-weight:800;color:#fff;background:linear-gradient(140deg,var(--brand),var(--purple));padding:9px 14px;border-radius:12px;font-family:inherit;">Keep going</button>`;
+      <button type="button" onclick="showPaywall()" style="border:none;cursor:pointer;font-size:12px;font-weight:700;color:#fff;background:var(--grad);padding:9px 14px;border-radius:12px;font-family:inherit;">Keep going</button>`;
     el.style.display = 'flex';
   }catch(e){}
 }
@@ -2028,8 +2134,8 @@ async function loadNotifications(){
       return;
     }
     list.innerHTML = notifications.map(n => `
-      <div style="padding:14px 18px;margin:0 16px 10px;border-radius:14px;background:var(--bg);box-shadow:var(--sh);">
-        <div style="font-size:13.5px;font-weight:700;color:var(--t1);">${escapeHtml(n.title)}</div>
+      <div style="padding:14px 18px;margin:0 16px 10px;border-radius:14px;background:var(--surf);box-shadow:var(--sh);">
+        <div style="font-size:13.5px;font-weight:600;color:var(--t1);">${escapeHtml(n.title)}</div>
         <div style="font-size:12.5px;color:var(--t3);margin-top:2px;">${escapeHtml(n.message||'')}</div>
         <div style="font-size:11px;color:var(--t4);margin-top:4px;">${new Date(n.createdAt).toLocaleString()}</div>
       </div>`).join('');
@@ -2082,7 +2188,7 @@ async function loadWeakTopics(){
     document.getElementById('weak-topics-list').innerHTML = weakTopics.map(t => `
       <div style="display:flex;align-items:center;justify-content:space-between;font-size:12.5px;">
         <span style="color:var(--t2);font-weight:600;">${escapeHtml(t.courseCode || COURSES[t.course]?.code || t.course)} — ${escapeHtml(t.tag)}</span>
-        <span style="font-weight:800;color:var(--no);">${t.accuracy}%</span>
+        <span style="font-weight:700;color:var(--no);">${t.accuracy}%</span>
       </div>`).join('');
   }catch(e){}
 }
@@ -2155,7 +2261,7 @@ async function loadCourses(){
     if(Array.isArray(list) && list.length){
       const next = {};
       list.forEach(c=>{
-        next[c.key] = { name:c.courseTitle, color:c.color||'#4a67d1', code:c.courseCode, icon:c.icon||'star' };
+        next[c.key] = { name:c.courseTitle, color:c.color||'#3E5C8A', code:c.courseCode, icon:c.icon||'star' };
       });
       COURSES = next;
       ALL_COURSES = next;
@@ -2185,6 +2291,7 @@ async function loadPlanBanner(){
     const icon = document.getElementById('plan-banner-icon');
     const text = document.getElementById('plan-banner-text');
     const cta = document.getElementById('plan-banner-cta');
+    banner.onclick = () => PhqShell.go('/profile');
 
     if(u.tier === 'free'){
       icon.className = 'fa-solid fa-circle-exclamation';
@@ -2211,6 +2318,15 @@ async function loadPlanBanner(){
         : `${tierName} plan — unlimited access`;
       cta.textContent = 'Manage →';
       cta.style.color = 'var(--brand)';
+      // v1.9.1: in the last 7 days, say so and make the whole banner a one-tap renew
+      const left = (u.tierExpiresAt && u.premiumPlan !== 'lifetime') ? Math.ceil((new Date(u.tierExpiresAt).getTime() - Date.now()) / 86400000) : null;
+      if(left != null && left >= 0 && left <= 7){
+        const when = left <= 0 ? 'today' : left === 1 ? 'tomorrow' : `in ${left} days`;
+        icon.className = 'fa-solid fa-hourglass-half'; icon.style.color = 'var(--warn)';
+        text.style.color = 'var(--warn)'; text.textContent = `Premium ends ${when}`;
+        cta.textContent = 'Renew →'; cta.style.color = 'var(--warn)';
+        banner.onclick = () => showPaywall(`Your Premium plan ends ${when}. Renew to keep unlimited practice.`);
+      }
     }
     banner.style.display = 'flex';
   }catch(e){}
@@ -2304,10 +2420,11 @@ async function buildCourseGrid(){
   // used to deselect. Give them a direct way to add more.
   const addTile=document.createElement('div');
   addTile.className='cc';
-  addTile.style.cssText='display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:110px;cursor:pointer;border:2px dashed var(--brand);color:var(--brand);font-weight:800;font-size:13px;text-align:center;';
+  addTile.style.cssText='display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:110px;cursor:pointer;border:2px dashed var(--brand);color:var(--brand);font-weight:700;font-size:13px;text-align:center;';
   addTile.innerHTML='<span style="font-size:28px;line-height:1;">+</span>Add / edit my courses';
   addTile.onclick=()=>openCourseEditor();
   grid.appendChild(addTile);
+  applyCourseGridView();
 
   const counts = await loadCourseCounts();
   Object.keys(COURSES).forEach(key => {
@@ -2390,16 +2507,46 @@ function toggleCourse(el,key){
   document.getElementById('sel-badge').textContent=selCourses.length+' selected';
 }
 
-function filterCourseGrid(term){
-  const q=term.trim().toLowerCase();
-  document.querySelectorAll('#course-grid .cc').forEach(el=>{
-    const key=el.dataset.course;
-    const m=COURSES[key];
-    if(!m) return;
-    const match = !q || m.name.toLowerCase().includes(q) || m.code.toLowerCase().includes(q);
-    el.style.display = match ? '' : 'none';
+// ── Course grid: only the first few courses show until the arrow is tapped ──────────────────────────
+// Registered courses can run to a dozen or more, which pushed Quiz Mode and everything below it off-screen.
+// Collapsed = the first COURSE_PREVIEW courses (plus any the student has ticked, so a selection is never hidden).
+// Searching always looks through every course, and hides the arrow while a search is active.
+const COURSE_PREVIEW = 4;
+let courseGridOpen = false;
+
+function applyCourseGridView(){
+  const grid = document.getElementById('course-grid'); if(!grid) return;
+  const q = (document.getElementById('course-search')?.value || '').trim().toLowerCase();
+  const cards = [...grid.querySelectorAll('.cc[data-course]')];
+  const addTile = grid.querySelector('.cc:not([data-course])');
+  const more = document.getElementById('course-more');
+  const collapsible = cards.length > COURSE_PREVIEW;
+  let hidden = 0;
+  cards.forEach((el, i) => {
+    const m = COURSES[el.dataset.course]; if(!m) return;
+    let show;
+    if(q) show = m.name.toLowerCase().includes(q) || m.code.toLowerCase().includes(q);
+    else show = !collapsible || courseGridOpen || i < COURSE_PREVIEW || el.classList.contains('on');
+    el.style.display = show ? '' : 'none';
+    if(!show) hidden++;
   });
+  if(addTile) addTile.style.display = (q || !collapsible || courseGridOpen) ? '' : 'none';
+  if(more){
+    more.style.display = (!q && collapsible) ? '' : 'none';
+    const btn = document.getElementById('course-more-btn');
+    btn.setAttribute('aria-expanded', courseGridOpen ? 'true' : 'false');
+    document.getElementById('course-more-label').textContent =
+      courseGridOpen ? 'Show fewer courses' : `Show ${hidden} more course${hidden === 1 ? '' : 's'}`;
+  }
 }
+
+function toggleCourseGrid(){
+  courseGridOpen = !courseGridOpen;
+  applyCourseGridView();
+  if(!courseGridOpen) document.getElementById('course-search')?.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function filterCourseGrid(){ applyCourseGridView(); }
 
 // pdf.js is big, so it loads only when someone actually imports a PDF
 function loadPdfJs(){
@@ -2457,13 +2604,15 @@ async function loadMissedCard(force){
   if(!curUser || !hasFeature('practiceQuestions')){ card.style.display = 'none'; return; }
   const paint = n => {
     card.style.display = n ? '' : 'none';
-    if(n) document.getElementById('missed-sub').textContent = `${n}${n === 30 ? '+' : ''} question${n === 1 ? '' : 's'} you got wrong last time. Get them right to clear them.`;
+    const due = HOME_MEMO.missedDue || 0;
+    if(n) document.getElementById('missed-sub').textContent = `${n}${n === 30 ? '+' : ''} question${n === 1 ? '' : 's'} you got wrong last time. ` + (due ? `${due} ${due === 1 ? 'is' : 'are'} due for review now (they come back after 1, 3 and 7 days).` : 'Get them right to clear them.');
   };
   if(!force && HOME_MEMO.missedN != null && Date.now() - HOME_MEMO.missedAt < 20000){ paint(HOME_MEMO.missedN); return; }
   const n = await singleFlight('missed', async () => {
     try{
       const r = await PhqAuth.authFetch('/api/questions/missed?count=1', {}, 'student');
       const d = r.ok ? await r.json() : null;
+      HOME_MEMO.missedDue = d && Number.isFinite(d.due) ? d.due : 0;
       return d && Number.isFinite(d.count) ? d.count : 0;
     }catch{ return 0; }
   });
@@ -2504,11 +2653,11 @@ function paintGuessResult(guessedTotal, guessedRight, correct, total){
   if(!guessedTotal){ el.style.display = 'none'; el.innerHTML = ''; return; }
   const solid = total ? Math.round(((correct - guessedRight) / total) * 100) : 0;
   el.style.display = '';
-  el.innerHTML = `<div style="font-weight:800;font-size:14px;font-family:var(--ff-h);">🎲 ${guessedTotal} guess${guessedTotal === 1 ? '' : 'es'} marked</div><div style="font-size:12.5px;color:var(--t3);margin-top:4px;">${guessedRight ? `${guessedRight} of your correct answers ${guessedRight === 1 ? 'was a lucky guess' : 'were lucky guesses'}. Your solid score is ${solid}%.` : 'Honest marking helps you most. These will wait for you in "Questions you guessed".'}</div>`;
+  el.innerHTML = `<div style="font-weight:700;font-size:14px;font-family:var(--ff-h);">🎲 ${guessedTotal} guess${guessedTotal === 1 ? '' : 'es'} marked</div><div style="font-size:12.5px;color:var(--t3);margin-top:4px;">${guessedRight ? `${guessedRight} of your correct answers ${guessedRight === 1 ? 'was a lucky guess' : 'were lucky guesses'}. Your solid score is ${solid}%.` : 'Honest marking helps you most. These will wait for you in "Questions you guessed".'}</div>`;
 }
 function addGuessReviewBtn(){
   const el = document.getElementById('r-guess'); if(!el || el.style.display === 'none' || el.querySelector('button')) return;
-  const b = document.createElement('button'); b.className = 'btn-grad'; b.style.cssText = 'width:100%;margin-top:10px;padding:11px;border-radius:11px;font-weight:700;font-size:13px;cursor:pointer;';
+  const b = document.createElement('button'); b.className = 'btn-grad'; b.style.cssText = 'width:100%;margin-top:10px;padding:11px;border-radius:11px;font-weight:600;font-size:13px;cursor:pointer;';
   b.textContent = 'Learn them now'; b.onclick = startGuessReview; el.appendChild(b);
 }
 function startGuessReview(){ return startMissedReview('guess'); }
@@ -2526,7 +2675,7 @@ async function startMissedReview(kind){
   }catch(e){}
   let list = [];
   try{
-    const r = await PhqAuth.authFetch(isGuess ? '/api/guesses/questions' : '/api/questions/missed', {}, 'student');
+    const r = await PhqAuth.authFetch(isGuess ? '/api/guesses/questions' : '/api/questions/missed' + (HOME_MEMO.missedDue > 0 ? '?due=1' : ''), {}, 'student');
     if(r.status === 403){ const d = await r.json().catch(()=>({})); showPaywall(d.error || lockedMsg('Practice questions')); return; }
     if(r.ok) list = await r.json();
   }catch(e){}
@@ -2572,14 +2721,14 @@ async function renderOnboarding(){
   document.getElementById('onb-count').textContent = `${steps.length - left}/${steps.length}`;
   document.getElementById('onb-list').innerHTML = steps.map(x => x.done
     ? `<div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--t4);"><i class="fa-solid fa-circle-check" style="color:var(--ok);"></i><span style="text-decoration:line-through;">${x.label}</span></div>`
-    : `<button onclick="${x.go}" style="display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;color:var(--t1);background:none;border:none;padding:0;cursor:pointer;text-align:left;font-family:inherit;"><i class="fa-regular fa-circle" style="color:var(--brand);"></i>${x.label}<i class="fa-solid fa-chevron-right" style="margin-left:auto;font-size:10px;color:var(--t3);"></i></button>`).join('');
+    : `<button onclick="${x.go}" style="display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:var(--t1);background:none;border:none;padding:0;cursor:pointer;text-align:left;font-family:inherit;"><i class="fa-regular fa-circle" style="color:var(--brand);"></i>${x.label}<i class="fa-solid fa-chevron-right" style="margin-left:auto;font-size:10px;color:var(--t3);"></i></button>`).join('');
 }
 
 // ── Invite card ──────────────────────────────────────────────
 function renderInviteCard(){ const c = document.getElementById('invite-card'); if(c) c.style.display = (curUser && curUser.referralCode) ? '' : 'none'; }
 function inviteWhatsApp(){
   if(!curUser || !curUser.referralCode) return;
-  const text = `I'm preparing for exams on PrepHQ. Join with my link: ${referralLink(curUser.referralCode)}`;
+  const text = `I'm preparing for exams on Wreddi. Join with my link: ${referralLink(curUser.referralCode)}`;
   window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener');
 }
 async function inviteCopy(){
@@ -2744,7 +2893,7 @@ function scheduleNotification(){
   target.setHours(hh,mm,0,0);
   if(target<=now)target.setDate(target.getDate()+1);
   setTimeout(()=>{
-    new Notification('PrepHQ — Study Reminder',{body:'Time to study! Open PrepHQ and hit your daily goal.',icon:'/icons/icon-192.png'});
+    new Notification('Wreddi — Study Reminder',{body:'Time to study! Open Wreddi and hit your daily goal.',icon:'/icons/icon-192.png'});
     scheduleNotification();
   },target-now);
 }
@@ -2792,7 +2941,9 @@ function applyCustomTimer(){
 function setFontSize(sz){
   document.body.className=document.body.className.replace(/fs-\w+/g,'').trim()+' fs-'+sz;
   document.querySelectorAll('.fb').forEach(b=>b.classList.toggle('on',b.dataset.sz===sz));
+  try{ localStorage.setItem('phq-fs', sz); }catch(e){}
 }
+(function(){ try{ const f = localStorage.getItem('phq-fs'); if(f === 'sm' || f === 'lg') setFontSize(f); }catch(e){} })();
 
 function toggleTheme(){
   PhqTheme.toggle();
@@ -2913,10 +3064,10 @@ async function renderNotifications(){
       return;
     }
     wrap.innerHTML = history.map(h => `
-      <div style="margin:0 18px 10px;padding:14px 16px;display:flex;gap:12px;align-items:center;background:var(--bg);border-radius:var(--r16);box-shadow:var(--sh);">
-        <div style="width:40px;height:40px;border-radius:12px;background:var(--bg);color:var(--purple);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:var(--sh-in-sm);"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+      <div style="margin:0 18px 10px;padding:14px 16px;display:flex;gap:12px;align-items:center;background:var(--surf);border-radius:var(--r16);box-shadow:var(--sh);">
+        <div style="width:40px;height:40px;border-radius:12px;background:var(--fill);color:var(--purple);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:var(--sh-in-sm);"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
         <div style="flex:1;min-width:0;">
-          <div style="font-weight:700;font-size:13.5px;">AI quiz generated — ${h.course}</div>
+          <div style="font-weight:600;font-size:13.5px;">AI quiz generated — ${h.course}</div>
           <div style="font-size:11.5px;color:var(--t3);">${h.difficulty} · ${h.questions.length} questions · ${new Date(h.createdAt).toLocaleString()}</div>
         </div>
       </div>`).join('');
@@ -2979,7 +3130,7 @@ async function startQuiz(){
 }
 
 function renderQ(){
-  if(clockFor !== answers){ clockFor = answers; GUESS = new WeakSet(); beginSessionClock(); } // first render of a new quiz starts the timer
+  if(clockFor !== answers){ clockFor = answers; GUESS = new WeakSet(); REVIEW = new Set(); beginSessionClock(); } // first render of a new quiz starts the timer
   const q=quizQ[cur];
   const total=quizQ.length;
   const locked=confirmed[cur];
@@ -3031,6 +3182,7 @@ function renderQ(){
       <div class="fb-icon">${ok?'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>':'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg>'}</div>
       <div><div class="fb-title">${ok?'Correct!':'Incorrect!'}</div>${q.exp?`<div class="fb-exp">${q.exp}</div>`:''}<div class="fb-links">${ok?'':`<a onclick="askAIAbout(${cur})">✨ Ask AI why</a>`}<a class="rep" onclick="openReport(${cur})">⚑ Report question</a></div></div>
     </div>`;
+    if(!ok && q.id) fbHtml += whyHtml(q);   // v1.9.2 why did you miss it?
   }
 
   document.getElementById('quiz-body').innerHTML=`
@@ -3112,17 +3264,71 @@ function updateMainBtn(){
 function mainAct(){
   if(confirmed[cur] || timedOut[cur]){
     clearAutoAdvance();
-    if(cur<quizQ.length-1){cur++;renderQ();}else showResults();
+    if(cur<quizQ.length-1){cur++;renderQ();}else finishQuiz();
     return;
   }
   if(quizMode==='exam'&&answers[cur]!==null){confirmed[cur]=true;renderQ();}
 }
 
+// v1.9.1 Submitting with unanswered or flagged questions asks first. The timer auto-submit still calls showResults() directly.
+function finishQuiz(){
+  clearAutoAdvance();
+  const un = answers.filter((a,i)=>a===null&&!timedOut[i]).length, fl = REVIEW.size;
+  if((quizMode==='exam'&&un) || fl){
+    const bits = [];
+    if(un) bits.push(`${un} unanswered`);
+    if(fl) bits.push(`${fl} flagged for review`);
+    if(!confirm(`You have ${bits.join(' and ')}. Submit anyway?`)){
+      const f = [...REVIEW].sort((a,b)=>a-b)[0];
+      jumpTo(f != null ? f : answers.findIndex((a,i)=>a===null&&!timedOut[i]));
+      return;
+    }
+  }
+  showResults();
+}
+function toggleReview(){
+  if(!quizQ.length) return;
+  clearAutoAdvance(); // the student is thinking about this one; don't whisk them away
+  if(REVIEW.has(cur)) REVIEW.delete(cur); else REVIEW.add(cur);
+  renderDots();
+  toast(REVIEW.has(cur) ? 'Flagged for review' : 'Flag removed');
+}
+function openGrid(){
+  if(!quizQ.length) return;
+  clearAutoAdvance();
+  const n = quizQ.length, ans = answers.filter(a=>a!==null).length;
+  document.getElementById('grid-sub').textContent = `${ans} of ${n} answered · ${REVIEW.size} flagged`;
+  document.getElementById('grid-body').innerHTML = quizQ.map((_,i)=>{
+    let c = 'gr-cell'; if(answers[i]!==null) c += ' ans'; if(REVIEW.has(i)) c += ' flg'; if(i===cur) c += ' now';
+    return `<button class="${c}" onclick="gridJump(${i})">${i+1}</button>`;
+  }).join('');
+  document.getElementById('grid-sheet').classList.add('on');
+}
+function gridJump(i){ document.getElementById('grid-sheet').classList.remove('on'); jumpTo(i); }
+function submitFromGrid(){ document.getElementById('grid-sheet').classList.remove('on'); finishQuiz(); }
+
+// v1.9.1 Keyboard shortcuts for laptops and tablets: A-D (or 1-4) pick, Enter/→ next, ← back, F flag, G grid
+document.addEventListener('keydown', e => {
+  const qs = document.getElementById('quiz');
+  if(!qs || !qs.classList.contains('on') || !quizQ.length) return;
+  if(e.ctrlKey || e.metaKey || e.altKey) return;
+  const t = e.target;
+  if(t && (t.tagName === 'TEXTAREA' || t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.isContentEditable)) return;
+  if(document.querySelector('.sheet-bg.on, .modal-bg.on')) return;
+  const k = e.key.toLowerCase();
+  const idx = k.length === 1 && 'abcd'.indexOf(k) >= 0 ? 'abcd'.indexOf(k) : (k.length === 1 && '1234'.indexOf(k) >= 0 ? '1234'.indexOf(k) : -1);
+  if(idx >= 0){ if(quizQ[cur].opts[idx] != null){ e.preventDefault(); pickOpt(idx); } return; }
+  if(k === 'enter' || k === 'arrowright'){ const b = document.getElementById('qbtn-main'); if(b && !b.disabled){ e.preventDefault(); mainAct(); } }
+  else if(k === 'arrowleft'){ if(cur > 0){ e.preventDefault(); jumpTo(cur-1); } }
+  else if(k === 'f'){ e.preventDefault(); toggleReview(); }
+  else if(k === 'g'){ e.preventDefault(); openGrid(); }
+});
+
 function skipQ(){
   if(confirmed[cur] || timedOut[cur])return;
   clearAutoAdvance();
   answers[cur]=null;
-  if(cur<quizQ.length-1){cur++;renderQ();}else showResults();
+  if(cur<quizQ.length-1){cur++;renderQ();}else finishQuiz();
 }
 
 function renderDots(){
@@ -3133,8 +3339,10 @@ function renderDots(){
     else if(timedOut[i])cls+='timeout';
     else if(confirmed[i])cls+='done';
     else cls+='unans';
+    if(REVIEW.has(i))cls+=' flag';
     return `<div class="${cls}" onclick="jumpTo(${i})">${i+1}</div>`;
   }).join('');
+  const fbtn=document.getElementById('qbtn-flag'); if(fbtn)fbtn.classList.toggle('on',REVIEW.has(cur));
   const d=bar.children[cur];
   if(d)d.scrollIntoView({inline:'center',behavior:'smooth'});
 }
@@ -3275,7 +3483,7 @@ function showResults(){
     return `<div class="rcard">
       <div class="rcard-head">
         <div class="rcard-badge ${bc}">${badgeSvg}</div>
-        <div class="rcard-q"><span style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:${cm.color||'var(--brand)'};margin-right:5px;">${cm.code||''}</span>Q${i+1}. ${q.q||q.question||''}</div>
+        <div class="rcard-q"><span style="font-size:10px;font-weight:700;color:${cm.color||'var(--brand)'};margin-right:5px;">${cm.code||''}</span>Q${i+1}. ${q.q||q.question||''}</div>
       </div>
       <div class="rcard-body">${body}</div>
       <div class="rnote"><textarea placeholder="Add a note..." oninput="saveNote('${qid}',this.value)">${qnote}</textarea></div>
@@ -3294,10 +3502,10 @@ async function shareResultCard(text){
     const W=1080,H=1350,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
     const css=getComputedStyle(document.documentElement), v=n=>css.getPropertyValue(n).trim();
     x.fillStyle=v('--bg')||'#e0e5ec';x.fillRect(0,0,W,H);
-    const g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,v('--brand')||'#4a67d1');g.addColorStop(1,v('--purple')||'#7b52d1');
+    const g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,v('--brand')||'#3E5C8A');g.addColorStop(1,v('--purple')||'#5D7FB0');
     x.fillStyle=g;x.beginPath();x.roundRect?x.roundRect(90,170,W-180,760,56):x.rect(90,170,W-180,760);x.fill();
     const F="'Bricolage Grotesque',system-ui,sans-serif";x.textAlign='center';
-    x.fillStyle=v('--brand')||'#4a67d1';x.font=`800 48px ${F}`;x.fillText('PrepHQ',W/2,120);
+    x.fillStyle=v('--brand')||'#3E5C8A';x.font=`800 48px ${F}`;x.fillText('Wreddi',W/2,120);
     x.fillStyle='#fff';x.font=`700 34px ${F}`;x.globalAlpha=.85;x.fillText('MY RESULT',W/2,270);x.globalAlpha=1;
     x.font=`800 260px ${F}`;x.fillText(document.getElementById('r-pct').textContent,W/2,560);
     x.font=`700 54px ${F}`;x.fillText(document.getElementById('r-score').textContent+' '+document.getElementById('r-denom').textContent+' correct',W/2,660);
@@ -3306,7 +3514,7 @@ async function shareResultCard(text){
     x.fillStyle=v('--t2')||'#4a5568';x.font=`700 40px ${F}`;x.fillText('Can you beat it?',W/2,1050);
     x.fillStyle=v('--t3')||'#7a8296';x.font=`600 34px ${F}`;x.fillText(location.host,W/2,1110);
     const blob=await new Promise(r=>c.toBlob(r,'image/png'));if(!blob)return null;
-    const file=new File([blob],'prephq-result.png',{type:'image/png'});
+    const file=new File([blob],'wreddi-result.png',{type:'image/png'});
     return (navigator.canShare && navigator.canShare({files:[file]})) ? file : null;
   }catch(e){return null;}
 }
@@ -3316,10 +3524,10 @@ async function shareResult(){
   const pct=document.getElementById('r-pct').textContent;
   const msg=document.getElementById('r-msg').textContent;
   const courses=document.getElementById('res-sub').textContent;
-  const text=`PrepHQ Result\n${score}${denom} — ${pct}\n${msg}\nCourses: ${courses}\nDate: ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}`;
+  const text=`Wreddi Result\n${score}${denom} — ${pct}\n${msg}\nCourses: ${courses}\nDate: ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}`;
   const file=await shareResultCard(text);
-  if(file){ try{ await navigator.share({title:'PrepHQ Result',text,files:[file]}); return; }catch(e){ if(e&&e.name==='AbortError')return; } }
-  if(navigator.share)navigator.share({title:'PrepHQ Result',text}).catch(()=>{});
+  if(file){ try{ await navigator.share({title:'Wreddi Result',text,files:[file]}); return; }catch(e){ if(e&&e.name==='AbortError')return; } }
+  if(navigator.share)navigator.share({title:'Wreddi Result',text}).catch(()=>{});
   else navigator.clipboard.writeText(text).then(()=>toast('Result copied!')).catch(()=>toast('Could not share'));
 }
 
@@ -3357,10 +3565,10 @@ async function renderSavedQuizzes(){
       return;
     }
     wrap.innerHTML = savedQuizzesCache.map(h => `
-      <div style="margin:0 18px 10px;padding:14px 16px;display:flex;gap:12px;align-items:center;background:var(--bg);border-radius:var(--r16);box-shadow:var(--sh);">
-        <div style="width:40px;height:40px;border-radius:12px;background:var(--bg);color:${h.source==='ai'?'var(--purple)':'var(--brand)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:var(--sh-in-sm);"><i class="fa-solid ${h.source==='ai'?'fa-wand-magic-sparkles':'fa-bookmark'}"></i></div>
+      <div style="margin:0 18px 10px;padding:14px 16px;display:flex;gap:12px;align-items:center;background:var(--surf);border-radius:var(--r16);box-shadow:var(--sh);">
+        <div style="width:40px;height:40px;border-radius:12px;background:var(--fill);color:${h.source==='ai'?'var(--purple)':'var(--brand)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:var(--sh-in-sm);"><i class="fa-solid ${h.source==='ai'?'fa-wand-magic-sparkles':'fa-bookmark'}"></i></div>
         <div style="flex:1;min-width:0;">
-          <div style="font-weight:700;font-size:13.5px;">${escapeHtml(h.course)}${h.source==='ai'?' · AI':''}</div>
+          <div style="font-weight:600;font-size:13.5px;">${escapeHtml(h.course)}${h.source==='ai'?' · AI':''}</div>
           <div style="font-size:11.5px;color:var(--t3);">${h.questions.length} questions · saved ${new Date(h.createdAt).toLocaleDateString()}</div>
         </div>
         <button class="btn-surf btn-play" onclick="shareQuizById('${h._id}')" aria-label="Share quiz link" title="Share link"><i class="fa-solid fa-share-nodes"></i></button>
@@ -3423,7 +3631,7 @@ async function shareQuizById(id){
     if(!r.ok){ toast(d.error || 'Could not create a link. Try again.'); return; }
     curShareId = id; curShareMode = 'quiz';
     curShareUrl = location.origin + d.path;
-    curShareText = `Try this quiz on PrepHQ 📚\n${curShareUrl}`;
+    curShareText = `Try this quiz on Wreddi 📚\n${curShareUrl}`;
     paintShareSheet();
     document.getElementById('share-link-input').value = curShareUrl;
     document.getElementById('share-native-btn').style.display = navigator.share ? 'flex' : 'none';
@@ -3477,7 +3685,7 @@ async function challengeFriend(){
     curShareId = id; curShareMode = 'challenge';
     curShareUrl = location.origin + d.path;
     const course = (quizQ[0] && (COURSES[quizQ[0].course]?.code || quizQ[0].course)) || 'a';
-    curShareText = `I scored ${d.correct}/${d.total} (${d.pct}%) on a ${String(course).toUpperCase()} quiz on PrepHQ. Think you can beat me? 😎\n${curShareUrl}`;
+    curShareText = `I scored ${d.correct}/${d.total} (${d.pct}%) on a ${String(course).toUpperCase()} quiz on Wreddi. Think you can beat me? 😎\n${curShareUrl}`;
     document.getElementById('share-link-input').value = curShareUrl;
     document.getElementById('share-native-btn').style.display = navigator.share ? 'flex' : 'none';
     paintShareSheet();
@@ -3534,10 +3742,10 @@ async function showChallengeOutcome(correct, total){
     const head = d.outcome === 'win' ? '🏆 You beat ' : d.outcome === 'tie' ? '🤝 You tied with ' : '💪 ' ;
     const who = d.challenger.by || 'your friend';
     const line = d.outcome === 'lose' ? `${who} still leads — try again tomorrow!` : `${head}${who}!`;
-    box.innerHTML = `<div style="font-size:15px;font-weight:800;margin-bottom:6px;">${escapeHtml(line)}</div>
+    box.innerHTML = `<div style="font-size:15px;font-weight:700;margin-bottom:6px;">${escapeHtml(line)}</div>
       <div style="display:flex;justify-content:center;gap:24px;font-size:13px;color:var(--t2);">
-        <div><div style="font-size:20px;font-weight:800;color:var(--brand);">${d.you.correct}/${d.you.total}</div>You (${d.you.pct}%)</div>
-        <div><div style="font-size:20px;font-weight:800;">${d.challenger.correct}/${d.challenger.total}</div>${escapeHtml(who)} (${d.challenger.pct}%)</div>
+        <div><div style="font-size:20px;font-weight:700;color:var(--brand);">${d.you.correct}/${d.you.total}</div>You (${d.you.pct}%)</div>
+        <div><div style="font-size:20px;font-weight:700;">${d.challenger.correct}/${d.challenger.total}</div>${escapeHtml(who)} (${d.challenger.pct}%)</div>
       </div>
       ${ac.capped ? '<div style="font-size:11px;color:var(--t3);margin-top:8px;">Compared by percentage — your daily limit trimmed this quiz.</div>' : ''}`;
     box.style.display = 'block';
@@ -3553,16 +3761,16 @@ async function copyShareLink(quiet){
   }
   toast(ok ? 'Link copied — send it to your friends' : (quiet ? 'Tap the link to select it, then copy' : 'Could not copy. Tap the link and copy it manually.'));
 }
-function shareLinkText(){ return curShareText || `Try this quiz on PrepHQ 📚\n${curShareUrl}`; }
+function shareLinkText(){ return curShareText || `Try this quiz on Wreddi 📚\n${curShareUrl}`; }
 function paintShareSheet(){
   const ch = curShareMode === 'challenge';
   document.getElementById('share-title').textContent = ch ? 'Challenge a friend' : 'Share this quiz';
-  document.getElementById('share-sub').textContent = ch ? 'Send the link — they play the same questions and see if they can beat your score.' : 'Friends who open the link can take this quiz in PrepHQ.';
+  document.getElementById('share-sub').textContent = ch ? 'Send the link — they play the same questions and see if they can beat your score.' : 'Friends who open the link can take this quiz in Wreddi.';
   document.getElementById('share-stop-btn').style.display = ch ? 'none' : '';
   document.getElementById('share-fine').textContent = ch ? "You'll get a notification when they finish. It uses their own daily question limit." : "Taking it uses your friend's own daily question limit — it never costs them credits or touches your score.";
 }
 function shareLinkWhatsApp(){ if(curShareUrl) window.open('https://wa.me/?text=' + encodeURIComponent(shareLinkText()), '_blank', 'noopener'); }
-function shareLinkNative(){ if(curShareUrl && navigator.share) navigator.share({ title:'PrepHQ quiz', text:'Try this quiz on PrepHQ', url:curShareUrl }).catch(()=>{}); }
+function shareLinkNative(){ if(curShareUrl && navigator.share) navigator.share({ title:'Wreddi quiz', text:'Try this quiz on Wreddi', url:curShareUrl }).catch(()=>{}); }
 
 async function stopSharingQuiz(){
   if(!curShareId) return;
@@ -3779,11 +3987,11 @@ function renderFlashcard(){
   document.getElementById('fc-badge').textContent = `${fcIdx+1}/${fcDeck.length}`;
   document.getElementById('fc-body').innerHTML = `
     <div class="qcard fade-up" style="min-height:260px;display:flex;flex-direction:column;justify-content:center;padding:28px 22px;cursor:pointer;" onclick="flipFlashcard()">
-      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--brand);margin-bottom:14px;">${(card.courseCode||card.course||'').toUpperCase()}${card.tag?' · '+card.tag:''}</div>
-      <div id="fc-front" style="font-size:var(--qfont);font-weight:700;line-height:1.5;color:var(--t1);font-family:var(--ff-h);">${card.q}</div>
+      <div style="font-size:10px;font-weight:700;color:var(--brand);margin-bottom:14px;">${(card.courseCode||card.course||'').toUpperCase()}${card.tag?' · '+card.tag:''}</div>
+      <div id="fc-front" style="font-size:var(--qfont);font-weight:600;line-height:1.5;color:var(--t1);font-family:var(--ff-h);">${card.q}</div>
       <div id="fc-back" style="display:none;margin-top:18px;padding-top:16px;border-top:1px solid var(--sd);">
-        <div style="font-size:11px;font-weight:800;color:var(--ok);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">Answer</div>
-        <div style="font-size:14px;font-weight:700;color:var(--ok);margin-bottom:10px;">${card.opts[card.ans]}</div>
+        <div style="font-size:11px;font-weight:700;color:var(--ok);margin-bottom:6px;">Answer</div>
+        <div style="font-size:14px;font-weight:600;color:var(--ok);margin-bottom:10px;">${card.opts[card.ans]}</div>
         ${card.exp?`<div style="font-size:12.5px;color:var(--t3);line-height:1.5;">${card.exp}</div>`:''}
       </div>
       <div style="text-align:center;margin-top:18px;font-size:11.5px;color:var(--t4);" id="fc-tap-hint">Tap card to flip</div>
@@ -3856,7 +4064,7 @@ function renderBookmarks(){
   body.innerHTML=`<div class="bmark-list" id="bmark-inner">${bmarks.map((b,i)=>`
     <div class="bcard" style="animation-delay:${i*.04}s">
       <div class="bcard-head">
-        <div class="bcard-q"><span style="font-size:10px;font-weight:800;text-transform:uppercase;color:${cm_col(b.course)};margin-right:5px;">${cm_code(b.course)}</span>${b.q}</div>
+        <div class="bcard-q"><span style="font-size:10px;font-weight:700;color:${cm_col(b.course)};margin-right:5px;">${cm_code(b.course)}</span>${b.q}</div>
         <button class="bcard-rm" onclick="removeBmark(${i})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="18" height="18"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
       </div>
       <div class="bcard-ans"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>${String.fromCharCode(65+b.ans)}. ${b.opts[b.ans]}</div>
@@ -3919,7 +4127,7 @@ async function renderAIHistory(){
   }
 
   if(!history.length){
-    body.innerHTML = `<div class="hist-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg><div class="empty-title">No quizzes taken yet</div><div class="empty-sub">Generate your first AI quiz to see it here.</div><button class="btn-grad" style="margin-top:14px;padding:10px 20px;border-radius:12px;color:var(--purple);border:none;font-weight:800;font-size:13px;cursor:pointer;" onclick="showScr('home');document.getElementById('ai-course-input')?.focus()">Generate a Quiz</button></div>`;
+    body.innerHTML = `<div class="hist-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg><div class="empty-title">No quizzes taken yet</div><div class="empty-sub">Generate your first AI quiz to see it here.</div><button class="btn-grad" style="margin-top:14px;padding:10px 20px;border-radius:12px;color:var(--purple);border:none;font-weight:700;font-size:13px;cursor:pointer;" onclick="showScr('home');document.getElementById('ai-course-input')?.focus()">Generate a Quiz</button></div>`;
     return;
   }
 
@@ -3941,17 +4149,17 @@ async function renderAIHistory(){
     const clr = pct>=70?'var(--ok)':pct>=50?'var(--warn)':'var(--no)';
     const m = COURSES[key];
     return `<div style="margin-bottom:12px;">
-      <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:6px;">
+      <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:6px;">
         <span>${m?.code||c.code}</span><span style="color:${clr}">${pct}%</span>
       </div>
       <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${clr}"></div></div>
     </div>`;
   }).join('');
 
-  const summaryCard = `<div style="margin:0 18px 14px;padding:16px;background:var(--bg);border-radius:var(--r16);box-shadow:var(--sh);">
+  const summaryCard = `<div style="margin:0 18px 14px;padding:16px;background:var(--surf);border-radius:var(--r16);box-shadow:var(--sh);">
     <div style="display:flex;gap:18px;margin-bottom:${courseBars?'16px':'0'};">
-      <div><div style="font-size:22px;font-weight:800;">${totalQuizzes}</div><div style="font-size:11px;color:var(--t3);">Quizzes generated</div></div>
-      <div><div style="font-size:22px;font-weight:800;color:var(--brand);">${avgScore}%</div><div style="font-size:11px;color:var(--t3);">Average score</div></div>
+      <div><div style="font-size:22px;font-weight:700;">${totalQuizzes}</div><div style="font-size:11px;color:var(--t3);">Quizzes generated</div></div>
+      <div><div style="font-size:22px;font-weight:700;color:var(--brand);">${avgScore}%</div><div style="font-size:11px;color:var(--t3);">Average score</div></div>
     </div>
     ${courseBars}
   </div>`;
@@ -3962,13 +4170,13 @@ async function renderAIHistory(){
     const done = !!h.submittedAt;
     const pct = done ? Math.round((h.score/h.totalQuestions)*100) : null;
     const pctClr = pct===null?'var(--t4)':pct>=70?'var(--ok)':pct>=50?'var(--warn)':'var(--no)';
-    return `<div style="margin:0 18px 10px;padding:14px 16px;display:flex;gap:12px;align-items:center;background:var(--bg);border-radius:var(--r16);box-shadow:var(--sh);">
-      <div style="width:40px;height:40px;border-radius:12px;background:var(--bg);color:${clr};display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:var(--sh-in-sm);"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+    return `<div style="margin:0 18px 10px;padding:14px 16px;display:flex;gap:12px;align-items:center;background:var(--surf);border-radius:var(--r16);box-shadow:var(--sh);">
+      <div style="width:40px;height:40px;border-radius:12px;background:var(--fill);color:${clr};display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:var(--sh-in-sm);"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
       <div style="flex:1;min-width:0;">
-        <div style="font-weight:700;font-size:13.5px;">${h.course} <span style="font-weight:500;color:var(--t3);text-transform:capitalize;">· ${h.difficulty}</span></div>
+        <div style="font-weight:600;font-size:13.5px;">${h.course} <span style="font-weight:500;color:var(--t3);text-transform:capitalize;">· ${h.difficulty}</span></div>
         <div style="font-size:11.5px;color:var(--t3);">${h.totalQuestions||h.questions.length} questions · ${new Date(h.createdAt).toLocaleDateString()}</div>
       </div>
-      <div style="font-weight:800;font-size:15px;color:${pctClr};">${done?pct+'%':'—'}</div>
+      <div style="font-weight:700;font-size:15px;color:${pctClr};">${done?pct+'%':'—'}</div>
       <button class="btn-surf btn-play" style="padding:9px 12px;" onclick="shareQuizById('${h._id}')" aria-label="Share quiz link" title="Share link"><i class="fa-solid fa-share-nodes"></i></button>
     </div>`;
   }).join('');
@@ -4090,30 +4298,30 @@ function renderStudy(d){
   studyItems = d.plan;
   const pct = Math.min(100, Math.round((d.doneToday / Math.max(1, d.goalTarget)) * 100));
   const examLine = d.exam && d.exam.daysLeft >= 0
-    ? `<div style="font-weight:800;margin-top:10px;">${escapeHtml(d.exam.courseCode ? d.exam.courseCode + ' — ' : '')}Exam ${d.exam.daysLeft===0?'today':d.exam.daysLeft===1?'tomorrow':'in '+d.exam.daysLeft+' days'}</div>`
+    ? `<div style="font-weight:700;margin-top:10px;">${escapeHtml(d.exam.courseCode ? d.exam.courseCode + ' — ' : '')}Exam ${d.exam.daysLeft===0?'today':d.exam.daysLeft===1?'tomorrow':'in '+d.exam.daysLeft+' days'}</div>`
     : `<div style="font-size:12.5px;color:var(--t3);margin-top:10px;">Add your exam date in Settings to get a countdown here.</div>`;
   const top = `<div class="np-card">
-    <div class="np-row" style="justify-content:space-between;"><div><div style="font-size:12px;color:var(--t3);font-weight:700;">TODAY</div><div style="font-size:22px;font-weight:800;">${d.doneToday} <span style="font-size:13px;color:var(--t3);font-weight:700;">/ ${d.goalTarget} questions</span></div></div>
-      <div style="text-align:right;"><div style="font-size:12px;color:var(--t3);font-weight:700;">STREAK</div><div style="font-size:22px;font-weight:800;">🔥 ${d.streak}</div></div></div>
+    <div class="np-row" style="justify-content:space-between;"><div><div style="font-size:12px;color:var(--t3);font-weight:600;">TODAY</div><div style="font-size:22px;font-weight:700;">${d.doneToday} <span style="font-size:13px;color:var(--t3);font-weight:600;">/ ${d.goalTarget} questions</span></div></div>
+      <div style="text-align:right;"><div style="font-size:12px;color:var(--t3);font-weight:600;">STREAK</div><div style="font-size:22px;font-weight:700;">🔥 ${d.streak}</div></div></div>
     <div class="np-bar" style="margin-top:10px;"><i style="width:${pct}%"></i></div>${examLine}</div>`;
 
   const icon = {questions:'✏️',drill:'🎯',flashcards:'🗂️',exam:'🎓',practice:'📚'};
   const plan = `<div class="np-h">Today's plan</div>` + d.plan.map((it,i)=>`
     <div class="np-card np-row">
       <div class="np-check ${it.done?'on':''}">${it.done?'✓':icon[it.type]||'•'}</div>
-      <div style="flex:1;min-width:0;"><div style="font-weight:800;font-size:14px;${it.done?'text-decoration:line-through;opacity:.6;':''}">${escapeHtml(it.title)}</div><div style="font-size:12px;color:var(--t3);margin-top:2px;">${escapeHtml(it.detail)}</div></div>
+      <div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:14px;${it.done?'text-decoration:line-through;opacity:.6;':''}">${escapeHtml(it.title)}</div><div style="font-size:12px;color:var(--t3);margin-top:2px;">${escapeHtml(it.detail)}</div></div>
       ${it.done?'':`<button class="np-btn" onclick="studyAction(${i})">Start</button>`}
     </div>`).join('');
 
   const rq = d.revision || {active:[],cleared:[]};
   const revision = `<div class="np-h">Revision queue</div>` + (rq.active.length ? rq.active.map(t=>`
     <div class="np-card">
-      <div class="np-row" style="justify-content:space-between;"><div style="min-width:0;"><div style="font-weight:800;font-size:14px;">${escapeHtml(t.tag)}</div><div style="font-size:12px;color:var(--t3);">${escapeHtml(t.courseCode)} · ${t.accuracy}% over last ${t.attempts} answers</div></div></div>
+      <div class="np-row" style="justify-content:space-between;"><div style="min-width:0;"><div style="font-weight:700;font-size:14px;">${escapeHtml(t.tag)}</div><div style="font-size:12px;color:var(--t3);">${escapeHtml(t.courseCode)} · ${t.accuracy}% over last ${t.attempts} answers</div></div></div>
       <div class="np-bar" style="margin:10px 0;"><i style="width:${t.accuracy}%"></i></div>
       <div class="np-row"><button class="np-btn" data-c="${escapeHtml(t.course)}" data-t="${escapeHtml(t.tag)}" onclick="startWeakTopicQuiz({course:this.dataset.c,tag:this.dataset.t})">Drill</button>
       <button class="np-btn" data-c="${escapeHtml(t.course)}" data-t="${escapeHtml(t.tag)}" onclick="aiDrill(this.dataset.c,this.dataset.t)">AI drill</button></div>
     </div>`).join('') : `<div class="np-card np-empty" style="padding:20px;">No weak topics right now — keep practising and they'll show up here.</div>`)
-    + (rq.cleared.length ? `<div class="np-card"><div style="font-weight:800;font-size:13px;margin-bottom:4px;">✅ Turned around</div>${rq.cleared.map(c=>`<span class="np-chip">${escapeHtml(c.tag)} · ${escapeHtml(c.courseCode)}</span>`).join('')}</div>` : '');
+    + (rq.cleared.length ? `<div class="np-card"><div style="font-weight:700;font-size:13px;margin-bottom:4px;">✅ Turned around</div>${rq.cleared.map(c=>`<span class="np-chip">${escapeHtml(c.tag)} · ${escapeHtml(c.courseCode)}</span>`).join('')}</div>` : '');
 
   const pg = d.progress, max = Math.max(1, ...pg.days.map(x=>x.questions));
   const bars = pg.days.map(x=>{
@@ -4125,7 +4333,7 @@ function renderStudy(d){
     <div style="display:flex;align-items:flex-end;gap:3px;height:92px;">${bars}</div>
     <div class="np-row" style="justify-content:space-between;margin-top:12px;font-size:12.5px;">
       <div><b>${pg.consistency}%</b> <span style="color:var(--t3)">consistency (${pg.activeDays}/14 days)</span></div>
-      <div style="color:${diff>=0?'var(--ok)':'var(--no)'};font-weight:800;">${diff>=0?'▲':'▼'} ${Math.abs(diff)} vs last week</div></div></div>`;
+      <div style="color:${diff>=0?'var(--ok)':'var(--no)'};font-weight:700;">${diff>=0?'▲':'▼'} ${Math.abs(diff)} vs last week</div></div></div>`;
   document.getElementById('study-body').innerHTML = top + plan + revision + progress;
 }
 function studyAction(i){
@@ -4157,7 +4365,7 @@ async function openExamOverview(){
     if(!r.ok){ box.innerHTML = `<div class="np-empty">${escapeHtml(d.error||'Could not load')}</div>`; return; }
     const band = { 'Ready':'var(--ok)', 'Almost there':'var(--brand)', 'Building':'var(--warn)', 'Needs work':'var(--no)', 'No data':'var(--t4)' };
     const ready = `<div class="np-h">Readiness by course</div>` + (d.readiness.length ? d.readiness.map(c=>`
-      <div class="np-card"><div class="np-row" style="justify-content:space-between;"><div style="font-weight:800;">${escapeHtml(c.courseCode)}</div><div style="font-weight:800;color:${band[c.band]};">${c.band==='No data'?'No data yet':c.score+'% · '+c.band}</div></div>
+      <div class="np-card"><div class="np-row" style="justify-content:space-between;"><div style="font-weight:700;">${escapeHtml(c.courseCode)}</div><div style="font-weight:700;color:${band[c.band]};">${c.band==='No data'?'No data yet':c.score+'% · '+c.band}</div></div>
       <div class="np-bar" style="margin-top:8px;"><i style="width:${c.score}%"></i></div>
       <div style="font-size:11.5px;color:var(--t3);margin-top:6px;">${c.attempts?`${c.accuracy}% correct over your last ${c.attempts} answers${c.attempts<30?' — practise more for a firmer score':''}`:'Answer some questions to see your readiness'}</div></div>`).join('') : '<div class="np-card np-empty">Register for courses to see readiness.</div>');
     const hist = `<div class="np-h">Mock exams${d.average!=null?` · avg ${d.average}%${d.trend!=null?` (${d.trend>=0?'▲':'▼'} ${Math.abs(d.trend)})`:''}`:''}</div>` + (d.history.length ? d.history.map(e=>`
@@ -4214,7 +4422,7 @@ async function openCourseNotes(key){
       ? `<div class="np-h">${escapeHtml(d.course.code)} — ${d.notes.length} note${d.notes.length===1?'':'s'}</div>` + d.notes.map((n,i)=>`
         <div class="np-card np-row" style="cursor:pointer;" onclick="openNoteReader(${i})">
           <div class="np-check on" style="font-size:12px;">${i+1}</div>
-          <div style="flex:1;min-width:0;"><div style="font-weight:800;font-size:14.5px;">${escapeHtml(n.title)}</div><div style="font-size:12px;color:var(--t3);margin-top:2px;">${n.readMinutes} min read</div></div>
+          <div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:14.5px;">${escapeHtml(n.title)}</div><div style="font-size:12px;color:var(--t3);margin-top:2px;">${n.readMinutes} min read</div></div>
           <div style="color:var(--t4);font-size:18px;">›</div></div>`).join('')
       : `<div class="np-card np-empty">No notes for ${escapeHtml(d.course.code)} yet — they'll appear here as soon as they're published.</div>`)
       + myNotesBlock(d.course.code);
@@ -4243,7 +4451,7 @@ function mnCostLabel(){
 function myNotesList(){
   return `<div class="np-h">My notes — ${myNotes.length}</div>` + myNotes.map((n,i)=>`
     <div class="np-card np-row" style="cursor:pointer;" onclick="openMyNote(${i})">
-      <div style="flex:1;min-width:0;"><div style="font-weight:800;font-size:14.5px;">${escapeHtml(n.title)}</div>
+      <div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:14.5px;">${escapeHtml(n.title)}</div>
       <div style="font-size:12px;color:var(--t3);margin-top:2px;">${escapeHtml(n.depth)} · ${n.readMinutes} min read</div></div>
       <div style="color:var(--t4);font-size:18px;">›</div></div>`).join('');
 }
@@ -4276,8 +4484,8 @@ function openMyNote(i){
   box.innerHTML = `
     <div><button class="np-btn" onclick="openCourseNotes('${cnCourseKey}')">‹ All notes</button></div>
     <div class="np-card">
-      <div style="font-size:12px;color:var(--t3);font-weight:700;">${escapeHtml(COURSES[cnCourseKey]?.code || '')} · your ${escapeHtml(n.depth)} notes · ${n.readMinutes} min read</div>
-      <div style="font-size:20px;font-weight:800;margin:4px 0 12px;line-height:1.25;">${escapeHtml(n.title)}</div>
+      <div style="font-size:12px;color:var(--t3);font-weight:600;">${escapeHtml(COURSES[cnCourseKey]?.code || '')} · your ${escapeHtml(n.depth)} notes · ${n.readMinutes} min read</div>
+      <div style="font-size:20px;font-weight:700;margin:4px 0 12px;line-height:1.25;">${escapeHtml(n.title)}</div>
       <div class="np-note">${renderNoteBody(n.body)}</div>
     </div>
     <div><button class="np-btn" style="color:var(--no);" onclick="deleteMyNote(${i})">Delete these notes</button></div>`;
@@ -4293,10 +4501,10 @@ function openNoteReader(i){
   const box = document.getElementById('cn-body');
   const code = COURSES[cnCourseKey]?.code || '';
   box.innerHTML = `
-    <div><button class="np-btn" onclick="openCourseNotes('${cnCourseKey}')">‹ All notes</button></div>
+    <div class="np-row" style="justify-content:space-between;"><button class="np-btn" onclick="openCourseNotes('${cnCourseKey}')">‹ All notes</button><span style="display:flex;gap:8px;"><button class="np-btn" onclick="listenToNote(${i})">🔊 Listen</button><button class="np-btn" onclick="openNoteSlides(${i})">▦ Slides</button></span></div>
     <div class="np-card">
-      <div style="font-size:12px;color:var(--t3);font-weight:700;">${escapeHtml(code)} · ${n.readMinutes} min read</div>
-      <div style="font-size:20px;font-weight:800;margin:4px 0 12px;line-height:1.25;">${escapeHtml(n.title)}</div>
+      <div style="font-size:12px;color:var(--t3);font-weight:600;">${escapeHtml(code)} · ${n.readMinutes} min read</div>
+      <div style="font-size:20px;font-weight:700;margin:4px 0 12px;line-height:1.25;">${escapeHtml(n.title)}</div>
       <div class="np-note">${renderNoteBody(n.body)}</div>
     </div>
     <div class="np-row" style="justify-content:space-between;">
@@ -4305,6 +4513,54 @@ function openNoteReader(i){
     </div>`;
   window.scrollTo(0,0); box.scrollTop = 0;
 }
+
+// v1.9.2 "Why did you miss it?": the student tags a wrong answer and may write a one-line lesson (kept in the mistake notebook)
+const WHY = {}; // question id -> { why, lesson } for this visit
+const WHY_LABELS = { didnt_know:"Didn't know it", careless:'Careless slip', time:'Ran out of time', misread:'Misread it' };
+function whyHtml(q){
+  const w = WHY[q.id] || {};
+  return `<div class="why-box"><div class="why-q">Why did you miss it? <span>(optional)</span></div><div class="why-chips">${
+    Object.keys(WHY_LABELS).map(k => `<button type="button" class="why-chip${w.why===k?' on':''}" onclick="setWhy('${q.id}','${k}')">${WHY_LABELS[k]}</button>`).join('')
+  }</div>${w.why ? `<input class="why-lesson" maxlength="240" placeholder="One line to remember next time (optional)" value="${escapeHtml(w.lesson||'')}" onchange="saveLesson('${q.id}',this.value)">` : ''}</div>`;
+}
+async function saveMistake(q, body){
+  try{ await PhqAuth.authFetch('/api/mistakes/' + q.id, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(Object.assign({ course: q.course, tag: q.tag || '' }, body)) }, 'student'); }catch(e){}
+}
+function setWhy(qid, why){
+  const q = quizQ.find(x => x.id === qid); if(!q) return;
+  WHY[qid] = Object.assign(WHY[qid] || {}, { why });
+  const box = document.querySelector('.why-box'); if(box) box.outerHTML = whyHtml(q);
+  saveMistake(q, { why });
+}
+function saveLesson(qid, text){ const q = quizQ.find(x => x.id === qid); if(!q) return; (WHY[qid] = WHY[qid] || {}).lesson = text; saveMistake(q, { lesson: text }); }
+
+// v1.9.2 Listen mode: the phone reads the note aloud, with chemistry said properly (see js/chem-speech.js)
+function listenToNote(i){ const n = cnList[i]; if(n && window.PhqListen) PhqListen.start(n.title, n.body); }
+
+// v1.9.1 Notes as swipeable slides: the same note, cut at each "## heading" into cards you swipe through.
+function openNoteSlides(i){
+  const n = cnList[i]; if(!n) return;
+  const html = renderNoteBody(n.body);
+  let parts = html.split('<h4>').map((p,k)=> k === 0 ? p : '<h4>' + p).filter(p => p.replace(/<[^>]*>/g,'').trim());
+  if(!parts.length) parts = [html];
+  document.getElementById('cn-body').innerHTML = `
+    <div class="np-row" style="justify-content:space-between;"><button class="np-btn" onclick="openNoteReader(${i})">‹ Read as page</button><span id="ns-count" style="font-size:12px;font-weight:700;color:var(--t3);">1 / ${parts.length}</span></div>
+    <div style="font-size:19px;font-weight:700;line-height:1.25;">${escapeHtml(n.title)}</div>
+    <div class="np-slides" id="ns-track" onscroll="noteSlideScrolled()">${parts.map(x=>`<div class="np-slide"><div class="np-card np-note">${x}</div></div>`).join('')}</div>
+    <div class="np-dots" id="ns-dots">${parts.map((_,k)=>`<i class="${k?'':'on'}"></i>`).join('')}</div>
+    <div class="np-row" style="justify-content:space-between;">
+      <button class="np-btn" onclick="noteSlideGo(-1)">‹ Back</button>
+      <button class="np-btn" onclick="noteSlideGo(1)">Next ›</button>
+    </div>`;
+  window.scrollTo(0,0);
+}
+function noteSlideScrolled(){
+  const t = document.getElementById('ns-track'); if(!t || !t.clientWidth) return;
+  const k = Math.round(t.scrollLeft / (t.clientWidth + 12)), dots = document.querySelectorAll('#ns-dots i');
+  dots.forEach((d,j)=>d.classList.toggle('on', j === k));
+  const c = document.getElementById('ns-count'); if(c) c.textContent = `${Math.min(k+1, dots.length)} / ${dots.length}`;
+}
+function noteSlideGo(dir){ const t = document.getElementById('ns-track'); if(t) t.scrollBy({ left: dir * (t.clientWidth + 12), behavior: 'smooth' }); }
 
 // ── Achievements ──────────────────────────────────────────────
 async function openAchievements(){
@@ -4317,12 +4573,12 @@ async function openAchievements(){
     if(!r.ok){ box.innerHTML = `<div class="np-empty">${escapeHtml(d.error||'Could not load')}</div>`; return; }
     (d.newlyEarned||[]).forEach((k,i)=>{ const a=d.achievements.find(x=>x.key===k); if(a) setTimeout(()=>toast(`${a.icon} Achievement unlocked: ${a.title}`), 500*i); });
     const earned = d.achievements.filter(a=>a.earned).length;
-    box.innerHTML = `<div class="np-card np-row" style="justify-content:space-between;"><div><div style="font-size:12px;color:var(--t3);font-weight:700;">EARNED</div><div style="font-size:22px;font-weight:800;">${earned} / ${d.achievements.length}</div></div>
+    box.innerHTML = `<div class="np-card np-row" style="justify-content:space-between;"><div><div style="font-size:12px;color:var(--t3);font-weight:600;">EARNED</div><div style="font-size:22px;font-weight:700;">${earned} / ${d.achievements.length}</div></div>
       <div style="font-size:12px;color:var(--t3);text-align:right;line-height:1.5;">${d.stats.questions} questions<br>${d.stats.quizzes} quizzes · 🔥 ${d.stats.streak}</div></div>
       <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;">${d.achievements.map(a=>`
         <div class="np-card" style="text-align:center;${a.earned?'':'opacity:.55;'}">
           <div style="font-size:34px;${a.earned?'':'filter:grayscale(1);'}">${a.icon}</div>
-          <div style="font-weight:800;font-size:13.5px;margin-top:4px;">${escapeHtml(a.title)}</div>
+          <div style="font-weight:700;font-size:13.5px;margin-top:4px;">${escapeHtml(a.title)}</div>
           <div style="font-size:11.5px;color:var(--t3);margin:3px 0 8px;line-height:1.4;">${escapeHtml(a.desc)}</div>
           ${a.earned ? (d.equipped===a.key
               ? `<button class="np-btn" style="box-shadow:var(--sh-in-sm);" onclick="equipAchievement('')">Showing ✓</button>`
@@ -4336,6 +4592,103 @@ async function equipAchievement(key){
   const d = await r.json().catch(()=>({}));
   if(!r.ok) toast(d.error || 'Could not update'); else toast(key ? 'Badge set — it now shows on the leaderboard' : 'Badge removed');
   openAchievements();
+}
+
+// ── Weakness Autopilot (v1.9.0): today's time-boxed plan, built overnight from real activity ──
+let apPlan = null, apAt = 0;
+async function loadAutopilot(force){
+  const wrap = document.getElementById('autopilot-wrap'); if(!wrap) return;
+  if(!hasFeature('studyPlan')){ wrap.style.display = 'none'; return; }
+  if(!force && apPlan && Date.now() - apAt < 20000){ renderAutopilot(apPlan); return; }
+  try{
+    const r = await PhqAuth.authFetch('/api/autopilot/today', {}, 'student');
+    if(!r.ok){ wrap.style.display = 'none'; return; }
+    apPlan = await r.json(); apAt = Date.now();
+    renderAutopilot(apPlan);
+  }catch(e){ /* leave the card as it was — the rest of home still works offline */ }
+}
+function renderAutopilot(p){
+  const wrap = document.getElementById('autopilot-wrap'); if(!wrap) return;
+  if(!p || !p.items || !p.items.length){ wrap.style.display = 'none'; return; }
+  wrap.style.display = '';
+  const canVoice = !!(window.PhqVoiceQuiz && PhqVoiceQuiz.supported());
+  const icon = { drill:'🎯', missed:'♻️', flashcards:'🗂️', practice:'📚' };
+  document.getElementById('ap-min').textContent = p.budgetMin || 15;
+  document.getElementById('ap-headline').textContent = p.allDone ? 'All done for today 🎉' : p.headline;
+  document.getElementById('ap-count').textContent = `${p.doneCount}/${p.total} done`;
+  document.getElementById('ap-fill').style.width = Math.round((p.doneCount / Math.max(1, p.total)) * 100) + '%';
+  const voiceable = it => it.type === 'drill' || it.type === 'practice' || it.type === 'missed';
+  document.getElementById('ap-list').innerHTML = p.items.map((it, i) => `
+    <div class="ap-item ${it.done ? 'done' : ''}">
+      <div class="np-check ${it.done ? 'on' : ''}">${it.done ? '✓' : (icon[it.type] || '•')}</div>
+      <div style="flex:1;min-width:0;"><div class="ap-t">${escapeHtml(it.title)}</div><div class="ap-d">${escapeHtml(it.detail || '')}</div></div>
+      <div class="ap-min">${it.minutes} min</div>
+      ${it.done ? '' : `${canVoice && voiceable(it) ? `<button class="ap-voice" title="Do this hands-free" aria-label="Do this by voice" onclick="autopilotVoice(${i})">🎧</button>` : ''}<button class="np-btn" onclick="autopilotAction(${i})">Start</button>`}
+    </div>`).join('') + (p.allDone ? `<div class="ap-done">🔥 ${p.streak || 0}-day streak. See you tomorrow.</div>` : '');
+}
+function autopilotAction(i){
+  const it = apPlan && apPlan.items[i]; if(!it) return;
+  if(it.type === 'drill') return startWeakTopicQuiz({ course: it.course, tag: it.tag });
+  if(it.type === 'missed') return startMissedReview('missed');
+  if(it.type === 'flashcards') return openFlashcards();
+  if(it.type === 'practice' && COURSES[it.course]){ selCourses = [it.course]; if(typeof buildCourseGrid === 'function') buildCourseGrid(); }
+  showScr('home'); toast('Pick a mode and start practising');
+}
+function autopilotVoice(i){
+  const it = apPlan && apPlan.items[i]; if(!it) return;
+  if(it.type === 'missed') return startVoiceQuiz({ missed:true, count: it.target });
+  startVoiceQuiz({ course: it.course, tag: it.tag || '', count: it.target });
+}
+
+// ── Voice quiz (v1.9.0): hands-free, reads questions aloud and listens for the answer ──
+function syncVoiceCard(){
+  const c = document.getElementById('voice-card');
+  if(c) c.style.display = (window.PhqVoiceQuiz && PhqVoiceQuiz.supported()) ? '' : 'none';
+}
+async function startVoiceQuiz(src){
+  src = src || {};
+  if(!window.PhqVoiceQuiz || !PhqVoiceQuiz.supported()){ toast('Voice quiz needs a browser that can read aloud — try Chrome'); return; }
+  let remaining = null;                                   // same free-plan daily question limit as every other quiz
+  try{
+    const r = await PhqAuth.authFetch('/api/usage/limits', {}, 'student');
+    if(r.ok){ const u = await r.json(); if(u.questions.limit != null){ remaining = Math.max(0, u.questions.limit - u.questions.used); if(remaining <= 0){ showPaywall(`You've used all ${u.questions.limit} of your free daily questions. Upgrade to keep practicing today.`); return; } } }
+  }catch(e){}
+  const norm = v => String(v || '').trim().toLowerCase();
+  const key = v => String(v || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  let pool = [];
+  if(src.missed){
+    try{
+      const r = await PhqAuth.authFetch('/api/questions/missed', {}, 'student');
+      const list = r.ok ? await r.json() : [];
+      pool = (Array.isArray(list) ? list : []).map(d => ({ id:d._id, q:d.q, opts:d.opts, ans:d.ans, tag:d.tag || '', exp:d.exp || '', course:key(d.course) }));
+    }catch(e){}
+    if(!pool.length){ toast('No missed questions to review right now'); return; }
+  } else {
+    const courses = src.course ? [src.course] : (selCourses || []).slice();
+    if(!courses.length){ toast('Select a course first'); return; }
+    const _b = await ensureBank(courses);
+    if(_b === 'locked') return;
+    if(_b === 'fail'){ toast('Could not load questions. Check your connection and try again.'); return; }
+    courses.forEach(c => (BANK[c] || []).forEach(q => { if(!src.tag || norm(q.tag) === norm(src.tag)) pool.push({ ...q, course:c }); }));
+    if(!pool.length){ toast(src.tag ? 'No questions for this topic in the bank yet' : 'No questions available for that course yet'); return; }
+  }
+  for(let i = pool.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+  const want = Math.min(src.count || 8, remaining == null ? 8 : remaining, pool.length);
+  const title = src.missed ? 'Missed questions' : src.tag ? src.tag : (src.course ? (COURSES[src.course] && COURSES[src.course].code) : 'Voice quiz');
+  if(!await PhqVoiceQuiz.start({ questions: pool.slice(0, want), title: title || 'Voice quiz', onFinish: voiceQuizFinished })) toast('Could not start the voice quiz on this device');
+}
+function voiceQuizFinished(sum){
+  // Counts exactly like a normal quiz: daily goal, score history, weak topics, Brainiac reactions.
+  const g = getGoal(), today = new Date().toDateString();
+  if(g.today !== today){ g.today = today; g.done = 0; }
+  const before = g.done; g.done += sum.answered; saveGoal(g);
+  window.dispatchEvent(new CustomEvent('phq:goal', { detail:{ done:g.done, before, target:getSettings().goalTarget || 20 } }));
+  window.dispatchEvent(new CustomEvent('phq:results', { detail:{ pct:sum.pct, correct:sum.correct, total:sum.answered, guessed:0, guessedRight:0 } }));
+  const courses = [...new Set(sum.results.map(r => r.course))].map(k => (COURSES[k] && COURSES[k].code) || k).join(', ');
+  HOME_MEMO.missedAt = 0;
+  pushScore({ correct:sum.correct, total:sum.answered, pct:sum.pct, wrong:sum.wrong, skip:sum.skip, courses, mode:'voice',
+    perQuestion: sum.results.filter(r => r.chosen != null).map(r => ({ course:r.course, tag:r.tag || '', correct:r.correct, ...(r.id ? { qid:r.id } : {}) })) });
+  if(typeof refreshStats === 'function') refreshStats();
 }
 
 function showScr(id){
@@ -4354,7 +4707,7 @@ function showScr(id){
   if(id==='performance'){renderPerf();renderAIHistory();}
   if(id==='notifications')renderNotifications();
   if(id==='saved-quizzes')renderSavedQuizzes();
-  if(id==='home'){refreshStats();buildCourseGrid();loadWeakTopics();loadMissedCard();loadGuessCard();renderOnboarding();renderInviteCard();}
+  if(id==='home'){refreshStats();buildCourseGrid();loadWeakTopics();loadMissedCard();loadGuessCard();renderOnboarding();renderInviteCard();loadAutopilot();syncVoiceCard();}
   window.dispatchEvent(new CustomEvent('phq:screen',{detail:{id}})); // Brainiac: hide during timed/exam quizzes
 }
 
@@ -4403,5 +4756,8 @@ bootFromSession();
 </script>
 <script src="/js/phq-latexfix.js" defer></script>
 <script src="/js/phq-sci.js" defer></script>
+<script src="/js/chem-speech.js" defer></script>
+<script src="/js/voice-quiz.js" defer></script>
+<script src="/js/listen.js" defer></script>
 </body>
 </html>

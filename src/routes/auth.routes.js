@@ -187,7 +187,7 @@ router.post('/recovery', recoveryLimiter, async (req, res) => {
         assignedAdmin: contact ? contact.username : '',
       });
     }
-    const msg = `Hi PrepHQ support, I can't log in and need help with my password.\nRequest: ${reqDoc.code}\nMatric: ${matric}${name ? '\nName: ' + name : ''}`;
+    const msg = `Hi Wreddi support, I can't log in and need help with my password.\nRequest: ${reqDoc.code}\nMatric: ${matric}${name ? '\nName: ' + name : ''}`;
     res.status(201).json({
       code: reqDoc.code,
       whatsappUrl: contact ? waUrl(contact.number, msg) : '',
