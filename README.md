@@ -75,6 +75,18 @@ Log in as admin, then **change your admin password** from the panel (Settings â†
 4. Add environment variables: `MONGODB_URI`, `ADMIN_KEY`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `GROQ_API_KEY`
 5. Deploy
 
+### Optional Telegram bot
+
+The Telegram bot runs inside the same Node process and uses the existing MongoDB database; it does not require another server or port. Create a bot with Telegram's `@BotFather`, copy its token into `TELEGRAM_BOT_TOKEN`, set `TELEGRAM_WEB_URL` to the public Wreddi URL, and redeploy. The bot uses long polling, so no public webhook URL is needed.
+
+The bot now provides a persistent menu for account creation, existing-account linking, profile editing, course browsing, interactive multiple-choice practice quizzes with saved scores, AI quiz generation using the website's credit and daily-limit rules, AI tutoring (`/ask`), spaced-repetition flashcards (`/flashcards COURSE`), a daily study plan (`/plan`), 14-day progress tracking (`/progress`), focus/Pomodoro-style timers (`/focus MINUTES`), study reminders (`/remind MINUTES MESSAGE`), notifications, and an `Open website` button for the full dashboard features. Commands include `/create`, `/link MATRIC PASSWORD`, `/quiz COURSE`, `/aiquiz COURSE`, `/edit FIELD VALUE`, `/me`, `/courses`, `/unlink`, and `/help`.
+
+The Telegram-native features are designed around the learner feedback: simple explanations, past-question practice, flashcards, consistency tracking, daily planning, reminders, and a focus session. Live peer study rooms, real-time chat, audio/video lessons, written-exam screens, contests, and other dashboard views remain one tap away through `TELEGRAM_WEB_URL` because they require the website's richer interface or live socket connection.
+
+For existing accounts, `/link` checks the password once and never stores it; delete the link message afterward. New-account creation hashes the password immediately and stores only the hash.
+
+If `TELEGRAM_BOT_TOKEN` is empty, the integration is disabled and the web application behaves as before.
+
 ---
 
 ## How auth actually works now

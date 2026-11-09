@@ -19,14 +19,14 @@
 
 :root {
   /* Surfaces */
-  --bg: #f2f2f7;
+  --bg: #f8f8fa;
   --surf: #ffffff;
-  --surf2: #f9f9fb;
-  --surf3: #e9e9ef;
-  --fill: rgba(120,120,128,.12);
-  --fill2: rgba(120,120,128,.20);
-  --bar: rgba(249,249,251,.80);          /* translucent tab/top bar (needs backdrop blur) */
-  --bar-solid: #f9f9fb;                  /* same bar where blur is off (low-power / unsupported) */
+  --surf2: #f8f8fa;
+  --surf3: #ececf0;
+  --fill: rgba(120,120,128,.08);
+  --fill2: rgba(120,120,128,.15);
+  --bar: rgba(255,255,255,.86);          /* translucent tab/top bar (needs backdrop blur) */
+  --bar-solid: #ffffff;                  /* same bar where blur is off (low-power / unsupported) */
   --scrim: rgba(0,0,0,.40);
   --inv-bg: rgba(28,28,30,.92);          /* toast / snackbar */
   --inv-fg: #ffffff;
@@ -37,10 +37,10 @@
   /* Brand + semantic colour */
   --brand: #3E5C8A;
   --brand-dk: #2F4A72;
-  --brand-lt: rgba(62,92,138,.10);       /* tonal container */
+  --brand-lt: rgba(62,92,138,.08);       /* tonal container */
   --brand-glow: rgba(62,92,138,.24);
   --on-brand: #ffffff;
-  --grad: linear-gradient(140deg,#3E5C8A,#5D7FB0);   /* primary-action fill; white text sits on it */
+  --grad: #3E5C8A;   /* primary-action fill (flat in the minimal theme); white text sits on it */
   --ok: #2d9c6e;
   --ok-lt: rgba(45,156,110,.12);
   --ok-bd: rgba(45,156,110,.30);
@@ -62,15 +62,15 @@
   --t2: #48484a;
   --t3: #6c6c70;
   --t4: #8e8e93;
-  --bd: rgba(60,60,67,.12);              /* hairline separators */
+  --bd: rgba(60,60,67,.10);              /* hairline separators */
   --bd2: rgba(60,60,67,.18);
   --qfont: 16px;
 
   /* Elevation (Material layering, Apple softness) */
-  --sh:    0 0 0 .5px rgba(60,60,67,.07), 0 1px 2px rgba(16,24,40,.05), 0 2px 8px rgba(16,24,40,.05);
-  --sh-sm: 0 0 0 .5px rgba(60,60,67,.07), 0 1px 2px rgba(16,24,40,.07);
-  --sh-md: 0 0 0 .5px rgba(60,60,67,.06), 0 2px 4px rgba(16,24,40,.06), 0 8px 20px rgba(16,24,40,.08);
-  --sh-lg: 0 0 0 .5px rgba(60,60,67,.06), 0 4px 8px rgba(16,24,40,.06), 0 18px 44px rgba(16,24,40,.16);
+  --sh:    0 0 0 .5px rgba(60,60,67,.12);
+  --sh-sm: 0 0 0 .5px rgba(60,60,67,.12);
+  --sh-md: 0 0 0 .5px rgba(60,60,67,.10), 0 4px 14px rgba(16,24,40,.06);
+  --sh-lg: 0 0 0 .5px rgba(60,60,67,.08), 0 12px 36px rgba(16,24,40,.12);   /* sheets, menus, the tab bar */
   /* Wells are filled, not shadowed. These stay valid box-shadow values so that lists such as
      "var(--sh-in), 0 0 0 2px var(--brand-lt)" in existing rules keep working. */
   --sh-in:    inset 0 0 0 0 transparent;
@@ -104,13 +104,13 @@
 [data-theme=dark] {
   /* Surfaces — true-black canvas, #1c1c1e raised surface (Apple dark elevated) */
   --bg: #000000;
-  --surf: #1c1c1e;
-  --surf2: #242426;
+  --surf: #141416;
+  --surf2: #1c1c1e;
   --surf3: #2c2c2e;
-  --fill: rgba(120,120,128,.24);
-  --fill2: rgba(120,120,128,.34);
-  --bar: rgba(28,28,30,.78);
-  --bar-solid: #1c1c1e;
+  --fill: rgba(120,120,128,.18);
+  --fill2: rgba(120,120,128,.28);
+  --bar: rgba(20,20,22,.86);
+  --bar-solid: #141416;
   --scrim: rgba(0,0,0,.60);
   --inv-bg: rgba(242,242,247,.94);
   --inv-fg: #1c1c1e;
@@ -119,10 +119,10 @@
 
   --brand: #7ba0d8;
   --brand-dk: #a9c3ec;
-  --brand-lt: rgba(123,160,216,.16);
+  --brand-lt: rgba(123,160,216,.13);
   --brand-glow: rgba(123,160,216,.30);
   --on-brand: #0b1626;
-  --grad: linear-gradient(140deg,#456fa8,#5f89c6);   /* deeper than --brand so white text keeps contrast in dark mode */
+  --grad: #4a72ad;   /* deeper than --brand so white text keeps contrast in dark mode */
   --ok: #3dba86;
   --ok-lt: rgba(61,186,134,.16);
   --ok-bd: rgba(61,186,134,.32);
@@ -146,9 +146,9 @@
   --bd: rgba(84,84,88,.55);
   --bd2: rgba(84,84,88,.75);
 
-  /* Shadows barely read on black, so surfaces are separated by tone and a faint top-light hairline */
-  --sh:    0 0 0 .5px rgba(255,255,255,.06), 0 1px 2px rgba(0,0,0,.5);
-  --sh-sm: 0 0 0 .5px rgba(255,255,255,.06), 0 1px 2px rgba(0,0,0,.5);
-  --sh-md: 0 0 0 .5px rgba(255,255,255,.07), 0 4px 14px rgba(0,0,0,.55);
-  --sh-lg: 0 0 0 .5px rgba(255,255,255,.08), 0 10px 36px rgba(0,0,0,.7);
+  /* Shadows barely read on black, so surfaces are separated by tone and a hairline */
+  --sh:    0 0 0 .5px rgba(255,255,255,.08);
+  --sh-sm: 0 0 0 .5px rgba(255,255,255,.08);
+  --sh-md: 0 0 0 .5px rgba(255,255,255,.09), 0 4px 14px rgba(0,0,0,.5);
+  --sh-lg: 0 0 0 .5px rgba(255,255,255,.10), 0 12px 36px rgba(0,0,0,.65);
 }

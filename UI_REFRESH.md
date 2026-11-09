@@ -43,3 +43,8 @@ Visual only: no routes, API, or data changes.
 - Feature cards now cover what the app does today: practice & mock exams, AI-marked written exams, voice quiz, mistake notebook, AI quizzes, ask a question, notes/flashcards/cheat sheets, contests & rooms, focus timer & Wrapped.
 - New in-hero app preview (pure HTML/CSS, follows light/dark) with two floating cards; hidden on screens under 860px except the phone itself.
 - Hero copy, chips, meta description and FAQ (written exams, voice quiz) updated; badge, icon wells and step numbers restyled as tonal chips (the old inset shadows no longer exist).
+
+## Minimal pass (v1.10.1)
+- Tokens: near-white canvas, white cards, hairline borders instead of shadows (shadow kept only for menus, sheets and the tab bar), softer fills, flat primary colour (`--grad` is now a solid).
+- Removed: gradients and button glows, tinted chips (badges, streak, section counts), the tiles behind icons, background blobs, the landing page's floating cards and gradient headline text.
+- To go back to the previous look: restore `tokens.css`, `hybrid.css` (everything under "Minimal pass") and `landing.html`'s styles from the v1.10.0 zip.

@@ -15,6 +15,10 @@ const StudentSchema = new mongoose.Schema({
   name:         { type: String, required: true, trim: true },
   phone:        { type: String, default: '' },
   whatsapp:     { type: String, default: '' },
+  // Optional Telegram integration. The bot stores only the chat identifier,
+  // never the student's password.
+  telegramChatId:  { type: String, trim: true },
+  telegramUsername:{ type: String, default: '', trim: true },
   role:         { type: String, default: 'student' },
   active:       { type: Boolean, default: true },
   credits:      { type: Number, default: 0 },          // Wreddi Credits — new users start at 0
@@ -182,5 +186,6 @@ const StudentSchema = new mongoose.Schema({
 // for uniqueness (multiple nulls are allowed).
 StudentSchema.index({ username: 1 }, { unique: true, sparse: true });
 StudentSchema.index({ referralCode: 1 }, { unique: true, sparse: true });
+StudentSchema.index({ telegramChatId: 1 }, { unique: true, sparse: true });
 
 module.exports = mongoose.model('Student', StudentSchema);

@@ -34,12 +34,12 @@ html[data-lowpower] body .res-topbar, html[data-lowpower] body .lg-top, html[dat
 body .btn-grad, body .qbtn.main {
   background: var(--grad);
   color: #fff;
-  box-shadow: 0 1px 2px rgba(16,24,40,.16), 0 6px 14px -4px var(--brand-glow);
+  box-shadow: none;
   font-weight: 600;
   letter-spacing: -.01em;
   min-height: 50px;
 }
-body .btn-grad:active, body .qbtn.main:active { filter: brightness(.92); transform: scale(.985); box-shadow: 0 1px 2px rgba(16,24,40,.16); }
+body .btn-grad:active, body .qbtn.main:active { filter: brightness(.92); transform: scale(.985); box-shadow: none; }
 body .btn-grad:disabled, body .qbtn.main:disabled { background: var(--fill); color: var(--t4); box-shadow: none; filter: none; }
 /* A .btn-grad that carries its own semantic text colour inline (log out = red, WhatsApp = green, …) is a
    secondary action: draw it as a tonal container in that colour instead of a filled brand button. */
@@ -69,8 +69,8 @@ body .ib.compact { background: var(--brand-lt); color: var(--brand); }
 body .tb-avatar { background: var(--brand-lt); box-shadow: none; color: var(--brand); }
 
 /* ── Chips & badges: tonal, sentence case ───────────────────────────────────────────────── */
-body .hero-tag, body .sec-badge { background: var(--brand-lt); color: var(--brand); box-shadow: none; border-radius: var(--rpill); }
-body .hero-streak { background: var(--warn-lt); box-shadow: none; border-radius: var(--rpill); }
+body .hero-tag, body .sec-badge { background: none; color: var(--t3); box-shadow: none; padding-left: 0; padding-right: 0; }
+body .hero-streak { background: none; box-shadow: none; padding-left: 0; padding-right: 0; }
 body .qp, body .fb, body .why-chip, body .np-chip { background: var(--fill); box-shadow: none; color: var(--t2); }
 body .qp.on, body .qp.custom-pill.on, body .fb.on, body .why-chip.on {
   background: var(--brand-lt); color: var(--brand); box-shadow: inset 0 0 0 1.5px var(--brand);
@@ -80,11 +80,11 @@ body .qp.custom-pill { background: var(--fill); }
 /* ── Selected / state rings (cards, rows, options) ──────────────────────────────────────── */
 body .cc.on, body .mode-btn.on {
   background-image: linear-gradient(var(--brand-lt), var(--brand-lt));
-  box-shadow: inset 0 0 0 2px var(--brand);
+  box-shadow: inset 0 0 0 1.5px var(--brand);
 }
 body .cc:active, body .mode-btn:active, body .opt:active { transform: scale(.985); }
 body .opt { box-shadow: var(--sh); }
-body .opt.sel { background-image: linear-gradient(var(--brand-lt), var(--brand-lt)); box-shadow: inset 0 0 0 2px var(--brand); }
+body .opt.sel { background-image: linear-gradient(var(--brand-lt), var(--brand-lt)); box-shadow: inset 0 0 0 1.5px var(--brand); }
 body .opt.correct { background-image: linear-gradient(var(--ok-lt), var(--ok-lt)); box-shadow: inset 0 0 0 2px var(--ok); }
 body .opt.wrong { background-image: linear-gradient(var(--no-lt), var(--no-lt)); box-shadow: inset 0 0 0 2px var(--no); }
 body .opt .oletter { background: var(--fill); box-shadow: none; }
@@ -92,7 +92,7 @@ body .fb-strip.ok { box-shadow: inset 0 0 0 1.5px var(--ok-bd); }
 body .fb-strip.no { box-shadow: inset 0 0 0 1.5px var(--no-bd); }
 body .fb-strip.timeout { box-shadow: inset 0 0 0 1.5px var(--warn); }
 body .dot { background: var(--fill); box-shadow: none; }
-body .dot.curr { background: var(--brand-lt); box-shadow: inset 0 0 0 2px var(--brand); transform: scale(1.06); }
+body .dot.curr { background: var(--brand-lt); box-shadow: inset 0 0 0 1.5px var(--brand); transform: scale(1.06); }
 body .cc-check { background: transparent; box-shadow: inset 0 0 0 2px var(--t4); }
 body .cc.on .cc-check { background: var(--brand); box-shadow: none; }
 body .eb-icon, body .oc-icon { background: var(--brand-lt); box-shadow: none; }
@@ -104,7 +104,7 @@ body .f-input, body .modal-input, body .neu-inline-input, body .rnote textarea, 
 }
 body .f-input:focus, body .modal-input:focus, body .neu-inline-input:focus, body .rnote textarea:focus, body .why-lesson:focus {
   background: var(--surf);
-  box-shadow: inset 0 0 0 2px var(--brand), 0 0 0 4px var(--brand-lt);
+  box-shadow: inset 0 0 0 1.5px var(--brand), 0 0 0 4px var(--brand-lt);
 }
 body .f-input.err { box-shadow: inset 0 0 0 2px var(--no), 0 0 0 4px var(--no-lt); }
 body .err-banner { background: var(--no-lt); box-shadow: none; }
@@ -189,17 +189,17 @@ body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboar
 body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .v-tab, .v-preset, .wx-chip, .wx-pill, .quota { background: var(--fill); box-shadow: none; color: var(--t2); font-weight: 600; }
 body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .v-tab.on, .v-preset.on { background: var(--brand-lt); color: var(--brand); box-shadow: inset 0 0 0 1.5px var(--brand); }
 body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .wx-chip.wx-on { background: var(--grad); color: #fff; box-shadow: none; }
-body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .btn { background: var(--grad); color: #fff; box-shadow: 0 1px 2px rgba(16,24,40,.16), 0 6px 14px -4px var(--brand-glow); font-weight: 600; letter-spacing: -.01em; }
-body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .btn:active { filter: brightness(.92); box-shadow: 0 1px 2px rgba(16,24,40,.16); }
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .btn { background: var(--grad); color: #fff; box-shadow: none; font-weight: 600; letter-spacing: -.01em; }
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .btn:active { filter: brightness(.92); box-shadow: none; }
 body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .btn.ghost { background: var(--fill); color: var(--t1); box-shadow: none; }
 body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .btn.ghost:active { background: var(--fill2); filter: none; box-shadow: none; }
 body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .btn:disabled { background: var(--fill); color: var(--t4); box-shadow: none; filter: none; }
 body #view-profile .btn { background: var(--brand-lt); color: var(--brand); box-shadow: none; }
 body #view-profile .btn:hover { box-shadow: none; }
 body #view-profile .btn:active { background: var(--brand-glow); filter: none; box-shadow: none; transform: scale(.97); }
-body #view-profile .btn.primary { background: var(--grad); color: #fff; box-shadow: 0 1px 2px rgba(16,24,40,.16), 0 6px 14px -4px var(--brand-glow); }
+body #view-profile .btn.primary { background: var(--grad); color: #fff; box-shadow: none; }
 body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .v-btn { background: var(--fill); box-shadow: none; color: var(--t1); font-weight: 600; }
-body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .v-btn.v-main { background: var(--grad); color: #fff; box-shadow: 0 1px 2px rgba(16,24,40,.16), 0 6px 14px -4px var(--brand-glow); }
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .v-btn.v-main { background: var(--grad); color: #fff; box-shadow: none; }
 body #view-wrapped .v-btn { background: var(--grad); color: #fff; }
 body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .wx-btn.wx-plain { background: var(--fill); color: var(--t1); box-shadow: none; }
 body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .send-btn, .mic-btn, .listen-btn { background: var(--fill); box-shadow: none; color: var(--t2); }
@@ -215,7 +215,7 @@ body #view-leaderboard .v-toggle { width: 51px; height: 31px; background: var(--
 body #view-leaderboard .v-toggle::after { top: 2px; left: 2px; width: 27px; height: 27px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.22), 0 0 0 .5px rgba(0,0,0,.06); }
 body #view-leaderboard .v-toggle.on { background: var(--brand); box-shadow: none; }
 body #view-leaderboard .v-toggle.on::after { transform: translateX(20px); box-shadow: 0 2px 4px rgba(0,0,0,.22), 0 0 0 .5px rgba(0,0,0,.06); }
-body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) input:focus, textarea:focus, select:focus { box-shadow: inset 0 0 0 2px var(--brand), 0 0 0 4px var(--brand-lt); background: var(--surf); }
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) input:focus, textarea:focus, select:focus { box-shadow: inset 0 0 0 1.5px var(--brand), 0 0 0 4px var(--brand-lt); background: var(--surf); }
 
 /* Long messages must wrap inside the screen */
 body #toast, body #p-toast { max-width: calc(100vw - 32px); white-space: normal; text-align: center; line-height: 1.35; }
@@ -224,3 +224,24 @@ body #toast, body #p-toast { max-width: calc(100vw - 32px); white-space: normal;
 .wm-dark { display: none !important; }
 [data-theme=dark] .wm-light { display: none !important; }
 [data-theme=dark] .wm-dark { display: block !important; }
+
+
+/* ══ Minimal pass (v1.10.1) ═════════════════════════════════════════════════════════════════
+   Flat surfaces with hairlines, no gradients or glows, one accent colour, quieter chrome.
+   Most of this comes from the lighter tokens in tokens.css; the rules below remove what tokens can't. */
+body { letter-spacing: -.003em; }
+.glass-backdrop, .blob { display: none !important; }
+body .btn-grad, body .qbtn.main { background: var(--brand); }
+[data-theme=dark] body .btn-grad, [data-theme=dark] body .qbtn.main { background: var(--grad); }
+body .cc, body .opt, body .mode-btn { box-shadow: 0 0 0 .5px var(--bd2); }
+[data-theme=dark] body .cc, [data-theme=dark] body .opt, [data-theme=dark] body .mode-btn { box-shadow: 0 0 0 .5px rgba(255,255,255,.10); }
+body .cc-bar { height: 2px; opacity: .55; }              /* the coloured strip under each course card */
+body .cc-ico { background: none; box-shadow: none; }      /* icon without its own tile */
+body .ib, body .back-btn, body .tb-avatar { background: none; }
+body .ib.compact { background: none; color: var(--t2); }
+body .glass-nav { box-shadow: 0 0 0 .5px var(--bd2), 0 6px 20px rgba(16,24,40,.08); }
+[data-theme=dark] body .glass-nav { box-shadow: 0 0 0 .5px rgba(255,255,255,.12), 0 6px 20px rgba(0,0,0,.5); }
+body .glass-nav-item::before { background: var(--fill); }
+body .glass-nav-item.on { color: var(--t1); }
+body .toggle.on { background: var(--t1); }
+[data-theme=dark] body .toggle.on { background: var(--brand); }

@@ -12,6 +12,7 @@ const Admin = require('./src/models/Admin');
 const Course = require('./src/models/Course');
 const { initStudyRoomSockets } = require('./src/realtime/studyRoom.socket');
 const { activityMiddleware, flushActivity } = require('./src/services/activity.service');
+const { startTelegramBot, stopTelegramBot } = require('./src/services/telegramBot.service');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -63,6 +64,7 @@ connectDB().then(async () => {
   await ensureOwnerAdmin();
   await bootstrapCourses();
   require('./src/services/scheduler.service').startScheduler();
+  startTelegramBot();
   // Pick up a bulk note-writing job that was running when the server last restarted.
   require('./src/services/noteJob.service').resumeInterrupted().then(n => n && console.log(`Resumed ${n} interrupted note job(s).`)).catch(e => console.error('Note job resume failed:', e.message));
 }).catch(e => console.error('Startup tasks failed:', e));
@@ -72,6 +74,7 @@ connectDB().then(async () => {
 for (const sig of ['SIGTERM', 'SIGINT']) {
   process.on(sig, async () => { try { await flushActivity(); } finally { process.exit(0); } });
 }
+for (const sig of ['SIGTERM', 'SIGINT']) process.once(sig, stopTelegramBot);
 process.on('unhandledRejection', (err) => console.error('[unhandledRejection]', err));
 process.on('uncaughtException', (err) => console.error('[uncaughtException]', err));
 
