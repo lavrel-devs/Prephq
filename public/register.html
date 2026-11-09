@@ -67,6 +67,15 @@ body{
   border-radius:2px;
   margin:0 0 22px;
 }
+.wizard-progress{margin:-5px 0 22px;}
+.wizard-step-label{display:flex;justify-content:space-between;gap:12px;font-size:12px;font-weight:700;color:var(--t3);margin-bottom:8px;}
+.wizard-track{height:7px;border-radius:99px;background:var(--fill);box-shadow:var(--sh-in-sm);overflow:hidden;}
+.wizard-fill{height:100%;width:10%;border-radius:inherit;background:linear-gradient(90deg,var(--brand),var(--purple));transition:width .25s ease;}
+.wizard-question{font-family:var(--ff-h);font-size:17px;font-weight:700;color:var(--t1);margin:0 0 16px;}
+.wizard-actions{display:flex;gap:10px;margin-top:8px;}
+.wizard-actions .btn{margin-top:0;}
+.back-btn{min-width:104px;padding:14px 16px;border:0;border-radius:var(--r12);background:var(--fill);color:var(--t2);font:700 14px var(--ff-h);box-shadow:var(--sh-in-sm);cursor:pointer;}
+.back-btn[hidden]{display:none;}
 
 /* Referral info box — inset card with brand ring */
 .code-box{
@@ -264,9 +273,14 @@ body{
   <!-- REGISTER FORM -->
   <div id="reg-form">
     <div class="logo"><img src="/icons/logo-mark.png" alt="Wreddi" width="68" height="68" class="logo-img"></div>
-    <div class="title">Create Account</div>
-    <div class="sub">Wreddi — Exam Prep Platform</div>
+    <div class="title">Let’s get you started</div>
+    <div class="sub">A few quick steps. We’ll ask one thing at a time.</div>
     <div class="divider"></div>
+    <div class="wizard-progress" aria-label="Registration progress">
+      <div class="wizard-step-label"><span id="reg-step-count">Step 1 of 10</span><span>About you</span></div>
+      <div class="wizard-track"><div class="wizard-fill" id="reg-progress-fill"></div></div>
+    </div>
+    <div class="wizard-question" id="reg-question">What should we call you?</div>
 
     <div class="err" id="reg-err">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
@@ -274,8 +288,17 @@ body{
     </div>
 
     <div class="fg">
-      <label>Full Name *</label>
-      <input id="r-name" type="text" placeholder="e.g. John Doe" autocomplete="off">
+      <label>Your name *</label>
+      <input id="r-name" type="text" placeholder="e.g. Ada Okafor" autocomplete="name" maxlength="80">
+      <div class="hint">Your name is how we’ll welcome you in Wreddi.</div>
+    </div>
+    <div class="fg">
+      <label>University or school *</label>
+      <input id="r-university" type="text" placeholder="e.g. University of Lagos" autocomplete="organization" maxlength="120">
+    </div>
+    <div class="fg">
+      <label>Department *</label>
+      <input id="r-department" type="text" placeholder="e.g. Chemistry" maxlength="120">
     </div>
     <div class="fg">
       <label>Matric Number *</label>
@@ -317,12 +340,15 @@ body{
       <div class="hint">Have a friend's referral link or code? Enter it here — you'll both get bonus credits.</div>
     </div>
 
-    <div style="font-size:12px;color:var(--t3);line-height:1.55;margin:4px 2px 14px;text-align:center;">By creating an account you agree to our <a href="/terms" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600;">Terms &amp; Conditions</a>, <a href="/privacy" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600;">Privacy Policy</a>, <a href="/cookies" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600;">Cookies &amp; Storage</a>, <a href="/acceptable-use" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600;">Acceptable Use</a>, <a href="/payments-refunds" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600;">Payments &amp; Refunds</a> and <a href="/ai-disclaimer" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600;">AI Disclaimer</a>, and you consent to the collection and use of your information as they describe.</div>
+    <div id="reg-legal" style="display:none;font-size:12px;color:var(--t3);line-height:1.55;margin:4px 2px 14px;text-align:center;">By creating an account you agree to our <a href="/terms" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600;">Terms &amp; Conditions</a>, <a href="/privacy" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600;">Privacy Policy</a>, <a href="/cookies" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600;">Cookies &amp; Storage</a>, <a href="/acceptable-use" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600;">Acceptable Use</a>, <a href="/payments-refunds" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600;">Payments &amp; Refunds</a> and <a href="/ai-disclaimer" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600;">AI Disclaimer</a>, and you consent to the collection and use of your information as they describe.</div>
 
-    <button class="btn" id="reg-btn" onclick="doRegister()">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-      Create Account
-    </button>
+    <div class="wizard-actions">
+      <button class="back-btn" type="button" id="reg-back" onclick="regBack()" hidden>Back</button>
+      <button class="btn" id="reg-btn" onclick="regNext()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10S22 17.52 22 12 17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+      Continue
+      </button>
+    </div>
 
     <div class="login-link">Already registered? <a href="/">Sign in here</a></div>
   </div>
@@ -353,6 +379,63 @@ body{
   const ref = new URLSearchParams(window.location.search).get('ref');
   if(ref) document.getElementById('r-referral').value = ref.toUpperCase();
 })();
+
+const regFieldOrder = ['r-name','r-university','r-department','r-matric','r-username','r-phone','r-whatsapp','r-pass','r-pass2','r-referral'];
+const regPrompts = [
+  'What should we call you?', 'Which university or school do you attend?', 'What department are you in?',
+  'What is your matric number?', 'Choose a username for your account.', 'What phone number can we reach you on?',
+  'What is your WhatsApp number?', 'Create a password for your account.', 'Confirm your password.',
+  'Do you have a referral code? (Optional)'
+];
+let regStep = 0;
+function showRegStep() {
+  regFieldOrder.forEach((id, i) => { document.getElementById(id).closest('.fg').style.display = i === regStep ? 'block' : 'none'; });
+  const last = regStep === regFieldOrder.length - 1;
+  document.getElementById('reg-step-count').textContent = `Step ${regStep + 1} of ${regFieldOrder.length}`;
+  document.getElementById('reg-progress-fill').style.width = `${((regStep + 1) / regFieldOrder.length) * 100}%`;
+  document.getElementById('reg-question').textContent = regPrompts[regStep];
+  document.getElementById('reg-back').hidden = regStep === 0;
+  document.getElementById('reg-legal').style.display = last ? 'block' : 'none';
+  document.getElementById('reg-btn').innerHTML = last ? 'Create my account' : 'Continue';
+}
+function regError(message) {
+  document.getElementById('reg-err-msg').textContent = message;
+  document.getElementById('reg-err').classList.add('on');
+}
+async function checkRegUsernameNow() {
+  const input = document.getElementById('r-username');
+  const val = input.value.trim().toLowerCase();
+  clearTimeout(regUsernameTimer);
+  if (!/^[a-z0-9_]{3,20}$/.test(val)) { regUsernameOk = false; regError('Use 3–20 letters, numbers, or underscores for your username.'); return false; }
+  try {
+    const response = await fetch(`/api/auth/username-check/${encodeURIComponent(val)}`);
+    const result = await response.json();
+    regUsernameOk = !!result.ok;
+    const hint = document.getElementById('r-username-hint');
+    hint.textContent = result.ok ? 'Available — nice choice!' : `Not available: ${result.reason || 'choose another username'}`;
+    hint.style.color = result.ok ? 'var(--ok)' : 'var(--no)';
+    if (!result.ok) regError('Please choose a different username.');
+    return regUsernameOk;
+  } catch (error) { regUsernameOk = false; regError('Could not check your username right now. Try again.'); return false; }
+}
+async function regNext() {
+  const id = regFieldOrder[regStep], value = document.getElementById(id).value.trim();
+  document.getElementById('reg-err').classList.remove('on');
+  if (id !== 'r-referral' && !value) { regError('Please fill this in so we can continue.'); document.getElementById(id).focus(); return; }
+  if (id === 'r-name' && value.length < 2) { regError('Please enter a name with at least 2 characters.'); return; }
+  if (id === 'r-username' && !(await checkRegUsernameNow())) return;
+  if (id === 'r-pass' && value.length < 8) { regError('Choose a password with at least 8 characters.'); return; }
+  if (id === 'r-pass' && value.trim().toUpperCase() === document.getElementById('r-matric').value.trim().toUpperCase()) { regError('Your password can’t be the same as your matric number.'); return; }
+  if (id === 'r-pass2' && value !== document.getElementById('r-pass').value) { regError('Those passwords do not match yet. Please try again.'); return; }
+  if (regStep === regFieldOrder.length - 1) return doRegister();
+  regStep++; showRegStep();
+  document.getElementById(regFieldOrder[regStep]).focus();
+}
+function regBack() { if (regStep > 0) { regStep--; document.getElementById('reg-err').classList.remove('on'); showRegStep(); document.getElementById(regFieldOrder[regStep]).focus(); } }
+regFieldOrder.forEach(id => document.getElementById(id).addEventListener('keydown', event => {
+  if (event.key === 'Enter') { event.preventDefault(); regNext(); }
+}));
+showRegStep();
 
 // Real-time username availability check, debounced as the user types.
 let regUsernameTimer = null;
@@ -390,6 +473,8 @@ function checkRegUsername() {
 
 async function doRegister() {
   const name     = document.getElementById('r-name').value.trim();
+  const university = document.getElementById('r-university').value.trim();
+  const department = document.getElementById('r-department').value.trim();
   const matric   = document.getElementById('r-matric').value.trim().toUpperCase();
   const username = document.getElementById('r-username').value.trim().toLowerCase();
   const phone    = document.getElementById('r-phone').value.trim();
@@ -431,7 +516,7 @@ async function doRegister() {
     const r = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, matric, username, phone, whatsapp, password, referralCode: referralCode || undefined }),
+      body: JSON.stringify({ name, university, department, matric, username, phone, whatsapp, password, referralCode: referralCode || undefined }),
     });
     const d = await r.json();
 
@@ -475,9 +560,6 @@ function checkPwMatch() {
 // Someone who came from a friend's quiz link goes straight to sign-in, which then drops them on that quiz.
 function goLogin() { let pending = false; try { pending = !!localStorage.getItem('phq_next'); } catch (e) {} window.location.href = pending ? '/login.html' : '/'; }
 
-document.getElementById('r-referral').addEventListener('keydown', e => {
-  if(e.key === 'Enter') doRegister();
-});
 </script>
 </body>
 </html>

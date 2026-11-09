@@ -44,6 +44,51 @@ let reminderWorker = null;
 function esc(value) {
   return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
+function formatTelegramContent(value) {
+  const structures = [];
+  let text = String(value ?? '').replace(/\[\[\s*smiles\s*:\s*([\s\S]*?)\s*\]\]/gi, (_, smiles) => {
+    const index = structures.push(smiles.trim().replace(/\s*\|[^|]*\|\s*$/, '')) - 1;
+    return `WREDDISMILESPLACEHOLDER${index}END`;
+  });
+  text = text
+    .replace(/\$\$([\s\S]*?)\$\$/g, '$1')
+    .replace(/\$([^$\n]+)\$/g, '$1')
+    .replace(/\\(?:text|mathrm|mathbf|mathit|operatorname|ce)\{([^{}]*)\}/g, '$1')
+    .replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, '$1/$2')
+    .replace(/\\sqrt\{([^{}]+)\}/g, '√$1')
+    .replace(/\\(?:left|right|displaystyle|textstyle)\b/g, '')
+    .replace(/\\(?:,|;|:|!|quad|qquad)\s*/g, ' ')
+    .replace(/\\(?:times|cdot)\b/g, '×')
+    .replace(/\\(?:approx|sim)\b/g, '≈')
+    .replace(/\\(?:to|rightarrow)\b/g, '→')
+    .replace(/\\(?:leq|le)\b/g, '≤')
+    .replace(/\\(?:geq|ge)\b/g, '≥')
+    .replace(/\\pm\b/g, '±')
+    .replace(/\\degree\b|\\circ\b/g, '°')
+    .replace(/\\%/g, '%')
+    .replace(/\\(alpha|beta|gamma|delta|mu|sigma|theta|pi)\b/g, (_, g) => ({ alpha: 'α', beta: 'β', gamma: 'γ', delta: 'δ', mu: 'μ', sigma: 'σ', theta: 'θ', pi: 'π' })[g])
+    .replace(/\^\{([^{}]+)\}|\^([+-]?\d+)/g, (_, braced, simple) => toScript(braced || simple, true))
+    .replace(/_\{([^{}]+)\}|_([+-]?\d+)/g, (_, braced, simple) => toScript(braced || simple, false))
+    .replace(/\\[a-zA-Z]+/g, '')
+    .replace(/[{}]/g, '')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/ *\n */g, '\n')
+    .trim();
+  let html = esc(text);
+  structures.forEach((smiles, index) => {
+    html = html.replace(`WREDDISMILESPLACEHOLDER${index}END`, `<b>Molecular structure (SMILES)</b>\n<code>${esc(smiles)}</code>`);
+  });
+  return html;
+}
+function toScript(value, superscript) {
+  const sup = { '0':'⁰', '1':'¹', '2':'²', '3':'³', '4':'⁴', '5':'⁵', '6':'⁶', '7':'⁷', '8':'⁸', '9':'⁹', '+':'⁺', '-':'⁻', '=':'⁼', '(':'⁽', ')':'⁾', 'n':'ⁿ', 'i':'ⁱ' };
+  const sub = { '0':'₀', '1':'₁', '2':'₂', '3':'₃', '4':'₄', '5':'₅', '6':'₆', '7':'₇', '8':'₈', '9':'₉', '+':'₊', '-':'₋', '=':'₌', '(':'₍', ')':'₎' };
+  const map = superscript ? sup : sub;
+  return [...String(value)].map(char => map[char] || char).join('');
+}
+function formatTelegramPlain(value) {
+  return formatTelegramContent(value).replace(/<[^>]*>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+}
 function chatKey(chatId) { return String(chatId); }
 
 async function telegram(method, body = {}) {
@@ -68,7 +113,7 @@ function menuKeyboard() {
     [{ text: '📚 Courses' }, { text: '📝 Practice quiz' }],
     [{ text: '🤖 AI quiz' }, { text: '🧪 Mock CBT' }],
     [{ text: '📊 My results' }, { text: '🔎 Search questions' }],
-    [{ text: '🧠 AI tutor' }, { text: '🗂 Flashcards' }],
+    [{ text: '🧠 Ask Brainiac' }, { text: '🗂 Flashcards' }],
     [{ text: '📅 Study plan' }, { text: '📈 Progress' }],
     [{ text: '⏱ Focus mode' }, { text: '🔔 Reminders' }],
     [{ text: '🧭 Weak-topic coach' }, { text: '🏆 Achievements' }],
@@ -89,7 +134,8 @@ function commands() {
     { command: 'quiz', description: 'Start a real practice quiz' },
     { command: 'mock', description: 'Start a mock CBT' },
     { command: 'aiquiz', description: 'Generate an AI quiz' },
-    { command: 'ask', description: 'Ask the AI tutor' },
+    { command: 'brainiac', description: 'Ask Brainiac, your AI study buddy' },
+    { command: 'ask', description: 'Ask Brainiac a study question' },
     { command: 'flashcards', description: 'Review flashcards' },
     { command: 'plan', description: 'Show today study plan' },
     { command: 'progress', description: 'Show study progress' },
@@ -112,7 +158,7 @@ async function help(chatId) {
   return send(chatId,
 `<b>Wreddi Telegram</b>\n\n` +
 `Use the menu buttons or these commands:\n\n` +
-`/ask QUESTION — AI tutor\n/flashcards COURSE — spaced-repetition cards\n/plan — today's study plan\n/progress — 14-day tracker\n/focus MINUTES — focus timer\n/remind MINUTES MESSAGE — study reminder\n` +
+`/brainiac QUESTION — your AI study buddy\n/ask QUESTION — alias for Brainiac\n/flashcards COURSE — spaced-repetition cards\n/plan — today's study plan\n/progress — 14-day tracker\n/focus MINUTES — focus timer\n/remind MINUTES MESSAGE — study reminder\n` +
 `/search TERM — past-question and note search\n/coach — weak-topic coaching\n/achievements — badges and milestones\n/rooms — open live study rooms\n` +
 `/create — create a new account\n/link MATRIC PASSWORD — link an existing account\n/quiz COURSE — take a real scored quiz\n/mock COURSE — take a mock CBT\n/aiquiz COURSE — generate an AI quiz (uses the same credits/limits as the website)\n/edit FIELD VALUE — edit profile details\n/me — account and credits\n/courses — course list\n/website — open every website feature\n/unlink — disconnect Telegram\n/cancel — cancel the current flow`, { reply_markup: menuKeyboard() });
 }
@@ -230,8 +276,8 @@ async function startQuiz(chatId, args) {
 async function sendQuizQuestion(chatId) {
   const quiz = quizzes.get(chatKey(chatId)); if (!quiz) return;
   const q = quiz.questions[quiz.index];
-  const buttons = (q.opts || []).map((o, i) => [{ text: `${String.fromCharCode(65 + i)}. ${String(o).slice(0, 55)}`, callback_data: `answer:${i}` }]);
-  return send(chatId, `<b>${esc(quiz.course)} — Question ${quiz.index + 1}/${quiz.questions.length}</b>\n\n${esc(q.q)}`, { reply_markup: { inline_keyboard: buttons } });
+  const buttons = (q.opts || []).map((o, i) => [{ text: `${String.fromCharCode(65 + i)}. ${formatTelegramPlain(o).slice(0, 55)}`, callback_data: `answer:${i}` }]);
+  return send(chatId, `<b>${esc(quiz.course)} · Question ${quiz.index + 1} of ${quiz.questions.length}</b>\n\n${formatTelegramContent(q.q)}`, { reply_markup: { inline_keyboard: buttons } });
 }
 async function answerQuiz(chatId, callback) {
   const quiz = quizzes.get(chatKey(chatId)); if (!quiz) return answerCallback(callback.id, 'This quiz has expired.');
@@ -264,13 +310,17 @@ async function aiQuiz(chatId, args) {
     return sendQuizQuestion(chatId);
   } catch (error) { return send(chatId, error.code === 'LIMIT_REACHED' ? error.message : `AI quiz unavailable: ${esc(error.message)}`); }
 }
+async function beginBrainiac(chatId) {
+  flows.set(chatKey(chatId), { type: 'brainiac' });
+  return send(chatId, '<b>Brainiac is here.</b> Send me a study question, or tap /cancel when you are done.');
+}
 async function askTutor(chatId, args) {
   const student = await requireStudent(chatId); if (!student) return;
-  if (!args.length) return send(chatId, 'Usage: <code>/ask Explain photosynthesis simply</code>');
+  if (!args.length) return beginBrainiac(chatId);
   try {
     const result = await tutorChat(student, args.join(' ').slice(0, 1500), { channel: 'telegram' });
-    return send(chatId, `<b>AI tutor</b>\n\n${esc(result.reply)}\n\nAI messages remaining today: ${result.dailyRemaining ?? '—'}`);
-  } catch (error) { return send(chatId, `AI tutor unavailable: ${esc(error.message)}`); }
+    return send(chatId, `<b>Brainiac · your study buddy</b>\n\n${formatTelegramContent(result.reply)}\n\nMessages remaining today: ${result.dailyRemaining ?? '—'}`);
+  } catch (error) { return send(chatId, `Brainiac is unavailable right now: ${esc(error.message)}`); }
 }
 async function downloadTelegramFile(fileId, extension) {
   const file = await telegram('getFile', { file_id: fileId });
@@ -326,7 +376,7 @@ async function searchMaterials(chatId, args) {
     CourseNote.find({ published: true, $or: [{ title: re }, { body: re }, { topic: re }] }).limit(5).lean(),
   ]);
   if (!questions.length && !notes.length) return send(chatId, `No past questions or notes matched <b>${esc(term)}</b>.`);
-  return send(chatId, `<b>Search results for ${esc(term)}</b>\n\n${questions.map((q, i) => `${i + 1}. ${esc(q.q)}\nAnswer: ${esc(q.opts?.[q.ans] || '')}${q.exp ? `\n${esc(q.exp)}` : ''}`).join('\n\n')}${notes.length ? `\n\n<b>Notes</b>\n${notes.map(n => `• ${esc(n.title)} — ${esc(n.body.slice(0, 300))}`).join('\n')}` : ''}`);
+  return send(chatId, `<b>Search results for ${esc(term)}</b>\n\n${questions.map((q, i) => `${i + 1}. ${formatTelegramContent(q.q)}\nAnswer: ${formatTelegramContent(q.opts?.[q.ans] || '')}${q.exp ? `\n${formatTelegramContent(q.exp)}` : ''}`).join('\n\n')}${notes.length ? `\n\n<b>Notes</b>\n${notes.map(n => `• ${esc(n.title)} — ${esc(n.body.slice(0, 300))}`).join('\n')}` : ''}`);
 }
 async function weakCoach(chatId) {
   const student = await requireStudent(chatId); if (!student) return;
@@ -410,14 +460,14 @@ async function startFlashcards(chatId, args) {
 async function sendFlashcard(chatId) {
   const deck = flashcards.get(chatKey(chatId)); if (!deck) return;
   const q = deck.questions[deck.index];
-  return send(chatId, `<b>Flashcard ${deck.index + 1}/${deck.questions.length}</b>\n\n${esc(q.q)}\n\nTap Reveal when ready.`, { reply_markup: { inline_keyboard: [[{ text: 'Reveal answer', callback_data: 'fc:reveal' }]] } });
+  return send(chatId, `<b>Flashcard ${deck.index + 1} of ${deck.questions.length}</b>\n\n${formatTelegramContent(q.q)}\n\nTap Reveal when ready.`, { reply_markup: { inline_keyboard: [[{ text: 'Reveal answer', callback_data: 'fc:reveal' }]] } });
 }
 async function flashcardCallback(chatId, callback) {
   const deck = flashcards.get(chatKey(chatId)); if (!deck) return answerCallback(callback.id, 'Deck expired.');
   const q = deck.questions[deck.index]; const action = callback.data.split(':')[1];
   if (action === 'reveal') {
     deck.revealed = true; await answerCallback(callback.id);
-    return send(chatId, `<b>Answer:</b> ${esc(q.opts?.[q.ans] || 'Not available')}${q.exp ? `\n\n<b>Explanation:</b> ${esc(q.exp)}` : ''}\n\nHow difficult was this card?`, { reply_markup: { inline_keyboard: [[{ text: 'Again', callback_data: 'fc:0' }, { text: 'Hard', callback_data: 'fc:1' }, { text: 'Good', callback_data: 'fc:2' }, { text: 'Easy', callback_data: 'fc:3' }]] } });
+    return send(chatId, `<b>Answer:</b> ${formatTelegramContent(q.opts?.[q.ans] || 'Not available')}${q.exp ? `\n\n<b>Explanation:</b> ${formatTelegramContent(q.exp)}` : ''}\n\nHow difficult was this card?`, { reply_markup: { inline_keyboard: [[{ text: 'Again', callback_data: 'fc:0' }, { text: 'Hard', callback_data: 'fc:1' }, { text: 'Good', callback_data: 'fc:2' }, { text: 'Easy', callback_data: 'fc:3' }]] } });
   }
   if (!deck.revealed) return answerCallback(callback.id, 'Reveal the answer first.');
   const quality = Number(action); if (![0, 1, 2, 3].includes(quality)) return answerCallback(callback.id, 'Invalid review.');
@@ -457,9 +507,19 @@ async function handleMessage(message) {
   const chatId = message.chat.id; const text = String(message.text || '').trim();
   if (!text && (message.voice || message.document)) return handleAttachment(message);
   if (!text) return;
-  if (flows.has(chatKey(chatId)) && !text.startsWith('/link')) return createFlow(chatId, text, message.from);
+  const buttonCommands = { '👤 Account': '/me', '✏️ Edit profile': '/edit', '📚 Courses': '/courses', '📝 Practice quiz': '/quiz', '🤖 AI quiz': '/aiquiz', '🧪 Mock CBT': '/mock', '📊 My results': '/results', '🔎 Search questions': '/search', '🧠 Ask Brainiac': '/brainiac', '🗂 Flashcards': '/flashcards', '📅 Study plan': '/plan', '📈 Progress': '/progress', '⏱ Focus mode': '/focus', '🔔 Reminders': '/remind', '🧭 Weak-topic coach': '/coach', '🏆 Achievements': '/achievements', '👥 Study rooms': '/rooms', '🔑 Join study room': '/joinroom', '🔔 Notifications': '/notifications', '🌐 Open website': '/website', '❓ Help': '/help' };
+  const activeFlow = flows.get(chatKey(chatId));
+  if (activeFlow?.type === 'create') {
+    if (text.toLowerCase() === '/cancel') return createFlow(chatId, text, message.from);
+    if (!text.startsWith('/') && !buttonCommands[text]) return createFlow(chatId, text, message.from);
+    flows.delete(chatKey(chatId));
+  }
+  if (activeFlow?.type === 'brainiac') {
+    if (text.toLowerCase() === '/cancel') { flows.delete(chatKey(chatId)); return showMenu(chatId, 'Brainiac chat closed. What would you like to do next?'); }
+    if (!text.startsWith('/') && !buttonCommands[text]) return askTutor(chatId, [text]);
+    flows.delete(chatKey(chatId));
+  }
   const match = text.match(/^\/(\w+)(?:@\w+)?(?:\s+([\s\S]*))?$/);
-  const buttonCommands = { '👤 Account': '/me', '✏️ Edit profile': '/edit', '📚 Courses': '/courses', '📝 Practice quiz': '/quiz', '🤖 AI quiz': '/aiquiz', '🧪 Mock CBT': '/mock', '📊 My results': '/results', '🔎 Search questions': '/search', '🧠 AI tutor': '/ask', '🗂 Flashcards': '/flashcards', '📅 Study plan': '/plan', '📈 Progress': '/progress', '⏱ Focus mode': '/focus', '🔔 Reminders': '/remind', '🧭 Weak-topic coach': '/coach', '🏆 Achievements': '/achievements', '👥 Study rooms': '/rooms', '🔑 Join study room': '/joinroom', '🔔 Notifications': '/notifications', '🌐 Open website': '/website', '❓ Help': '/help' };
   const commandText = match ? text : buttonCommands[text];
   if (!commandText) return send(chatId, 'Use the menu buttons or /help.');
   const parsed = commandText.match(/^\/(\w+)(?:\s+([\s\S]*))?$/); const command = parsed[1].toLowerCase(); const args = parsed[2] ? parsed[2].trim().split(/\s+/) : [];
@@ -479,7 +539,7 @@ async function handleMessage(message) {
   if (command === 'quiz') return startQuiz(chatId, args);
   if (command === 'mock') return startQuiz(chatId, args);
   if (command === 'aiquiz') return aiQuiz(chatId, args);
-  if (command === 'ask') return askTutor(chatId, args);
+  if (command === 'ask' || command === 'brainiac') return askTutor(chatId, args);
   if (command === 'flashcards') return startFlashcards(chatId, args);
   if (command === 'plan') return showPlan(chatId);
   if (command === 'progress') return showProgress(chatId);

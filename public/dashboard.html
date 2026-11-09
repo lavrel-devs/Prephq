@@ -752,7 +752,7 @@ details.np-card>summary::-webkit-details-marker{display:none;}
 
   <div id="onboard-card" style="display:none;margin:14px 18px 0;background:var(--surf);border-radius:var(--r16);padding:16px;box-shadow:var(--sh);">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-      <div style="font-weight:700;font-size:14px;font-family:var(--ff-h);flex:1;">Get started <span id="onb-count" style="color:var(--t3);font-weight:600;font-size:12px;"></span></div>
+      <div style="font-weight:700;font-size:14px;font-family:var(--ff-h);flex:1;">Your next step <span id="onb-count" style="color:var(--t3);font-weight:600;font-size:12px;"></span></div>
       <button onclick="dismissOnboarding()" aria-label="Dismiss" style="background:none;border:none;color:var(--t3);font-size:18px;cursor:pointer;line-height:1;">&times;</button>
     </div>
     <div id="onb-list" style="display:flex;flex-direction:column;gap:8px;"></div>
@@ -1483,23 +1483,30 @@ details.np-card>summary::-webkit-details-marker{display:none;}
 <!-- ═══ PROFILE SETUP ═════════════════════════════════════════════ -->
 <div class="modal-bg" id="m-profile-setup" style="z-index:299;">
   <div class="modal" style="max-width:420px;">
-    <div class="modal-title">Complete your profile</div>
-    <div class="modal-sub">A few details so Wreddi can tailor your dashboard. Takes under a minute.</div>
+    <div class="modal-title" id="ps-title">Let’s set up your profile</div>
+    <div class="modal-sub" id="ps-subtitle">A few short steps will help us show you the right courses and study tools.</div>
+    <div id="ps-progress" style="margin:0 0 14px;">
+      <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--t3);margin-bottom:7px;"><span id="ps-step-count">Step 1 of 4</span><span>Your profile</span></div>
+      <div style="height:7px;border-radius:99px;background:var(--fill);box-shadow:var(--sh-in-sm);overflow:hidden;"><div id="ps-progress-fill" style="height:100%;width:25%;border-radius:inherit;background:linear-gradient(90deg,var(--brand),var(--purple));transition:width .2s;"></div></div>
+    </div>
 
-    <input class="modal-input" id="ps-university" placeholder="University (e.g. University of Abuja)" maxlength="120">
-    <input class="modal-input" id="ps-department" placeholder="Department (e.g. Chemistry)" maxlength="120" style="margin-top:8px;">
+    <input class="modal-input" id="ps-university" placeholder="e.g. University of Abuja" maxlength="120">
+    <input class="modal-input" id="ps-department" placeholder="e.g. Chemistry" maxlength="120" style="margin-top:8px;">
 
-    <div style="display:flex;gap:8px;margin-top:8px;">
+    <div id="ps-gpa-fields" style="display:flex;gap:8px;margin-top:8px;">
       <input class="modal-input" id="ps-current-gpa" type="number" min="0" max="5" step="0.01" placeholder="Current GPA (optional)">
       <input class="modal-input" id="ps-target-gpa" type="number" min="0" max="5" step="0.01" placeholder="Target GPA (optional)">
     </div>
 
-    <div class="modal-sub" style="margin-top:14px;margin-bottom:6px;">Select the courses you're offering this semester <span id="ps-course-count" style="font-weight:700;color:var(--brand);"></span></div>
+    <div class="modal-sub" id="ps-course-intro" style="margin-top:14px;margin-bottom:6px;">Select the courses you're offering this semester <span id="ps-course-count" style="font-weight:700;color:var(--brand);"></span></div>
     <input class="modal-input" id="ps-course-search" placeholder="Search courses…" oninput="filterProfileSetupCourses(this.value)">
     <div id="ps-course-list" style="max-height:220px;overflow-y:auto;margin-top:8px;display:flex;flex-direction:column;gap:6px;"></div>
 
     <div class="modal-hint err" id="ps-hint" style="margin-top:8px;"></div>
-    <button class="btn-grad" style="width:100%;margin-top:10px;" id="ps-submit-btn" onclick="submitProfileSetup()">Continue</button>
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <button class="btn-surf" style="display:none;padding:12px 16px;" id="ps-back-btn" onclick="profileSetupBack()">Back</button>
+      <button class="btn-grad" style="width:100%;" id="ps-submit-btn" onclick="profileSetupNext()">Continue</button>
+    </div>
     <div id="ps-cancel-btn" style="display:none;text-align:center;margin-top:10px;font-size:13px;color:var(--t3);cursor:pointer;" onclick="document.getElementById('m-profile-setup').classList.remove('on')">Cancel</div>
   </div>
 </div>
@@ -1874,7 +1881,42 @@ async function submitUsername(){
 }
 
 let psSelectedCourses = [];
-async function openProfileSetupModal(){
+let profileSetupStep = 0;
+const profileSetupStages = [
+  { title: 'Where do you study?', subtitle: 'Enter your university or school name.' },
+  { title: 'What department are you in?', subtitle: 'This helps us tailor your study space.' },
+  { title: 'Which courses are you taking?', subtitle: 'Choose the courses you want on your dashboard.' },
+  { title: 'Add GPA details (optional)', subtitle: 'You can leave these blank and update them any time.' },
+];
+function renderProfileSetupStep() {
+  const step = profileSetupStep;
+  document.getElementById('ps-title').textContent = profileSetupStages[step].title;
+  document.getElementById('ps-subtitle').textContent = profileSetupStages[step].subtitle;
+  document.getElementById('ps-step-count').textContent = `Step ${step + 1} of ${profileSetupStages.length}`;
+  document.getElementById('ps-progress-fill').style.width = `${((step + 1) / profileSetupStages.length) * 100}%`;
+  document.getElementById('ps-university').style.display = step === 0 ? 'block' : 'none';
+  document.getElementById('ps-department').style.display = step === 1 ? 'block' : 'none';
+  document.getElementById('ps-course-intro').style.display = step === 2 ? 'block' : 'none';
+  document.getElementById('ps-course-search').style.display = step === 2 ? 'block' : 'none';
+  document.getElementById('ps-course-list').style.display = step === 2 ? 'flex' : 'none';
+  document.getElementById('ps-gpa-fields').style.display = step === 3 ? 'flex' : 'none';
+  document.getElementById('ps-back-btn').style.display = step > 0 ? 'block' : 'none';
+  document.getElementById('ps-submit-btn').textContent = step === profileSetupStages.length - 1 ? 'Finish setup' : 'Continue';
+  document.getElementById('ps-hint').textContent = '';
+}
+function profileSetupBack() {
+  if (profileSetupStep > 0) { profileSetupStep--; renderProfileSetupStep(); }
+}
+function profileSetupNext() {
+  const hint = document.getElementById('ps-hint');
+  hint.textContent = '';
+  if (profileSetupStep === 0 && !document.getElementById('ps-university').value.trim()) { hint.textContent = 'Please add your university or school to continue.'; return; }
+  if (profileSetupStep === 1 && !document.getElementById('ps-department').value.trim()) { hint.textContent = 'Please add your department to continue.'; return; }
+  if (profileSetupStep === 2 && !psSelectedCourses.length) { hint.textContent = 'Choose at least one course for your dashboard.'; return; }
+  if (profileSetupStep < profileSetupStages.length - 1) { profileSetupStep++; renderProfileSetupStep(); return; }
+  return submitProfileSetup();
+}
+async function openProfileSetupModal(editMode=false){
   // The editor must always list the FULL catalog. If it hasn't loaded yet (or failed
   // earlier) fetch it now, otherwise the list is empty/stale and students can only
   // untick the courses they already have.
@@ -1888,6 +1930,8 @@ async function openProfileSetupModal(){
   renderProfileSetupCourses();
   const cnt = document.getElementById('ps-course-count'); if(cnt) cnt.textContent = psSelectedCourses.length + ' selected';
   document.getElementById('ps-cancel-btn').style.display = 'none';
+  profileSetupStep = editMode ? 0 : (!curUser.university ? 0 : !curUser.department ? 1 : !(curUser.selectedCourses || []).length ? 2 : 3);
+  renderProfileSetupStep();
   document.getElementById('m-profile-setup').classList.add('on');
 }
 function renderProfileSetupCourses(filterTerm=''){
@@ -1931,7 +1975,7 @@ async function submitProfileSetup(){
   if(!psSelectedCourses.length){ hint.textContent='Select at least one course.'; return; }
 
   hint.textContent='';
-  btn.disabled = true; btn.textContent = 'Saving...';
+    btn.disabled = true; btn.textContent = 'Saving...';
   try{
     const r = await PhqAuth.authFetch('/api/profile/details', {
       method:'PUT', headers:{'Content-Type':'application/json'},
@@ -1943,21 +1987,22 @@ async function submitProfileSetup(){
       }),
     }, 'student');
     const d = await r.json();
-    if(!r.ok){ hint.textContent = d.error || 'Something went wrong.'; btn.disabled=false; btn.textContent='Continue'; return; }
+    if(!r.ok){ hint.textContent = d.error || 'Something went wrong.'; btn.disabled=false; btn.textContent='Finish setup'; return; }
 
     Object.assign(curUser, d);
     document.getElementById('m-profile-setup').classList.remove('on');
     await loadCourses();
     buildCourseGrid();
     renderSettingsCourseList();
+    renderOnboarding();
   }catch(e){
     hint.textContent = 'Something went wrong, try again.';
   }
-  btn.disabled = false; btn.textContent = 'Continue';
+  btn.disabled = false; btn.textContent = 'Finish setup';
 }
 
 async function openCourseEditor(){
-  await openProfileSetupModal();
+  await openProfileSetupModal(true);
   document.getElementById('ps-cancel-btn').style.display = 'block';
 }
 
@@ -2696,7 +2741,7 @@ async function startMissedReview(kind){
   renderQ();
 }
 
-// ── Get-started checklist ────────────────────────────────────
+// ── One friendly next step at a time ─────────────────────────
 const onbSeen = { quiz: false, exam: false };
 function dismissOnboarding(){ save('onbDismissed', true); document.getElementById('onboard-card').style.display = 'none'; }
 async function renderOnboarding(){
@@ -2710,18 +2755,17 @@ async function renderOnboarding(){
     }catch(e){}
   }
   const steps = [
-    { done: (curUser.selectedCourses || []).length > 0, label: 'Pick your courses',    go: "openCourseEditor()" },
-    { done: onbSeen.quiz,                                label: 'Take your first quiz',  go: "document.getElementById('course-grid').scrollIntoView({behavior:'smooth'})" },
-    { done: onbSeen.exam,                                label: 'Try a timed mock exam', go: "document.querySelector('.mode-row').scrollIntoView({behavior:'smooth',block:'center'})" },
-    { done: /^\d{4}-\d{2}-\d{2}$/.test(getSettings().examDate || ''), label: 'Set your exam date', go: "showScr('settings')" },
+    { done: (curUser.selectedCourses || []).length > 0, label: 'Choose your courses', detail: 'Tell Wreddi what you are studying this semester.', go: "openCourseEditor()" },
+    { done: onbSeen.quiz, label: 'Try a practice quiz', detail: 'Start with a few questions and see how you are doing.', go: "document.getElementById('course-grid').scrollIntoView({behavior:'smooth'})" },
+    { done: onbSeen.exam, label: 'Practice with a mock exam', detail: 'Try answering questions with a timer, just like an exam.', go: "document.querySelector('.mode-row').scrollIntoView({behavior:'smooth',block:'center'})" },
+    { done: /^\d{4}-\d{2}-\d{2}$/.test(getSettings().examDate || ''), label: 'Add your exam date', detail: 'Wreddi can keep your study plan in step with your exams.', go: "showScr('settings')" },
   ];
   const left = steps.filter(x => !x.done).length;
   if(!left){ card.style.display = 'none'; return; }
   card.style.display = '';
-  document.getElementById('onb-count').textContent = `${steps.length - left}/${steps.length}`;
-  document.getElementById('onb-list').innerHTML = steps.map(x => x.done
-    ? `<div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--t4);"><i class="fa-solid fa-circle-check" style="color:var(--ok);"></i><span style="text-decoration:line-through;">${x.label}</span></div>`
-    : `<button onclick="${x.go}" style="display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:var(--t1);background:none;border:none;padding:0;cursor:pointer;text-align:left;font-family:inherit;"><i class="fa-regular fa-circle" style="color:var(--brand);"></i>${x.label}<i class="fa-solid fa-chevron-right" style="margin-left:auto;font-size:10px;color:var(--t3);"></i></button>`).join('');
+  const next = steps.find(x => !x.done);
+  document.getElementById('onb-count').textContent = `${steps.length - left} of ${steps.length} done`;
+  document.getElementById('onb-list').innerHTML = `<div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:4px;">${next.label}</div><div style="font-size:12.5px;color:var(--t3);line-height:1.45;margin-bottom:12px;">${next.detail}</div><button onclick="${next.go}" class="btn-grad" style="width:100%;padding:11px 14px;font-size:13px;">Let’s do this <i class="fa-solid fa-arrow-right" style="margin-left:5px;"></i></button>`;
 }
 
 // ── Invite card ──────────────────────────────────────────────

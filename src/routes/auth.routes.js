@@ -83,6 +83,8 @@ async function issueSession({ subjectId, role, req, deviceFingerprint, flaggedNe
 router.post('/register', async (req, res) => {
   try {
     const { password, referralCode, username } = req.body;
+    const university = typeof req.body.university === 'string' ? req.body.university.trim().slice(0, 120) : '';
+    const department = typeof req.body.department === 'string' ? req.body.department.trim().slice(0, 120) : '';
 
     const matric = cleanMatric(req.body.matric);
     const name = cleanName(req.body.name);
@@ -129,6 +131,8 @@ router.post('/register', async (req, res) => {
         matric,
         passwordHash,
         name,
+        university,
+        department,
         phone,
         whatsapp,
         credits:           0,
