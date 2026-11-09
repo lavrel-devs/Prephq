@@ -66,10 +66,13 @@ function menuKeyboard() {
   const rows = [
     [{ text: '👤 Account' }, { text: '✏️ Edit profile' }],
     [{ text: '📚 Courses' }, { text: '📝 Practice quiz' }],
-    [{ text: '🤖 AI quiz' }, { text: '📊 My results' }],
+    [{ text: '🤖 AI quiz' }, { text: '🧪 Mock CBT' }],
+    [{ text: '📊 My results' }, { text: '🔎 Search questions' }],
     [{ text: '🧠 AI tutor' }, { text: '🗂 Flashcards' }],
     [{ text: '📅 Study plan' }, { text: '📈 Progress' }],
     [{ text: '⏱ Focus mode' }, { text: '🔔 Reminders' }],
+    [{ text: '🧭 Weak-topic coach' }, { text: '🏆 Achievements' }],
+    [{ text: '👥 Study rooms' }, { text: '🔑 Join study room' }],
     [{ text: '🔔 Notifications' }, { text: '🌐 Open website' }],
     [{ text: '❓ Help' }],
   ];
@@ -456,7 +459,7 @@ async function handleMessage(message) {
   if (!text) return;
   if (flows.has(chatKey(chatId)) && !text.startsWith('/link')) return createFlow(chatId, text, message.from);
   const match = text.match(/^\/(\w+)(?:@\w+)?(?:\s+([\s\S]*))?$/);
-  const buttonCommands = { '👤 Account': '/me', '✏️ Edit profile': '/edit', '📚 Courses': '/courses', '📝 Practice quiz': '/quiz', '🤖 AI quiz': '/aiquiz', '📊 My results': '/results', '🧠 AI tutor': '/ask', '🗂 Flashcards': '/flashcards', '📅 Study plan': '/plan', '📈 Progress': '/progress', '⏱ Focus mode': '/focus', '🔔 Reminders': '/remind', '🔔 Notifications': '/notifications', '🌐 Open website': '/website', '❓ Help': '/help' };
+  const buttonCommands = { '👤 Account': '/me', '✏️ Edit profile': '/edit', '📚 Courses': '/courses', '📝 Practice quiz': '/quiz', '🤖 AI quiz': '/aiquiz', '🧪 Mock CBT': '/mock', '📊 My results': '/results', '🔎 Search questions': '/search', '🧠 AI tutor': '/ask', '🗂 Flashcards': '/flashcards', '📅 Study plan': '/plan', '📈 Progress': '/progress', '⏱ Focus mode': '/focus', '🔔 Reminders': '/remind', '🧭 Weak-topic coach': '/coach', '🏆 Achievements': '/achievements', '👥 Study rooms': '/rooms', '🔑 Join study room': '/joinroom', '🔔 Notifications': '/notifications', '🌐 Open website': '/website', '❓ Help': '/help' };
   const commandText = match ? text : buttonCommands[text];
   if (!commandText) return send(chatId, 'Use the menu buttons or /help.');
   const parsed = commandText.match(/^\/(\w+)(?:\s+([\s\S]*))?$/); const command = parsed[1].toLowerCase(); const args = parsed[2] ? parsed[2].trim().split(/\s+/) : [];
