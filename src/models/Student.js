@@ -19,6 +19,7 @@ const StudentSchema = new mongoose.Schema({
   // never the student's password.
   telegramChatId:  { type: String, trim: true },
   telegramUsername:{ type: String, default: '', trim: true },
+  telegramLastPlanDate: { type: String, default: '' },
   role:         { type: String, default: 'student' },
   active:       { type: Boolean, default: true },
   credits:      { type: Number, default: 0 },          // Wreddi Credits — new users start at 0

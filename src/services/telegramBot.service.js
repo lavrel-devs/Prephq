@@ -12,8 +12,19 @@ const { checkDailyLimit, incrementDailyUsage } = require('./tier.service');
 const GeneratedQuestion = require('../models/GeneratedQuestion');
 const Notification = require('../models/Notification');
 const FlashcardProgress = require('../models/FlashcardProgress');
+const TelegramReminder = require('../models/TelegramReminder');
 const { chat: tutorChat } = require('./brainiac.service');
 const { progress14, watDay } = require('./study.service');
+const CourseNote = require('../models/CourseNote');
+const StudyRoom = require('../models/StudyRoom');
+const { getWeakTopics } = require('./weakTopics.service');
+const { evaluateAndAward } = require('./achievements.service');
+const fs = require('fs/promises');
+const os = require('os');
+const path = require('path');
+const { execFile } = require('child_process');
+const { promisify } = require('util');
+const execFileAsync = promisify(execFile);
 
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const API = TOKEN ? `https://api.telegram.org/bot${TOKEN}` : '';
@@ -28,6 +39,7 @@ const flows = new Map();
 const quizzes = new Map();
 const flashcards = new Map();
 const timers = new Map();
+let reminderWorker = null;
 
 function esc(value) {
   return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -72,6 +84,7 @@ function commands() {
     { command: 'create', description: 'Create a Wreddi account' },
     { command: 'link', description: 'Link an existing account' },
     { command: 'quiz', description: 'Start a real practice quiz' },
+    { command: 'mock', description: 'Start a mock CBT' },
     { command: 'aiquiz', description: 'Generate an AI quiz' },
     { command: 'ask', description: 'Ask the AI tutor' },
     { command: 'flashcards', description: 'Review flashcards' },
@@ -79,6 +92,11 @@ function commands() {
     { command: 'progress', description: 'Show study progress' },
     { command: 'focus', description: 'Start focus mode' },
     { command: 'remind', description: 'Set a study reminder' },
+    { command: 'search', description: 'Search past questions and notes' },
+    { command: 'coach', description: 'Get weak-topic coaching' },
+    { command: 'achievements', description: 'View achievements' },
+    { command: 'rooms', description: 'View study rooms' },
+    { command: 'joinroom', description: 'Join a study room by code' },
     { command: 'edit', description: 'Edit your profile' },
     { command: 'me', description: 'View your account' },
     { command: 'results', description: 'View quiz results' },
@@ -92,7 +110,8 @@ async function help(chatId) {
 `<b>Wreddi Telegram</b>\n\n` +
 `Use the menu buttons or these commands:\n\n` +
 `/ask QUESTION — AI tutor\n/flashcards COURSE — spaced-repetition cards\n/plan — today's study plan\n/progress — 14-day tracker\n/focus MINUTES — focus timer\n/remind MINUTES MESSAGE — study reminder\n` +
-`/create — create a new account\n/link MATRIC PASSWORD — link an existing account\n/quiz COURSE — take a real scored quiz\n/aiquiz COURSE — generate an AI quiz (uses the same credits/limits as the website)\n/edit FIELD VALUE — edit profile details\n/me — account and credits\n/courses — course list\n/website — open every website feature\n/unlink — disconnect Telegram\n/cancel — cancel the current flow`, { reply_markup: menuKeyboard() });
+`/search TERM — past-question and note search\n/coach — weak-topic coaching\n/achievements — badges and milestones\n/rooms — open live study rooms\n` +
+`/create — create a new account\n/link MATRIC PASSWORD — link an existing account\n/quiz COURSE — take a real scored quiz\n/mock COURSE — take a mock CBT\n/aiquiz COURSE — generate an AI quiz (uses the same credits/limits as the website)\n/edit FIELD VALUE — edit profile details\n/me — account and credits\n/courses — course list\n/website — open every website feature\n/unlink — disconnect Telegram\n/cancel — cancel the current flow`, { reply_markup: menuKeyboard() });
 }
 async function linkedStudent(chatId) {
   return Student.findOne({ telegramChatId: String(chatId), active: { $ne: false } });
@@ -250,6 +269,36 @@ async function askTutor(chatId, args) {
     return send(chatId, `<b>AI tutor</b>\n\n${esc(result.reply)}\n\nAI messages remaining today: ${result.dailyRemaining ?? '—'}`);
   } catch (error) { return send(chatId, `AI tutor unavailable: ${esc(error.message)}`); }
 }
+async function downloadTelegramFile(fileId, extension) {
+  const file = await telegram('getFile', { file_id: fileId });
+  const response = await fetch(`https://api.telegram.org/file/bot${TOKEN}/${file.file_path}`);
+  if (!response.ok) throw new Error('Could not download Telegram file');
+  const filename = path.join(os.tmpdir(), `wreddi-telegram-${Date.now()}${extension}`);
+  await fs.writeFile(filename, Buffer.from(await response.arrayBuffer()));
+  return filename;
+}
+async function handleAttachment(message) {
+  const chatId = message.chat.id; const student = await requireStudent(chatId); if (!student) return;
+  try {
+    if (message.voice) {
+      const file = await downloadTelegramFile(message.voice.file_id, '.ogg');
+      const { stdout } = await execFileAsync('manus-speech-to-text', [file], { timeout: 90000, maxBuffer: 100000 });
+      await fs.unlink(file).catch(() => {});
+      const text = stdout.trim();
+      if (!text) return send(chatId, 'I could not hear a clear question. Please try again.');
+      return askTutor(chatId, text.split(/\s+/));
+    }
+    if (message.document?.mime_type === 'application/pdf') {
+      if (Number(message.document.file_size || 0) > 12 * 1024 * 1024) return send(chatId, 'That PDF is too large. Please send a file under 12 MB.');
+      const file = await downloadTelegramFile(message.document.file_id, '.pdf'); const textFile = `${file}.txt`;
+      await execFileAsync('pdftotext', [file, textFile], { timeout: 90000 });
+      const text = (await fs.readFile(textFile, 'utf8')).slice(0, 12000);
+      await fs.unlink(file).catch(() => {}); await fs.unlink(textFile).catch(() => {});
+      if (!text.trim()) return send(chatId, 'I could not extract text from that PDF.');
+      return askTutor(chatId, [`Summarize this study material clearly, then list five key points and five practice questions:\n\n${text}`]);
+    }
+  } catch (error) { console.error('[telegram] attachment:', error.message); return send(chatId, 'I could not process that file. Try a shorter voice message or a text-based PDF.'); }
+}
 async function showPlan(chatId) {
   const student = await requireStudent(chatId); if (!student) return;
   const start = new Date(); start.setHours(0, 0, 0, 0);
@@ -262,6 +311,44 @@ async function showProgress(chatId) {
   const student = await requireStudent(chatId); if (!student) return;
   const p = await progress14(student.matric);
   return send(chatId, `<b>14-day study progress</b>\n\nActive days: <b>${p.activeDays}/14</b>\nConsistency: <b>${p.consistency}%</b>\nThis week: <b>${p.thisWeek}</b> questions\nPrevious week: <b>${p.lastWeek}</b> questions\n\n${p.days.slice(-7).map(d => `${d.date}: ${d.questions} questions, ${d.correct} correct`).join('\n')}`);
+}
+async function searchMaterials(chatId, args) {
+  const student = await requireStudent(chatId); if (!student) return;
+  if (!args.length) return send(chatId, 'Usage: <code>/search photosynthesis</code>');
+  const term = args.join(' ').slice(0, 80);
+  const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(escaped, 'i');
+  const [questions, notes] = await Promise.all([
+    Question.find({ $or: [{ q: re }, { tag: re }, { exp: re }] }).limit(5).lean(),
+    CourseNote.find({ published: true, $or: [{ title: re }, { body: re }, { topic: re }] }).limit(5).lean(),
+  ]);
+  if (!questions.length && !notes.length) return send(chatId, `No past questions or notes matched <b>${esc(term)}</b>.`);
+  return send(chatId, `<b>Search results for ${esc(term)}</b>\n\n${questions.map((q, i) => `${i + 1}. ${esc(q.q)}\nAnswer: ${esc(q.opts?.[q.ans] || '')}${q.exp ? `\n${esc(q.exp)}` : ''}`).join('\n\n')}${notes.length ? `\n\n<b>Notes</b>\n${notes.map(n => `• ${esc(n.title)} — ${esc(n.body.slice(0, 300))}`).join('\n')}` : ''}`);
+}
+async function weakCoach(chatId) {
+  const student = await requireStudent(chatId); if (!student) return;
+  const weak = await getWeakTopics(student.matric, 5);
+  if (!weak.length) return send(chatId, 'Not enough tagged practice data yet. Complete a few quizzes and I will identify your weakest topics.');
+  return send(chatId, `<b>Weak-topic coaching</b>\n\n${weak.map((w, i) => `${i + 1}. <b>${esc(w.courseCode)} — ${esc(w.tag)}</b>\nAccuracy: ${w.accuracy}% across ${w.attempts} attempts\nNext action: /quiz ${esc(w.course)}`).join('\n\n')}`);
+}
+async function achievements(chatId) {
+  const student = await requireStudent(chatId); if (!student) return;
+  const result = await evaluateAndAward(student); const earned = (student.achievements || []).map(a => a.key);
+  return send(chatId, `<b>Achievements</b>\n\nQuestions answered: ${result.stats.questions}\nQuizzes completed: ${result.stats.quizzes}\nStreak: ${result.stats.streak}\nExams: ${result.stats.exams}\n\n${result.fresh?.length ? `Newly earned: ${result.fresh.map(a => esc(a.key)).join(', ')}` : `Earned badges: ${earned.length ? earned.join(', ') : 'None yet'}`}`);
+}
+async function studyRooms(chatId) {
+  const rooms = await StudyRoom.find({ status: { $in: ['waiting', 'active'] } }).sort({ createdAt: -1 }).limit(10).lean();
+  return send(chatId, rooms.length ? `<b>Open study rooms</b>\n\n${rooms.map(r => `• <b>${esc(r.code)}</b> — ${esc(r.course)} (${r.status})\nParticipants: ${r.participants?.length || 0}`).join('\n')}` : 'No open study rooms right now. Use the website to create or join a live room.', websiteButton());
+}
+async function joinRoom(chatId, args) {
+  const student = await requireStudent(chatId); if (!student) return;
+  const code = String(args[0] || '').trim().toUpperCase();
+  if (!code) return send(chatId, 'Usage: <code>/joinroom ROOMCODE</code>');
+  const room = await StudyRoom.findOne({ code, status: 'waiting' });
+  if (!room) return send(chatId, 'That room is not available. Use /rooms to refresh.');
+  if (!room.participants.some(p => p.matric === student.matric)) room.participants.push({ matric: student.matric, username: student.username || student.name });
+  await room.save();
+  return send(chatId, `Joined study room <b>${esc(room.code)}</b> for ${esc(room.course)}. Open the website to participate in the live room.`, websiteButton());
 }
 async function startFocus(chatId, args) {
   if (timers.has(`focus:${chatKey(chatId)}`)) return send(chatId, 'Focus mode is already running. Use <code>/focus stop</code> to end it.');
@@ -278,13 +365,35 @@ async function stopFocus(chatId) {
 }
 async function setReminder(chatId, args) {
   if (args[0]?.toLowerCase() === 'clear') {
-    const key = `remind:${chatKey(chatId)}`; if (timers.has(key)) clearTimeout(timers.get(key)); timers.delete(key); return send(chatId, 'Reminder cleared.');
+    await TelegramReminder.updateMany({ chatId: chatKey(chatId), sentAt: null, cancelledAt: null }, { $set: { cancelledAt: new Date() } });
+    return send(chatId, 'All pending reminders cleared.');
   }
   const minutes = Number(args[0]); const note = args.slice(1).join(' ') || 'Time to study';
   if (!Number.isFinite(minutes) || minutes < 1 || minutes > 10080) return send(chatId, 'Usage: <code>/remind MINUTES MESSAGE</code>\nExample: <code>/remind 60 Revise chemistry</code>');
-  const key = `remind:${chatKey(chatId)}`; if (timers.has(key)) clearTimeout(timers.get(key));
-  const timer = setTimeout(() => { timers.delete(key); send(chatId, `🔔 <b>Study reminder</b>\n\n${esc(note)}`).catch(() => {}); }, minutes * 60 * 1000);
-  timers.set(key, timer); return send(chatId, `Reminder set for ${minutes} minute${minutes === 1 ? '' : 's'} from now: <b>${esc(note)}</b>\nUse /remind clear to cancel.`);
+  const student = await requireStudent(chatId); if (!student) return;
+  await TelegramReminder.create({ chatId: chatKey(chatId), matric: student.matric, text: note.slice(0, 500), runAt: new Date(Date.now() + minutes * 60 * 1000) });
+  return send(chatId, `Persistent reminder set for ${minutes} minute${minutes === 1 ? '' : 's'} from now: <b>${esc(note)}</b>\nIt will survive a server restart. Use /remind clear to cancel.`);
+}
+async function processReminders() {
+  if (!TOKEN) return;
+  const due = await TelegramReminder.find({ runAt: { $lte: new Date() }, sentAt: null, cancelledAt: null }).sort({ runAt: 1 }).limit(50);
+  for (const reminder of due) {
+    const claimed = await TelegramReminder.findOneAndUpdate({ _id: reminder._id, sentAt: null, cancelledAt: null }, { $set: { sentAt: new Date() } }, { new: true });
+    if (!claimed) continue;
+    await send(claimed.chatId, `🔔 <b>Study reminder</b>\n\n${esc(claimed.text)}`).catch(error => console.error('[telegram] reminder send:', error.message));
+  }
+}
+async function processDailyPlans() {
+  if (!TOKEN) return;
+  const now = new Date(); const wat = new Date(now.getTime() + 60 * 60 * 1000);
+  if (wat.getUTCHours() !== 7) return;
+  const date = wat.toISOString().slice(0, 10);
+  const students = await Student.find({ telegramChatId: { $exists: true, $ne: '' }, telegramLastPlanDate: { $ne: date }, active: { $ne: false } }).limit(100);
+  for (const student of students) {
+    const claimed = await Student.findOneAndUpdate({ _id: student._id, telegramLastPlanDate: { $ne: date } }, { $set: { telegramLastPlanDate: date } }, { new: true });
+    if (!claimed) continue;
+    await send(student.telegramChatId, `<b>Good morning, ${esc(student.name)}</b>\n\nYour daily study plan is ready.\n• Answer 20 practice questions\n• Review one weak topic with /coach\n• Use /focus 25 to begin a session\n• Check your progress with /progress`).catch(() => {});
+  }
 }
 async function startFlashcards(chatId, args) {
   const student = await requireStudent(chatId); if (!student) return;
@@ -342,7 +451,9 @@ async function handleCallback(callback) {
   return answerCallback(callback.id);
 }
 async function handleMessage(message) {
-  const chatId = message.chat.id; const text = String(message.text || '').trim(); if (!text) return;
+  const chatId = message.chat.id; const text = String(message.text || '').trim();
+  if (!text && (message.voice || message.document)) return handleAttachment(message);
+  if (!text) return;
   if (flows.has(chatKey(chatId)) && !text.startsWith('/link')) return createFlow(chatId, text, message.from);
   const match = text.match(/^\/(\w+)(?:@\w+)?(?:\s+([\s\S]*))?$/);
   const buttonCommands = { '👤 Account': '/me', '✏️ Edit profile': '/edit', '📚 Courses': '/courses', '📝 Practice quiz': '/quiz', '🤖 AI quiz': '/aiquiz', '📊 My results': '/results', '🧠 AI tutor': '/ask', '🗂 Flashcards': '/flashcards', '📅 Study plan': '/plan', '📈 Progress': '/progress', '⏱ Focus mode': '/focus', '🔔 Reminders': '/remind', '🔔 Notifications': '/notifications', '🌐 Open website': '/website', '❓ Help': '/help' };
@@ -363,6 +474,7 @@ async function handleMessage(message) {
   if (command === 'edit') return editProfile(chatId, args);
   if (command === 'courses') return showCourses(chatId);
   if (command === 'quiz') return startQuiz(chatId, args);
+  if (command === 'mock') return startQuiz(chatId, args);
   if (command === 'aiquiz') return aiQuiz(chatId, args);
   if (command === 'ask') return askTutor(chatId, args);
   if (command === 'flashcards') return startFlashcards(chatId, args);
@@ -370,6 +482,11 @@ async function handleMessage(message) {
   if (command === 'progress') return showProgress(chatId);
   if (command === 'focus') return startFocus(chatId, args);
   if (command === 'remind') return setReminder(chatId, args);
+  if (command === 'search') return searchMaterials(chatId, args);
+  if (command === 'coach') return weakCoach(chatId);
+  if (command === 'achievements') return achievements(chatId);
+  if (command === 'rooms') return studyRooms(chatId);
+  if (command === 'joinroom') return joinRoom(chatId, args);
   if (command === 'notifications') return notifications(chatId);
   if (command === 'website') return WEBSITE_URL ? send(chatId, 'Open the full Wreddi website:', websiteButton()) : send(chatId, 'Set TELEGRAM_WEB_URL on the server to enable the website button.');
   if (command === 'unlink') { await Student.updateOne({ telegramChatId: String(chatId) }, { $unset: { telegramChatId: 1, telegramUsername: 1 } }); return showMenu(chatId, 'Telegram disconnected from your Wreddi account.'); }
@@ -385,8 +502,8 @@ async function poll() {
 }
 async function startTelegramBot() {
   if (!TOKEN) return console.log('[telegram] TELEGRAM_BOT_TOKEN not set; bot disabled.');
-  try { const me = await telegram('getMe'); await telegram('setMyCommands', { commands: commands() }); console.log(`[telegram] bot @${me.username} started with menu and interactive quizzes.`); poll(); }
+  try { const me = await telegram('getMe'); await telegram('setMyCommands', { commands: commands() }); reminderWorker = setInterval(() => { processReminders().catch(e => console.error('[telegram] reminder worker:', e.message)); processDailyPlans().catch(e => console.error('[telegram] daily plan worker:', e.message)); }, 30000); console.log(`[telegram] bot @${me.username} started with menu and interactive quizzes.`); poll(); }
   catch (error) { console.error('[telegram] startup failed:', error.message); }
 }
-function stopTelegramBot() { stopped = true; flows.clear(); quizzes.clear(); flashcards.clear(); for (const timer of timers.values()) clearTimeout(timer); timers.clear(); }
+function stopTelegramBot() { stopped = true; flows.clear(); quizzes.clear(); flashcards.clear(); if (reminderWorker) clearInterval(reminderWorker); for (const timer of timers.values()) clearTimeout(timer); timers.clear(); }
 module.exports = { startTelegramBot, stopTelegramBot };
