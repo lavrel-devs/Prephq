@@ -711,6 +711,47 @@ details.np-card>summary::-webkit-details-marker{display:none;}
 .guess-btn{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;margin:10px 0 2px auto;padding:8px 14px;border-radius:999px;font-size:12.5px;font-weight:700;color:var(--t3);cursor:pointer;background:var(--bg);box-shadow:var(--sh-sm,3px 3px 7px rgba(120,130,170,.3),-3px -3px 7px rgba(255,255,255,.8));-webkit-tap-highlight-color:transparent}
 .guess-btn:active{box-shadow:var(--sh-in-sm,inset 2px 2px 5px rgba(120,130,170,.35),inset -2px -2px 5px rgba(255,255,255,.8))}
 .guess-btn.on{color:#7a4a00;background:linear-gradient(135deg,#FFE29A,#FFC24D);box-shadow:0 3px 0 rgba(160,100,0,.35)}
+
+/* v1.10.1 UX pass — make the next action obvious and keep touch targets calm. */
+.topbar{
+  background:color-mix(in srgb, var(--bg) 88%, transparent);
+  border-bottom:1px solid var(--bd);
+  backdrop-filter:saturate(150%) blur(18px);
+  -webkit-backdrop-filter:saturate(150%) blur(18px);
+}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.topbar{background:var(--bg);}}
+.tb-left::after{content:'Study dashboard';display:block;font-size:10px;color:var(--t4);font-weight:600;margin-left:2px;position:absolute;top:calc(env(safe-area-inset-top,0px) + 32px);left:58px;}
+.tb-info{padding-bottom:4px;}
+.home-hero{max-width:760px;margin:0 auto;padding-top:26px;}
+.home-hero .hero-tag{background:var(--brand-lt);box-shadow:none;}
+.hero-title{max-width:560px;}
+.stats-row{max-width:760px;margin:0 auto;scroll-snap-type:x proximity;}
+.stat-pill{scroll-snap-align:start;border:1px solid var(--bd);box-shadow:none;}
+.goal-card,.np-card,.opt-card,.mode-btn,.cc,.hcard,.pcard,.bcard{border:1px solid var(--bd);box-shadow:none;}
+.goal-card{background:linear-gradient(180deg,var(--surf),color-mix(in srgb,var(--surf) 88%,var(--brand-lt)));}
+.sec-h{max-width:760px;margin-left:auto;margin-right:auto;}
+.mode-row,.qty-wrap{max-width:760px;margin-left:auto;margin-right:auto;}
+.mode-btn{min-height:92px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.mode-btn.on{border:2px solid var(--brand);background:var(--brand-lt);box-shadow:none;}
+.qp{border:1px solid var(--bd);box-shadow:none;min-height:42px;display:inline-flex;align-items:center;justify-content:center;}
+.qp.on{border-color:var(--brand);background:var(--brand-lt);box-shadow:none;}
+#course-search{border:1px solid var(--bd)!important;box-shadow:none!important;min-height:48px;}
+#course-search:focus{border-color:var(--brand)!important;box-shadow:0 0 0 3px var(--brand-lt)!important;}
+#start-btn{background:var(--grad);color:var(--on-brand);box-shadow:0 8px 18px color-mix(in srgb,var(--brand) 22%,transparent);min-height:52px;}
+#start-btn:disabled{background:var(--fill);color:var(--t4);box-shadow:none;}
+.start-wrap{max-width:760px;margin:0 auto;position:sticky;bottom:calc(var(--nav-space) - 10px);z-index:30;background:linear-gradient(180deg,transparent,var(--bg) 24%);padding-top:28px;}
+#ai-quiz-btn{background:var(--brand-lt)!important;border:1px solid var(--brand)!important;box-shadow:none!important;}
+#onboard-card{border:1px solid var(--brand)!important;box-shadow:0 8px 24px color-mix(in srgb,var(--brand) 10%,transparent)!important;}
+@media(max-width:520px){
+  .topbar{padding-left:16px;padding-right:16px;}
+  .home-hero{padding-left:18px;padding-right:18px;}
+  .mode-row{gap:8px;}
+  .mode-btn{padding:12px 6px;min-height:88px;}
+  .mode-sub{font-size:9.5px;}
+  .start-wrap{padding-left:18px;padding-right:18px;bottom:calc(var(--nav-space) - 6px);}
+}
+@media(prefers-reduced-motion:reduce){.topbar{backdrop-filter:none;-webkit-backdrop-filter:none;}.start-wrap{background:var(--bg);}}
+
 </style>
 <link rel="stylesheet" href="/css/hybrid.css">
 <script src="/js/ripple.js" defer></script>
@@ -733,10 +774,10 @@ details.np-card>summary::-webkit-details-marker{display:none;}
       <div class="ib compact" id="credits-pill" onclick="showScr('settings')">
         <i class="fa-solid fa-coins"></i><span id="tb-credits">0</span>
       </div>
-      <div class="ib" id="theme-ib" onclick="toggleTheme()">
+      <div class="ib" id="theme-ib" role="button" tabindex="0" aria-label="Switch theme" onclick="toggleTheme()" onkeydown="if(event.key==='Enter'||event.key===' ')toggleTheme()">
         <svg id="theme-ico" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
       </div>
-      <div class="ib" onclick="openMenu()">
+      <div class="ib" role="button" tabindex="0" aria-label="Open menu" onclick="openMenu()" onkeydown="if(event.key==='Enter'||event.key===' ')openMenu()">
         <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
       </div>
     </div>
@@ -813,11 +854,11 @@ details.np-card>summary::-webkit-details-marker{display:none;}
     </div>
   </div>
 
-  <div class="sec-h"><div class="sec-title">Select Course</div><div class="sec-badge" id="sel-badge">1 selected</div></div>
+  <div class="sec-h"><div><div class="sec-title">Select Course</div><div style="font-size:11.5px;color:var(--t3);margin-top:3px;">Pick at least one course to unlock your quiz</div></div><div class="sec-badge" id="sel-badge">1 selected</div></div>
   <div style="padding:0 18px 12px;">
     <div style="position:relative;">
       <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--t4);font-size:13px;z-index:1;"></i>
-      <input id="course-search" placeholder="Search for a course..." oninput="filterCourseGrid(this.value)" style="width:100%;background:var(--fill);border:none;border-radius:999px;padding:13px 20px 13px 42px;color:var(--t1);font-size:13.5px;font-weight:600;outline:none;box-shadow:var(--sh-in);">
+      <input id="course-search" aria-label="Search your courses" placeholder="Search your courses..." oninput="filterCourseGrid(this.value)" style="width:100%;background:var(--fill);border:none;border-radius:999px;padding:13px 20px 13px 42px;color:var(--t1);font-size:13.5px;font-weight:600;outline:none;box-shadow:var(--sh-in);">
     </div>
   </div>
   <div class="cg" id="course-grid"></div>
