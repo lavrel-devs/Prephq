@@ -711,49 +711,9 @@ details.np-card>summary::-webkit-details-marker{display:none;}
 .guess-btn{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;margin:10px 0 2px auto;padding:8px 14px;border-radius:999px;font-size:12.5px;font-weight:700;color:var(--t3);cursor:pointer;background:var(--bg);box-shadow:var(--sh-sm,3px 3px 7px rgba(120,130,170,.3),-3px -3px 7px rgba(255,255,255,.8));-webkit-tap-highlight-color:transparent}
 .guess-btn:active{box-shadow:var(--sh-in-sm,inset 2px 2px 5px rgba(120,130,170,.35),inset -2px -2px 5px rgba(255,255,255,.8))}
 .guess-btn.on{color:#7a4a00;background:linear-gradient(135deg,#FFE29A,#FFC24D);box-shadow:0 3px 0 rgba(160,100,0,.35)}
-
-/* v1.10.1 UX pass — make the next action obvious and keep touch targets calm. */
-.topbar{
-  background:color-mix(in srgb, var(--bg) 88%, transparent);
-  border-bottom:1px solid var(--bd);
-  backdrop-filter:saturate(150%) blur(18px);
-  -webkit-backdrop-filter:saturate(150%) blur(18px);
-}
-@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.topbar{background:var(--bg);}}
-.tb-left::after{content:'Study dashboard';display:block;font-size:10px;color:var(--t4);font-weight:600;margin-left:2px;position:absolute;top:calc(env(safe-area-inset-top,0px) + 32px);left:58px;}
-.tb-info{padding-bottom:4px;}
-.home-hero{max-width:760px;margin:0 auto;padding-top:26px;}
-.home-hero .hero-tag{background:var(--brand-lt);box-shadow:none;}
-.hero-title{max-width:560px;}
-.stats-row{max-width:760px;margin:0 auto;scroll-snap-type:x proximity;}
-.stat-pill{scroll-snap-align:start;border:1px solid var(--bd);box-shadow:none;}
-.goal-card,.np-card,.opt-card,.mode-btn,.cc,.hcard,.pcard,.bcard{border:1px solid var(--bd);box-shadow:none;}
-.goal-card{background:linear-gradient(180deg,var(--surf),color-mix(in srgb,var(--surf) 88%,var(--brand-lt)));}
-.sec-h{max-width:760px;margin-left:auto;margin-right:auto;}
-.mode-row,.qty-wrap{max-width:760px;margin-left:auto;margin-right:auto;}
-.mode-btn{min-height:92px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-.mode-btn.on{border:2px solid var(--brand);background:var(--brand-lt);box-shadow:none;}
-.qp{border:1px solid var(--bd);box-shadow:none;min-height:42px;display:inline-flex;align-items:center;justify-content:center;}
-.qp.on{border-color:var(--brand);background:var(--brand-lt);box-shadow:none;}
-#course-search{border:1px solid var(--bd)!important;box-shadow:none!important;min-height:48px;}
-#course-search:focus{border-color:var(--brand)!important;box-shadow:0 0 0 3px var(--brand-lt)!important;}
-#start-btn{background:var(--grad);color:var(--on-brand);box-shadow:0 8px 18px color-mix(in srgb,var(--brand) 22%,transparent);min-height:52px;}
-#start-btn:disabled{background:var(--fill);color:var(--t4);box-shadow:none;}
-.start-wrap{max-width:760px;margin:0 auto;position:sticky;bottom:calc(var(--nav-space) - 10px);z-index:30;background:linear-gradient(180deg,transparent,var(--bg) 24%);padding-top:28px;}
-#ai-quiz-btn{background:var(--brand-lt)!important;border:1px solid var(--brand)!important;box-shadow:none!important;}
-#onboard-card{border:1px solid var(--brand)!important;box-shadow:0 8px 24px color-mix(in srgb,var(--brand) 10%,transparent)!important;}
-@media(max-width:520px){
-  .topbar{padding-left:16px;padding-right:16px;}
-  .home-hero{padding-left:18px;padding-right:18px;}
-  .mode-row{gap:8px;}
-  .mode-btn{padding:12px 6px;min-height:88px;}
-  .mode-sub{font-size:9.5px;}
-  .start-wrap{padding-left:18px;padding-right:18px;bottom:calc(var(--nav-space) - 6px);}
-}
-@media(prefers-reduced-motion:reduce){.topbar{backdrop-filter:none;-webkit-backdrop-filter:none;}.start-wrap{background:var(--bg);}}
-
 </style>
 <link rel="stylesheet" href="/css/hybrid.css">
+<link rel="stylesheet" href="/css/guided-home.css">
 <script src="/js/ripple.js" defer></script>
 </head>
 <body class="fs-md">
@@ -774,10 +734,10 @@ details.np-card>summary::-webkit-details-marker{display:none;}
       <div class="ib compact" id="credits-pill" onclick="showScr('settings')">
         <i class="fa-solid fa-coins"></i><span id="tb-credits">0</span>
       </div>
-      <div class="ib" id="theme-ib" role="button" tabindex="0" aria-label="Switch theme" onclick="toggleTheme()" onkeydown="if(event.key==='Enter'||event.key===' ')toggleTheme()">
+      <div class="ib" id="theme-ib" onclick="toggleTheme()">
         <svg id="theme-ico" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
       </div>
-      <div class="ib" role="button" tabindex="0" aria-label="Open menu" onclick="openMenu()" onkeydown="if(event.key==='Enter'||event.key===' ')openMenu()">
+      <div class="ib" onclick="openMenu()">
         <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
       </div>
     </div>
@@ -854,11 +814,11 @@ details.np-card>summary::-webkit-details-marker{display:none;}
     </div>
   </div>
 
-  <div class="sec-h"><div><div class="sec-title">Select Course</div><div style="font-size:11.5px;color:var(--t3);margin-top:3px;">Pick at least one course to unlock your quiz</div></div><div class="sec-badge" id="sel-badge">1 selected</div></div>
-  <div style="padding:0 18px 12px;">
+  <div class="sec-h guided-step-heading" id="course-step-heading" data-guided-step="1"><div class="sec-title">Choose your course</div><div class="sec-badge" id="sel-badge">1 selected</div><div class="guided-step-help">Pick one or more subjects to practice.</div></div>
+  <div id="course-search-wrap" style="padding:0 18px 12px;">
     <div style="position:relative;">
       <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--t4);font-size:13px;z-index:1;"></i>
-      <input id="course-search" aria-label="Search your courses" placeholder="Search your courses..." oninput="filterCourseGrid(this.value)" style="width:100%;background:var(--fill);border:none;border-radius:999px;padding:13px 20px 13px 42px;color:var(--t1);font-size:13.5px;font-weight:600;outline:none;box-shadow:var(--sh-in);">
+      <input id="course-search" placeholder="Search for a course..." oninput="filterCourseGrid(this.value)" style="width:100%;background:var(--fill);border:none;border-radius:999px;padding:13px 20px 13px 42px;color:var(--t1);font-size:13.5px;font-weight:600;outline:none;box-shadow:var(--sh-in);">
     </div>
   </div>
   <div class="cg" id="course-grid"></div>
@@ -869,7 +829,7 @@ details.np-card>summary::-webkit-details-marker{display:none;}
     </button>
   </div>
 
-  <div class="sec-h" style="padding-top:20px;"><div class="sec-title">Quiz Mode</div></div>
+  <div class="sec-h guided-step-heading" id="mode-step-heading" data-guided-step="2" style="padding-top:20px;"><div class="sec-title">Choose your session</div><div class="guided-step-help">Practice gives instant feedback; exam mode saves your score for the end.</div></div>
   <div class="mode-row">
     <div class="mode-btn on" data-mode="practice" onclick="selMode(this)">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z"/></svg>
@@ -885,7 +845,7 @@ details.np-card>summary::-webkit-details-marker{display:none;}
     </div>
   </div>
 
-  <div class="sec-h" style="padding-top:18px;"><div class="sec-title">Questions</div></div>
+  <div class="sec-h guided-step-heading" id="qty-step-heading" data-guided-step="3" style="padding-top:18px;"><div class="sec-title">Set your length</div><div class="guided-step-help">Choose a quick set or build a longer session.</div></div>
   <div class="qty-wrap">
     <div class="qty-row">
       <div class="qp" data-qty="10" onclick="selQty(this)">10</div>
@@ -904,14 +864,14 @@ details.np-card>summary::-webkit-details-marker{display:none;}
     </div>
   </div>
 
-  <div onclick="PhqShell.go('/written')" style="margin:20px 18px 0;padding:14px 16px;border-radius:var(--r16);background:var(--surf);box-shadow:var(--sh);display:flex;align-items:center;gap:12px;cursor:pointer;">
+  <div id="written-launch-card" onclick="PhqShell.go('/written')" style="margin:20px 18px 0;padding:14px 16px;border-radius:var(--r16);background:var(--surf);box-shadow:var(--sh);display:flex;align-items:center;gap:12px;cursor:pointer;">
     <div style="width:42px;height:42px;border-radius:14px;background:var(--grad);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-pen-to-square"></i></div>
     <div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:14px;font-family:var(--ff-h);">Written Exam <span style="font-size:10px;font-weight:700;color:#fff;background:var(--purple);padding:2px 7px;border-radius:99px;vertical-align:middle;">NEW</span></div><div style="font-size:12px;color:var(--t3);margin-top:2px;">Theory questions you type, marked by AI against a marking scheme</div></div>
     <i class="fa-solid fa-chevron-right" style="color:var(--t3);font-size:12px;"></i>
   </div>
 
-  <div class="sec-h" style="padding-top:20px;"><div class="sec-title"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--purple);margin-right:6px;"></i>AI Quiz Generator</div></div>
-  <div style="background:var(--surf);border-radius:var(--r16);margin:0 18px 18px;padding:16px;box-shadow:var(--sh);">
+  <div class="sec-h" data-guided-tools-heading><div class="sec-title"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--purple);margin-right:6px;"></i>AI Quiz Generator</div></div>
+  <div id="ai-generator-card" style="background:var(--surf);border-radius:var(--r16);margin:0 18px 18px;padding:16px;box-shadow:var(--sh);">
     <div style="font-size:12.5px;color:var(--t3);margin-bottom:12px;">Generate a fresh set of questions for any course with AI. Costs <b id="ai-quiz-cost">5</b> credits per quiz. Questions the AI writes for you may be reviewed by Wreddi and added to the practice bank (questions made from notes you paste are never shared).</div>
     <div style="display:flex;gap:8px;margin-bottom:10px;">
       <input id="ai-course-input" placeholder="Course code e.g. CHM142" style="flex:1;min-width:0;padding:12px;border-radius:12px;border:none;background:var(--fill);font-size:14px;font-weight:600;color:var(--t1);outline:none;box-shadow:var(--sh-in-sm);" autocapitalize="characters">
@@ -1003,8 +963,8 @@ details.np-card>summary::-webkit-details-marker{display:none;}
     <button class="btn-grad" style="width:100%;padding:12px;border-radius:11px;color:var(--no);font-weight:600;font-size:13px;cursor:pointer;" onclick="startWeakTopicQuiz()">Start Focused Quiz</button>
   </div>
 
-  <div class="sec-h" style="padding-top:18px;"><div class="sec-title">Options</div></div>
-  <div style="display:flex;flex-direction:column;gap:12px;padding-bottom:4px;">
+  <div class="sec-h" data-guided-options-heading><div class="sec-title">Options</div></div>
+  <div id="guided-options-list" style="display:flex;flex-direction:column;gap:12px;padding-bottom:4px;">
     <div class="opt-card timer-card">
       <div class="oc-left">
         <div class="oc-icon" style="color:var(--teal)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg></div>

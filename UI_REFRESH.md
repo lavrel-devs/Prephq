@@ -48,9 +48,3 @@ Visual only: no routes, API, or data changes.
 - Tokens: near-white canvas, white cards, hairline borders instead of shadows (shadow kept only for menus, sheets and the tab bar), softer fills, flat primary colour (`--grad` is now a solid).
 - Removed: gradients and button glows, tinted chips (badges, streak, section counts), the tiles behind icons, background blobs, the landing page's floating cards and gradient headline text.
 - To go back to the previous look: restore `tokens.css`, `hybrid.css` (everything under "Minimal pass") and `landing.html`'s styles from the v1.10.0 zip.
-
-
-## UX pass (v1.10.1)
-- Dashboard hierarchy tightened: the course area explains the next step, selected modes/courses have clearer focus, and the Start Quiz action is now a real primary action.
-- Mobile home chrome uses a legible sticky top bar, calmer surfaces, stronger touch targets, and a safe-area-aware sticky quiz CTA.
-- Sign-in tabs expose keyboard focus/selection state and the primary sign-in button is visually prominent.

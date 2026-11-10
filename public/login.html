@@ -184,13 +184,6 @@ body{
   .card{padding:32px 22px 26px;}
   .title{font-size:22px;}
 }
-
-/* UX pass: the sign-in action should look actionable at a glance. */
-.btn-grad{background:var(--grad);color:var(--on-brand);box-shadow:0 8px 18px color-mix(in srgb,var(--brand) 22%,transparent);}
-.btn-grad:active{background:var(--brand-dk);}
-.tab{min-height:42px;display:flex;align-items:center;justify-content:center;}
-.tab:focus-visible{outline:3px solid var(--brand);outline-offset:2px;}
-
 </style>
 <link rel="stylesheet" href="/css/hybrid.css">
 <script src="/js/ripple.js" defer></script>
@@ -209,8 +202,8 @@ body{
   <div class="sub">Sign in to continue</div>
 
   <div class="tabs">
-    <div class="tab on" id="tab-student" role="tab" tabindex="0" aria-selected="true" onclick="switchTab('student')">Student</div>
-    <div class="tab" id="tab-admin" role="tab" tabindex="0" aria-selected="false" onclick="switchTab('admin')">Admin</div>
+    <div class="tab on" id="tab-student" onclick="switchTab('student')">Student</div>
+    <div class="tab" id="tab-admin" onclick="switchTab('admin')">Admin</div>
   </div>
 
   <div class="err-banner" id="err"><i class="fa-solid fa-circle-exclamation"></i><span id="err-msg">Invalid credentials</span></div>
@@ -265,8 +258,6 @@ if (new URLSearchParams(location.search).get('as') === 'admin') switchTab('admin
 function switchTab(which){
   document.getElementById('tab-student').classList.toggle('on', which==='student');
   document.getElementById('tab-admin').classList.toggle('on', which==='admin');
-  document.getElementById('tab-student').setAttribute('aria-selected', which==='student');
-  document.getElementById('tab-admin').setAttribute('aria-selected', which==='admin');
   document.getElementById('form-student').style.display = which==='student' ? 'block':'none';
   document.getElementById('form-admin').style.display = which==='admin' ? 'block':'none';
   clearErr();
@@ -353,4 +344,3 @@ document.getElementById('a-pass').addEventListener('keydown', e=>{ if(e.key==='E
 </script>
 </body>
 </html>
-<script>document.querySelectorAll('[role=tab]').forEach(t=>t.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();switchTab(t.id==='tab-admin'?'admin':'student')}}));</script>
