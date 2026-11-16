@@ -23,6 +23,7 @@
     '/focus':       { id: 'view-focus',       file: '/views/focus.html',       title: 'Focus Timer' },
     '/mistakes':    { id: 'view-mistakes',    file: '/views/mistakes.html',    title: 'Mistake Notebook' },
     '/wrapped':     { id: 'view-wrapped',     file: '/views/wrapped.html',     title: 'Wreddi Wrapped' },
+    '/secondary':   { id: 'view-secondary',   file: '/views/secondary.html',   title: 'Secondary' },
   };
 
   const state = { current: null, seq: 0, mounted: {}, texts: {}, pending: {}, deps: {} };

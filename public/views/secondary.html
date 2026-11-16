@@ -1,0 +1,557 @@
+<!-- View: Wreddi Secondary — JAMB, WAEC, NECO and school-exam prep. Loaded once by js/shell.js into <div class="scr" id="view-secondary">,
+     then only shown and hidden. Panes: setup, hub, pick (practice options), run (the paper), result.
+     Papers come from GET /api/secondary/paper; finished papers are saved with POST /api/scores/:matric (mode sec-mock / sec-practice). -->
+<style>
+#view-secondary *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+#view-secondary{font-family:var(--ff-b);color:var(--t1);min-height:calc(100dvh - var(--nav-space,96px));-webkit-font-smoothing:antialiased;}
+#view-secondary .v-wrap{max-width:600px;margin:0 auto;padding:18px 18px 120px;}
+#view-secondary .v-topbar{display:flex;align-items:center;gap:12px;padding:6px 0 14px;}
+#view-secondary .v-back{width:38px;height:38px;border-radius:50%;background:var(--surf);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--brand);flex-shrink:0;box-shadow:var(--sh);}
+#view-secondary .v-title{font-family:var(--ff-h);font-weight:700;font-size:20px;letter-spacing:-.4px;flex:1;min-width:0;}
+#view-secondary .v-sub{font-size:12.5px;color:var(--t3);font-weight:600;margin-top:2px;}
+#view-secondary .v-card{background:var(--surf);border-radius:18px;box-shadow:var(--sh);padding:16px;margin-bottom:14px;}
+#view-secondary .v-h{font-family:var(--ff-h);font-weight:700;font-size:14px;margin:18px 2px 10px;color:var(--t2);}
+#view-secondary .v-lead{font-size:14px;line-height:1.55;color:var(--t2);margin-bottom:14px;}
+#view-secondary .v-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;cursor:pointer;font-family:var(--ff-h);font-weight:700;font-size:14px;padding:12px 18px;border-radius:14px;background:linear-gradient(135deg,var(--brand),var(--purple));color:#fff;}
+#view-secondary .v-btn:disabled{opacity:.45;cursor:not-allowed;}
+#view-secondary .v-btn-soft{background:var(--bg);color:var(--brand);box-shadow:var(--sh);}
+#view-secondary .v-btn-wide{width:100%;}
+#view-secondary .v-btn-sm{padding:8px 13px;font-size:12.5px;border-radius:11px;}
+#view-secondary .v-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+#view-secondary .v-grow{flex:1;min-width:0;}
+#view-secondary .v-pill{padding:4px 10px;border-radius:99px;box-shadow:var(--sh-in-sm);color:var(--brand);font-size:11.5px;font-weight:700;}
+#view-secondary .v-err{color:var(--no);font-size:13px;font-weight:600;margin:10px 0 0;line-height:1.45;}
+#view-secondary .v-note{font-size:12px;color:var(--t3);line-height:1.5;margin-top:8px;}
+#view-secondary .v-empty{text-align:center;color:var(--t3);font-size:13.5px;line-height:1.6;padding:26px 10px;}
+#view-secondary .v-link{color:var(--brand);font-weight:700;font-size:13px;cursor:pointer;background:none;border:none;font-family:inherit;}
+/* exam choice cards */
+#view-secondary .v-exams{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+#view-secondary .v-exam{background:var(--surf);border-radius:16px;box-shadow:var(--sh);padding:14px;cursor:pointer;border:2px solid transparent;text-align:left;font-family:inherit;color:inherit;}
+#view-secondary .v-exam b{display:block;font-family:var(--ff-h);font-size:16px;}
+#view-secondary .v-exam span{display:block;font-size:12px;color:var(--t3);margin-top:3px;line-height:1.4;}
+#view-secondary .v-exam.selected{border-color:var(--brand);}
+/* chips */
+#view-secondary .v-chips{display:flex;flex-wrap:wrap;gap:8px;}
+#view-secondary .v-chip{padding:9px 13px;border-radius:12px;background:var(--bg);box-shadow:var(--sh-in-sm);font-size:13px;font-weight:600;cursor:pointer;border:2px solid transparent;font-family:inherit;color:var(--t1);}
+#view-secondary .v-chip.selected{border-color:var(--brand);color:var(--brand);}
+#view-secondary .v-chip.v-locked{opacity:.75;cursor:default;}
+#view-secondary .v-field{width:100%;padding:12px 14px;border-radius:12px;border:none;background:var(--bg);box-shadow:var(--sh-in-sm);font-family:inherit;font-size:14px;color:var(--t1);}
+#view-secondary .v-lbl{display:block;font-size:12px;font-weight:700;color:var(--t3);margin:12px 2px 6px;}
+/* hub */
+#view-secondary .v-hero{background:linear-gradient(135deg,var(--brand),var(--purple));color:#fff;border-radius:20px;padding:18px;margin-bottom:14px;}
+#view-secondary .v-hero .v-big{font-family:var(--ff-h);font-weight:800;font-size:34px;letter-spacing:-1px;line-height:1.05;}
+#view-secondary .v-hero .v-small{font-size:12.5px;opacity:.85;font-weight:600;}
+#view-secondary .v-bar{height:9px;border-radius:99px;background:var(--fill);box-shadow:var(--sh-in-sm);overflow:hidden;}
+#view-secondary .v-bar i{display:block;height:100%;border-radius:99px;background:var(--brand);}
+#view-secondary .v-subj{display:flex;gap:12px;align-items:center;}
+#view-secondary .v-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+#view-secondary .v-stat{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px;}
+#view-secondary .v-stat div{font-size:11.5px;color:rgba(255,255,255,.8);font-weight:600;}
+#view-secondary .v-stat b{display:block;font-family:var(--ff-h);font-size:19px;color:#fff;}
+/* runner */
+#view-secondary .v-runbar{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0;display:flex;align-items:center;gap:10px;}
+#view-secondary .v-timer{font-family:var(--ff-h);font-weight:800;font-size:17px;padding:7px 12px;border-radius:12px;background:var(--surf);box-shadow:var(--sh);font-variant-numeric:tabular-nums;}
+#view-secondary .v-timer.v-low{color:var(--no);}
+#view-secondary .v-q{font-size:15.5px;line-height:1.6;font-weight:600;margin-bottom:14px;}
+#view-secondary .v-qmeta{font-size:11.5px;color:var(--t3);font-weight:700;margin-bottom:8px;display:flex;gap:8px;flex-wrap:wrap;}
+#view-secondary .v-opt{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;padding:13px 14px;border-radius:14px;background:var(--bg);box-shadow:var(--sh-in-sm);margin-bottom:9px;font-family:inherit;font-size:14.5px;line-height:1.5;color:var(--t1);cursor:pointer;border:2px solid transparent;}
+#view-secondary .v-opt .v-let{width:26px;height:26px;border-radius:50%;background:var(--surf);box-shadow:var(--sh);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0;}
+#view-secondary .v-opt.selected{border-color:var(--brand);}
+#view-secondary .v-opt.correct{border-color:var(--ok);background:var(--ok-lt);}
+#view-secondary .v-opt.wrong{border-color:var(--no);background:var(--no-lt);}
+#view-secondary .v-exp{margin-top:6px;font-size:13px;line-height:1.55;padding:11px 13px;border-radius:12px;box-shadow:var(--sh-in-sm);color:var(--t2);}
+#view-secondary .v-pal{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:7px;}
+#view-secondary .v-pn{height:38px;border-radius:10px;border:2px solid transparent;background:var(--bg);box-shadow:var(--sh-in-sm);font-weight:700;font-size:12.5px;cursor:pointer;color:var(--t2);font-family:inherit;}
+#view-secondary .v-pn.v-done{background:var(--brand);color:#fff;}
+#view-secondary .v-pn.v-here{border-color:var(--warn);}
+#view-secondary .v-tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:6px;}
+#view-secondary .v-tab{flex-shrink:0;padding:8px 12px;border-radius:11px;background:var(--surf);box-shadow:var(--sh);font-size:12px;font-weight:700;cursor:pointer;border:2px solid transparent;font-family:inherit;color:var(--t2);}
+#view-secondary .v-tab.selected{border-color:var(--brand);color:var(--brand);}
+/* results */
+#view-secondary .v-grade{font-family:var(--ff-h);font-weight:800;font-size:15px;min-width:38px;text-align:center;padding:5px 8px;border-radius:10px;}
+#view-secondary .v-g-ok{background:var(--ok-lt);color:var(--ok);}
+#view-secondary .v-g-mid{background:var(--warn-lt);color:var(--warn);}
+#view-secondary .v-g-no{background:var(--no-lt);color:var(--no);}
+#view-secondary .v-pane[hidden]{display:none;}
+@keyframes vsecondary-fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+#view-secondary .v-pane{animation:vsecondary-fade .22s ease both;}
+</style>
+
+<div class="v-wrap">
+
+  <!-- ═══ SETUP ═══ -->
+  <div class="v-pane" id="sx-p-setup" hidden>
+    <div class="v-topbar">
+      <div class="v-back" onclick="sxBackFromSetup()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></div>
+      <div class="v-grow"><div class="v-title" id="sx-su-title">Set up Wreddi Secondary</div><div class="v-sub" id="sx-su-step"></div></div>
+    </div>
+    <div id="sx-su-body"></div>
+    <div class="v-err" id="sx-su-err"></div>
+    <div class="v-row" style="margin-top:16px;">
+      <button class="v-btn v-btn-soft" id="sx-su-back" onclick="sxSetupBack()" style="display:none;">Back</button>
+      <button class="v-btn v-grow" id="sx-su-next" onclick="sxSetupNext()">Continue</button>
+    </div>
+  </div>
+
+  <!-- ═══ HUB ═══ -->
+  <div class="v-pane" id="sx-p-hub" hidden>
+    <div class="v-topbar">
+      <div class="v-back" onclick="PhqShell.go('/dashboard')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></div>
+      <div class="v-grow"><div class="v-title">Secondary</div><div class="v-sub" id="sx-hub-sub">JAMB · WAEC · NECO · School</div></div>
+      <button class="v-btn v-btn-soft v-btn-sm" onclick="sxEditSetup()">Edit setup</button>
+    </div>
+    <div id="sx-hub-body"><div class="v-empty">Loading…</div></div>
+  </div>
+
+  <!-- ═══ PRACTICE OPTIONS ═══ -->
+  <div class="v-pane" id="sx-p-pick" hidden>
+    <div class="v-topbar">
+      <div class="v-back" onclick="sxShow('hub')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></div>
+      <div class="v-grow"><div class="v-title" id="sx-pick-title">Practice</div><div class="v-sub" id="sx-pick-sub"></div></div>
+    </div>
+    <div class="v-card" id="sx-pick-body"></div>
+    <div class="v-err" id="sx-pick-err"></div>
+  </div>
+
+  <!-- ═══ THE PAPER ═══ -->
+  <div class="v-pane" id="sx-p-run" hidden>
+    <div class="v-runbar">
+      <div class="v-grow"><div class="v-title" id="sx-run-title" style="font-size:15px;">Paper</div><div class="v-sub" id="sx-run-count"></div></div>
+      <div class="v-timer" id="sx-timer" style="display:none;">00:00</div>
+      <button class="v-btn v-btn-sm" onclick="sxAskSubmit()">Submit</button>
+    </div>
+    <div class="v-tabs" id="sx-tabs"></div>
+    <div class="v-card" id="sx-q"></div>
+    <div class="v-row" style="margin-bottom:14px;">
+      <button class="v-btn v-btn-soft v-grow" onclick="sxStep(-1)">Previous</button>
+      <button class="v-btn v-btn-soft v-grow" onclick="sxStep(1)">Next</button>
+    </div>
+    <div class="v-card"><div class="v-h" style="margin:0 2px 10px;">Question map</div><div class="v-pal" id="sx-pal"></div></div>
+    <div class="v-card" id="sx-confirm" style="display:none;">
+      <div id="sx-confirm-txt" style="font-size:14px;line-height:1.55;font-weight:600;margin-bottom:12px;"></div>
+      <div class="v-row"><button class="v-btn v-btn-soft v-grow" onclick="sxCancelSubmit()">Keep going</button><button class="v-btn v-grow" onclick="sxFinish(false)">Submit now</button></div>
+    </div>
+  </div>
+
+  <!-- ═══ RESULT ═══ -->
+  <div class="v-pane" id="sx-p-result" hidden>
+    <div class="v-topbar">
+      <div class="v-back" onclick="sxHome()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></div>
+      <div class="v-grow"><div class="v-title">Your result</div><div class="v-sub" id="sx-res-sub"></div></div>
+    </div>
+    <div id="sx-res-body"></div>
+  </div>
+
+</div>
+
+<script>
+const document = PhqShell.scope(root); // every getElementById/querySelector in this view only sees this view
+
+const esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const $ = id => document.getElementById(id);
+const api = (url, opts) => PhqAuth.authFetch(url, opts || {}, 'student');
+const jsonOpts = (method, body) => ({ method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+const say = m => { try { window.toast && window.toast(m); } catch (e) {} };
+const KEY_ENG = 'seceng', KEY_MTH = 'secmth';
+
+const X = {
+  cfg: null, prof: null, matric: '', ov: null,
+  su: { step: 0, exam: '', classLevel: '', subjects: [], examDate: '', targetScore: '', courseOfStudy: '', school: '' },
+  pickCtx: null,
+  paper: null, flat: [], ans: {}, idx: 0, left: 0, tick: null, practice: false, startedAt: 0, finished: false, pendingSave: null,
+};
+
+// ── panes ────────────────────────────────────────────────────
+function sxShow(name) {
+  ['setup', 'hub', 'pick', 'run', 'result'].forEach(n => { const el = $('sx-p-' + n); if (el) el.hidden = n !== name; });
+  window.scrollTo(0, 0);
+  if (name === 'hub') sxLoadHub();
+}
+window.sxShow = sxShow;
+function sxHome() { sxShow('hub'); }
+window.sxHome = sxHome;
+
+// ── boot ─────────────────────────────────────────────────────
+async function boot() {
+  try {
+    const [c, p] = await Promise.all([api('/api/secondary/config'), api('/api/secondary/profile')]);
+    if (!c.ok || !p.ok) throw new Error('bad');
+    X.cfg = await c.json(); const pd = await p.json();
+    X.prof = pd; X.matric = pd.matric;
+    if (!pd.setUp) { sxStartSetup(false); } else { sxShow('hub'); }
+  } catch (e) {
+    sxShow('hub'); $('sx-hub-body').innerHTML = '<div class="v-empty">Could not open Secondary. Check your connection and try again.<br><br><button class="v-btn v-btn-sm" onclick="sxRetryBoot()">Try again</button></div>';
+  }
+}
+function sxRetryBoot() { $('sx-hub-body').innerHTML = '<div class="v-empty">Loading…</div>'; boot(); }
+window.sxRetryBoot = sxRetryBoot;
+
+// ═══ SETUP ═══════════════════════════════════════════════════
+const EXAM_BLURB = {
+  jamb: 'UTME: four subjects, English plus three. Timed CBT mock, scored out of 400.',
+  waec: 'WASSCE: up to nine subjects. Practise by subject and see your A1–F9 grade.',
+  neco: 'SSCE: up to nine subjects. Same grading, same credit rules.',
+  school: 'Your class exams (JSS1–SS3): practise topic by topic.',
+};
+function sxStartSetup(editing) {
+  const p = (X.prof && X.prof.secondary) || {};
+  X.su = { step: 0, exam: p.exam || '', classLevel: p.classLevel || '', subjects: (p.subjects || []).slice(), examDate: p.examDate ? String(p.examDate).slice(0, 10) : '', targetScore: p.targetScore == null ? '' : p.targetScore, courseOfStudy: p.courseOfStudy || '', school: p.school || '', editing: !!editing };
+  sxShow('setup'); sxRenderSetup();
+}
+function sxEditSetup() { sxStartSetup(true); }
+window.sxEditSetup = sxEditSetup;
+function sxBackFromSetup() { if (X.prof && X.prof.setUp) sxShow('hub'); else PhqShell.go('/dashboard'); }
+window.sxBackFromSetup = sxBackFromSetup;
+
+function sxSubjectsFor(exam) { return (X.cfg.subjects || []).filter(s => (s.exams || []).includes(exam)); }
+function sxLimits(exam) { return exam === 'jamb' ? { max: 4, locked: [KEY_ENG] } : (exam === 'waec' || exam === 'neco') ? { max: 9, locked: [KEY_ENG, KEY_MTH] } : { max: 20, locked: [] }; }
+function sxSteps() { const s = X.su; return s.exam === 'school' ? ['exam', 'class', 'subjects', 'extra'] : ['exam', 'subjects', 'extra']; }
+
+function sxRenderSetup() {
+  const s = X.su, steps = sxSteps(), name = steps[s.step] || 'exam', body = $('sx-su-body');
+  $('sx-su-err').textContent = '';
+  $('sx-su-step').textContent = `Step ${s.step + 1} of ${steps.length}`;
+  $('sx-su-back').style.display = s.step > 0 ? '' : 'none';
+  $('sx-su-next').textContent = s.step === steps.length - 1 ? 'Save and start' : 'Continue';
+  if (name === 'exam') {
+    $('sx-su-title').textContent = 'What are you preparing for?';
+    body.innerHTML = `<div class="v-lead">Pick the exam you are working towards. You can change this any time.</div><div class="v-exams">${
+      Object.values(X.cfg.exams).map(e => `<button class="v-exam ${s.exam === e.key ? 'selected' : ''}" onclick="sxPickExam('${e.key}')"><b>${esc(e.label)}</b><span>${esc(EXAM_BLURB[e.key] || '')}</span></button>`).join('')
+    }</div>`;
+  } else if (name === 'class') {
+    $('sx-su-title').textContent = 'Which class are you in?';
+    body.innerHTML = `<div class="v-lead">We use this to show you questions that fit your class.</div><div class="v-chips">${
+      (X.cfg.classLevels || []).map(lv => `<button class="v-chip ${s.classLevel === lv ? 'selected' : ''}" onclick="sxPickClass('${lv}')">${lv}</button>`).join('')
+    }</div>`;
+  } else if (name === 'subjects') {
+    const lim = sxLimits(s.exam);
+    if (lim.locked.length) lim.locked.forEach(k => { if (!s.subjects.includes(k) && sxSubjectsFor(s.exam).some(x => x.key === k)) s.subjects.unshift(k); });
+    $('sx-su-title').textContent = s.exam === 'jamb' ? 'Your four JAMB subjects' : 'Your subjects';
+    const rule = s.exam === 'jamb' ? 'Pick exactly four. English is compulsory, so it is already chosen.'
+      : (s.exam === 'waec' || s.exam === 'neco') ? 'Pick up to nine. English and Mathematics are compulsory.' : 'Pick the subjects you want to practise.';
+    const combos = s.exam === 'jamb' ? `<label class="v-lbl">Not sure? Pick the course you want to study</label>
+      <select class="v-field" onchange="sxPickCombo(this.value)"><option value="">Choose a course of study…</option>${(X.cfg.combos || []).map((c, i) => `<option value="${i}">${esc(c.course)}</option>`).join('')}</select>
+      <div class="v-note">These are the usual combinations. Each university sets its own, so confirm with the school you are applying to.</div>` : '';
+    body.innerHTML = `<div class="v-lead">${rule} <b id="sx-su-count">${s.subjects.length}</b> chosen.</div>${combos}<div class="v-chips" style="margin-top:14px;" id="sx-su-chips"></div>`;
+    sxRenderSubjectChips();
+  } else {
+    $('sx-su-title').textContent = 'A few last details';
+    body.innerHTML = `<div class="v-lead">All optional. They power your countdown and your target.</div>
+      <label class="v-lbl">Exam date</label><input class="v-field" type="date" id="sx-su-date" value="${esc(s.examDate)}">
+      ${s.exam === 'jamb' ? `<label class="v-lbl">Target UTME score (out of 400)</label><input class="v-field" type="number" min="0" max="400" id="sx-su-target" value="${esc(s.targetScore)}" placeholder="e.g. 260">` : ''}
+      <label class="v-lbl">Your school (optional)</label><input class="v-field" id="sx-su-school" maxlength="120" value="${esc(s.school)}" placeholder="e.g. Government College, Lokoja">`;
+  }
+}
+function sxRenderSubjectChips() {
+  const s = X.su, lim = sxLimits(s.exam), box = $('sx-su-chips'); if (!box) return;
+  if (!sxSubjectsFor(s.exam).length) { box.innerHTML = '<div class="v-empty">No subjects have been added for this exam yet. Please check back soon.</div>'; return; }
+  box.innerHTML = sxSubjectsFor(s.exam).map(x => {
+    const on = s.subjects.includes(x.key), locked = lim.locked.includes(x.key);
+    return `<button class="v-chip ${on ? 'selected' : ''} ${locked ? 'v-locked' : ''}" onclick="sxToggleSubject('${x.key}')">${esc(x.title)}${locked ? ' 🔒' : ''}</button>`;
+  }).join('');
+  const c = $('sx-su-count'); if (c) c.textContent = s.subjects.length;
+}
+function sxPickExam(k) { if (X.su.exam !== k) { X.su.exam = k; X.su.subjects = []; X.su.classLevel = k === 'school' ? X.su.classLevel : ''; } sxRenderSetup(); }
+window.sxPickExam = sxPickExam;
+function sxPickClass(c) { X.su.classLevel = c; sxRenderSetup(); }
+window.sxPickClass = sxPickClass;
+function sxToggleSubject(k) {
+  const s = X.su, lim = sxLimits(s.exam);
+  if (lim.locked.includes(k)) return;
+  if (s.subjects.includes(k)) s.subjects = s.subjects.filter(x => x !== k);
+  else if (s.subjects.length >= lim.max) { $('sx-su-err').textContent = `You can pick at most ${lim.max}.`; return; }
+  else s.subjects.push(k);
+  $('sx-su-err').textContent = ''; sxRenderSubjectChips();
+}
+window.sxToggleSubject = sxToggleSubject;
+function sxPickCombo(i) {
+  if (i === '') return; const c = X.cfg.combos[Number(i)]; if (!c) return;
+  X.su.subjects = c.subjects.slice(); X.su.courseOfStudy = c.course; sxRenderSubjectChips();
+}
+window.sxPickCombo = sxPickCombo;
+function sxSetupBack() { if (X.su.step > 0) { sxReadExtra(); X.su.step--; sxRenderSetup(); } }
+window.sxSetupBack = sxSetupBack;
+function sxReadExtra() {
+  const d = $('sx-su-date'); if (d) X.su.examDate = d.value;
+  const t = $('sx-su-target'); if (t) X.su.targetScore = t.value;
+  const sc = $('sx-su-school'); if (sc) X.su.school = sc.value;
+}
+async function sxSetupNext() {
+  const s = X.su, steps = sxSteps(), name = steps[s.step], err = $('sx-su-err');
+  err.textContent = '';
+  if (name === 'exam' && !s.exam) { err.textContent = 'Pick an exam to continue.'; return; }
+  if (name === 'class' && !s.classLevel) { err.textContent = 'Pick your class to continue.'; return; }
+  if (name === 'subjects') {
+    const lim = sxLimits(s.exam);
+    if (!s.subjects.length) { err.textContent = 'Pick at least one subject.'; return; }
+    if (s.exam === 'jamb' && s.subjects.length !== 4) { err.textContent = `JAMB needs exactly four subjects. You have ${s.subjects.length}.`; return; }
+    if ((s.exam === 'waec' || s.exam === 'neco') && s.subjects.length > lim.max) { err.textContent = 'At most nine subjects.'; return; }
+  }
+  if (s.step < steps.length - 1) { sxReadExtra(); s.step++; sxRenderSetup(); return; }
+  sxReadExtra();
+  const btn = $('sx-su-next'); btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    const r = await api('/api/secondary/profile', jsonOpts('PUT', { exam: s.exam, classLevel: s.exam === 'school' ? s.classLevel : '', subjects: s.subjects, examDate: s.examDate || null, targetScore: s.exam === 'jamb' && s.targetScore !== '' ? Number(s.targetScore) : null, school: s.school, courseOfStudy: s.courseOfStudy }));
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) { err.textContent = d.error || 'Could not save. Try again.'; btn.disabled = false; btn.textContent = 'Save and start'; return; }
+    X.prof = { ...(X.prof || {}), track: 'secondary', setUp: true, secondary: d.secondary };
+    if (window.curUser) { try { window.curUser.needsProfileCompletion = false; } catch (e) {} }
+    btn.disabled = false; sxShow('hub');
+  } catch (e) { err.textContent = 'Network problem. Try again.'; btn.disabled = false; btn.textContent = 'Save and start'; }
+}
+window.sxSetupNext = sxSetupNext;
+
+// ═══ HUB ═════════════════════════════════════════════════════
+const gradeClass = g => ['A1', 'B2', 'B3', 'C4', 'C5', 'C6'].includes(g) ? 'v-g-ok' : (g === 'D7' || g === 'E8') ? 'v-g-mid' : 'v-g-no';
+function spark(vals) {
+  if (!vals || vals.length < 2) return '';
+  const w = 120, h = 34, pts = vals.map((v, i) => `${Math.round(i * w / (vals.length - 1))},${Math.round(h - (Math.max(0, Math.min(400, v)) / 400) * h)}`).join(' ');
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="margin-top:8px;"><polyline points="${pts}" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+async function sxLoadHub() {
+  const box = $('sx-hub-body');
+  try {
+    const r = await api('/api/secondary/overview'); if (!r.ok) throw new Error('bad');
+    const o = X.ov = await r.json(), E = X.cfg.exams[o.exam];
+    $('sx-hub-sub').textContent = E ? E.label + (o.classLevel ? ' · ' + o.classLevel : '') : 'JAMB · WAEC · NECO · School';
+    if (!E || !o.subjects.length) { box.innerHTML = `<div class="v-card"><div class="v-lead">Choose your exam and subjects to get started.</div><button class="v-btn v-btn-wide" onclick="sxEditSetup()">Set up now</button></div>`; return; }
+    let html = '';
+    // hero: countdown + the exam's headline number
+    const days = o.daysLeft;
+    const cd = days == null ? 'Add your exam date to start a countdown' : days > 1 ? `${days} days to go` : days === 1 ? 'Tomorrow' : days === 0 ? 'Exam day. Give it your best' : 'Exam date has passed';
+    if (o.exam === 'jamb') {
+      const u = o.utme;
+      html += `<div class="v-hero"><div class="v-small">${esc(cd)}</div><div class="v-big">${u ? u.latest : '—'}<span style="font-size:15px;opacity:.8;"> / 400</span></div><div class="v-small">${u ? 'Latest mock score' : 'Take a full mock to see your UTME score'}</div>${spark(u && u.trend)}
+        <div class="v-stat"><div><b>${u ? u.best : '—'}</b>Best mock</div><div><b>${o.targetScore != null ? o.targetScore : '—'}</b>Target</div><div><b>${o.papers}</b>Mocks taken</div></div></div>`;
+      html += `<div class="v-card"><div class="v-h" style="margin:0 0 10px;">JAMB mock (CBT)</div><div class="v-lead" style="margin-bottom:12px;">180 questions in 2 hours: English 60, then 40 each for your other three. Switch between subjects any time, just like the real CBT.</div>
+        <div class="v-row"><button class="v-btn v-grow" onclick="sxStartMock('')">Full mock</button><button class="v-btn v-btn-soft v-grow" onclick="sxStartMock('1')">Mini mock (45 Qs)</button></div></div>`;
+    } else {
+      html += `<div class="v-hero"><div class="v-small">${esc(cd)}</div><div class="v-big">${esc(E.short)}</div><div class="v-small">${o.subjects.length} subject${o.subjects.length === 1 ? '' : 's'} in your plan</div>
+        ${o.credit ? `<div class="v-stat"><div><b>${o.credit.credits}</b>Credits so far</div><div><b>${o.papers}</b>Papers taken</div></div>` : `<div class="v-stat"><div><b>${o.papers}</b>Papers taken</div></div>`}</div>`;
+      if (o.credit) html += `<div class="v-card"><div class="v-h" style="margin:0 0 8px;">Credit check</div><div style="font-size:14px;line-height:1.55;font-weight:600;">${
+        o.credit.ok ? 'On track: you have five or more credits, including English and Mathematics, from your papers so far.' : `Aim for five credits including English and Mathematics. Still needed: ${esc(o.credit.missing.join(', ') || 'take a paper to start')}.`}</div>
+        <div class="v-note">A credit is a grade from A1 to C6. It is worked out from your best paper in each subject.</div></div>`;
+    }
+    html += `<div class="v-h">Your subjects</div>`;
+    html += o.subjects.map(s => {
+      const best = o.credit && o.credit.best[s.key];
+      return `<div class="v-card"><div class="v-subj"><span class="v-dot" style="background:${esc(s.color)}"></span><div class="v-grow"><div style="font-family:var(--ff-h);font-weight:700;font-size:15px;">${esc(s.title)}</div>
+        <div class="v-sub">${s.questions} question${s.questions === 1 ? '' : 's'}${s.accuracy != null ? ` · ${s.accuracy}% right so far` : ''}</div></div>${best ? `<span class="v-grade ${gradeClass(best)}">${best}</span>` : ''}</div>
+        ${s.accuracy != null ? `<div class="v-bar" style="margin-top:10px;"><i style="width:${s.accuracy}%"></i></div>` : ''}
+        <div class="v-row" style="margin-top:12px;"><button class="v-btn v-btn-soft v-btn-sm v-grow" onclick="sxPick('${s.key}','practice')">Practise</button>${o.exam === 'jamb' ? '' : `<button class="v-btn v-btn-soft v-btn-sm v-grow" onclick="sxPick('${s.key}','mock')">Timed paper</button>`}</div></div>`;
+    }).join('');
+    html += `<div class="v-h">Recent papers</div><div id="sx-hist"><div class="v-empty">Loading…</div></div>
+      <div class="v-card" style="margin-top:18px;"><div class="v-row"><div class="v-grow"><b style="font-size:14px;">Studying at a university?</b><div class="v-note" style="margin-top:2px;">Switch to the university app any time. Your Secondary setup is kept.</div></div><button class="v-btn v-btn-soft v-btn-sm" onclick="sxSwitchUni()">Switch</button></div></div>`;
+    box.innerHTML = html;
+    sxLoadHistory();
+  } catch (e) { box.innerHTML = '<div class="v-empty">Could not load your hub. Check your connection.<br><br><button class="v-btn v-btn-sm" onclick="sxLoadHub()">Try again</button></div>'; }
+}
+window.sxLoadHub = sxLoadHub;
+
+async function sxLoadHistory() {
+  const box = $('sx-hist'); if (!box) return;
+  try {
+    const r = await api('/api/secondary/history'); if (!r.ok) throw new Error('bad');
+    const rows = (await r.json()).filter(x => x.sec && x.sec.kind === 'mock').slice(0, 6);
+    if (!rows.length) { box.innerHTML = '<div class="v-empty">No papers yet. Take a timed paper and your results will collect here.</div>'; return; }
+    box.innerHTML = rows.map(h => {
+      const sec = h.sec, head = sec.exam === 'jamb' && sec.utme != null ? `${sec.utme}/400` : `${h.pct}%`;
+      const names = sec.rows.map(r => { const c = X.cfg.subjects.find(s => s.key === r.course); return (c ? c.title : r.course) + (sec.exam === 'jamb' ? ` ${r.scaled}` : ` ${r.grade}`); }).join(' · ');
+      return `<div class="v-card" style="padding:13px 14px;"><div class="v-row"><b style="font-family:var(--ff-h);font-size:16px;">${head}</b><span class="v-pill">${esc((X.cfg.exams[sec.exam] || {}).short || sec.exam)}</span><span class="v-sub v-grow" style="text-align:right;margin:0;">${new Date(h.ts).toLocaleDateString()}</span></div><div class="v-note">${esc(names)}</div></div>`;
+    }).join('');
+  } catch (e) { box.innerHTML = '<div class="v-empty">Could not load your papers.</div>'; }
+}
+
+async function sxSwitchUni() {
+  try {
+    const r = await api('/api/secondary/track', jsonOpts('PUT', { track: 'university' }));
+    if (!r.ok) throw new Error('bad');
+    location.assign('/dashboard');   // full load, so the university setup prompt can open if it was never finished
+  } catch (e) { say('Could not switch. Try again.'); }
+}
+window.sxSwitchUni = sxSwitchUni;
+
+// ═══ PRACTICE / PAPER OPTIONS ════════════════════════════════
+async function sxPick(key, kind) {
+  const sub = X.cfg.subjects.find(s => s.key === key); if (!sub) return;
+  const exam = X.ov.exam;
+  X.pickCtx = { key, kind, exam, topic: '', year: '', count: 20 };
+  $('sx-pick-title').textContent = (kind === 'mock' ? 'Timed paper: ' : 'Practise: ') + sub.title;
+  $('sx-pick-sub').textContent = (X.cfg.exams[exam] || {}).label || '';
+  $('sx-pick-err').textContent = '';
+  $('sx-pick-body').innerHTML = '<div class="v-empty">Loading…</div>';
+  sxShow('pick');
+  let t = { topics: [], years: [] };
+  try { const r = await api(`/api/secondary/topics?course=${encodeURIComponent(key)}&exam=${exam}`); if (r.ok) t = await r.json(); } catch (e) {}
+  const topics = t.topics.length ? t.topics.map(x => ({ tag: x.tag, n: x.n })) : (sub.topics || []).map(x => ({ tag: x, n: null }));
+  const opt = (v, l) => `<option value="${esc(v)}">${esc(l)}</option>`;
+  const practice = kind === 'practice';
+  $('sx-pick-body').innerHTML = `
+    ${practice ? `<label class="v-lbl" style="margin-top:0;">Topic</label><select class="v-field" id="sx-pick-topic" onchange="sxPickSet('topic',this.value)">${opt('', 'All topics')}${topics.map(x => opt(x.tag, x.tag + (x.n ? ` (${x.n})` : ''))).join('')}</select>` : ''}
+    ${t.years.length ? `<label class="v-lbl">Past-question year</label><select class="v-field" id="sx-pick-year" onchange="sxPickSet('year',this.value)">${opt('', 'Any year')}${t.years.map(y => opt(y.year, y.year + ` (${y.n})`)).join('')}</select>` : ''}
+    ${practice ? `<label class="v-lbl">How many questions?</label><div class="v-chips" id="sx-pick-counts">${[10, 20, 30, 50].map(n => `<button class="v-chip ${n === 20 ? 'selected' : ''}" onclick="sxPickCount(${n})">${n}</button>`).join('')}</div>
+      <div class="v-note">You see the answer and explanation straight after each question.</div>`
+      : `<div class="v-lead" style="margin-bottom:12px;">A timed paper in exam conditions: no answers until you submit. ${esc(sxPaperBlurb(exam))}</div>
+         <div class="v-chips"><button class="v-chip selected" id="sx-pick-full" onclick="sxPickMini('')">Full paper</button><button class="v-chip" id="sx-pick-mini" onclick="sxPickMini('1')">Mini paper</button></div>`}
+    <button class="v-btn v-btn-wide" style="margin-top:18px;" onclick="sxGo()">Start</button>`;
+  X.pickCtx.mini = '';
+}
+window.sxPick = sxPick;
+function sxPaperBlurb(exam) { const p = X.cfg.papers[exam] || {}; return p.questions ? `Full paper: ${p.questions} questions in ${p.minutes} minutes.` : ''; }
+function sxPickSet(k, v) { X.pickCtx[k] = v; }
+window.sxPickSet = sxPickSet;
+function sxPickCount(n) { X.pickCtx.count = n; document.querySelectorAll('#sx-pick-counts .v-chip').forEach(b => b.classList.toggle('selected', Number(b.textContent) === n)); }
+window.sxPickCount = sxPickCount;
+function sxPickMini(m) { X.pickCtx.mini = m; $('sx-pick-full').classList.toggle('selected', !m); $('sx-pick-mini').classList.toggle('selected', !!m); }
+window.sxPickMini = sxPickMini;
+
+async function sxGo() {
+  const c = X.pickCtx, err = $('sx-pick-err'); err.textContent = '';
+  const q = new URLSearchParams({ exam: c.exam, kind: c.kind, subject: c.key });
+  if (c.topic) q.set('topic', c.topic); if (c.year) q.set('year', c.year);
+  if (c.kind === 'practice') q.set('count', c.count); else if (c.mini) q.set('mini', '1');
+  if (c.exam === 'school' && X.ov.classLevel) q.set('classLevel', X.ov.classLevel);
+  await sxLoadPaper(q, err);
+}
+window.sxGo = sxGo;
+
+async function sxStartMock(mini) {
+  const hub = $('sx-hub-body'); const q = new URLSearchParams({ exam: 'jamb', kind: 'mock' }); if (mini) q.set('mini', '1');
+  const prev = hub.firstChild; sxToast('Building your paper…');
+  await sxLoadPaper(q, null);
+}
+window.sxStartMock = sxStartMock;
+function sxToast(m) { say(m); }
+
+async function sxLoadPaper(q, errEl) {
+  try {
+    const r = await api('/api/secondary/paper?' + q.toString());
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      let msg = d.error || 'Could not build that paper.';
+      if (d.code === 'LIMIT_REACHED') msg += d.needed ? ` This paper needs ${d.needed} questions. A shorter paper may fit, or upgrade from your Profile.` : '';
+      if (errEl) errEl.textContent = msg; else say(msg);
+      return;
+    }
+    sxBegin(d);
+  } catch (e) { const m = 'Network problem. Try again.'; if (errEl) errEl.textContent = m; else say(m); }
+}
+
+// ═══ THE PAPER ═══════════════════════════════════════════════
+function sxBegin(p) {
+  clearInterval(X.tick);
+  X.paper = p; X.practice = p.kind === 'practice'; X.ans = {}; X.idx = 0; X.finished = false; X.pendingSave = null; X.startedAt = Date.now();
+  X.flat = []; p.sections.forEach((s, si) => s.questions.forEach((q, qi) => X.flat.push({ si, qi, q })));
+  $('sx-run-title').textContent = p.label;
+  $('sx-confirm').style.display = 'none';
+  const tm = $('sx-timer');
+  if (p.minutes) { X.left = p.minutes * 60; tm.style.display = ''; sxTickDraw(); X.tick = setInterval(() => { X.left--; sxTickDraw(); if (X.left <= 0) { clearInterval(X.tick); say('Time is up. Submitting your paper.'); sxFinish(true); } }, 1000); }
+  else tm.style.display = 'none';
+  sxShow('run'); sxDraw();
+  if (p.short) say('Not enough questions in the bank for a full paper yet. This one is shorter.');
+}
+function sxTickDraw() {
+  const t = $('sx-timer'), m = Math.max(0, Math.floor(X.left / 60)), s = Math.max(0, X.left % 60);
+  t.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0'); t.classList.toggle('v-low', X.left <= 300);
+}
+function sxDraw() {
+  const p = X.paper, cur = X.flat[X.idx]; if (!cur) return;
+  const answered = Object.keys(X.ans).length;
+  $('sx-run-count').textContent = `Question ${X.idx + 1} of ${X.flat.length} · ${answered} answered`;
+  // subject tabs (a JAMB paper has four sections)
+  const tabs = $('sx-tabs');
+  if (p.sections.length > 1) {
+    let start = 0;
+    tabs.innerHTML = p.sections.map((s, si) => { const from = start; start += s.questions.length; const n = X.flat.filter((f, i) => f.si === si && X.ans[i] != null).length; return `<button class="v-tab ${cur.si === si ? 'selected' : ''}" onclick="sxJump(${from})">${esc(s.title)} ${n}/${s.questions.length}</button>`; }).join('');
+  } else tabs.innerHTML = '';
+  const q = cur.q, chosen = X.ans[X.idx], locked = X.practice && chosen != null, L = 'ABCDEFGHIJ';
+  $('sx-q').innerHTML = `<div class="v-qmeta">${q.year ? `<span class="v-pill">${q.year}</span>` : ''}${q.tag ? `<span>${esc(q.tag)}</span>` : ''}</div><div class="v-q">${esc(q.q)}</div>${
+    q.opts.map((o, i) => `<button class="v-opt ${locked ? (i === q.ans ? 'correct' : (i === chosen ? 'wrong' : '')) : (chosen === i ? 'selected' : '')}" ${locked ? 'disabled' : ''} onclick="sxChoose(${i})"><span class="v-let">${L[i]}</span><span>${esc(o)}</span></button>`).join('')
+  }${locked && q.exp ? `<div class="v-exp">${esc(q.exp)}</div>` : ''}`;
+  $('sx-pal').innerHTML = X.flat.map((f, i) => `<button class="v-pn ${X.ans[i] != null ? 'v-done' : ''} ${i === X.idx ? 'v-here' : ''}" onclick="sxJump(${i})">${i + 1}</button>`).join('');
+  if (window.PhqSci && PhqSci.render) PhqSci.render($('sx-q'));
+}
+function sxChoose(i) { if (X.finished) return; if (X.practice && X.ans[X.idx] != null) return; X.ans[X.idx] = i; sxDraw(); }
+window.sxChoose = sxChoose;
+function sxJump(i) { X.idx = Math.max(0, Math.min(i, X.flat.length - 1)); sxDraw(); window.scrollTo(0, 0); }
+window.sxJump = sxJump;
+function sxStep(d) { sxJump(X.idx + d); }
+window.sxStep = sxStep;
+function sxAskSubmit() {
+  const un = X.flat.length - Object.keys(X.ans).length, box = $('sx-confirm');
+  $('sx-confirm-txt').textContent = un ? `You have ${un} unanswered question${un === 1 ? '' : 's'}. Submit anyway?` : 'You have answered every question. Submit your paper?';
+  box.style.display = ''; box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+window.sxAskSubmit = sxAskSubmit;
+function sxCancelSubmit() { $('sx-confirm').style.display = 'none'; }
+window.sxCancelSubmit = sxCancelSubmit;
+
+// ═══ RESULT ══════════════════════════════════════════════════
+function gradeOf(pct) { for (const b of X.cfg.gradeBands) if (pct >= b.min) return b.grade; return 'F9'; }
+function sxFinish(timeUp) {
+  if (X.finished) return; X.finished = true; clearInterval(X.tick);
+  const p = X.paper, exam = p.exam, rows = p.sections.map((s, si) => {
+    let correct = 0; X.flat.forEach((f, i) => { if (f.si === si && X.ans[i] === f.q.ans) correct++; });
+    const total = s.questions.length, pct = total ? Math.round(correct / total * 100) : 0;
+    return { course: s.course, title: s.title, correct, total, pct, scaled: total ? Math.round(correct / total * 100) : 0, grade: gradeOf(pct) };
+  });
+  const total = X.flat.length, answered = Object.keys(X.ans).length, correct = rows.reduce((a, r) => a + r.correct, 0), wrong = answered - correct, skip = total - answered, pct = total ? Math.round(correct / total * 100) : 0;
+  const utme = exam === 'jamb' && p.kind === 'mock' ? rows.reduce((a, r) => a + r.scaled, 0) : null;
+  X.result = { exam, kind: p.kind, rows, total, correct, wrong, skip, pct, utme, timeUp: !!timeUp };
+  $('sx-res-sub').textContent = p.label;
+  sxRenderResult(); sxShow('result');
+  X.pendingSave = {
+    pct, total, correct, wrong, skip, mode: p.kind === 'mock' ? 'sec-mock' : 'sec-practice', courses: rows.map(r => r.title),
+    perQuestion: X.flat.map((f, i) => ({ course: f.q.course, tag: f.q.tag || '', correct: X.ans[i] === f.q.ans, qid: f.q._id })).filter((_, i) => X.ans[i] != null).slice(0, 100),
+    sec: { exam, kind: p.kind, year: p.year || undefined, rows: rows.map(r => ({ course: r.course, correct: r.correct, total: r.total })) },
+  };
+  sxSave();
+}
+window.sxFinish = sxFinish;
+
+async function sxSave() {
+  const note = $('sx-save-note'); if (!X.pendingSave) return;
+  try {
+    const r = await api('/api/scores/' + encodeURIComponent(X.matric), jsonOpts('POST', X.pendingSave));
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || 'save failed');
+    X.pendingSave = null; if (note) note.innerHTML = 'Saved to your history.';
+    if (d.achievements && d.achievements.length) say('Achievement unlocked: ' + d.achievements[0].title);
+  } catch (e) { if (note) note.innerHTML = `Could not save this result (${esc(e.message)}). <button class="v-link" onclick="sxSave()">Try again</button>`; }
+}
+window.sxSave = sxSave;
+
+function sxRenderResult() {
+  const R = X.result, E = X.cfg.exams[R.exam] || {}, body = $('sx-res-body'); let html = '';
+  if (R.utme != null) {
+    const tgt = X.ov && X.ov.targetScore;
+    html += `<div class="v-hero"><div class="v-small">${R.timeUp ? 'Time ran out. ' : ''}Your UTME mock score</div><div class="v-big">${R.utme}<span style="font-size:15px;opacity:.8;"> / 400</span></div>
+      <div class="v-small">${tgt != null ? (R.utme >= tgt ? `You reached your target of ${tgt}.` : `${tgt - R.utme} points to your target of ${tgt}.`) : `${R.correct} of ${R.total} correct`}</div></div>`;
+  } else {
+    html += `<div class="v-hero"><div class="v-small">${R.timeUp ? 'Time ran out. ' : ''}${R.kind === 'mock' ? 'Paper score' : 'Practice score'}</div><div class="v-big">${R.pct}%</div><div class="v-small">${R.correct} of ${R.total} correct${R.skip ? ` · ${R.skip} skipped` : ''}</div></div>`;
+  }
+  html += `<div class="v-card">${R.rows.map(r => `<div class="v-subj" style="margin-bottom:12px;"><div class="v-grow"><div style="font-weight:700;font-size:14px;">${esc(r.title)}</div><div class="v-sub">${r.correct} of ${r.total} correct</div><div class="v-bar" style="margin-top:7px;"><i style="width:${r.pct}%"></i></div></div>${
+    R.exam === 'jamb' && R.kind === 'mock' ? `<span class="v-grade v-g-mid" style="min-width:56px;">${r.scaled}/100</span>` : (R.kind === 'mock' && R.exam !== 'school' ? `<span class="v-grade ${gradeClass(r.grade)}">${r.grade}</span>` : `<span class="v-grade v-g-mid">${r.pct}%</span>`)}</div>`).join('')}
+    <div class="v-note" id="sx-save-note">Saving…</div>${R.exam !== 'jamb' && R.exam !== 'school' && R.kind === 'mock' ? '<div class="v-note">A1 to C6 counts as a credit. A single paper is a guide, not a prediction.</div>' : ''}</div>`;
+  const wrongs = X.flat.map((f, i) => ({ f, i })).filter(x => X.ans[x.i] !== x.f.q.ans);
+  html += `<div class="v-h">Review (${wrongs.length} to learn from)</div>` + (wrongs.length ? wrongs.map(({ f, i }) => {
+    const q = f.q, got = X.ans[i];
+    return `<div class="v-card"><div class="v-qmeta"><span>Q${i + 1}</span>${q.tag ? `<span>${esc(q.tag)}</span>` : ''}</div><div class="v-q" style="font-size:14.5px;margin-bottom:8px;">${esc(q.q)}</div>
+      <div style="font-size:13px;line-height:1.55;">${got == null ? '<span style="color:var(--t3);font-weight:700;">Skipped</span>' : `Your answer: <b style="color:var(--no);">${esc(q.opts[got])}</b>`}<br>Right answer: <b style="color:var(--ok);">${esc(q.opts[q.ans])}</b></div>${q.exp ? `<div class="v-exp">${esc(q.exp)}</div>` : ''}</div>`;
+  }).join('') : '<div class="v-empty">Nothing to review. Every question was right.</div>');
+  html += `<div class="v-row" style="margin-top:6px;"><button class="v-btn v-btn-soft v-grow" onclick="sxHome()">Back to hub</button><button class="v-btn v-grow" onclick="sxAgain()">Another one</button></div>`;
+  body.innerHTML = html;
+  if (window.PhqSci && PhqSci.render) PhqSci.render(body);
+}
+function sxAgain() {
+  const p = X.paper;
+  if (p.kind === 'mock' && p.exam === 'jamb') { sxShow('hub'); sxStartMock(p.label.indexOf('mini') >= 0 ? '1' : ''); return; }
+  if (X.pickCtx) { sxShow('pick'); sxPick(X.pickCtx.key, X.pickCtx.kind); } else sxShow('hub');
+}
+window.sxAgain = sxAgain;
+
+boot();
+
+return { onShow(){ window.scrollTo(0, 0); const hub = $('sx-p-hub'); if (hub && !hub.hidden) sxLoadHub(); } };
+//# sourceURL=view-secondary.js
+</script>

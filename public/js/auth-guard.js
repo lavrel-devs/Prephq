@@ -180,7 +180,7 @@
   function redirectToLogin(role) {
     if (role !== 'admin') stashShareLink();
     clearSession();
-    window.location.href = role === 'admin' ? '/login.html?as=admin' : '/login.html';
+    window.location.href = role === 'admin' ? '/login?as=admin' : location.pathname === '/secondary' ? '/login?as=secondary' : '/login';
   }
 
   // ── Guard: call at the very top of dashboard.html / admin app ──

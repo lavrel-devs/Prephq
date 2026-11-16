@@ -313,7 +313,86 @@ input[type=checkbox]{accent-color:var(--brand);}
 #toast{background:var(--bg)!important;color:var(--t1)!important;box-shadow:var(--raise)!important;}
 .modal-bg{background:rgba(20,24,40,.35)!important;}
 select.f-input option{background:var(--bg);color:var(--t1);}
+
+/* Wreddi admin SaaS refresh — neutral surfaces only; existing rose/orange and status hues stay intact. */
+:root{
+  --bg:#F8FAFC;--surf:#FFFFFF;--surf2:#F8FAFC;--surf3:#F1F5F9;
+  --nu-hi:#FFFFFF;--nu-lo:rgba(15,23,42,.08);
+  --raise:0 1px 2px rgba(15,23,42,.04);--raise-sm:0 1px 2px rgba(15,23,42,.04);
+  --press:none;--press-sm:none;--sh:0 1px 2px rgba(15,23,42,.04);--sh-md:0 24px 64px rgba(15,23,42,.18);
+  --bd:#E2E8F0;--bd2:#CBD5E1;
+  --t1:#0F172A;--t2:#334155;--t3:#475569;--t4:#64748B;
+  --ff-h:'DM Sans',system-ui,sans-serif;--ff-b:'DM Sans',system-ui,sans-serif;
+  --canvas-rose:rgba(226,80,122,.045);--canvas-orange:rgba(255,154,98,.045);
+}
+[data-theme=dark]{
+  --bg:#0B1220;--surf:#111827;--surf2:#1E293B;--surf3:#334155;
+  --nu-hi:#1E293B;--nu-lo:rgba(0,0,0,.24);
+  --raise:0 1px 2px rgba(0,0,0,.20);--raise-sm:0 1px 2px rgba(0,0,0,.20);
+  --press:none;--press-sm:none;--sh:0 1px 2px rgba(0,0,0,.20);--sh-md:0 24px 64px rgba(0,0,0,.48);
+  --bd:#334155;--bd2:#475569;
+  --t1:#F8FAFC;--t2:#E2E8F0;--t3:#CBD5E1;--t4:#94A3B8;
+  --canvas-rose:rgba(226,80,122,.12);--canvas-orange:rgba(255,154,98,.10);
+}
+body{background:radial-gradient(ellipse 54rem 36rem at 92% 6%,var(--canvas-rose),transparent 72%),radial-gradient(ellipse 46rem 32rem at 4% 96%,var(--canvas-orange),transparent 74%),linear-gradient(135deg,var(--bg),var(--surf2))!important;color:var(--t1);font-family:var(--ff-b);}
+#login-screen{background:radial-gradient(ellipse 40rem 30rem at 90% 6%,var(--canvas-rose),transparent 72%),radial-gradient(ellipse 34rem 28rem at 4% 96%,var(--canvas-orange),transparent 74%),linear-gradient(135deg,var(--bg),var(--surf2));}
+.body{background:radial-gradient(ellipse 54rem 36rem at 92% 6%,var(--canvas-rose),transparent 72%),radial-gradient(ellipse 46rem 32rem at 4% 96%,var(--canvas-orange),transparent 74%),linear-gradient(135deg,var(--bg),var(--surf2));}
+.topbar,.sidebar,.mnav{background:var(--surf)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}
+.topbar{height:64px;border-bottom:1px solid var(--bd)!important;box-shadow:none!important;padding-left:24px;padding-right:24px;}
+.sidebar{width:240px;border-right:1px solid var(--bd)!important;box-shadow:none!important;padding:20px 12px;gap:4px;top:64px;height:calc(100dvh - 64px);}
+.nav-sec{padding:14px 12px 6px;color:var(--t4);}
+.nav-item{min-height:42px;border-radius:12px;padding:10px 12px;}
+.nav-item:hover{background:var(--surf2)!important;color:var(--t1);box-shadow:none!important;}
+.nav-item.on{background:var(--brand-lt)!important;color:var(--brand)!important;box-shadow:none!important;}
+.content{padding:28px;}
+.ph{margin-bottom:24px;}
+.ph-title{letter-spacing:-.02em;}
+.lc,.sc,.tw,.modal{background:var(--surf)!important;border:1px solid var(--bd)!important;box-shadow:none!important;}
+.lc{border-radius:16px;}
+.sc{border-radius:12px;padding:22px;}
+.sc-ico{box-shadow:none!important;border-radius:12px;}
+.tw{border-radius:12px;margin-bottom:24px;}
+.th{border-bottom:1px solid var(--bd)!important;padding:16px 20px;}
+thead th{background:var(--surf2)!important;color:var(--t3);padding:13px 16px;}
+tbody tr{border-bottom:1px solid var(--bd)!important;}
+tbody tr:hover{background:var(--surf2)!important;}
+tbody td{padding:14px 16px;}
+.badge{box-shadow:none!important;border:1px solid transparent;}
+.b-brand{background-color:var(--brand-lt)!important;color:var(--brand)!important;}
+.b-ok{background-color:var(--ok-lt)!important;color:var(--ok)!important;}
+.b-warn{background-color:var(--warn-lt)!important;color:var(--warn)!important;}
+.b-no{background-color:var(--no-lt)!important;color:var(--no)!important;}
+.b-purple{background-color:var(--purple-lt)!important;color:var(--purple)!important;}
+.b-teal{background-color:var(--teal-lt)!important;color:var(--teal)!important;}
+.b-gray{background-color:var(--surf3)!important;color:var(--t3)!important;}
+.field input,.field select,.field textarea,.f-input,.modal-input,input[type=date],input[type=number],input[type=search],.search input{
+  min-height:44px;background:var(--surf)!important;border:1px solid var(--bd2)!important;
+  box-shadow:none!important;border-radius:12px!important;color:var(--t1);
+}
+.field input:focus,.field select:focus,.field textarea:focus,.f-input:focus,.modal-input:focus,.search input:focus{
+  border-color:var(--brand)!important;box-shadow:0 0 0 3px var(--brand-lt)!important;background:var(--surf)!important;
+}
+.btn-main,.btn-confirm{min-height:44px;border-radius:12px!important;box-shadow:none!important;}
+.btn-cancel{min-height:44px;background:var(--surf)!important;border:1px solid var(--bd2)!important;box-shadow:none!important;border-radius:12px!important;}
+.ab{min-height:44px;padding:8px 11px;border:1px solid var(--bd)!important;border-radius:10px!important;box-shadow:none!important;}
+.ab:hover,.btn-cancel:hover{filter:brightness(.98);}
+.modal{border-radius:16px!important;box-shadow:var(--sh-md)!important;}
+.mnav{border-top:1px solid var(--bd)!important;box-shadow:none!important;}
+.mn-item{min-height:58px;}
+.search input{border-radius:10px!important;}
+.sc-val{font-size:30px;font-weight:700;letter-spacing:-.04em;}
+.sc-lbl{font-size:13px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--t3);margin-top:7px;}
+.ph-title{font-size:20px;font-weight:600;}
+.ph-sub{font-size:13px;line-height:1.5;}
+.nav-item{font-size:14px;font-weight:500;}
+.nav-sec{font-size:10px;letter-spacing:.08em;}
+.th-title{font-size:15px;font-weight:600;}
+.modal-title{font-size:19px;font-weight:600;}
+@media(max-width:900px){.content{padding:20px;}}
+@media(max-width:680px){.content{padding:16px 14px 88px;}.topbar{padding:0 16px;}}
+@media(max-width:600px){.sc{padding:16px;}.th{padding:14px;}.ab{padding:7px 9px;}}
 </style>
+<link rel="stylesheet" href="/css/admin-reference.css">
 <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
 <link rel="icon" type="image/png" sizes="48x48" href="/icons/favicon-48.png">
 <link rel="shortcut icon" href="/icons/favicon.ico">
@@ -370,6 +449,7 @@ select.f-input option{background:var(--bg);color:var(--t1);}
   <div class="body">
     <!-- Sidebar -->
     <div class="sidebar">
+      <div class="sidebar-brand"><img src="/icons/logo-mark.png" alt=""><span>Wreddi</span><small>ADMIN</small></div>
       <div class="nav-sec">Overview</div>
       <div class="nav-item on" data-v="dashboard" onclick="go('dashboard',this)">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>Dashboard
@@ -394,7 +474,7 @@ select.f-input option{background:var(--bg);color:var(--t1);}
       <div class="nav-item" data-v="ai-review" onclick="go('ai-review',this)">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>AI Review <span id="nav-review-badge" class="badge b-no" style="display:none;margin-left:auto;">0</span>
       </div>
-      <div class="nav-sec">v1.2</div>
+      <div class="nav-sec">Platform</div>
       <div class="nav-item" data-v="contests" onclick="go('contests',this)">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 4v3h5.5v12h3V7H19V4z"/></svg>Contests
       </div>
@@ -436,7 +516,7 @@ select.f-input option{background:var(--bg);color:var(--t1);}
 
       <!-- ═══ DASHBOARD ════════════════════════════════════ -->
       <div id="v-dashboard" class="view on">
-        <div class="ph"><div><div class="ph-title">Dashboard</div><div class="ph-sub">Wreddi overview</div></div></div>
+        <div class="ph"><div><div class="ph-title">Overview</div><div class="ph-sub">Wreddi platform at a glance</div></div></div>
         <div class="sg" id="dash-sg">
           <div class="sc"><div class="sc-ico" style="background:var(--brand-lt);color:var(--brand)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div><div class="sc-val" id="ds-students">—</div><div class="sc-lbl">Students</div></div>
           <div class="sc"><div class="sc-ico" style="background:var(--ok-lt);color:var(--ok)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg></div><div class="sc-val" id="ds-revenue">—</div><div class="sc-lbl">Revenue (₦)</div></div>
@@ -448,8 +528,17 @@ select.f-input option{background:var(--bg);color:var(--t1);}
 
         <div class="tw">
           <div class="th"><div class="th-title">🏆 Top Students</div></div>
-          <table><thead><tr><th>#</th><th>Name</th><th>Matric</th><th>Avg</th><th>Quizzes</th></tr></thead>
+          <table><thead><tr><th>#</th><th>Name</th><th>Avg</th></tr></thead>
           <tbody id="dash-top"></tbody></table>
+        </div>
+
+        <div class="tw dash-performance">
+          <div class="th">
+            <div><div class="th-title">Student registrations</div><div class="ph-sub">New signups over time</div></div>
+            <div class="th-right"><select class="f-input" id="dash-signup-days" aria-label="Signup chart period" onchange="loadDashboardSignups()"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option></select></div>
+          </div>
+          <div class="dash-chart-frame"><canvas id="chart-dashboard-signups" aria-label="New student registrations by day"></canvas></div>
+          <div class="dash-chart-error" id="dash-signups-error" role="status" hidden>Signup trend is temporarily unavailable.</div>
         </div>
 
         <div class="tw">
@@ -676,7 +765,7 @@ select.f-input option{background:var(--bg);color:var(--t1);}
             <div style="padding:18px;">
               <div class="err" id="bpf-err"></div>
               <div style="font-size:13px;color:var(--t3);line-height:1.6;margin-bottom:14px;">
-                <b style="color:var(--t2);">CSV / TSV columns:</b> <code>course, question, optionA, optionB, optionC, optionD, answer</code> (+ optional <code>tag</code>, <code>explanation</code>).<br>
+                <b style="color:var(--t2);">CSV / TSV columns:</b> <code>course, question, optionA, optionB, optionC, optionD, answer</code> (+ optional <code>tag</code>, <code>explanation</code>). Secondary subjects also take <code>exam</code> (jamb / waec / neco / school), <code>year</code> (e.g. 2019) and <code>classLevel</code> (JSS1–SS3).<br>
                 <b style="color:var(--t2);">JSON:</b> a list of questions, <code>{"questions":[…]}</code>, or <code>{"chm141":[…],"mth101":[…]}</code>. Each has <code>question</code>, <code>options</code> (4), <code>answer</code>.<br>
                 <b style="color:var(--t2);">Answer</b> = a letter <code>A–D</code> or the exact text of the correct option. Exactly 4 options per question.
               </div>
@@ -1388,6 +1477,12 @@ select.f-input option{background:var(--bg);color:var(--t1);}
     <div class="err" id="m-course-err"></div>
     <div class="field"><label>Course Code *</label><input id="course-code" placeholder="e.g. CHM142" autocapitalize="characters"></div>
     <div class="field"><label>Course Title *</label><input id="course-title" placeholder="e.g. Organic Chemistry"></div>
+    <div class="field"><label>Where does it appear?</label>
+      <select id="course-track">
+        <option value="university">University app (course)</option>
+        <option value="secondary">Secondary app (JAMB / WAEC / NECO / school subject)</option>
+      </select>
+    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
       <div class="field"><label>Department</label><input id="course-dept" placeholder="e.g. CHM"></div>
       <div class="field"><label>Level</label><input id="course-level" placeholder="e.g. 100"></div>
@@ -2501,7 +2596,48 @@ function go(v, el) {
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────
+let chartDashboardSignups = null;
+async function loadDashboardSignups() {
+  const canvas = document.getElementById('chart-dashboard-signups');
+  if (!canvas || typeof Chart === 'undefined') return;
+  const days = Number(document.getElementById('dash-signup-days')?.value) || 30;
+  try {
+    const response = await adminFetch(`/api/admin/analytics/signups?days=${days}`, { headers: {} });
+    if (!response.ok) throw new Error('Signup analytics request failed');
+    const rows = await response.json();
+    if (!Array.isArray(rows)) throw new Error('Invalid signup analytics response');
+    if (chartDashboardSignups) chartDashboardSignups.destroy();
+    chartDashboardSignups = new Chart(canvas.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: rows.map(row => row.date),
+        datasets: [{
+          label: 'New signups',
+          data: rows.map(row => row.count),
+          borderColor: '#2557D6',
+          backgroundColor: 'rgba(37,87,214,.12)',
+          borderWidth: 2,
+          pointRadius: 2,
+          pointHoverRadius: 4,
+          fill: true,
+          tension: .32,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { grid: { display: false } } },
+      },
+    });
+    document.getElementById('dash-signups-error').hidden = true;
+  } catch (error) {
+    document.getElementById('dash-signups-error').hidden = false;
+  }
+}
+
 async function loadDashboard() {
+  loadDashboardSignups();
   try {
     const r = await adminFetch('/api/admin/stats', { headers: {} });
     const d = await r.json();
@@ -2513,12 +2649,10 @@ async function loadDashboard() {
     document.getElementById('dash-top').innerHTML = d.topStudents?.length
       ? d.topStudents.map((s,i) => `<tr>
           <td><span class="badge ${i===0?'b-warn':'b-brand'}">#${i+1}</span></td>
-          <td style="font-weight:700">${escHtml(s.name)}</td>
-          <td style="color:var(--t3)">${escHtml(s.matric)}</td>
+          <td style="font-weight:700">${escHtml(s.name)}<div style="font-size:11px;color:var(--t3);font-weight:500;margin-top:2px;">${Number(s.quizzes)||0} quizzes</div></td>
           <td><span class="badge ${s.avg>=70?'b-ok':s.avg>=50?'b-warn':'b-no'}">${s.avg}%</span></td>
-          <td>${s.quizzes}</td>
         </tr>`).join('')
-      : '<tr class="empty-row"><td colspan="5">No quiz data yet</td></tr>';
+      : '<tr class="empty-row"><td colspan="3">No quiz data yet</td></tr>';
 
     document.getElementById('dash-recent').innerHTML = d.recentStudents?.length
       ? d.recentStudents.map(s => `<tr>
@@ -2997,7 +3131,7 @@ function renderCourses(list) {
   document.getElementById('course-body').innerHTML = list.length ? list.map(c => `
     <tr>
       <td><span class="badge" style="background:${c.color}22;color:${c.color}">${c.courseCode}</span></td>
-      <td style="font-size:13px">${escHtml(c.courseTitle)}</td>
+      <td style="font-size:13px">${escHtml(c.courseTitle)}${c.track === 'secondary' ? ' <span class="badge" style="background:#3E5C8A22;color:#3E5C8A;font-size:10px;">SECONDARY</span>' : ''}</td>
       <td style="font-size:12px;color:var(--t3)">${escHtml(c.department)||'—'}</td>
       <td style="font-size:12px;color:var(--t3)">${c.level||'—'}</td>
       <td style="max-width:220px;font-size:11px;color:var(--t3)">${escHtml((c.topics||[]).join(', '))||'—'}</td>
@@ -3019,6 +3153,7 @@ function openAddCourse() {
   document.getElementById('course-code').disabled = false;
   document.getElementById('course-color').value = '#E2507A';
   document.getElementById('course-icon').value = 'star';
+  document.getElementById('course-track').value = 'university';
   document.getElementById('m-add-course').classList.add('on');
 }
 
@@ -3036,6 +3171,7 @@ function editCourse(id) {
   document.getElementById('course-topics').value = (c.topics||[]).join(', ');
   document.getElementById('course-color').value = c.color || '#E2507A';
   document.getElementById('course-icon').value = c.icon || 'star';
+  document.getElementById('course-track').value = c.track === 'secondary' ? 'secondary' : 'university';
   document.getElementById('m-course-err').classList.remove('on');
   document.getElementById('m-add-course').classList.add('on');
 }
@@ -3095,6 +3231,7 @@ async function saveCourse() {
   const topics = document.getElementById('course-topics').value.split(',').map(t=>t.trim()).filter(Boolean);
   const color = document.getElementById('course-color').value;
   const icon = document.getElementById('course-icon').value;
+  const track = document.getElementById('course-track').value;
   const errEl = document.getElementById('m-course-err');
   errEl.classList.remove('on');
 
@@ -3105,7 +3242,7 @@ async function saveCourse() {
     const method = editingCourse ? 'PUT' : 'POST';
     const r = await adminFetch(url, {
       method, headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ courseCode, courseTitle, department, level, topics, color, icon })
+      body: JSON.stringify({ courseCode, courseTitle, department, level, topics, color, icon, track })
     });
     if (!r.ok) { const d=await r.json(); errEl.textContent=d.error; errEl.classList.add('on'); return; }
     closeM('m-add-course');
@@ -3536,7 +3673,7 @@ async function bpUpload() {
     try {
       const r = await adminFetch('/api/admin/questions/bulk', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: chunk.map(i => { const q = bpParsed[i]; return { course: q.course, q: q.q, opts: q.opts, ans: q.ans, tag: q.tag, exp: q.exp }; }) }),
+        body: JSON.stringify({ items: chunk.map(i => { const q = bpParsed[i]; return { course: q.course, q: q.q, opts: q.opts, ans: q.ans, tag: q.tag, exp: q.exp, exam: q.exam, year: q.year, classLevel: q.classLevel }; }) }),
       });
       const d = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(d.error || 'Upload failed');
@@ -3643,13 +3780,17 @@ const BP_KEYS = {
   text: ['answer', 'correct', 'correctanswer', 'key'],
   idx0: ['ans', 'answerindex', 'correctindex'],
   idx1: ['answernumber', 'correctnumber'],
+  exam: ['exam', 'examtype', 'examination'],          // v1.11 secondary: jamb | waec | neco | school
+  year: ['year', 'examyear'],                          // v1.11 secondary: past-question year
+  cls:  ['classlevel', 'class', 'level'],              // v1.11 secondary: JSS1..SS3
 };
 const bpOptKeys = i => ['option' + 'abcd'[i], 'opt' + 'abcd'[i], 'abcd'[i], 'option' + (i + 1), 'opt' + (i + 1), String(i + 1), 'choice' + 'abcd'[i], 'choice' + (i + 1)];
 
 // One record (already key-normalised) -> { course, q, opts, ans, tag, exp, why }.  ans = -1 and why set when unusable.
 function bpItemFromRecord(nk) {
   const pick = names => { for (const n of names) if (nk[n] !== undefined && nk[n] !== null && String(nk[n]).trim() !== '') return nk[n]; return undefined; };
-  const item = { course: String(pick(BP_KEYS.course) ?? '').trim(), q: String(pick(BP_KEYS.q) ?? '').trim(), tag: String(pick(BP_KEYS.tag) ?? '').trim(), exp: String(pick(BP_KEYS.exp) ?? '').trim(), opts: [], ans: -1, why: '' };
+  const item = { course: String(pick(BP_KEYS.course) ?? '').trim(), q: String(pick(BP_KEYS.q) ?? '').trim(), tag: String(pick(BP_KEYS.tag) ?? '').trim(), exp: String(pick(BP_KEYS.exp) ?? '').trim(), opts: [], ans: -1, why: '',
+    exam: String(pick(BP_KEYS.exam) ?? '').trim().toLowerCase(), year: String(pick(BP_KEYS.year) ?? '').trim(), classLevel: String(pick(BP_KEYS.cls) ?? '').trim() };
   const arr = pick(BP_KEYS.opts);
   if (Array.isArray(arr)) item.opts = arr.map(x => String(x ?? '').trim());
   else for (let i = 0; i < 4; i++) { const v = pick(bpOptKeys(i)); if (v !== undefined) item.opts.push(String(v).trim()); }
@@ -3718,7 +3859,7 @@ function bpFileChosen(input) {
       if (r.why)              { status = 'skip'; why = r.why; }
       else if (!course.key)   { status = 'skip'; why = 'No course — add a course column or pick one above'; }
       else if (!course.known) { status = 'skip'; why = `Unknown course "${course.key.toUpperCase()}" — add it under Courses first`; }
-      return { course: course.key, q: clean(r.q || ''), opts: (r.opts || []).map(clean), ans: r.ans, exp: clean(r.exp || ''), tag: r.tag || '', _status: status, _why: why };
+      return { course: course.key, q: clean(r.q || ''), opts: (r.opts || []).map(clean), ans: r.ans, exp: clean(r.exp || ''), tag: r.tag || '', exam: r.exam || '', year: r.year || '', classLevel: r.classLevel || '', _status: status, _why: why };
     });
     bpRender();
   };
@@ -3729,10 +3870,12 @@ function bpTemplate(kind) {
   const rows = [
     { course: 'CHM141', question: 'Which quantum number defines the main energy level?', optionA: 'Magnetic', optionB: 'Principal', optionC: 'Spin', optionD: 'Azimuthal', answer: 'B', tag: 'Atomic structure', explanation: 'n is the principal quantum number.' },
     { course: 'MTH101', question: 'Solve $x^2 = 4$ for positive x', optionA: '1', optionB: '2', optionC: '3', optionD: '4', answer: 'B', tag: 'Algebra', explanation: '' },
+    { course: 'SEC-MTH', question: 'What is the value of 3 + 4 × 2?', optionA: '14', optionB: '11', optionC: '10', optionD: '9', answer: 'B', tag: 'Number & numeration', explanation: 'Multiply first, then add: 3 + 8 = 11.', exam: 'jamb', year: '2020', classLevel: '' },
   ];
+  rows.forEach(r => { if (r.exam === undefined) { r.exam = ''; r.year = ''; r.classLevel = ''; } });
   let body, type, name;
   if (kind === 'json') {
-    body = JSON.stringify(rows.map(r => ({ course: r.course, question: r.question, options: [r.optionA, r.optionB, r.optionC, r.optionD], answer: r.answer, tag: r.tag, explanation: r.explanation })), null, 2);
+    body = JSON.stringify(rows.map(r => ({ course: r.course, question: r.question, options: [r.optionA, r.optionB, r.optionC, r.optionD], answer: r.answer, tag: r.tag, explanation: r.explanation, ...(r.exam ? { exam: r.exam, year: r.year } : {}) })), null, 2);
     type = 'application/json'; name = 'wreddi-questions-template.json';
   } else {
     const cols = Object.keys(rows[0]), esc = v => /[",\n]/.test(v) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v);

@@ -63,6 +63,7 @@ connectDB().then(async () => {
   await require('./src/utils/migratePlans').migratePlans();
   await ensureOwnerAdmin();
   await bootstrapCourses();
+  await require('./src/utils/secondarySeed').bootstrapSecondaryCourses(Course);   // v1.11
   require('./src/services/scheduler.service').startScheduler();
   startTelegramBot();
   // Pick up a bulk note-writing job that was running when the server last restarted.
@@ -123,7 +124,7 @@ async function ensureOwnerAdmin() {
 // course management happens from the admin panel.
 async function bootstrapCourses() {
   try {
-    const count = await Course.countDocuments();
+    const count = await Course.countDocuments({ track: { $ne: 'secondary' } });   // secondary subjects never count as university courses
     if (count > 0) return;
     const defaults = [
       { courseCode: 'GST101', key: 'gst101', courseTitle: 'Use of English',    department: 'GST', level: '100', color: '#3E5C8A', icon: 'translate' },
@@ -192,6 +193,7 @@ app.use('/api', require('./src/routes/support.routes'));   // upgrade requests +
 app.use('/api', require('./src/routes/study.routes'));     // study plan, exam overview, achievements
 app.use('/api', require('./src/routes/autopilot.routes')); // v1.9.0 Weakness Autopilot (today's 15-minute plan)
 app.use('/api', require('./src/routes/notes.routes'));     // course notes
+app.use('/api', require('./src/routes/secondary.routes')); // v1.11 Wreddi Secondary: JAMB / WAEC / NECO / school
 app.use('/api/admin', require('./src/routes/admin/admin.cosmetics.routes'));
 app.use('/api', require('./src/routes/student.routes')); // /api/questions/:course, /api/me
 
@@ -230,7 +232,7 @@ app.get('/landing.html', (req, res) => res.redirect(301, '/'));
 
 // The signed-in tabs are one single-page app: every one of these URLs serves the dashboard (the shell), and
 // js/shell.js opens the matching view from the path. Old .html links keep working.
-const SHELL_ROUTES = ['/contests', '/study-rooms', '/chat', '/profile', '/leaderboard', '/written', '/cheatsheet', '/focus', '/mistakes', '/wrapped'];
+const SHELL_ROUTES = ['/contests', '/study-rooms', '/chat', '/profile', '/leaderboard', '/written', '/cheatsheet', '/focus', '/mistakes', '/wrapped', '/secondary'];
 SHELL_ROUTES.forEach(r => {
   app.get(r, (req, res) => res.sendFile(path.join(__dirname, 'public', 'dashboard.html')));
   app.get(r + '.html', (req, res) => res.redirect(301, r + req.url.slice(req.path.length)));

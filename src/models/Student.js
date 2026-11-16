@@ -135,6 +135,24 @@ const StudentSchema = new mongoose.Schema({
   // too: any account created before v1.4 starts with this at false.
   profileCompleted: { type: Boolean, default: false },
 
+  // ── v1.11: Secondary (JAMB / WAEC / NECO / school) ──────────
+  // `track` decides which app the student lands in. Every account that existed before v1.11 has no value and is
+  // treated as 'university'. `secondary` holds their exam setup (see utils/secondary.js cleanProfile).
+  track: { type: String, enum: ['university', 'secondary'], default: 'university' },
+  secondary: {
+    type: {
+      _id: false,
+      exam:          { type: String, enum: ['', 'jamb', 'waec', 'neco', 'school'], default: '' },
+      classLevel:    { type: String, default: '' },          // JSS1..SS3, used by School exams
+      subjects:      { type: [String], default: [] },        // secondary course keys
+      examDate:      { type: Date, default: null },
+      targetScore:   { type: Number, default: null },        // JAMB: out of 400
+      school:        { type: String, default: '' },
+      courseOfStudy: { type: String, default: '' },          // the course they hope to study at university
+    },
+    default: undefined,
+  },
+
   // ── v1.4 additions: subscription tier & usage counters ──────
   // Replaces the old activation-code-gated Premium/Pro split. Every
   // account — new or pre-v1.4 — starts on 'free'. tierExpiresAt is

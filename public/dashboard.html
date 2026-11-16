@@ -16,6 +16,7 @@
 <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
 <link rel="stylesheet" href="/css/glass.css">
 <script src="/js/auth-guard.js"></script>
+<script src="/js/attempt-recovery.js"></script>
 <script src="/js/shared-nav.js"></script>
 <script src="/js/shell.js"></script>
 <script src="/js/install-prompt.js" defer></script>
@@ -25,7 +26,7 @@
 (function(){
   const s = PhqAuth.getSession();
   if(!s || !s.accessToken || s.role !== 'student'){
-    window.location.replace('/login.html');
+    window.location.replace(location.pathname === '/secondary' ? '/login?as=secondary' : '/login');
   }
 })();
 </script>
@@ -714,6 +715,31 @@ details.np-card>summary::-webkit-details-marker{display:none;}
 </style>
 <link rel="stylesheet" href="/css/hybrid.css">
 <link rel="stylesheet" href="/css/guided-home.css">
+<style>
+/* Student shell visual refinement — presentation only; Wreddi brand tokens remain unchanged. */
+body .topbar{background:var(--bar-solid);border-bottom:1px solid var(--bd);box-shadow:none;}
+body .home-hero{padding-top:24px;}
+body .sec-h{padding-top:20px;padding-bottom:10px;}
+body .stat-pill,
+body .cc,
+body .mode-btn,
+body .opt-card,
+body .exam-banner,
+body .goal-card,
+body .np-card{background:var(--surf);border:1px solid var(--bd);border-radius:var(--r16);box-shadow:none;}
+body .cc.on,body .mode-btn.on{border-color:var(--brand);}
+body .mode-btn{padding-top:16px;padding-bottom:16px;}
+body .cc{padding:18px 16px 16px;}
+body .ib{border:1px solid var(--bd);background:var(--surf);box-shadow:none;}
+body .cg{gap:14px;}
+@media(max-width:480px){
+  body .stats-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;overflow:visible;}
+  body .stat-pill{min-width:0;padding:14px;}
+  body .home-hero{padding-left:16px;padding-right:16px;}
+  body .cg{gap:10px;padding-left:14px;padding-right:14px;}
+  body .mode-row{gap:10px;padding-left:14px;padding-right:14px;}
+}
+</style>
 <script src="/js/ripple.js" defer></script>
 </head>
 <body class="fs-md">
@@ -749,6 +775,14 @@ details.np-card>summary::-webkit-details-marker{display:none;}
       <div id="plan-banner-text" style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Loading plan…</div>
     </div>
     <div id="plan-banner-cta" style="font-size:11.5px;font-weight:700;flex-shrink:0;"></div>
+  </div>
+
+  <div id="sec-home-card" onclick="PhqShell.go('/secondary')" style="margin:10px 18px 0;padding:12px 14px;border-radius:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;background:var(--bg);">
+    <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+      <i class="fa-solid fa-graduation-cap" style="font-size:13px;flex-shrink:0;color:var(--brand);"></i>
+      <div id="sec-home-text" style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Writing JAMB, WAEC or NECO?</div>
+    </div>
+    <div id="sec-home-cta" style="font-size:11.5px;font-weight:700;flex-shrink:0;color:var(--brand);">Open</div>
   </div>
 
   <div id="onboard-card" style="display:none;margin:14px 18px 0;background:var(--surf);border-radius:var(--r16);padding:16px;box-shadow:var(--sh);">
@@ -1509,6 +1543,7 @@ details.np-card>summary::-webkit-details-marker{display:none;}
       <button class="btn-grad" style="width:100%;" id="ps-submit-btn" onclick="profileSetupNext()">Continue</button>
     </div>
     <div id="ps-cancel-btn" style="display:none;text-align:center;margin-top:10px;font-size:13px;color:var(--t3);cursor:pointer;" onclick="document.getElementById('m-profile-setup').classList.remove('on')">Cancel</div>
+    <div id="ps-secondary-link" style="display:none;text-align:center;margin-top:12px;font-size:13px;font-weight:700;color:var(--brand);cursor:pointer;" onclick="goSecondaryFromSetup()">I'm in secondary school or writing JAMB, WAEC or NECO</div>
   </div>
 </div>
 
@@ -1758,6 +1793,7 @@ async function submitAIQuizResult(quizId, userAnswers, score, totalQuestions){
    ══════════════════════════════════════════════════════════════ */
 function doLogout(){
   curUser = null;
+  window.curUser = null;
   quizQ = [];
 
   // 1. Best-effort call to the library's own logout.
@@ -1797,7 +1833,7 @@ async function bootFromSession(){
     // Someone opening a friend's shared quiz / challenge link while signed out gets the invite page (with Sign up
     // carrying the sender's referral code) instead of a bare login form.
     const sm = location.pathname.match(/^\/[qc]\/[A-Za-z0-9_-]{8,32}$/);
-    window.location.replace(sm ? '/invite' + location.pathname : '/login.html');
+    window.location.replace(sm ? '/invite' + location.pathname : location.pathname === '/secondary' ? '/login?as=secondary' : '/login');
     return;
   }
   try{
@@ -1805,16 +1841,21 @@ async function bootFromSession(){
     if(!res.ok){
       PhqAuth.stashShareLink();
       try { PhqAuth.logout('student'); } catch(e){}
-      window.location.replace('/login.html');
+      window.location.replace(location.pathname === '/secondary' ? '/login?as=secondary' : '/login');
       return;
     }
     const data = await res.json();
     if(data.mustChangePassword){ window.location.replace('/change-password'); return; }
     curUser = data;
+    window.curUser = data;
     await syncFromServer();
     await initHome();
     showScr('home');
     if(window.PhqShell) PhqShell.start(); // opens /contests, /profile, ... if that's the URL
+    // v1.11: a student who set up Secondary lands there on login (only when they opened the plain home URL).
+    if(window.PhqShell && data.track === 'secondary' && /^\/(dashboard)?\/?$/.test(location.pathname)) PhqShell.go('/secondary', { replace: true });
+    (function(){ const t = document.getElementById('sec-home-text'), c = document.getElementById('sec-home-cta');
+      if(data.track === 'secondary'){ t.textContent = 'Your Secondary prep (JAMB · WAEC · NECO)'; c.textContent = 'Open'; } })();
     if(window.PhqBrainiac) PhqBrainiac.start(); // v1.8.3 floating companion
     populateWallet(data);
     loadPlanBanner();
@@ -1826,10 +1867,11 @@ async function bootFromSession(){
       // address bar still says /q/<token>, so reloading once setup is done opens the quiz.
       const m = location.pathname.match(/^\/([qc])\/([A-Za-z0-9_-]{8,32})$/);
       if(m) (m[1] === 'c' ? openChallenge : openSharedQuiz)(m[2]);
+      else recoverInterruptedActivity();
     }
   }catch(e){
     try { PhqAuth.logout('student'); } catch(e2){}
-    window.location.replace('/login.html');
+    window.location.replace(location.pathname === '/secondary' ? '/login?as=secondary' : '/login');
   }
 }
 
@@ -1931,9 +1973,15 @@ async function openProfileSetupModal(editMode=false){
   renderProfileSetupCourses();
   const cnt = document.getElementById('ps-course-count'); if(cnt) cnt.textContent = psSelectedCourses.length + ' selected';
   document.getElementById('ps-cancel-btn').style.display = 'none';
+  document.getElementById('ps-secondary-link').style.display = editMode ? 'none' : 'block';
   profileSetupStep = editMode ? 0 : (!curUser.university ? 0 : !curUser.department ? 1 : !(curUser.selectedCourses || []).length ? 2 : 3);
   renderProfileSetupStep();
   document.getElementById('m-profile-setup').classList.add('on');
+}
+function goSecondaryFromSetup(){
+  // Secondary students never fill university / department / courses. Their own setup (inside /secondary) clears this prompt.
+  document.getElementById('m-profile-setup').classList.remove('on');
+  PhqShell.go('/secondary');
 }
 function renderProfileSetupCourses(filterTerm=''){
   const list = document.getElementById('ps-course-list');
@@ -2611,6 +2659,111 @@ function loadPdfJs(){
 // still unanswered is marked "timed out". It runs on the wall clock, so a backgrounded tab can't pause it.
 // A new session is detected by its fresh `answers` array, which every quiz starter creates.
 let clockInt = null, clockEndsAt = 0, clockTotal = 0, clockStartedAt = 0, clockExpired = false, clockFor = null;
+function currentStudentId(){ return String((curUser && curUser.matric) || (window.curUser && window.curUser.matric) || '').trim(); }
+function validResumeQuestions(qs){
+  return Array.isArray(qs) && qs.length > 0 && qs.length <= 500 && qs.every(q => q && Array.isArray(q.opts) && q.opts.length >= 2 && Number.isInteger(q.ans) && q.ans >= 0 && q.ans < q.opts.length);
+}
+function validQuizRecovery(r){
+  if(!r || !Array.isArray(r.questions) || r.questions.length > 500 || !validResumeQuestions(r.questions)) return false;
+  if(r.type === 'voice') return Number.isInteger(r.index) && r.index >= 0 && r.index <= r.questions.length && Array.isArray(r.voiceResults) && r.voiceResults.every(x => x && Number.isInteger(x.questionIndex) && x.questionIndex >= 0 && x.questionIndex < r.index && (x.chosen === null || (Number.isInteger(x.chosen) && x.chosen < r.questions[x.questionIndex].opts.length)));
+  const n = r.questions.length;
+  return Number.isInteger(r.current) && r.current >= 0 && r.current < n && Array.isArray(r.answers) && r.answers.length === n &&
+    r.answers.every((a, i) => a === null || (Number.isInteger(a) && a >= 0 && a < r.questions[i].opts.length)) &&
+    Array.isArray(r.confirmed) && r.confirmed.length === n && Array.isArray(r.timedOut) && r.timedOut.length === n && typeof r.mode === 'string';
+}
+function validWrittenRecovery(r){ return !!(r && typeof r.examId === 'string' && r.examId.length > 0); }
+function clearQuizRecovery(){ try { PhqAttemptRecovery.clear(localStorage, 'quiz', currentStudentId()); } catch(e){} }
+function persistQuizRecovery(){
+  const student = currentStudentId();
+  if(!student || !quizQ.length || answers.length !== quizQ.length) return false;
+  try{
+    const challenge = typeof activeChallenge !== 'undefined' && activeChallenge && activeChallenge.arr === quizQ
+      ? { token: activeChallenge.token, by: activeChallenge.by, correct: activeChallenge.correct, total: activeChallenge.total, pct: activeChallenge.pct, capped: !!activeChallenge.capped } : null;
+    const savedQuizId = typeof shareCache !== 'undefined' && shareCache && shareCache.arr === quizQ ? shareCache.id : null;
+    return !!PhqAttemptRecovery.write(localStorage, 'quiz', student, {
+      type: 'quiz', questions: quizQ, current: cur, answers, confirmed, timedOut, mode: quizMode,
+      courses: selCourses, quantity: selQtyVal, title: document.getElementById('qt-title')?.textContent || '',
+      timerOn, timerMins, clock: { enabled: !!timerOn && clockTotal > 0, total: clockTotal, startedAt: clockStartedAt, endsAt: clockEndsAt, expired: clockExpired },
+      aiQuizId: curAIQuizId, reviewed: [...REVIEW], guessed: quizQ.map((q, i) => GUESS.has(q) ? i : -1).filter(i => i >= 0),
+      missedRun, reviewKind, missedCourses: missedPrevSel, missedMode: missedPrevMode,
+      previousWrong: lastWrong, challenge, shareCacheId: savedQuizId,
+    });
+  }catch(e){ return false; }
+}
+function persistVoiceQuizRecovery(questions, title, progress){
+  const student = currentStudentId();
+  if(!student || !validResumeQuestions(questions)) return false;
+  const state = progress || { index: 0, results: [] };
+  try{
+    return !!PhqAttemptRecovery.write(localStorage, 'quiz', student, {
+      type: 'voice', questions, title, index: state.index,
+      voiceResults: state.results || [],
+    });
+  }catch(e){ return false; }
+}
+function voiceRecoveryCallbacks(questions, title){
+  return {
+    onProgress: progress => persistVoiceQuizRecovery(questions, title, progress),
+    onEnd: () => clearQuizRecovery(),
+    onFinish: sum => { clearQuizRecovery(); voiceQuizFinished(sum); },
+  };
+}
+function resumeVoiceQuizAttempt(r, tries){
+  tries = tries || 0;
+  if(!window.PhqVoiceQuiz){ if(tries < 40) setTimeout(() => resumeVoiceQuizAttempt(r, tries + 1), 100); return; }
+  const cfg = { questions: r.questions, title: r.title || 'Voice quiz', resume: { index: r.index, results: r.voiceResults }, ...voiceRecoveryCallbacks(r.questions, r.title || 'Voice quiz') };
+  window.PhqVoiceQuiz.start(cfg).then(ok => { if(ok) toast('Resuming your unfinished voice quiz'); });
+}
+function restoreQuizAttempt(r){
+  if(r.type === 'voice'){ resumeVoiceQuizAttempt(r); return; }
+  clearAutoAdvance(); stopSessionClock();
+  quizQ = r.questions; cur = r.current; answers = r.answers; confirmed = r.confirmed.map(Boolean); timedOut = r.timedOut.map(Boolean);
+  quizMode = r.mode; selCourses = Array.isArray(r.courses) ? r.courses : [...new Set(quizQ.map(q => q.course).filter(Boolean))];
+  if(Number.isFinite(r.quantity)) selQtyVal = r.quantity;
+  timerOn = !!r.timerOn; if(Number.isFinite(r.timerMins) && r.timerMins > 0) timerMins = r.timerMins;
+  curAIQuizId = r.aiQuizId || null; missedRun = !!r.missedRun; reviewKind = r.reviewKind === 'guess' ? 'guess' : 'missed';
+  missedPrevSel = Array.isArray(r.missedCourses) ? r.missedCourses : null; missedPrevMode = r.missedMode || 'practice';
+  lastWrong = Array.isArray(r.previousWrong) ? r.previousWrong : [];
+  REVIEW = new Set((Array.isArray(r.reviewed) ? r.reviewed : []).filter(i => Number.isInteger(i) && i >= 0 && i < quizQ.length));
+  GUESS = new WeakSet(); (Array.isArray(r.guessed) ? r.guessed : []).forEach(i => { if(Number.isInteger(i) && quizQ[i]) GUESS.add(quizQ[i]); });
+  activeChallenge = r.challenge && r.challenge.token ? { ...r.challenge, arr: quizQ } : null;
+  shareCache = r.shareCacheId ? { arr: quizQ, id: r.shareCacheId } : { arr: null, id: null };
+  clockFor = answers;
+  clockTotal = r.clock && Number.isFinite(r.clock.total) ? r.clock.total : 0;
+  clockStartedAt = r.clock && Number.isFinite(r.clock.startedAt) ? r.clock.startedAt : 0;
+  clockEndsAt = r.clock && Number.isFinite(r.clock.endsAt) ? r.clock.endsAt : 0;
+  clockExpired = !!(r.clock && r.clock.expired);
+  const title = r.title || (selCourses.map(c => COURSES[c]?.code || c).join('+')) || 'Quiz';
+  document.getElementById('qt-title').textContent = title;
+  showScr('quiz'); renderQ();
+  if(r.clock && r.clock.enabled && clockEndsAt) beginSessionClock(r.clock); else stopSessionClock();
+  toast('Resuming your unfinished quiz');
+}
+async function recoverInterruptedActivity(){
+  const student = currentStudentId();
+  if(!student || !window.PhqAttemptRecovery || !window.PhqShell || /^\/[qc]\//.test(location.pathname)) return;
+  const quiz = PhqAttemptRecovery.read(localStorage, 'quiz', student, Date.now(), validQuizRecovery);
+  let exam = null, writtenLookupOK = false;
+  try{
+    const res = await PhqAuth.authFetch('/api/written/active', {}, 'student');
+    if(res.ok){ const data = await res.json(); exam = data && data.exam || null; writtenLookupOK = true; }
+  }catch(e){}
+  if(writtenLookupOK && !exam) PhqAttemptRecovery.clear(localStorage, 'written', student);
+  const written = PhqAttemptRecovery.read(localStorage, 'written', student, Date.now(), validWrittenRecovery);
+  const examId = exam && String(exam.id || '');
+  const savedExamAt = written && written.examId === examId ? written.updatedAt : 0;
+  const startedAt = exam ? new Date(exam.startedAt).getTime() : 0;
+  const writtenAt = exam ? Math.max(savedExamAt || 0, Number.isFinite(startedAt) ? startedAt : 0) : 0;
+  if(quiz && (!exam || quiz.updatedAt >= writtenAt)){
+    if(/^\/written\/?$/.test(location.pathname)) await window.PhqShell.go('/dashboard', { replace: true });
+    restoreQuizAttempt(quiz); return;
+  }
+  if(exam){ if(!/^\/written\/?$/.test(location.pathname)) window.PhqShell.go('/written', { replace: true }); return; }
+  if(quiz){
+    if(/^\/written\/?$/.test(location.pathname)) await window.PhqShell.go('/dashboard', { replace: true });
+    restoreQuizAttempt(quiz);
+  }
+}
 function stopSessionClock(){
   clearInterval(clockInt); clockInt = null;
   const p = document.getElementById('session-clock'); if(p) p.style.display = 'none';
@@ -2625,9 +2778,16 @@ function sessionClockTick(){
   if(left === warn && clockTotal >= 120) toast('1 minute left');
   if(left <= 0) expireSession();
 }
-function beginSessionClock(){
+function beginSessionClock(resume){
   stopSessionClock();
   clockTotal = 0; clockExpired = false;
+  if(resume && Number.isFinite(resume.total) && resume.total > 0 && Number.isFinite(resume.endsAt) && resume.endsAt > 0){
+    clockTotal = resume.total; clockStartedAt = Number.isFinite(resume.startedAt) ? resume.startedAt : Date.now(); clockEndsAt = resume.endsAt; clockExpired = !!resume.expired;
+  }
+  if(clockTotal){
+    document.getElementById('session-clock').style.display = 'flex';
+    clockInt = setInterval(sessionClockTick, 1000); sessionClockTick(); return;
+  }
   if(!timerOn || !quizQ.length) return;
   clockTotal = timerMins * 60; clockStartedAt = Date.now(); clockEndsAt = clockStartedAt + clockTotal * 1000;
   document.getElementById('session-clock').style.display = 'flex';
@@ -2673,6 +2833,7 @@ function toggleGuess(){
   if(GUESS.has(q)) GUESS.delete(q); else GUESS.add(q);
   clearAutoAdvance(); // the student is thinking about this one; don't whisk them to the next question
   const b = document.getElementById('guess-btn'); if(b){ const on = GUESS.has(q); b.classList.toggle('on', on); b.innerHTML = guessBtnInner(on); }
+  persistQuizRecovery();
 }
 function guessBtnInner(on){ return on ? '🎲 Marked as a guess. I\'ll help you learn it' : '🎲 Not sure? Mark as a guess'; }
 async function submitGuessFlags(){
@@ -3255,6 +3416,7 @@ function renderQ(){
 
   updateMainBtn();renderDots();
   document.getElementById('quiz-body').scrollTo({top:0,behavior:'smooth'});
+  persistQuizRecovery();
 }
 
 function pickOpt(i){
@@ -3276,6 +3438,7 @@ function pickOpt(i){
     b.classList.remove('sel');if(idx===i)b.classList.add('sel');
   });
   updateMainBtn();
+  persistQuizRecovery();
 }
 
 function updateMainBtn(){
@@ -3336,6 +3499,7 @@ function toggleReview(){
   clearAutoAdvance(); // the student is thinking about this one; don't whisk them away
   if(REVIEW.has(cur)) REVIEW.delete(cur); else REVIEW.add(cur);
   renderDots();
+  persistQuizRecovery();
   toast(REVIEW.has(cur) ? 'Flagged for review' : 'Flag removed');
 }
 function openGrid(){
@@ -3422,6 +3586,7 @@ function saveNote(qid,val){
 
 function showResults(){
   clearAutoAdvance();
+  clearQuizRecovery();
   const wasTimed = clockTotal > 0, usedSecs = wasTimed ? Math.min(clockTotal, Math.round((Date.now() - clockStartedAt) / 1000)) : 0;
   stopSessionClock();
   HOME_MEMO.missedAt = 0; onbSeen.quiz = true; if(quizMode === 'exam') onbSeen.exam = true; // so the home screen refreshes after a quiz
@@ -3576,7 +3741,7 @@ async function shareResult(){
   else navigator.clipboard.writeText(text).then(()=>toast('Result copied!')).catch(()=>toast('Could not share'));
 }
 
-function retryQuiz(){ clearAutoAdvance(); if(missedRun) startMissedReview(reviewKind); else startQuiz(); }function goHome(){ clearAutoAdvance(); stopSessionClock(); if(missedPrevSel){ selCourses=missedPrevSel; quizMode=missedPrevMode; missedPrevSel=null; } showScr('home');refreshStats();renderDailyGoal(); }
+function retryQuiz(){ clearAutoAdvance(); if(missedRun) startMissedReview(reviewKind); else startQuiz(); }function goHome(){ clearAutoAdvance(); clearQuizRecovery(); stopSessionClock(); if(missedPrevSel){ selCourses=missedPrevSel; quizMode=missedPrevMode; missedPrevSel=null; } showScr('home');refreshStats();renderDailyGoal(); }
 
 async function saveQuizForLater(){
   if(!quizQ.length) return;
@@ -4720,7 +4885,8 @@ async function startVoiceQuiz(src){
   for(let i = pool.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
   const want = Math.min(src.count || 8, remaining == null ? 8 : remaining, pool.length);
   const title = src.missed ? 'Missed questions' : src.tag ? src.tag : (src.course ? (COURSES[src.course] && COURSES[src.course].code) : 'Voice quiz');
-  if(!await PhqVoiceQuiz.start({ questions: pool.slice(0, want), title: title || 'Voice quiz', onFinish: voiceQuizFinished })) toast('Could not start the voice quiz on this device');
+  const questions = pool.slice(0, want), label = title || 'Voice quiz';
+  if(!await PhqVoiceQuiz.start({ questions, title: label, ...voiceRecoveryCallbacks(questions, label) })) toast('Could not start the voice quiz on this device');
 }
 function voiceQuizFinished(sum){
   // Counts exactly like a normal quiz: daily goal, score history, weak topics, Brainiac reactions.

@@ -2,12 +2,9 @@
    (dashboard, profile, leaderboard, contests, study rooms, assistant, login, register,
    forgot/change password, landing). The admin panel keeps its own palette in admin.html.
 
-   v1.10 — "Apple × Material" hybrid.
-     From Apple (iOS 17 / HIG):  grouped surfaces on a light-grey canvas, filled (not inset) form fields,
-                                 translucent blurred bars, native system type (SF Pro), springy sheet motion.
-     From Material 3:            tonal containers (--brand-lt) for secondary actions and selected states,
-                                 layered elevation (--sh*), a pill "active indicator" in the tab bar,
-                                 ripple state layers on touch, emphasised easing.
+   v1.11 — clean Wreddi SaaS surfaces.
+     Cool neutral canvases, clear white surfaces, crisp borders, readable slate text, and the existing
+     Wreddi blue brand palette. Existing business logic and page-specific behavior are unaffected.
 
    Token meaning (this replaced the old single-surface neumorphic scheme):
      --bg      page canvas              (grouped background)
@@ -19,19 +16,19 @@
 
 :root {
   /* Surfaces */
-  --bg: #f8f8fa;
+  --bg: #F8FAFC;
   --surf: #ffffff;
-  --surf2: #f8f8fa;
-  --surf3: #ececf0;
-  --fill: rgba(120,120,128,.08);
-  --fill2: rgba(120,120,128,.15);
-  --bar: rgba(255,255,255,.86);          /* translucent tab/top bar (needs backdrop blur) */
+  --surf2: #F8FAFC;
+  --surf3: #F1F5F9;
+  --fill: #F1F5F9;
+  --fill2: #E2E8F0;
+  --bar: rgba(255,255,255,.94);          /* translucent tab/top bar (needs backdrop blur) */
   --bar-solid: #ffffff;                  /* same bar where blur is off (low-power / unsupported) */
   --scrim: rgba(0,0,0,.40);
-  --inv-bg: rgba(28,28,30,.92);          /* toast / snackbar */
+  --inv-bg: rgba(15,23,42,.94);          /* toast / snackbar */
   --inv-fg: #ffffff;
   /* Shadow tints (kept for the few places that use them as hairlines / drops) */
-  --sd: rgba(60,60,67,.18);
+  --sd: rgba(15,23,42,.12);
   --sl: rgba(255,255,255,.80);
 
   /* Brand + semantic colour */
@@ -58,19 +55,19 @@
   --bronze: #a86a3a;
 
   /* Text — Apple label hierarchy */
-  --t1: #1c1c1e;
-  --t2: #48484a;
-  --t3: #6c6c70;
-  --t4: #8e8e93;
-  --bd: rgba(60,60,67,.10);              /* hairline separators */
-  --bd2: rgba(60,60,67,.18);
+  --t1: #0F172A;
+  --t2: #334155;
+  --t3: #475569;
+  --t4: #64748B;
+  --bd: #E2E8F0;                          /* crisp separators and card borders */
+  --bd2: #CBD5E1;
   --qfont: 16px;
 
   /* Elevation (Material layering, Apple softness) */
-  --sh:    0 0 0 .5px rgba(60,60,67,.12);
-  --sh-sm: 0 0 0 .5px rgba(60,60,67,.12);
-  --sh-md: 0 0 0 .5px rgba(60,60,67,.10), 0 4px 14px rgba(16,24,40,.06);
-  --sh-lg: 0 0 0 .5px rgba(60,60,67,.08), 0 12px 36px rgba(16,24,40,.12);   /* sheets, menus, the tab bar */
+  --sh:    0 0 0 1px rgba(15,23,42,.035);
+  --sh-sm: 0 0 0 1px rgba(15,23,42,.035);
+  --sh-md: 0 0 0 1px rgba(15,23,42,.04), 0 4px 14px rgba(15,23,42,.06);
+  --sh-lg: 0 0 0 1px rgba(15,23,42,.04), 0 12px 36px rgba(15,23,42,.12);   /* sheets, menus, the tab bar */
   /* Wells are filled, not shadowed. These stay valid box-shadow values so that lists such as
      "var(--sh-in), 0 0 0 2px var(--brand-lt)" in existing rules keep working. */
   --sh-in:    inset 0 0 0 0 transparent;
@@ -82,13 +79,12 @@
   --r12: 12px;
   --r16: 16px;
   --r20: 20px;
-  --r24: 28px;
+  --r24: 24px;
   --rpill: 999px;
 
-  /* Type — each platform gets its own system face: SF Pro on iOS/macOS, Roboto on Android,
-     Segoe UI on Windows. Nothing to download, which also helps on slow connections. */
-  --ff-h: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', Roboto, 'Segoe UI', system-ui, 'Helvetica Neue', Arial, sans-serif;
-  --ff-b: -apple-system, BlinkMacSystemFont, 'SF Pro Text', Roboto, 'Segoe UI', system-ui, 'Helvetica Neue', Arial, sans-serif;
+  /* Self-hosted DM Sans for the clean, readable hierarchy in the supplied visual reference. */
+  --ff-h: 'DM Sans', system-ui, sans-serif;
+  --ff-b: 'DM Sans', system-ui, sans-serif;
 
   /* Layout */
   --nav-space: 96px; /* room kept clear at the bottom for the floating tab bar */
@@ -102,20 +98,20 @@
 }
 
 [data-theme=dark] {
-  /* Surfaces — true-black canvas, #1c1c1e raised surface (Apple dark elevated) */
-  --bg: #000000;
-  --surf: #141416;
-  --surf2: #1c1c1e;
-  --surf3: #2c2c2e;
-  --fill: rgba(120,120,128,.18);
-  --fill2: rgba(120,120,128,.28);
-  --bar: rgba(20,20,22,.86);
-  --bar-solid: #141416;
+  /* Surfaces — layered slate, separated by tonal steps and a clear hairline. */
+  --bg: #0B1220;
+  --surf: #111827;
+  --surf2: #1E293B;
+  --surf3: #334155;
+  --fill: #1E293B;
+  --fill2: #334155;
+  --bar: rgba(17,24,39,.94);
+  --bar-solid: #111827;
   --scrim: rgba(0,0,0,.60);
-  --inv-bg: rgba(242,242,247,.94);
-  --inv-fg: #1c1c1e;
-  --sd: rgba(84,84,88,.55);
-  --sl: rgba(255,255,255,.06);
+  --inv-bg: rgba(241,245,249,.96);
+  --inv-fg: #0F172A;
+  --sd: rgba(0,0,0,.42);
+  --sl: rgba(255,255,255,.04);
 
   --brand: #7ba0d8;
   --brand-dk: #a9c3ec;
@@ -139,16 +135,16 @@
   --silver: #a5abc2;
   --bronze: #c47e42;
 
-  --t1: #f5f5f7;
-  --t2: #d1d1d6;
-  --t3: #a1a1a6;
-  --t4: #6e6e73;
-  --bd: rgba(84,84,88,.55);
-  --bd2: rgba(84,84,88,.75);
+  --t1: #F8FAFC;
+  --t2: #E2E8F0;
+  --t3: #CBD5E1;
+  --t4: #94A3B8;
+  --bd: #334155;
+  --bd2: #475569;
 
   /* Shadows barely read on black, so surfaces are separated by tone and a hairline */
-  --sh:    0 0 0 .5px rgba(255,255,255,.08);
-  --sh-sm: 0 0 0 .5px rgba(255,255,255,.08);
-  --sh-md: 0 0 0 .5px rgba(255,255,255,.09), 0 4px 14px rgba(0,0,0,.5);
-  --sh-lg: 0 0 0 .5px rgba(255,255,255,.10), 0 12px 36px rgba(0,0,0,.65);
+  --sh:    0 0 0 1px rgba(255,255,255,.06);
+  --sh-sm: 0 0 0 1px rgba(255,255,255,.06);
+  --sh-md: 0 0 0 1px rgba(255,255,255,.06), 0 4px 14px rgba(0,0,0,.32);
+  --sh-lg: 0 0 0 1px rgba(255,255,255,.06), 0 12px 36px rgba(0,0,0,.5);
 }

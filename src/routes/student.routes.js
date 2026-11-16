@@ -95,7 +95,11 @@ async (req, res) => {
 // relying on a hardcoded list.
 router.get('/courses', async (req, res) => {
   try {
-    const courses = await Course.find().sort({ courseCode: 1 }).lean();
+    // v1.11: the university app keeps seeing exactly what it always saw. Secondary subjects (JAMB / WAEC / NECO /
+    // school) only appear when asked for with ?track=secondary (or ?track=all).
+    const t = req.query.track;
+    const filter = t === 'secondary' ? { track: 'secondary' } : t === 'all' ? {} : { track: { $ne: 'secondary' } };
+    const courses = await Course.find(filter).sort({ courseCode: 1 }).lean();
     res.json(courses);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -277,6 +281,7 @@ router.get('/me', requireStudent, async (req, res) => {
       targetGPA: student.targetGPA,
       selectedCourses: student.selectedCourses || [],
       showAllCoursesOverride: !!student.showAllCoursesOverride,
+      track: student.track || 'university',   // v1.11: 'secondary' sends the student to the Secondary app on login
       gpaScale: student.gpaScale,
       gradingScale: student.gradingScale,
       tier: resolvePlan(student),

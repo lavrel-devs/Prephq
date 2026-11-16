@@ -246,7 +246,7 @@
   `;
 
   const S = { ov: null, qs: [], i: 0, results: [], run: 0, open: false, lang: 'en-NG', rec: null, deliver: null, sttOk: !!SR, paused: false,
-    idle: 0, onFinish: null, finished: false, wake: null, voice: null };
+    idle: 0, onFinish: null, onProgress: null, onEnd: null, finished: false, wake: null, voice: null };
 
   function build() {
     if (S.ov) return;
@@ -349,6 +349,11 @@
     });
   }
   const wait = () => new Promise(res => { S.deliver = res; });
+  function notifyProgress(index){
+    if(!S.onProgress) return;
+    const results = S.results.map(r => ({ questionIndex: S.qs.indexOf(r.q), chosen: r.chosen }));
+    try { S.onProgress({ index, results }); } catch (e) {}
+  }
 
   async function runQuiz(run) {
     while (alive(run) && S.i < S.qs.length) {
@@ -379,6 +384,7 @@
       if (!alive(run)) return;
       const correct = outcome.chosen != null && outcome.chosen === q.ans;
       S.results.push({ q, chosen: outcome.chosen, correct, tag: q.tag || '', course: q.course, id: q.id });
+      notifyProgress(S.i + 1);
       if (outcome.chosen != null) { revealAnswer(q, outcome.chosen); const fb = buildFeedback(q, outcome.chosen, S.i); $('vq-fb').textContent = fb; status(correct ? 'Correct ✓' : 'Not quite', correct ? '' : 'err'); await say(fb, run); await sleep(350); }
       else if (!outcome.autoSkip) { status('Skipped'); await sleep(250); }
       S.i++;
@@ -399,6 +405,7 @@
     S.run++;   // cancels the quiz loop and any speech that belongs to it
     deliver({ type: 'command', command: 'noop' }); stopRecognition(); try { TTS && TTS.cancel(); } catch (e) {}
     const sum = summarize(S.results);
+    try { if(S.onEnd) S.onEnd({ userEnded: !!userEnded, complete: !userEnded }); } catch (e) {}
     if (S.results.length === 0) { close(); return; }
     $('vq-body').innerHTML = `<div class="vq-sum"><div class="big">${sum.correct} / ${sum.answered}</div><div style="font-weight:800;margin:6px 0;">${sum.pct}% correct${sum.skip ? ` · ${sum.skip} skipped` : ''}</div>
       <div style="color:var(--t3,#7a8296);font-size:13.5px;line-height:1.5;">${sum.weakTags.length ? 'Revise: ' + sum.weakTags.map(esc).join(', ') : 'Nice and steady.'}</div>
@@ -424,7 +431,15 @@
     if (!qs.length) return false;
     if (!TTS && !SR) { return false; }
     build();
-    Object.assign(S, { qs, i: 0, results: [], open: true, run: S.run + 1, lang: savedLang(), rec: null, deliver: null, paused: false, idle: 0, finished: false, onFinish: cfg.onFinish || null, sttOk: !!SR });
+    const resume = cfg.resume || {}, index = Number.isInteger(resume.index) ? Math.max(0, Math.min(qs.length, resume.index)) : 0;
+    const results = Array.isArray(resume.results) ? resume.results.map(r => {
+      const q = qs[r && r.questionIndex], chosen = r && r.chosen;
+      if(!q || !(chosen === null || (Number.isInteger(chosen) && chosen >= 0 && chosen < q.opts.length))) return null;
+      return { q, chosen, correct: chosen != null && chosen === q.ans, tag: q.tag || '', course: q.course, id: q.id };
+    }).filter(Boolean) : [];
+    Object.assign(S, { qs, i: index, results, open: true, run: S.run + 1, lang: savedLang(), rec: null, deliver: null, paused: false, idle: 0, finished: false,
+      onFinish: cfg.onFinish || null, onProgress: cfg.onProgress || null, onEnd: cfg.onEnd || null, sttOk: !!SR });
+    notifyProgress(S.i);
     $('vq-orb').style.display = ''; S.ov.querySelectorAll('#vq-repeat,#vq-skip,#vq-end').forEach(b => { b.style.display = ''; });
     S.ov.querySelector('.vq-title').textContent = cfg.title ? '🎧 ' + cfg.title : '🎧 Voice quiz';
     S.ov.classList.add('on'); document.body.style.overflow = 'hidden';

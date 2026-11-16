@@ -4,6 +4,20 @@
 const stemKey = s => String(s || '').toLowerCase().normalize('NFKD').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
 const dupeKey = (course, q) => `${course}|${stemKey(q)}`;
 
+// v1.11: optional secondary-track fields. Anything not recognised is dropped rather than rejected, so an old
+// template (no such columns) and a new one both work, and a typo in "exam" never costs the whole question.
+const EXAM_OK = ['jamb', 'waec', 'neco', 'school'], CLASS_OK = ['JSS1', 'JSS2', 'JSS3', 'SS1', 'SS2', 'SS3'];
+function secondaryMeta(it) {
+  const out = {};
+  const exam = String(it.exam || '').trim().toLowerCase();
+  if (EXAM_OK.includes(exam)) out.exam = exam;
+  const year = Number.parseInt(it.year, 10);
+  if (Number.isInteger(year) && year >= 1978 && year <= 2100) out.year = year;
+  const cl = String(it.classLevel || '').trim().toUpperCase().replace(/\s+/g, '');
+  if (CLASS_OK.includes(cl)) out.classLevel = cl;
+  return out;
+}
+
 const validOpts = o => Array.isArray(o) && o.length >= 2 && o.length <= 10 && o.every(x => typeof x === 'string' && x.trim());
 
 // Splits an uploaded list into what can be inserted and what can't, with a reason for each rejected row.
@@ -30,6 +44,7 @@ function planBulk(items, courseKeys, existingKeys) {
       course, q: it.q.trim(), opts: it.opts.map(o => o.trim()), ans,
       tag: typeof it.tag === 'string' ? it.tag.trim().slice(0, 80) : '',
       exp: typeof it.exp === 'string' ? it.exp : '',
+      ...secondaryMeta(it),
     });
   });
   return { accepted, rejected };
@@ -85,4 +100,4 @@ async function getCourseCounts(Question, Course, ttlMs = 60000) {
   return cache.inflight;
 }
 
-module.exports = { stemKey, dupeKey, planBulk, rankQuality, countsForCourses, getCourseCounts, invalidateCounts };
+module.exports = { stemKey, dupeKey, secondaryMeta, planBulk, rankQuality, countsForCourses, getCourseCounts, invalidateCounts };

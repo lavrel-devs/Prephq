@@ -21,6 +21,9 @@ const CourseSchema = new mongoose.Schema({
   topics:      { type: [String], default: [] },
   color:       { type: String, default: '#3E5C8A' },
   icon:        { type: String, default: 'star' },
+  // v1.11: 'university' (every course that existed before) or 'secondary' (JAMB / WAEC / NECO / school subjects).
+  // Courses saved before v1.11 have no value at all, so every university query uses { track: { $ne: 'secondary' } }.
+  track:       { type: String, enum: ['university', 'secondary'], default: 'university' },
   createdAt:   { type: Date, default: Date.now },
 });
 

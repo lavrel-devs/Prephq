@@ -1,7 +1,7 @@
 {
   "name": "wreddi",
-  "version": "1.10.0",
-  "description": "Wreddi \u2014 Exam Prep Platform",
+  "version": "1.11.1",
+  "description": "Wreddi — Exam Prep Platform",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

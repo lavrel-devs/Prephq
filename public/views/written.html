@@ -124,7 +124,7 @@ const document = PhqShell.scope(root); // every getElementById/querySelector in 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 const STATES = ['setup', 'exam', 'marking', 'result'];
-let state = 'setup', exam = null, timerId = null, submitting = false, count = 3, diff = 'medium', coursesLoaded = false, saveT = null;
+let state = 'setup', exam = null, timerId = null, submitting = false, count = 3, diff = 'medium', coursesLoaded = false;
 
 function show(s){
   state = s;
@@ -203,22 +203,54 @@ async function wxStart(){
 }
 
 // ── sitting the exam ──
-const draftKey = () => 'phq_wx_' + (exam && exam.id);
-function readDraft(){ try{ return JSON.parse(localStorage.getItem(draftKey()) || 'null') || []; }catch(e){ return []; } }
+function studentId(){ try{ return String((window.curUser && window.curUser.matric) || '').trim(); }catch(e){ return ''; } }
+const draftKey = () => 'phq_wx_' + encodeURIComponent(studentId() || 'unknown') + '_' + (exam && exam.id);
+const legacyDraftKey = () => 'phq_wx_' + (exam && exam.id);
+function readDraft(){
+  try{
+    const current = JSON.parse(localStorage.getItem(draftKey()) || 'null');
+    if(Array.isArray(current)) return current;
+    const legacy = JSON.parse(localStorage.getItem(legacyDraftKey()) || 'null');
+    if(Array.isArray(legacy)){ localStorage.setItem(draftKey(), JSON.stringify(legacy)); localStorage.removeItem(legacyDraftKey()); return legacy; }
+  }catch(e){}
+  return [];
+}
+function draftAnswerAt(draft, serverAnswers, index){
+  return Object.prototype.hasOwnProperty.call(draft, index) ? draft[index] : ((serverAnswers && serverAnswers[index]) || '');
+}
+function markWrittenRecovery(e){
+  const student = studentId(); if(!student || !e || !e.id) return;
+  try{ PhqAttemptRecovery.write(localStorage, 'written', student, { examId: String(e.id), startedAt: new Date(e.startedAt).getTime() }); }catch(e){}
+}
+function clearWrittenRecovery(id){
+  const student = studentId(); if(!student) return;
+  try{
+    const saved = PhqAttemptRecovery.read(localStorage, 'written', student, Date.now(), r => typeof r.examId === 'string');
+    if(!id || !saved || saved.examId === String(id)) PhqAttemptRecovery.clear(localStorage, 'written', student);
+  }catch(e){}
+}
+function saveDraftNow(){
+  if(!exam) return;
+  try{
+    const a = readDraft();
+    [...document.querySelectorAll('.wx-text')].forEach(t => { a[Number(t.dataset.i)] = t.value; });
+    localStorage.setItem(draftKey(), JSON.stringify(a)); markWrittenRecovery(exam);
+  }catch(e){}
+}
 function wxInput(el){
   const i = Number(el.dataset.i);
   el.parentNode.querySelector('.wx-count').textContent = el.value.length + ' characters';
-  clearTimeout(saveT);
-  saveT = setTimeout(() => { try{ const a = readDraft(); a[i] = el.value; localStorage.setItem(draftKey(), JSON.stringify(a)); }catch(e){} }, 400);
+  try{ const a = readDraft(); a[i] = el.value; localStorage.setItem(draftKey(), JSON.stringify(a)); markWrittenRecovery(exam); }catch(e){}
 }
 
 function beginExam(e){
   exam = e; submitting = false;
+  markWrittenRecovery(e);
   const draft = readDraft();
   $('wx-exam-meta').textContent = `${e.questions.length} question${e.questions.length === 1 ? '' : 's'} · ${e.questions.reduce((a, q) => a + q.marks, 0)} marks · ${e.durationMin} minutes${e.topic ? ' · ' + e.topic : ''}`;
   $('wx-qs').innerHTML = e.questions.map((q, i) => `<div class="wx-card">
       <div class="wx-qhead"><div class="wx-qn">${i + 1}</div><div class="wx-qt">${esc(q.q)}</div><div class="wx-marks">${q.marks} mark${q.marks === 1 ? '' : 's'}</div></div>
-      <textarea class="wx-text" data-i="${i}" placeholder="Write your answer here…" oninput="wxInput(this)">${esc(draft[i] || (e.answers && e.answers[i]) || '')}</textarea>
+      <textarea class="wx-text" data-i="${i}" placeholder="Write your answer here…" oninput="wxInput(this)">${esc(draftAnswerAt(draft, e.answers, i))}</textarea>
       <div class="wx-count"></div></div>`).join('');
   [...document.querySelectorAll('.wx-text')].forEach(t => { t.parentNode.querySelector('.wx-count').textContent = t.value.length + ' characters'; });
   show('exam'); tick(); clearInterval(timerId); timerId = setInterval(tick, 1000);
@@ -247,7 +279,8 @@ async function wxSubmit(auto){
       submitting = false; show('exam'); if(new Date(exam.endsAt).getTime() > Date.now()) timerId = setInterval(tick, 1000);
       return;
     }
-    try{ localStorage.removeItem(draftKey()); }catch(e){}
+    try{ localStorage.removeItem(draftKey()); localStorage.removeItem(legacyDraftKey()); }catch(e){}
+    clearWrittenRecovery(exam.id);
     renderResult(d);
   }catch(e){ toast('Network error — your answers are still here. Tap Submit again.'); submitting = false; show('exam'); }
 }
@@ -255,6 +288,8 @@ async function wxSubmit(auto){
 // ── result ──
 function renderResult(d){
   exam = d;
+  try{ localStorage.removeItem(draftKey()); localStorage.removeItem(legacyDraftKey()); }catch(e){}
+  clearWrittenRecovery(d.id);
   $('wx-res-pct').textContent = d.pct + '%';
   $('wx-res-sub').textContent = `${d.total} / ${d.maxTotal} marks · ${String(d.course).toUpperCase()}${d.topic ? ' · ' + d.topic : ''}`;
   $('wx-res-late').style.display = d.late ? 'block' : 'none';
@@ -293,6 +328,8 @@ window.addEventListener('phq:route', (e) => { if(e.detail && e.detail.path !== '
 paintChips();
 // first open: the shell only calls onShow() when you come BACK to a view, so load once here too
 loadCourses(); loadQuota(); loadHistory(); resumeIfAny();
+window.addEventListener('pagehide', saveDraftNow);
+document.addEventListener('visibilitychange', () => { if(document.hidden) saveDraftNow(); });
 
 // inline onclick="..." handlers run in the global scope, so the functions they call are exposed
 window.wxStart = wxStart;

@@ -245,3 +245,129 @@ body .glass-nav-item::before { background: var(--fill); }
 body .glass-nav-item.on { color: var(--t1); }
 body .toggle.on { background: var(--t1); }
 [data-theme=dark] body .toggle.on { background: var(--brand); }
+
+
+/* ══ Wreddi SaaS refinement (v1.11) — component presentation only ═════════════
+   Shared component polish layered over existing templates. Original brand and status hues
+   remain sourced from tokens.css; selectors do not alter routes, state, or interactions. */
+body .cc,
+body .opt,
+body .mode-btn,
+body .msg.assistant {
+  border: 1px solid var(--bd);
+  box-shadow: none;
+}
+body .cc,
+body .mode-btn { border-radius: var(--r16); }
+body .opt { border-radius: var(--r12); }
+body .cc.on,
+body .mode-btn.on,
+body .opt.sel { border-color: var(--brand); }
+body .glass-nav {
+  background: var(--bar-solid);
+  border: 1px solid var(--bd);
+  box-shadow: 0 8px 24px rgba(15,23,42,.08);
+}
+[data-theme=dark] body .glass-nav { box-shadow: 0 8px 24px rgba(0,0,0,.28); }
+body .sheet,
+body .modal-bg .modal {
+  border: 1px solid var(--bd);
+  border-radius: var(--r16);
+}
+body .btn-surf,
+body .v-btn:not(.v-main),
+body .wx-btn.wx-plain {
+  background: var(--surf);
+  color: var(--t1);
+  border: 1px solid var(--bd2);
+  box-shadow: none;
+}
+body .btn-grad,
+body .btn-surf,
+body .qbtn,
+body .np-btn,
+body .rexp-ai-btn,
+body .btn,
+body .v-btn,
+body .wx-btn {
+  min-height: 44px;
+  border-radius: var(--r12);
+}
+body .f-input,
+body .modal-input,
+body .neu-inline-input,
+body .rnote textarea,
+body .why-lesson,
+body .input-bar input {
+  min-height: 44px;
+  border: 1px solid var(--bd2);
+  border-radius: var(--r12);
+  background: var(--surf);
+}
+body .f-input:focus,
+body .modal-input:focus,
+body .neu-inline-input:focus,
+body .rnote textarea:focus,
+body .why-lesson:focus,
+body .input-bar input:focus {
+  border-color: var(--brand);
+}
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) :is(input[type=text],input[type=email],input[type=password],input[type=search],input[type=number],textarea,select) {
+  min-height: 44px;
+  border: 1px solid var(--bd2);
+  border-radius: var(--r12);
+  background: var(--surf);
+  color: var(--t1);
+}
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) :is(input[type=text],input[type=email],input[type=password],input[type=search],input[type=number],textarea,select):focus {
+  border-color: var(--brand);
+  outline: 0;
+}
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .v-tab,
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) .v-preset {
+  min-height: 40px;
+  border-radius: var(--r12);
+}
+body #toast,
+body #p-toast { max-width: calc(100vw - 32px); white-space: normal; text-align: center; line-height: 1.4; }
+@media (max-width: 480px) {
+  body .glass-nav { max-width: calc(100vw - 20px); }
+  body .sheet,
+  body .modal-bg .modal { border-radius: 16px; }
+  body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written) { min-width: 0; }
+}
+
+
+/* Active student views injected into the dashboard shell */
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written,#view-secondary) .v-card {
+  background: var(--surf);
+  border: 1px solid var(--bd);
+  border-radius: var(--r16);
+  box-shadow: none;
+}
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written,#view-secondary) .v-topbar {
+  border-bottom: 1px solid var(--bd);
+  padding-bottom: 12px;
+  margin-bottom: 14px;
+}
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written,#view-secondary) .v-btn,
+body :is(#view-chat,#view-cheatsheet,#view-contests,#view-focus,#view-leaderboard,#view-mistakes,#view-profile,#view-study-rooms,#view-wrapped,#view-written,#view-secondary) .wx-btn {
+  min-height: 44px;
+  border-radius: var(--r12);
+}
+
+
+/* Soft ambient canvas from existing Wreddi brand tints (no added palette colors). */
+body {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse 58rem 34rem at 100% 0%, var(--brand-lt), transparent 72%),
+    radial-gradient(ellipse 46rem 30rem at 0% 100%, var(--purple-lt), transparent 74%);
+  background-attachment: fixed;
+}
+body .scr:not(.view) {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse 58rem 34rem at 100% 0%, var(--brand-lt), transparent 72%),
+    radial-gradient(ellipse 46rem 30rem at 0% 100%, var(--purple-lt), transparent 74%);
+}

@@ -5,13 +5,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f2f2f7">
-<meta name="description" content="Wreddi — exam prep built for Nigerian university students. Practise questions, sit timed mock and written exams marked by AI, quiz by voice, and see exactly which topics to revise.">
+<meta name="description" content="Wreddi helps Nigerian secondary-school and university students prepare for exams with practice questions, timed tests, clear explanations and progress tracking.">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
 <link rel="icon" type="image/png" sizes="48x48" href="/icons/favicon-48.png">
 <link rel="shortcut icon" href="/icons/favicon.ico">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
-<title>Wreddi — AI-Powered Exam Prep for Nigerian University Students</title>
+<title>Wreddi — Exam Prep for Secondary School, JAMB and University</title>
 <link rel="stylesheet" href="/vendor/fonts.css">
 <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
 <link rel="stylesheet" href="/css/glass.css">
@@ -140,6 +140,22 @@ footer{padding:50px 0 60px;}
 .brand .ico-img{width:32px;height:32px;border-radius:50%;display:block;}
 .brand .nm{display:flex;align-items:center;}
 .brand .wm{height:20px;width:auto;display:block;}
+
+/* Wreddi visual refresh — retains the established brand colors and existing page flow. */
+.nav{background:var(--bar-solid);border:1px solid var(--bd);box-shadow:0 8px 24px rgba(15,23,42,.08);}
+[data-theme=dark] .nav{box-shadow:0 8px 24px rgba(0,0,0,.28);}
+.btn{min-height:44px;border-radius:var(--r12);}
+.btn.pri{background:var(--brand);box-shadow:none;}
+.btn.sec,.btn.login{background:var(--surf);color:var(--t1);border:1px solid var(--bd2);box-shadow:none;}
+.card,.chip,.price-card,details,.final{border:1px solid var(--bd);box-shadow:none;border-radius:var(--r16);}
+.card{padding:28px 24px;}
+.price-card.pop{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand-lt);}
+details[open]{box-shadow:none;}
+summary{min-height:54px;}
+.final{padding:48px 28px;}
+@media(max-width:860px){.grid3{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:600px){.grid3{grid-template-columns:1fr;}}
+@media(max-width:520px){.card{padding:24px 20px;}}
 </style>
 <link rel="stylesheet" href="/css/hybrid.css">
 </head>
@@ -163,18 +179,18 @@ footer{padding:50px 0 60px;}
 
 <header class="hero" id="top">
   <div class="wrap">
-    <div class="badge fx"><i class="fa-solid fa-circle-check"></i>Free to start · Made for Nigerian university students</div>
-    <h1 class="fx">Practise your exam questions. <span class="grad">Walk into the hall ready.</span></h1>
-    <p class="sub fx">Wreddi is a study app that runs on your phone. Practise real questions for your courses, sit timed mock and written exams, and see exactly which topics you still need to revise.</p>
+    <div class="badge fx"><i class="fa-solid fa-circle-check"></i>Free to start · For secondary-school and university students</div>
+    <h1 class="fx">Prepare for your next exam. <span class="grad">Walk in ready.</span></h1>
+    <p class="sub fx">Practise for JAMB, WAEC, NECO, school exams or university courses in one simple study app. Answer questions, take timed tests, learn from explanations and see what to revise next.</p>
     <div class="hero-cta fx">
       <a href="/register" class="btn pri lg" id="hero-main"><i class="fa-solid fa-user-plus"></i> Create free account</a>
       <a href="/login" class="btn login lg" id="hero-login"><i class="fa-solid fa-right-to-bracket"></i> Log in</a>
     </div>
     <p class="hint fx" id="hero-hint">Already signed up? Tap <b>Log in</b>. New here? Tap <b>Create free account</b>. No card needed.</p>
     <div class="chips fx" style="margin-top:34px;">
-      <div class="chip"><i class="fa-solid fa-list-check"></i>Practice, mock &amp;<br>written exams</div>
-      <div class="chip"><i class="fa-solid fa-lightbulb"></i>Every answer<br>explained</div>
-      <div class="chip"><i class="fa-solid fa-mobile-screen"></i>Works on<br>any phone</div>
+      <div class="chip"><i class="fa-solid fa-list-check"></i>Practice questions<br>&amp; timed tests</div>
+      <div class="chip"><i class="fa-solid fa-lightbulb"></i>Learn from clear<br>explanations</div>
+      <div class="chip"><i class="fa-solid fa-mobile-screen"></i>Track your<br>progress</div>
     </div>
 
     <div class="showcase fx" aria-hidden="true">
@@ -197,18 +213,18 @@ footer{padding:50px 0 60px;}
 <section id="start" style="padding-top:20px;">
   <div class="wrap">
     <div class="eyebrow">Start here</div>
-    <h2 class="fx">Are you new, or do you already have an account?</h2>
+    <h2 class="fx">Start preparing in a few simple steps.</h2>
     <div class="start-grid" style="margin-top:34px;">
       <div class="card start-card fx">
         <div class="who" style="color:var(--brand);"><i class="fa-solid fa-user-plus"></i></div>
         <h3>I'm new</h3>
-        <p>Make a free account. It takes about one minute. You'll need your name, matric number and a phone number.</p>
+        <p>Create one free account with your name, school or university details, and a student ID you can use to sign in.</p>
         <a href="/register" class="btn pri">Create free account</a>
       </div>
       <div class="card start-card fx">
         <div class="who" style="color:var(--ok);"><i class="fa-solid fa-right-to-bracket"></i></div>
         <h3>I already have an account</h3>
-        <p>Log in with your matric number and the password you chose when you signed up.</p>
+        <p>Sign in with your student ID or username and the password you chose when you signed up.</p>
         <a href="/login" class="btn login">Log in</a>
         <a href="/forgot-password" class="small">Forgot your password?</a>
       </div>
@@ -248,11 +264,11 @@ footer{padding:50px 0 60px;}
   <div class="wrap">
     <div class="eyebrow">How it works</div>
     <h2 class="fx">How to get started: 3 easy steps.</h2>
-    <p class="lead fx">No complicated setup. Just you, your courses, and practice.</p>
+    <p class="lead fx">Choose the exam or subjects you are preparing for, then practise at your own pace.</p>
     <div class="grid3">
-      <div class="step fx"><div class="step-n">1</div><h3>Create your free account</h3><p>Tap <b>Sign up free</b>. Enter your name, matric number, phone number and a password.</p></div>
-      <div class="step fx"><div class="step-n">2</div><h3>Choose your courses</h3><p>Pick the courses you're taking. Then start answering questions. Nothing to download.</p></div>
-      <div class="step fx"><div class="step-n">3</div><h3>Check your progress</h3><p>See your scores and the topics to revise. Next time, tap <b>Log in</b> to carry on where you stopped.</p></div>
+      <div class="step fx"><div class="step-n">1</div><h3>Create your free account</h3><p>Tap <b>Sign up free</b> and enter your details. You can use your school, university or exam ID.</p></div>
+      <div class="step fx"><div class="step-n">2</div><h3>Choose your courses</h3><p>Choose your exam or subjects, then start practising. Wreddi works in your phone browser.</p></div>
+      <div class="step fx"><div class="step-n">3</div><h3>Check your progress</h3><p>Review your results and keep track of what to revise. Next time, sign in and carry on.</p></div>
     </div>
   </div>
 </section>
@@ -272,9 +288,9 @@ footer{padding:50px 0 60px;}
     <h2 class="fx">Questions, answered.</h2>
     <p class="lead fx">Everything you'd want to know before you start.</p>
     <div class="faq">
-      <details open><summary>How do I log in?</summary><p>Tap <b>Log in</b> at the top of this page. Type your matric number and the password you chose when you signed up, then tap <b>Sign In</b>. If you haven't signed up yet, tap <b>Sign up free</b> first.</p></details>
-      <details><summary>What do I need to sign up?</summary><p>Your full name, your matric number, a phone number, and a password you'll remember. You don't need a card or any payment.</p></details>
-      <details><summary>What is Wreddi?</summary><p>Wreddi is a study app for Nigerian university students. You practise questions for your courses, take quizzes, and see which topics need more work.</p></details>
+      <details open><summary>How do I log in?</summary><p>Tap <b>Log in</b> at the top of this page. Choose whether you are signing in as a university student, secondary-school/JAMB student or platform admin, then enter your ID and password. If you haven't signed up yet, tap <b>Sign up free</b> first.</p></details>
+      <details><summary>What do I need to sign up?</summary><p>Your name, school or university details, a student ID or exam number, a phone number and a password. You do not need a card to create an account.</p></details>
+      <details><summary>What is Wreddi?</summary><p>Wreddi is one study app for Nigerian students preparing for JAMB, WAEC, NECO, school exams and university courses. Practise questions, take tests and see what to work on next.</p></details>
       <details><summary>Do I need a code or an invitation?</summary><p>No. Sign-up is free and open to everyone. Create an account and start practising straight away.</p></details>
       <details><summary>Can I practise theory questions, not just multiple choice?</summary><p>Yes. In <b>Written Exam</b> you type your answers against the clock, and the AI marks them against a marking scheme, shows the points you missed and gives a model answer.</p></details>
       <details><summary>Can I revise without reading the screen?</summary><p>Yes. <b>Voice quiz</b> reads each question aloud and listens for your answer. It needs microphone permission, and how well it listens depends on your phone and browser.</p></details>
@@ -290,7 +306,7 @@ footer{padding:50px 0 60px;}
   <div class="wrap">
     <div class="final card fx">
       <h2>Ready to start practising?</h2>
-      <p>Free to start, built for your courses, ready whenever you are.</p>
+      <p>One simple place to practise, prepare and make progress—wherever you are in your studies.</p>
       <div class="hero-cta" style="margin-bottom:0;">
         <a href="/register" class="btn pri lg" id="final-main"><i class="fa-solid fa-user-plus"></i> Create free account</a>
         <a href="/login" class="btn login lg" id="final-login"><i class="fa-solid fa-right-to-bracket"></i> Log in</a>

@@ -25,7 +25,8 @@ const { isObjectId } = require('../utils/validate');
 const router = express.Router();
 router.use(requireStudent);
 
-const MIN_Q = 1, MAX_Q = 5, DEFAULT_Q = 3, MIN_PER_QUESTION = 8, GRACE_MIN = 2, OPEN_EXAM_HOURS = 3;
+// Keep an unfinished attempt recoverable across browser closures; after 30 days it is treated as stale.
+const MIN_Q = 1, MAX_Q = 5, DEFAULT_Q = 3, MIN_PER_QUESTION = 8, GRACE_MIN = 2, OPEN_EXAM_HOURS = 24 * 30;
 const startLimiter = rateLimit({ windowMs: 60 * 1000, max: 10, standardHeaders: true, legacyHeaders: false, message: { error: 'Too many exams started. Slow down a little.' } });
 const submitLimiter = rateLimit({ windowMs: 60 * 1000, max: 10, standardHeaders: true, legacyHeaders: false, message: { error: 'Too many submissions. Slow down a little.' } });
 

@@ -1,0 +1,9 @@
+[
+  { "course": "SEC-ENG", "question": "Choose the word closest in meaning to \"abundant\".", "options": ["scarce", "plentiful", "hidden", "narrow"], "answer": "B", "tag": "Synonyms and antonyms", "explanation": "Abundant means existing in large quantities.", "exam": "jamb", "year": 2020 },
+  { "course": "SEC-ENG", "question": "The committee ___ its report yesterday.", "options": ["submit", "submits", "submitted", "have submitted"], "answer": "C", "tag": "Concord (subject-verb agreement)", "explanation": "Yesterday needs the simple past.", "exam": "waec" },
+  { "course": "SEC-MTH", "question": "What is the value of 3 + 4 × 2?", "options": ["14", "11", "10", "9"], "answer": "B", "tag": "Number and numeration", "explanation": "Multiply first: 3 + 8 = 11.", "exam": "jamb", "year": 2020 },
+  { "course": "SEC-MTH", "question": "Solve 2x - 6 = 10.", "options": ["x = 2", "x = 4", "x = 8", "x = 16"], "answer": "C", "tag": "Algebra", "explanation": "2x = 16, so x = 8." },
+  { "course": "SEC-PHY", "question": "The SI unit of force is the", "options": ["joule", "newton", "watt", "pascal"], "answer": "B", "tag": "Measurements and units", "explanation": "Force is measured in newtons (N)." },
+  { "course": "SEC-CHM", "question": "The atomic number of an element is the number of its", "options": ["neutrons", "protons", "nucleons", "electron shells"], "answer": "B", "tag": "Atomic structure and bonding", "explanation": "Atomic number equals the number of protons." },
+  { "course": "SEC-BIO", "question": "Which organelle is the site of photosynthesis?", "options": ["Mitochondrion", "Ribosome", "Chloroplast", "Nucleus"], "answer": "C", "tag": "Cell biology", "explanation": "Chloroplasts contain chlorophyll." }
+]

@@ -5,6 +5,7 @@ const Contest = require('../../models/Contest');
 const { requireAdmin } = require('../../middleware/auth');
 const Settings = require('../../models/Settings');
 const { engagementReport } = require('../../services/engagement.service');
+const { dayKeyInTimezone, zeroFillDailyCounts } = require('../../utils/dailySeries');
 
 const router = express.Router();
 router.use(requireAdmin);
@@ -35,14 +36,17 @@ router.put('/analytics/exclusions', async (req, res) => {
 // GET /api/admin/analytics/signups?days=30 — new signups per day.
 router.get('/analytics/signups', async (req, res) => {
   try {
-    const days = Math.min(parseInt(req.query.days, 10) || 30, 180);
+    const requestedDays = parseInt(req.query.days, 10);
+    const days = Math.min(Math.max(Number.isFinite(requestedDays) ? requestedDays : 30, 1), 180);
     const since = daysAgo(days);
     const rows = await Student.aggregate([
       { $match: { createdAt: { $gte: since } } },
       { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: 'Africa/Lagos' } }, count: { $sum: 1 } } },
       { $sort: { _id: 1 } },
     ]);
-    res.json(rows.map(r => ({ date: r._id, count: r.count })));
+    const startDay = dayKeyInTimezone(since);
+    const endDay = dayKeyInTimezone(new Date());
+    res.json(zeroFillDailyCounts(rows.map(r => ({ date: r._id, count: r.count })), startDay, endDay));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 

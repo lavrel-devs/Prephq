@@ -1,6 +1,6 @@
 // Written exam (v1.8.0): start (daily-limit gated), hidden marking scheme, save-before-mark, rubric-based scoring.
 // In-memory: models and the AI calls are stubbed, so no database or network is needed.
-const assert = require('assert'), path = require('path'), http = require('http');
+const assert = require('assert'), path = require('path'), http = require('http'), fs = require('fs');
 const abs = p => require.resolve(path.join(__dirname, '..', 'src', p));
 require.cache[abs('middleware/auth.js')] = { id: 'auth', filename: abs('middleware/auth.js'), loaded: true,
   exports: { requireStudent: (req, res, next) => { req.student = { sub: String(req.headers['x-matric'] || '').toUpperCase() }; next(); } } };
@@ -82,6 +82,10 @@ const goodExam = () => [
     const again = await call('POST', '/start', 'FREE1', { course: 'CHM101' });
     assert.strictEqual(again.status, 409); assert.strictEqual(again.body.code, 'EXAM_IN_PROGRESS'); assert.strictEqual(again.body.exam.id, id); assert.strictEqual(genCalls, 2);
     assert.strictEqual((await call('GET', '/active', 'FREE1')).body.exam.id, id);
+    ex(id).startedAt = new Date(Date.now() - 4 * 60 * 60 * 1000);
+    assert.strictEqual((await call('GET', '/active', 'FREE1')).body.exam.id, id, 'an unfinished exam remains resumable after the old three-hour cutoff');
+    assert.strictEqual((await call('POST', '/start', 'FREE1', { course: 'CHM101' })).status, 409, 'recovery does not create or charge for a duplicate exam');
+    assert.strictEqual(genCalls, 2, 'resuming an older unfinished attempt does not regenerate questions');
 
     // reading an open exam shows questions only; other students can't see it
     const open = await call('GET', `/${id}`, 'FREE1');
@@ -103,6 +107,7 @@ const goodExam = () => [
     assert.strictEqual(ok.body.questions[0].score, 3, 'score = marks of the rubric points earned (2 + 1), not the AI number');
     assert.strictEqual(ok.body.questions[1].score, 0, 'a blank answer can never score'); assert.match(ok.body.questions[1].feedback, /No answer/);
     assert.strictEqual(ok.body.total, 3); assert.strictEqual(ok.body.maxTotal, 8); assert.strictEqual(ok.body.pct, 38);
+    assert.strictEqual(ok.body.late, true, 'a recovered written exam still respects its original deadline');
     assert.deepStrictEqual(ok.body.questions[0].rubric.map(r => r.earned), [true, true, false]);
     assert.strictEqual(ok.body.questions[0].model, 'MODEL-ANSWER-ONE', 'the model answer is revealed once marked');
     const callsAfter = markCalls;
@@ -139,6 +144,15 @@ const goodExam = () => [
 
     // ── history ──
     const hist = await call('GET', '/', 'FREE1'); assert.strictEqual(hist.body.length, 1); assert.strictEqual(hist.body[0].pct, 38);
-    console.log('written exam: gating, hidden scheme, save-before-mark, rubric scoring OK');
+    const view = fs.readFileSync(path.join(__dirname, '..', 'public/views/written.html'), 'utf8');
+    const viewScript = (view.match(/<script>([\s\S]*?)<\/script>/) || [])[1] || '';
+    const draftFunction = viewScript.match(/function draftAnswerAt\([\s\S]*?\n\}/);
+    assert.ok(draftFunction, 'written view has an explicit draft/server answer precedence helper');
+    const draftAnswerAt = new Function(`${draftFunction[0]}\nreturn draftAnswerAt;`)();
+    assert.strictEqual(draftAnswerAt([''], ['previous server answer'], 0), '', 'an explicitly cleared local answer beats an older server-saved answer');
+    assert.strictEqual(draftAnswerAt([], ['server answer'], 0), 'server answer', 'server answer is used when no local draft exists');
+    const dashboard = fs.readFileSync(path.join(__dirname, '..', 'public/dashboard.html'), 'utf8');
+    assert.ok(dashboard.includes("await window.PhqShell.go('/dashboard', { replace: true });"), 'a newer quiz redirects direct /written startup to the quiz shell before restore');
+    console.log('written exam: gating, hidden scheme, save-before-mark, draft recovery precedence, rubric scoring OK');
   } finally { server.close(); }
 })().catch(e => { console.error(e); process.exit(1); });

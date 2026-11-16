@@ -258,7 +258,7 @@ async function showMe(chatId) {
   return send(chatId, `<b>${esc(s.name)}</b>\nMatric: <code>${esc(s.matric)}</code>\nUsername: @${esc(s.username || 'not set')}\nUniversity: ${esc(s.university || 'not set')}\nDepartment: ${esc(s.department || 'not set')}\nPlan: ${esc(s.tier || 'free')}\nCredits: <b>${Number(s.credits || 0)}</b>\nGPA: ${s.currentGPA ?? 'not set'} / ${s.gpaScale || 5}`);
 }
 async function showCourses(chatId) {
-  const courses = await Course.find().sort({ courseCode: 1 }).lean();
+  const courses = await Course.find({ track: { $ne: 'secondary' } }).sort({ courseCode: 1 }).lean();   // university courses only
   const rows = courses.map(c => [{ text: `${c.courseCode || c.key} — ${c.courseTitle || ''}`, callback_data: `course:${c.key || c.courseCode}` }]);
   return send(chatId, courses.length ? '<b>Choose a course</b>\nYou can then start a quiz from the course menu.' : 'No courses are available yet.', { reply_markup: { inline_keyboard: rows.slice(0, 50) } });
 }

@@ -24,7 +24,7 @@ const StudyGuide = require('../models/StudyGuide');
 const { forgetSubject } = require('../middleware/auth');
 const { canChange } = require('../utils/adminAccess');
 const SupportRequest = require('../models/SupportRequest');
-const { planBulk, dupeKey, rankQuality, invalidateCounts } = require('../services/questionBank.service');
+const { planBulk, dupeKey, rankQuality, invalidateCounts, secondaryMeta } = require('../services/questionBank.service');
 
 const router = express.Router();
 router.use(requireAdmin);
@@ -375,7 +375,7 @@ router.get('/courses', async (req, res) => {
 
 router.post('/courses', async (req, res) => {
   try {
-    const { courseCode, courseTitle, department, level, topics, color, icon } = req.body;
+    const { courseCode, courseTitle, department, level, topics, color, icon, track } = req.body;
     if (typeof courseCode !== 'string' || typeof courseTitle !== 'string' || !courseCode.trim() || !courseTitle.trim())
       return res.status(400).json({ error: 'Course code and title are required' });
 
@@ -392,6 +392,7 @@ router.post('/courses', async (req, res) => {
       topics: Array.isArray(topics) ? topics : (topics ? String(topics).split(',').map(t => t.trim()).filter(Boolean) : []),
       color: color || '#3E5C8A',
       icon: icon || 'star',
+      track: track === 'secondary' ? 'secondary' : 'university',
     });
     res.status(201).json(course);
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -399,8 +400,9 @@ router.post('/courses', async (req, res) => {
 
 router.put('/courses/:id', async (req, res) => {
   try {
-    const { courseTitle, department, level, topics, color, icon } = req.body;
+    const { courseTitle, department, level, topics, color, icon, track } = req.body;
     const update = {};
+    if (track === 'secondary' || track === 'university') update.track = track;
     if (courseTitle !== undefined) update.courseTitle = courseTitle.trim();
     if (department  !== undefined) update.department  = department.trim();
     if (level       !== undefined) update.level       = level.trim();
@@ -447,7 +449,7 @@ function validOpts(opts) {
 
 router.post('/questions', async (req, res) => {
   try {
-    const { course, q, opts, ans, tag, exp } = req.body;
+    const { course, q, opts, ans, tag, exp, exam, year, classLevel } = req.body;
     if (typeof course !== 'string' || typeof q !== 'string' || !q.trim() || !validOpts(opts) || ans === undefined)
       return res.status(400).json({ error: 'course, question, options (2–10 non-empty strings) and answer index required' });
 
@@ -465,6 +467,7 @@ router.post('/questions', async (req, res) => {
     const question = await Question.create({
       course: courseExists.key, q: q.trim(), opts: opts.map(o => o.trim()), ans: ansIdx,
       tag: typeof tag === 'string' ? tag : '', exp: typeof exp === 'string' ? exp : '',
+      ...secondaryMeta({ exam, year, classLevel }),
       createdBy: req.admin.sub || '',
     });
     res.status(201).json(question);

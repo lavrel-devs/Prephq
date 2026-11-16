@@ -9,6 +9,8 @@ const { checkDailyLimit, incrementDailyUsage } = require('../services/tier.servi
 const { canUse } = require('../services/entitlements.service');
 const Settings = require('../models/Settings');
 const { normCourseKey, cleanTag, isObjectId } = require('../utils/validate');
+const Course = require('../models/Course');
+const { cleanSec } = require('../utils/secondary');
 const { syncRevisionQueue } = require('../services/study.service');
 const { evaluateAndAward } = require('../services/achievements.service');
 const router = express.Router();
@@ -102,10 +104,19 @@ router.post('/:matric', requireStudent, async (req, res) => {
       topicMap.set(k, cur);
     }
 
+    // v1.11 secondary track: a JAMB / WAEC / NECO / school paper carries its per-subject breakdown. Only subjects that
+    // really are secondary courses are kept, and grades and the UTME total are recomputed here, never trusted.
+    let sec = null;
+    if (req.body.sec) {
+      const known = new Set((await Course.find({ track: 'secondary' }).select('key').lean()).map(c => c.key));
+      sec = cleanSec(req.body.sec, known);
+    }
+
     await Score.create({
       matric: req.params.matric.toUpperCase(),
       correct, total, pct, wrong, skip, courses, mode,
       ...(topicMap.size ? { topics: [...topicMap.values()] } : {}),
+      ...(sec ? { sec } : {}),
     });
 
     if (questionCount > 0) await incrementDailyUsage(student, 'questions', questionCount);

@@ -1,6 +1,13 @@
-# Wreddi v1.10.0 — Apple × Material UI refresh
+# Wreddi UI refresh notes
 
-Visual only: no routes, API, or data changes.
+## v1.11.1 — admin analytics dashboard refresh
+- `public/admin.html` now follows the supplied analytics-dashboard reference: a full-height navigation rail, restrained blue active states, white bordered cards, a spacious signup trend, and a compact student leaderboard.
+- The overview signup chart uses the existing admin-protected signups analytics endpoint; the 7/30/90-day selector remains available, and other admin routes and data flows are unchanged.
+- Removed five obsolete standalone tab pages so those URLs consistently reach the single-page dashboard shell through the existing redirects.
+- Root package and lockfile versions are aligned at `1.11.1`; `MANIFEST.json` was regenerated for the delivered root project files.
+
+## v1.10.0 — Apple × Material UI refresh
+Visual only: no routes, API, or data changes in that release.
 
 ## What changed
 - `public/css/tokens.css` — rewritten. `--bg` is now the page canvas, `--surf` raised surfaces, `--fill` inputs/tracks.
@@ -15,8 +22,8 @@ Visual only: no routes, API, or data changes.
   47 all-caps micro-labels set to sentence case; primary gradients use `var(--grad)`.
 - `theme-color` meta and manifest background updated; `theme.js` keeps the status-bar colour in sync with light/dark.
 
-## Not changed
-`admin.html` and `question-uploader.html` keep their own palette (admin still loads glass.css, so only its background wash differs).
+## Not changed in v1.10.0
+At that release, `admin.html` and `question-uploader.html` kept their own palettes. The admin styling was subsequently refreshed in v1.11.1 above.
 
 ## Tests
 `tokens`, `views`, `legal` and the other UI tests pass. Tests needing `mongoose` / `bcryptjs` couldn't run here (no node_modules in the upload).

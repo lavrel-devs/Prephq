@@ -15,7 +15,7 @@ async function startJob({ courseKey, all, admin }) {
   const existing = await activeJob();
   if (existing) return { job: existing, already: true };
   let courses;
-  if (all) courses = await Course.find({}).select('key courseCode').sort({ courseCode: 1 }).lean();
+  if (all) courses = await Course.find({ track: { $ne: 'secondary' } }).select('key courseCode').sort({ courseCode: 1 }).lean();
   else { const c = await Course.findOne({ key: courseKey }).select('key courseCode').lean(); courses = c ? [c] : []; }
   if (!courses.length) { const e = new Error('Pick an existing course'); e.status = 400; throw e; }
   const job = await NoteJob.create({

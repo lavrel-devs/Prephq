@@ -41,7 +41,7 @@ body{
 .b3{width:260px;height:260px;background:var(--teal);bottom:20%;right:-60px;}
 
 .card{
-  width:100%;max-width:410px;
+  width:100%;max-width:460px;
   position:relative;z-index:1;
   padding:38px 28px 30px;
   background:var(--surf);
@@ -72,9 +72,10 @@ body{
 }
 .tab{
   flex:1;text-align:center;
-  padding:10px 0;
+  padding:10px 4px;
+  border:0;font-family:inherit;line-height:1.2;
   border-radius:var(--rpill);
-  font-size:13px;font-weight:700;
+  font-size:clamp(10px,3vw,13px);font-weight:700;
   color:var(--t3);
   cursor:pointer;
   transition:box-shadow .18s, color .18s, background .18s;
@@ -199,22 +200,21 @@ body{
 <div class="card">
   <div class="logo"><img src="/icons/logo-mark.png" alt="Wreddi" width="68" height="68" class="logo-img"></div>
   <div class="title">Wreddi</div>
-  <div class="sub">Sign in to continue</div>
-
-  <div class="tabs">
-    <div class="tab on" id="tab-student" onclick="switchTab('student')">Student</div>
-    <div class="tab" id="tab-admin" onclick="switchTab('admin')">Admin</div>
+  <div class="sub" id="login-sub">Choose where you study, then sign in.</div>
+  <div class="tabs" role="group" aria-label="Choose sign-in type">
+    <button type="button" class="tab" id="tab-university" aria-pressed="false" onclick="switchTab('university')">University student</button>
+    <button type="button" class="tab" id="tab-secondary" aria-pressed="false" onclick="switchTab('secondary')">Secondary / JAMB</button>
+    <button type="button" class="tab" id="tab-admin" aria-pressed="false" onclick="switchTab('admin')">Platform admin</button>
   </div>
-
   <div class="err-banner" id="err"><i class="fa-solid fa-circle-exclamation"></i><span id="err-msg">Invalid credentials</span></div>
 
   <!-- STUDENT FORM -->
   <form id="form-student" onsubmit="return false;">
     <div class="f-group">
-      <div class="f-label"><i class="fa-solid fa-id-card fa-ico"></i> Matric number or username</div>
+      <div class="f-label"><i class="fa-solid fa-id-card fa-ico"></i> Student ID or username</div>
       <div class="f-input-wrap">
         <i class="fa-solid fa-user f-input-icon"></i>
-        <input class="f-input" id="s-matric" type="text" placeholder="Matric number or username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false">
+        <input class="f-input" id="s-matric" type="text" placeholder="Student ID or username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false">
       </div>
     </div>
     <div class="f-group">
@@ -253,15 +253,30 @@ body{
 
 <script src="/js/auth-guard.js"></script>
 <script>
-if (new URLSearchParams(location.search).get('as') === 'admin') switchTab('admin');
-
+let loginMode = 'university';
 function switchTab(which){
-  document.getElementById('tab-student').classList.toggle('on', which==='student');
-  document.getElementById('tab-admin').classList.toggle('on', which==='admin');
-  document.getElementById('form-student').style.display = which==='student' ? 'block':'none';
-  document.getElementById('form-admin').style.display = which==='admin' ? 'block':'none';
+  if(!['university','secondary','admin'].includes(which)) which = 'university';
+  loginMode = which;
+  for (const mode of ['university','secondary','admin']) {
+    const tab = document.getElementById(`tab-${mode}`);
+    tab.classList.toggle('on', mode === which);
+    tab.setAttribute('aria-pressed', String(mode === which));
+  }
+  const isAdmin = which === 'admin';
+  document.getElementById('form-student').style.display = isAdmin ? 'none':'block';
+  document.getElementById('form-admin').style.display = isAdmin ? 'block':'none';
+  document.getElementById('login-sub').textContent = isAdmin
+    ? 'Sign in to manage the Wreddi platform.'
+    : which === 'secondary'
+      ? 'Sign in for JAMB, WAEC, NECO and school-exam prep.'
+      : 'Sign in for your university courses and study tools.';
+  const params = new URLSearchParams(location.search);
+  params.set('as', which);
+  history.replaceState(null, '', `${location.pathname}?${params.toString()}`);
   clearErr();
 }
+const requestedMode = new URLSearchParams(location.search).get('as');
+switchTab(requestedMode === 'secondary' ? 'secondary' : requestedMode === 'admin' ? 'admin' : 'university');
 function showErr(msg){
   document.getElementById('err-msg').textContent = msg;
   document.getElementById('err').classList.add('on');
@@ -274,7 +289,7 @@ async function studentLogin(){
   const password = document.getElementById('s-pass').value; // not trimmed: signup keeps passwords exactly as typed
   const btn = document.getElementById('s-btn');
   clearErr();
-  if(!matric||!password){ showErr('Please enter your matric number (or username) and password.'); return; }
+  if(!matric||!password){ showErr('Please enter your student ID (or username) and password.'); return; }
   btn.disabled = true;
   try{
     const deviceFingerprint = await PhqAuth.getDeviceFingerprint();
@@ -298,7 +313,9 @@ async function studentLogin(){
       console.info('New device detected for this account.');
     }
     // An admin-issued temporary password must be replaced before the app can be used.
-    window.location.href = data.mustChangePassword ? '/change-password' : PhqAuth.postLoginPath();
+    window.location.href = data.mustChangePassword
+      ? loginMode === 'secondary' ? '/change-password?next=secondary' : '/change-password'
+      : loginMode === 'secondary' ? '/secondary' : PhqAuth.postLoginPath();
   }catch(e){
     showErr('Cannot connect to server.');
     btn.disabled = false;
@@ -338,7 +355,7 @@ document.getElementById('a-pass').addEventListener('keydown', e=>{ if(e.key==='E
 (function(){
   const s = PhqAuth.getSession();
   if(s && s.accessToken){
-    window.location.href = s.role==='admin' ? '/admin.html' : PhqAuth.postLoginPath();
+    window.location.href = s.role==='admin' ? '/admin.html' : loginMode === 'secondary' ? '/secondary' : PhqAuth.postLoginPath();
   }
 })();
 </script>
