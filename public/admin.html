@@ -3,7 +3,7 @@
 <head>
 <script src="/js/theme.js"></script>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Wreddi Admin</title>
 <link rel="stylesheet" href="/vendor/fonts.css">
 <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
@@ -391,6 +391,16 @@ tbody td{padding:14px 16px;}
 @media(max-width:900px){.content{padding:20px;}}
 @media(max-width:680px){.content{padding:16px 14px 88px;}.topbar{padding:0 16px;}}
 @media(max-width:600px){.sc{padding:16px;}.th{padding:14px;}.ab{padding:7px 9px;}}
+/* v1.12 global search */
+.gs-wrap{position:relative;flex:1;max-width:460px;margin:0 20px;}
+.gs-wrap>i{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--t4);font-size:13px;pointer-events:none;}
+.gs-wrap input{width:100%;padding:9px 12px 9px 36px;border-radius:10px;border:1px solid var(--bd);background:var(--surf);color:var(--t1);font:inherit;font-size:13px;outline:none;}
+.gs-wrap input:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-lt);}
+.gs-box{display:none;position:absolute;left:0;right:0;top:calc(100% + 6px);background:var(--surf);border:1px solid var(--bd);border-radius:12px;box-shadow:0 12px 32px rgba(15,23,42,.14);max-height:380px;overflow:auto;z-index:80;}
+.gs-row{display:flex;gap:11px;align-items:center;padding:10px 14px;cursor:pointer;font-size:13px;}
+.gs-row:hover{background:var(--surf2);} .gs-row i{color:var(--brand);width:16px;text-align:center;}
+.gs-row div{min-width:0;display:flex;flex-direction:column;} .gs-row b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;} .gs-row span{font-size:11.5px;color:var(--t4);}
+@media(max-width:760px){.gs-wrap{display:none;}}
 </style>
 <link rel="stylesheet" href="/css/admin-reference.css">
 <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
@@ -435,6 +445,7 @@ tbody td{padding:14px 16px;}
       <span class="tb-name">Wreddi</span>
       <span class="tb-badge">Admin</span>
     </div>
+    <div class="gs-wrap"><i class="fa-solid fa-magnifying-glass"></i><input id="gs-input" type="search" placeholder="Search students, courses, questions  (Ctrl K)" autocomplete="off" oninput="gsInput(this.value)"><div id="gs-box" class="gs-box"></div></div>
     <div class="tb-right">
       <div class="ib" onclick="toggleTheme()">
         <svg id="theme-ico" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
@@ -502,6 +513,16 @@ tbody td{padding:14px 16px;}
       <div class="nav-item" data-v="analytics" onclick="go('analytics',this)">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>Analytics
       </div>
+      <div class="nav-sec">Insights</div>
+      <div class="nav-item" data-v="secondary" onclick="go('secondary',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>Secondary / JAMB
+      </div>
+      <div class="nav-item" data-v="security" onclick="go('security',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>Security
+      </div>
+      <div class="nav-item" data-v="system" onclick="go('system',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 3H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zM6.5 9a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM20 15H4a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2z"/></svg>System health
+      </div>
       <div class="nav-sec" id="nav-sec-admin" style="display:none">Admin</div>
       <div class="nav-item" data-v="activity" id="nav-activity" style="display:none" onclick="go('activity',this)">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6a7 7 0 1 1 2.05 4.95l-1.42 1.42A9 9 0 1 0 13 3zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>Activity Log
@@ -562,11 +583,12 @@ tbody td{padding:14px 16px;}
           <div class="th">
             <div class="th-title">All Students</div>
             <div class="th-right">
-              <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input placeholder="Search..." oninput="filterSt(this.value)"></div>
+              <select class="f-input" id="st-track-filter" aria-label="Filter by app" onchange="filterSt(document.getElementById('st-q').value)" style="width:auto;padding:7px 10px;"><option value="">All apps</option><option value="university">University</option><option value="secondary">Secondary / JAMB</option></select>
+              <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input id="st-q" placeholder="Search..." oninput="filterSt(this.value)"></div>
             </div>
           </div>
           <div class="tbl-wrap"><table>
-            <thead><tr><th style="width:30px;"><input type="checkbox" onchange="toggleAllSt(this.checked)"></th><th>Name</th><th>Matric</th><th>Plan</th><th>Username</th><th>Phone</th><th>WhatsApp</th><th>Credits</th><th>Quizzes</th><th>Best</th><th>Status</th><th>Actions</th></tr></thead>
+            <thead><tr><th style="width:30px;"><input type="checkbox" onchange="toggleAllSt(this.checked)"></th><th>Name</th><th>Matric</th><th>App</th><th>Plan</th><th>Username</th><th>Phone</th><th>WhatsApp</th><th>Credits</th><th>Quizzes</th><th>Best</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody id="st-body"></tbody>
           </table></div>
         </div>
@@ -1024,6 +1046,35 @@ tbody td{padding:14px 16px;}
         </div>
       </div>
 
+      <!-- ═══ SECONDARY / JAMB ════════════════════════════ -->
+      <div id="v-secondary" class="view">
+        <div class="ph"><div><div class="ph-title">Secondary / JAMB</div><div class="ph-sub">Accounts, papers and question coverage for JAMB, WAEC, NECO and school exams</div></div></div>
+        <div class="sg" id="sx-sg"></div>
+        <div class="tw"><div class="th"><div class="th-title">Subjects and questions</div></div>
+          <div class="tbl-wrap"><table><thead><tr><th>Subject</th><th>Code</th><th>Questions</th></tr></thead><tbody id="sx-subjects"></tbody></table></div></div>
+        <div class="tw"><div class="th"><div class="th-title">Top JAMB mock results</div></div>
+          <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Student</th><th>Best UTME</th><th>Papers</th></tr></thead><tbody id="sx-top"></tbody></table></div></div>
+      </div>
+
+      <!-- ═══ SECURITY ════════════════════════════════════ -->
+      <div id="v-security" class="view">
+        <div class="ph"><div><div class="ph-title">Security</div><div class="ph-sub">Recent student sign-ins, new devices and forced sign-out</div></div>
+          <div style="display:flex;gap:8px;align-items:center;"><input class="f-input" id="sec-matric" placeholder="Matric to sign out" style="width:190px;"><button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;" onclick="forceSignOut()">Sign out everywhere</button></div></div>
+        <div class="sg" id="sec-sg"></div>
+        <div class="tw"><div class="th"><div class="th-title">Latest sign-ins</div></div>
+          <div class="tbl-wrap"><table><thead><tr><th>Student</th><th>App</th><th>IP</th><th>Device</th><th>When</th><th>State</th><th></th></tr></thead><tbody id="sec-body"></tbody></table></div></div>
+        <div class="tw"><div class="th"><div class="th-title">Suspended accounts</div></div>
+          <div class="tbl-wrap"><table><thead><tr><th>Name</th><th>Matric</th><th></th></tr></thead><tbody id="sec-susp"></tbody></table></div></div>
+      </div>
+
+      <!-- ═══ SYSTEM HEALTH ═══════════════════════════════ -->
+      <div id="v-system" class="view">
+        <div class="ph"><div><div class="ph-title">System health</div><div class="ph-sub">Server, database and integrations</div></div><button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;" onclick="loadSystem()">Refresh</button></div>
+        <div class="sg" id="sys-sg"></div>
+        <div class="tw"><div class="th"><div class="th-title">Collections</div></div>
+          <div class="tbl-wrap"><table><tbody id="sys-counts"></tbody></table></div></div>
+      </div>
+
       <!-- ═══ SUPPORT INBOX ═════════════════════════════════ -->
       <div id="v-support" class="view">
         <div class="ph"><div><div class="ph-title">Support</div><div class="ph-sub">Password recovery, Premium requests and question reports from students</div></div></div>
@@ -1167,7 +1218,7 @@ tbody td{padding:14px 16px;}
         <div class="tw" style="padding:20px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
             <div><b>Daily Credit Refresh</b><div style="font-size:12px;color:var(--t3);">Every user gets free credits daily</div></div>
-            <button class="toggle" id="cs-daily-toggle" onclick="toggleCreditSetting('daily')"></button>
+            <button class="toggle" id="cs-daily-toggle" role="switch" aria-label="Daily credit bonus" onclick="toggleCreditSetting('daily')"></button>
           </div>
           <div style="display:flex;gap:10px;align-items:center;margin-bottom:24px;">
             <label style="font-size:13px;font-weight:600;">Amount:</label>
@@ -1175,7 +1226,7 @@ tbody td{padding:14px 16px;}
           </div>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
             <div><b>Referral System</b><div style="font-size:12px;color:var(--t3);">Reward users for referring friends</div></div>
-            <button class="toggle" id="cs-referral-toggle" onclick="toggleCreditSetting('referral')"></button>
+            <button class="toggle" id="cs-referral-toggle" role="switch" aria-label="Referral bonus" onclick="toggleCreditSetting('referral')"></button>
           </div>
           <div style="display:flex;gap:20px;align-items:center;margin-bottom:24px;">
             <div><label style="font-size:13px;font-weight:600;">Referrer reward:</label><input type="number" id="cs-referrer-amount" class="f-input" style="width:100px;" onchange="saveCreditSettings()"></div>
@@ -1188,7 +1239,7 @@ tbody td{padding:14px 16px;}
 
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
             <div><b>Streak Bonus</b><div style="font-size:12px;color:var(--t3);">Bonus credits every N consecutive days of activity</div></div>
-            <button class="toggle" id="cs-streak-toggle" onclick="toggleCreditSetting('streak')"></button>
+            <button class="toggle" id="cs-streak-toggle" role="switch" aria-label="Streak bonus" onclick="toggleCreditSetting('streak')"></button>
           </div>
           <div style="display:flex;gap:20px;align-items:center;margin-bottom:24px;">
             <div><label style="font-size:13px;font-weight:600;">Every N days:</label><input type="number" id="cs-streak-days" class="f-input" style="width:100px;" onchange="saveCreditSettings()"></div>
@@ -1197,7 +1248,7 @@ tbody td{padding:14px 16px;}
 
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
             <div><b>AI Study Assistant</b><div style="font-size:12px;color:var(--t3);">Academic chatbot usage limits (controls Groq API spend)</div></div>
-            <button class="toggle" id="cs-chatbot-toggle" onclick="toggleCreditSetting('chatbot')"></button>
+            <button class="toggle" id="cs-chatbot-toggle" role="switch" aria-label="Chatbot credits" onclick="toggleCreditSetting('chatbot')"></button>
           </div>
           <div style="display:flex;gap:20px;align-items:center;">
             <div><label style="font-size:13px;font-weight:600;">Daily limit (msgs):</label><input type="number" id="cs-chatbot-daily" class="f-input" style="width:100px;" onchange="saveCreditSettings()"></div>
@@ -1208,7 +1259,7 @@ tbody td{padding:14px 16px;}
         <div class="tw" style="padding:20px;margin-top:20px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
             <div><b>Student-written study notes</b><div style="font-size:12px;color:var(--t3);">Students can have the AI write notes on any topic for credits. Credits are returned automatically if the AI fails.</div></div>
-            <button class="toggle" id="cs-notes-toggle" onclick="toggleCreditSetting('notes')"></button>
+            <button class="toggle" id="cs-notes-toggle" role="switch" aria-label="Notes credits" onclick="toggleCreditSetting('notes')"></button>
           </div>
           <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;">
             <div><label style="font-size:13px;font-weight:600;">Quick (credits):</label><input type="number" min="0" id="cs-notes-quick" class="f-input" style="width:100px;" onchange="saveCreditSettings()"></div>
@@ -2568,6 +2619,78 @@ async function delNote(id){
   toast(r.ok ? 'Deleted' : 'Could not delete'); loadNotesAdmin();
 }
 
+// ── v1.12: SECONDARY / SECURITY / SYSTEM / GLOBAL SEARCH ──────
+const statCard = (v, l) => `<div class="sc"><div class="sc-val">${escHtml(String(v))}</div><div class="sc-lbl">${escHtml(l)}</div></div>`;
+async function loadSecondaryAdmin(){
+  try{
+    const d = await (await adminFetch('/api/admin/platform/secondary', { headers: {} })).json();
+    if(d.error) throw new Error(d.error);
+    document.getElementById('sx-sg').innerHTML = statCard(d.students,'Secondary students') + statCard(d.newWeek,'New this week') + statCard(d.universityStudents,'University students') + statCard(d.papers,'Papers taken') + statCard(d.jamb.avg || '—','Avg JAMB mock (of 400)') + statCard(d.jamb.best || '—','Best JAMB mock') +
+      Object.entries(d.exams).map(([k,n]) => statCard(n, k === 'not set up' ? 'Not set up yet' : k.toUpperCase())).join('');
+    document.getElementById('sx-subjects').innerHTML = d.subjects.length ? d.subjects.map(c => `<tr><td style="font-weight:700">${escHtml(c.title)}</td><td>${escHtml(c.code)}</td><td><span class="badge ${c.questions?'b-ok':'b-no'}">${c.questions}</span></td></tr>`).join('') : '<tr class="empty-row"><td colspan="3">No secondary subjects yet. Add them in Course Management and pick the Secondary app.</td></tr>';
+    document.getElementById('sx-top').innerHTML = d.top.length ? d.top.map((t,i) => `<tr><td>${i+1}</td><td>${escHtml(t.name)} <span style="color:var(--t4);font-size:11px">${escHtml(t.matric)}</span></td><td><b>${t.best}</b>/400</td><td>${t.papers}</td></tr>`).join('') : '<tr class="empty-row"><td colspan="4">No JAMB mock papers yet</td></tr>';
+  }catch(e){ toast('Could not load Secondary overview'); }
+}
+async function loadSecurity(){
+  try{
+    const d = await (await adminFetch('/api/admin/platform/security', { headers: {} })).json();
+    if(d.error) throw new Error(d.error);
+    document.getElementById('sec-sg').innerHTML = statCard(d.live,'Live sessions') + statCard(d.newDevices24h,'New devices (24h)') + statCard(d.suspended.length,'Suspended');
+    document.getElementById('sec-body').innerHTML = d.sessions.length ? d.sessions.map(s => `<tr>
+      <td><b>${escHtml(s.name || '—')}</b> <span style="color:var(--t4);font-size:11px">${escHtml(s.matric)}</span></td>
+      <td><span class="badge ${s.track==='secondary'?'b-warn':'b-brand'}">${s.track==='secondary'?'JAMB':'Uni'}</span></td>
+      <td style="font-size:12px">${escHtml(s.ip||'—')}</td><td style="font-size:11px;color:var(--t3);max-width:260px">${escHtml(s.ua||'—')}</td>
+      <td style="font-size:12px">${new Date(s.at).toLocaleString()}</td>
+      <td>${s.revoked?'<span class="badge b-no">Signed out</span>':s.newDevice?'<span class="badge b-warn">New device</span>':'<span class="badge b-ok">OK</span>'}</td>
+      <td><button class="ab ab-warn" onclick="forceSignOut('${jsq(s.matric)}')">Sign out</button></td></tr>`).join('') : '<tr class="empty-row"><td colspan="7">No sign-ins recorded yet</td></tr>';
+    document.getElementById('sec-susp').innerHTML = d.suspended.length ? d.suspended.map(s => `<tr><td>${escHtml(s.name)}</td><td>${escHtml(s.matric)}</td><td><button class="ab ab-ok" onclick="toggleActive('${jsq(s.matric)}',true).then(loadSecurity)">Activate</button></td></tr>`).join('') : '<tr class="empty-row"><td colspan="3">No suspended accounts</td></tr>';
+  }catch(e){ toast('Could not load security data'); }
+}
+async function forceSignOut(m){
+  const matric = (m || document.getElementById('sec-matric').value || '').trim();
+  if(!matric){ toast('Enter a matric number first'); return; }
+  if(!confirm(`Sign ${matric} out of every device?`)) return;
+  const r = await adminFetch('/api/admin/platform/security/signout', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ matric }) });
+  const d = await r.json().catch(()=>({}));
+  toast(r.ok ? `Signed out ${d.signedOut} session${d.signedOut===1?'':'s'}` : (d.error || 'Could not sign out'));
+  if(r.ok) loadSecurity();
+}
+async function loadSystem(){
+  try{
+    const d = await (await adminFetch('/api/admin/platform/health', { headers: {} })).json();
+    if(d.error) throw new Error(d.error);
+    const up = d.uptimeSec, upTxt = up > 86400 ? Math.floor(up/86400)+'d '+Math.floor(up%86400/3600)+'h' : up > 3600 ? Math.floor(up/3600)+'h '+Math.floor(up%3600/60)+'m' : Math.floor(up/60)+'m';
+    document.getElementById('sys-sg').innerHTML = statCard(d.db.state,'Database') + statCard(upTxt,'Uptime') + statCard(d.memoryMb.rss+' MB','Memory (RSS)') + statCard(d.node,'Node') + statCard(d.telegram?'On':'Off','Telegram bot') + statCard(d.counts.openSupport,'Open support');
+    document.getElementById('sys-counts').innerHTML = Object.entries(d.counts).map(([k,n]) => `<tr><td style="font-weight:700;text-transform:capitalize">${escHtml(k.replace(/([A-Z])/g,' $1'))}</td><td>${n}</td></tr>`).join('');
+  }catch(e){ toast('Could not load system health'); }
+}
+let gsTimer = null;
+function gsInput(q){
+  clearTimeout(gsTimer);
+  const box = document.getElementById('gs-box');
+  if((q||'').trim().length < 2){ box.style.display = 'none'; return; }
+  gsTimer = setTimeout(async () => {
+    try{
+      const d = await (await adminFetch('/api/admin/platform/search?q=' + encodeURIComponent(q.trim()), { headers: {} })).json();
+      if(d.error) throw new Error(d.error);
+      const row = (ico, t, sub, act) => `<div class="gs-row" onclick="${act}"><i class="fa-solid ${ico}"></i><div><b>${escHtml(t)}</b><span>${escHtml(sub)}</span></div></div>`;
+      const html = [
+        ...d.students.map(s => row('fa-user', s.name, `${s.matric} · ${s.track==='secondary'?'JAMB':'University'} · ${s.tier}`, `gsOpen('students','${jsq(s.matric)}')`)),
+        ...d.courses.map(c => row('fa-book', c.title, `${c.code} · ${c.track==='secondary'?'Secondary':'University'}`, `gsOpen('courses')`)),
+        ...d.questions.map(x => row('fa-circle-question', x.q, x.course, `gsOpen('questions')`)),
+      ].join('');
+      box.innerHTML = html || '<div class="gs-row"><span>Nothing found</span></div>'; box.style.display = 'block';
+    }catch(e){ box.style.display = 'none'; }
+  }, 250);
+}
+function gsOpen(view, matric){
+  document.getElementById('gs-box').style.display = 'none';
+  go(view, document.querySelector(`.nav-item[data-v="${view}"]`));
+  if(matric) setTimeout(() => { const i = document.getElementById('st-q'); if(i){ i.value = matric; filterSt(matric); } }, 500);
+}
+document.addEventListener('click', e => { if(!e.target.closest('.gs-wrap')){ const b = document.getElementById('gs-box'); if(b) b.style.display = 'none'; } });
+document.addEventListener('keydown', e => { if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k'){ e.preventDefault(); const i = document.getElementById('gs-input'); if(i) i.focus(); } });
+
 // ── NAVIGATION ────────────────────────────────────────────────
 function go(v, el) {
   document.querySelectorAll('.view').forEach(x => x.classList.remove('on'));
@@ -2590,6 +2713,9 @@ function go(v, el) {
   if(v==='admins') loadAdmins();
   if(v==='activity') loadActivity();
   if(v==='support') loadSupport();
+  if(v==='secondary') loadSecondaryAdmin();
+  if(v==='security') loadSecurity();
+  if(v==='system') loadSystem();
   if(v==='followups') loadFollowups();
   if(v==='course-notes') loadJob();
   if(v==='course-notes') loadNotesAdmin();
@@ -2689,6 +2815,7 @@ function renderStudents(list) {
       <td><input type="checkbox" class="st-check" value="${escHtml(s.matric)}" ${selectedStudents.has(s.matric)?'checked':''} onchange="toggleSt('${jsq(s.matric)}',this.checked)"></td>
       <td style="font-weight:700">${escHtml(s.name)}</td>
       <td style="font-family:var(--ff-h);font-size:12px">${escHtml(s.matric)}</td>
+      <td><span class="badge ${s.track==='secondary'?'b-warn':'b-brand'}">${s.track==='secondary'?'JAMB':'Uni'}</span></td>
       <td>
         <span class="badge ${s.tier==='premium'?'b-brand':'b-warn'}">${escHtml(planLabel(s))}</span>
         ${(s.tierExpiresAt && s.premiumPlan !== 'lifetime') ? `<div style="font-size:10px;color:var(--t3);margin-top:2px;">until ${new Date(s.tierExpiresAt).toLocaleDateString()}</div>` : ''}
@@ -2706,11 +2833,12 @@ function renderStudents(list) {
         <button class="ab ab-copy" onclick="revealLogin('${jsq(s.matric)}','${jsq(s.password||s.matric)}')">Login</button>
         <button class="ab ab-edit" onclick="creditStudent('${jsq(s.matric)}', ${s.credits||0})"><i class="fa-solid fa-coins"></i> Credit</button>
         <button class="ab ab-edit" onclick="editStudent('${jsq(s.matric)}')">Edit</button>
+        <button class="ab" title="Move this account to the other app" onclick="moveTrack('${jsq(s.matric)}','${s.track==='secondary'?'secondary':'university'}')">Move app</button>
         <button class="ab ${s.active?'ab-warn':'ab-ok'}" onclick="toggleActive('${jsq(s.matric)}',${!s.active})">${s.active?'Suspend':'Activate'}</button>
         <button class="ab ab-del" onclick="delStudent('${jsq(s.matric)}')">Del</button>
       </div></td>
     </tr>`).join('')
-  : '<tr class="empty-row"><td colspan="11">No students yet</td></tr>';
+  : '<tr class="empty-row"><td colspan="13">No students yet</td></tr>';
 }
 
 // ── v1.3: selection, detail, bulk grant ─────────────────────────
@@ -2840,11 +2968,22 @@ async function creditStudent(matric, currentBalance) {
 }
 
 function filterSt(q) {
+  q = q || '';
+  const t = (document.getElementById('st-track-filter') || {}).value || '';
   renderStudents(allStudents.filter(s =>
-    s.name.toLowerCase().includes(q.toLowerCase()) ||
+    (!t || (s.track === 'secondary' ? 'secondary' : 'university') === t) &&
+    (s.name.toLowerCase().includes(q.toLowerCase()) ||
     s.matric.toLowerCase().includes(q.toLowerCase()) ||
-    (s.phone||'').includes(q)
+    (s.phone||'').includes(q))
   ));
+}
+// v1.12: students can't switch apps themselves, so an admin can move an account created in the wrong one.
+async function moveTrack(matric, cur) {
+  const to = cur === 'secondary' ? 'university' : 'secondary';
+  if (!confirm(`Move ${matric} to the ${to === 'secondary' ? 'Secondary / JAMB' : 'University'} app? They will sign in from the other tab afterwards.`)) return;
+  const r = await adminFetch(`/api/admin/students/${encodeURIComponent(matric)}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ track: to }) });
+  toast(r.ok ? 'Account moved' : 'Could not move the account');
+  loadStudents();
 }
 
 function openAddStudent() {
@@ -4526,5 +4665,6 @@ function renderRetentionTable(rows){
 <script src="/js/phq-latexfix.js" defer></script>
 <script src="/js/phq-chemfix.js"></script>
 <script src="/js/phq-sci.js" defer></script>
+<script src="/js/a11y.js" defer></script>
 </body>
 </html>

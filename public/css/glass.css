@@ -125,3 +125,5 @@ body.has-glass-nav { padding-bottom: var(--nav-space, 92px); }
 
 /* Font Awesome icon sizing helper used across the UI */
 .fa-ico { width: 1em; text-align: center; }
+
+.nest-brand, .nest-user { display: none; }   /* desktop-only chrome, shown by css/nest.css at 1024px+ */

@@ -269,7 +269,7 @@
 <div class="input-bar">
   <input type="text" id="chat-input" placeholder="Ask a study question..." onkeydown="if(event.key==='Enter')sendChatMessage()">
   <button class="mic-btn" id="mic-btn" type="button" onclick="toggleMic()" aria-label="Ask by voice" title="Ask by voice"><i class="fa-solid fa-microphone"></i></button>
-  <button class="send-btn" id="send-btn" onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+  <button class="send-btn" id="send-btn" aria-label="Send message" onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
 </div>
 <script>
 const document = PhqShell.scope(root); // every getElementById/querySelector in this view only sees this view

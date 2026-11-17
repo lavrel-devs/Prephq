@@ -10,14 +10,14 @@ const Question = require('../models/Question');
 const Student = require('../models/Student');
 const Score = require('../models/Score');
 const QuestionAttempt = require('../models/QuestionAttempt');
-const { requireStudent } = require('../middleware/auth');
+const { requireStudent, requireTrack } = require('../middleware/auth');
 const { requireFeature } = require('../services/entitlements.service');
 const { checkDailyLimit } = require('../services/tier.service');
 const { escapeRegex } = require('../utils/validate');
 const S = require('../utils/secondary');
 
 const router = express.Router();
-router.use('/secondary', requireStudent);
+router.use('/secondary', requireStudent, requireTrack('secondary'));   // v1.12: only Secondary accounts get in
 
 const subjectMeta = code => S.SUBJECTS.find(s => s.code === code) || null;
 async function secondaryCourses() { return Course.find({ track: 'secondary' }).sort({ courseTitle: 1 }).lean(); }
@@ -76,27 +76,15 @@ router.put('/secondary/profile', async (req, res) => {
       }
     }
     st.secondary = next;
-    st.track = 'secondary';
     if (next.exam && next.subjects.length) st.profileCompleted = true;
     await st.save();
     res.json({ success: true, track: st.track, secondary: next });
   } catch (e) { res.status(500).json({ error: 'Could not save your setup' }); }
 });
 
-// PUT /api/secondary/track { track } — switch between the two apps without losing either setup.
-router.put('/secondary/track', async (req, res) => {
-  try {
-    const track = req.body && req.body.track;
-    if (!['university', 'secondary'].includes(track)) return res.status(400).json({ error: 'Choose university or secondary.' });
-    const st = await Student.findOne({ matric: req.student.sub });
-    if (!st) return res.status(404).json({ error: 'Student not found' });
-    st.track = track;
-    if (track === 'university') st.profileCompleted = !!(st.university && st.department && (st.selectedCourses || []).length);   // re-opens the university setup if it was never done
-    else st.profileCompleted = true;
-    await st.save();
-    res.json({ success: true, track, needsProfileCompletion: !st.profileCompleted });
-  } catch (e) { res.status(500).json({ error: 'Could not switch' }); }
-});
+// v1.12: PUT /api/secondary/track is gone. An account belongs to one app for good; only an admin can move it
+// (PUT /api/admin/students/:matric { track }). Left as an explicit refusal so an old client gets a clear answer.
+router.put('/secondary/track', (req, res) => res.status(403).json({ error: 'Accounts cannot switch between the university and Secondary apps. Create a separate account.', code: 'TRACK_LOCKED' }));
 
 // A question belongs to a subject if its stored `course` equals the subject's key or code (any case) — same rule as the
 // university bank. exam / classLevel are optional on a question: one with none is a general question and is always allowed.

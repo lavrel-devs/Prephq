@@ -175,6 +175,7 @@ window.sxHome = sxHome;
 async function boot() {
   try {
     const [c, p] = await Promise.all([api('/api/secondary/config'), api('/api/secondary/profile')]);
+    if (c.status === 403 || p.status === 403) { location.replace('/dashboard'); return; }   // v1.12: a university account has no Secondary app
     if (!c.ok || !p.ok) throw new Error('bad');
     X.cfg = await c.json(); const pd = await p.json();
     X.prof = pd; X.matric = pd.matric;
@@ -341,7 +342,7 @@ async function sxLoadHub() {
         <div class="v-row" style="margin-top:12px;"><button class="v-btn v-btn-soft v-btn-sm v-grow" onclick="sxPick('${s.key}','practice')">Practise</button>${o.exam === 'jamb' ? '' : `<button class="v-btn v-btn-soft v-btn-sm v-grow" onclick="sxPick('${s.key}','mock')">Timed paper</button>`}</div></div>`;
     }).join('');
     html += `<div class="v-h">Recent papers</div><div id="sx-hist"><div class="v-empty">Loading…</div></div>
-      <div class="v-card" style="margin-top:18px;"><div class="v-row"><div class="v-grow"><b style="font-size:14px;">Studying at a university?</b><div class="v-note" style="margin-top:2px;">Switch to the university app any time. Your Secondary setup is kept.</div></div><button class="v-btn v-btn-soft v-btn-sm" onclick="sxSwitchUni()">Switch</button></div></div>`;
+      `;
     box.innerHTML = html;
     sxLoadHistory();
   } catch (e) { box.innerHTML = '<div class="v-empty">Could not load your hub. Check your connection.<br><br><button class="v-btn v-btn-sm" onclick="sxLoadHub()">Try again</button></div>'; }
@@ -362,14 +363,6 @@ async function sxLoadHistory() {
   } catch (e) { box.innerHTML = '<div class="v-empty">Could not load your papers.</div>'; }
 }
 
-async function sxSwitchUni() {
-  try {
-    const r = await api('/api/secondary/track', jsonOpts('PUT', { track: 'university' }));
-    if (!r.ok) throw new Error('bad');
-    location.assign('/dashboard');   // full load, so the university setup prompt can open if it was never finished
-  } catch (e) { say('Could not switch. Try again.'); }
-}
-window.sxSwitchUni = sxSwitchUni;
 
 // ═══ PRACTICE / PAPER OPTIONS ════════════════════════════════
 async function sxPick(key, kind) {

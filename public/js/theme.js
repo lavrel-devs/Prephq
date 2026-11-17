@@ -34,7 +34,7 @@
   // v1.10: keep the browser / status-bar colour matched to the page canvas (--bg in tokens.css).
   function syncBarColor(){
     var m = document.querySelector('meta[name="theme-color"]');
-    if(m) m.setAttribute('content', document.documentElement.dataset.theme === 'dark' ? '#000000' : '#f2f2f7');
+    if(m) m.setAttribute('content', document.documentElement.dataset.theme === 'dark' ? '#0B0E26' : '#F3F4FC');
   }
   document.addEventListener('DOMContentLoaded', syncBarColor);
   new MutationObserver(syncBarColor).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});

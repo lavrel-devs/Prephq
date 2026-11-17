@@ -83,6 +83,8 @@ async function issueSession({ subjectId, role, req, deviceFingerprint, flaggedNe
 router.post('/register', async (req, res) => {
   try {
     const { password, referralCode, username } = req.body;
+    // v1.12: the account type is chosen once, at signup, and never changes. University and Secondary / JAMB are separate accounts.
+    const track = req.body.track === 'secondary' ? 'secondary' : 'university';
     const university = typeof req.body.university === 'string' ? req.body.university.trim().slice(0, 120) : '';
     const department = typeof req.body.department === 'string' ? req.body.department.trim().slice(0, 120) : '';
 
@@ -137,6 +139,9 @@ router.post('/register', async (req, res) => {
         whatsapp,
         credits:           0,
         tier:              'free',
+        track,
+        // A Secondary account never fills the university profile (university / department / courses); its own exam setup is inside /secondary.
+        ...(track === 'secondary' ? { profileCompleted: true } : {}),
         username:          usernameCheck.username,
         usernameChangedAt: new Date(),
         // The signup page tells people that creating an account means accepting the Terms and Privacy Policy.
@@ -162,6 +167,7 @@ router.post('/register', async (req, res) => {
     res.status(201).json({
       matric:   student.matric,
       name:     student.name,
+      track:    student.track,
       message:  'Account created successfully',
     });
   } catch (e) { console.error('[auth] register', e); res.status(500).json({ error: 'Could not create the account. Please try again.' }); }
@@ -285,6 +291,18 @@ router.post('/login', loginLimiter, async (req, res) => {
     if (!valid) return res.status(401).json({ error: 'Incorrect matric number, username or password' });
     if (!student.active) return res.status(403).json({ error: 'Account suspended. Contact admin.' });
 
+    // v1.12: one account, one app. The password is checked first, so this message can't be used to find out who has an account.
+    const accountTrack = student.track === 'secondary' ? 'secondary' : 'university';
+    const wanted = req.body.audience === 'secondary' ? 'secondary' : req.body.audience === 'university' ? 'university' : accountTrack;
+    if (wanted !== accountTrack) {
+      return res.status(403).json({
+        code: 'WRONG_TRACK', track: accountTrack,
+        error: wanted === 'secondary'
+          ? 'These details belong to a university account. Sign in from the University student tab, or create a separate Secondary / JAMB account.'
+          : 'These details belong to a Secondary / JAMB account. Sign in from the Secondary / JAMB tab.',
+      });
+    }
+
     const fp = typeof deviceFingerprint === 'string' ? deviceFingerprint.slice(0, 128) : '';
     const flaggedNewDevice = isNewDevice(student.devices, fp);
     if (fp) {
@@ -313,6 +331,7 @@ router.post('/login', loginLimiter, async (req, res) => {
       matric: student.matric,
       name: student.name,
       role: student.role,
+      track: accountTrack,
       credits: student.credits,
       accessToken,
       refreshToken,

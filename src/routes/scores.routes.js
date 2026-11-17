@@ -108,6 +108,7 @@ router.post('/:matric', requireStudent, async (req, res) => {
     // really are secondary courses are kept, and grades and the UTME total are recomputed here, never trusted.
     let sec = null;
     if (req.body.sec) {
+      if ((student.track || 'university') !== 'secondary') return res.status(403).json({ error: 'Secondary papers can only be saved from a Secondary account.', code: 'WRONG_TRACK' });
       const known = new Set((await Course.find({ track: 'secondary' }).select('key').lean()).map(c => c.key));
       sec = cleanSec(req.body.sec, known);
     }

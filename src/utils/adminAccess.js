@@ -58,6 +58,11 @@ const RULES = [
   [/^\/announcements(\/|$)/, ['announcements']],
   [/^\/credit-settings(\/|$)/, ['settings']],
   [/^\/cosmetics(\/|$)/, ['cosmetics']],
+
+  // v1.12
+  [/^\/platform\/secondary\/?$/, ['analytics', 'students']],
+  [/^\/platform\/(security|search)(\/|$)/, ['students']],
+  [/^\/platform\/health\/?$/, ['analytics']],
 ];
 
 function isReadMethod(method) {

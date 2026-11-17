@@ -3,9 +3,9 @@
 <head>
 <script src="/js/theme.js"></script>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#f2f2f7">
+<meta name="theme-color" content="#F3F4FC">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
 <link rel="icon" type="image/png" sizes="48x48" href="/icons/favicon-48.png">
@@ -714,7 +714,9 @@ details.np-card>summary::-webkit-details-marker{display:none;}
 .guess-btn.on{color:#7a4a00;background:linear-gradient(135deg,#FFE29A,#FFC24D);box-shadow:0 3px 0 rgba(160,100,0,.35)}
 </style>
 <link rel="stylesheet" href="/css/hybrid.css">
+<link rel="stylesheet" href="/css/nest.css">
 <link rel="stylesheet" href="/css/guided-home.css">
+<link rel="stylesheet" href="/css/dashboard-v2.css">
 <style>
 /* Student shell visual refinement — presentation only; Wreddi brand tokens remain unchanged. */
 body .topbar{background:var(--bar-solid);border-bottom:1px solid var(--bd);box-shadow:none;}
@@ -744,7 +746,8 @@ body .cg{gap:14px;}
 </head>
 <body class="fs-md">
 
-<div id="toast"></div>
+<a class="skip-link" href="#home">Skip to main content</a>
+<div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 <div class="glass-backdrop"></div>
 
 <!-- ═══ HOME ════════════════════════════════════════════════ -->
@@ -755,21 +758,29 @@ body .cg{gap:14px;}
       <div class="tb-info">
         <div class="tb-name" id="tb-name">Student</div>
       </div>
+      <div class="tb-search" role="search">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <input id="tb-search" type="search" placeholder="Search for a course..." aria-label="Search for a course" autocomplete="off" oninput="topbarSearch(this.value)">
+      </div>
     </div>
     <div class="tb-right">
-      <div class="ib compact" id="credits-pill" onclick="showScr('settings')">
-        <i class="fa-solid fa-coins"></i><span id="tb-credits">0</span>
-      </div>
       <div class="ib" id="theme-ib" onclick="toggleTheme()">
         <svg id="theme-ico" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
       </div>
-      <div class="ib" onclick="openMenu()">
+      <button type="button" class="ib tb-bell" id="tb-bell" aria-label="Notifications" onclick="showScr('notifications');loadNotifications()"><i class="fa-solid fa-bell" aria-hidden="true"></i><span class="tb-bell-n" id="tb-bell-n" hidden>0</span></button>
+      <div class="ib compact" id="credits-pill" onclick="showScr('settings')">
+        <i class="fa-solid fa-coins"></i><span id="tb-credits">0</span><i class="fa-solid fa-chevron-down tb-cred-chev" aria-hidden="true"></i>
+      </div>
+      <div class="ib tb-menu" role="button" tabindex="0" aria-label="Open menu" aria-haspopup="dialog" onclick="openMenu()">
         <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
       </div>
+      <button type="button" class="tb-acct" aria-label="Open menu" aria-haspopup="dialog" onclick="openMenu()"><span class="tb-acct-av" id="tb-acct-av">S</span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
     </div>
   </div>
 
-  <div id="plan-banner" onclick="PhqShell.go('/profile')" style="display:none;margin:10px 18px 0;padding:12px 14px;border-radius:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;background:var(--bg);">
+  <div class="hv2">
+    <div class="hv2-notices">
+  <div id="plan-banner" onclick="PhqShell.go('/profile')" style="display:none;margin:10px 18px 0;padding:12px 14px;border-radius:14px;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;background:var(--bg);">
     <div style="display:flex;align-items:center;gap:8px;min-width:0;">
       <i id="plan-banner-icon" class="fa-solid fa-bolt" style="font-size:13px;flex-shrink:0;"></i>
       <div id="plan-banner-text" style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Loading plan…</div>
@@ -777,7 +788,7 @@ body .cg{gap:14px;}
     <div id="plan-banner-cta" style="font-size:11.5px;font-weight:700;flex-shrink:0;"></div>
   </div>
 
-  <div id="sec-home-card" onclick="PhqShell.go('/secondary')" style="margin:10px 18px 0;padding:12px 14px;border-radius:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;background:var(--bg);">
+  <div id="sec-home-card" onclick="PhqShell.go('/secondary')" style="display:none;margin:10px 18px 0;padding:12px 14px;border-radius:14px;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;background:var(--bg);">
     <div style="display:flex;align-items:center;gap:8px;min-width:0;">
       <i class="fa-solid fa-graduation-cap" style="font-size:13px;flex-shrink:0;color:var(--brand);"></i>
       <div id="sec-home-text" style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Writing JAMB, WAEC or NECO?</div>
@@ -793,25 +804,56 @@ body .cg{gap:14px;}
     <div id="onb-list" style="display:flex;flex-direction:column;gap:8px;"></div>
   </div>
 
-  <div class="home-hero fade-up">
-    <div class="hero-tag">
-      <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
-      Study Portal
     </div>
-    <div class="hero-title" id="home-greeting">Good morning,<br>let's study.</div>
-    <div class="hero-streak">
-      <svg viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg>
-      <span id="streak-txt">0 day streak</span>
-      <span id="streak-sub" style="opacity:.75;font-weight:600;"></span>
-    </div>
-  </div>
 
-  <div class="stats-row">
-    <div class="stat-pill"><div class="sp-dot" style="background:var(--brand)"></div><div class="sp-val blue" id="s-total">—</div><div class="sp-lbl">Questions</div></div>
-    <div class="stat-pill"><div class="sp-dot" style="background:var(--ok)"></div><div class="sp-val green" id="s-best">—</div><div class="sp-lbl">Best Score</div></div>
-    <div class="stat-pill"><div class="sp-dot" style="background:var(--warn)"></div><div class="sp-val orange" id="s-quizzes">0</div><div class="sp-lbl">Quizzes</div></div>
-    <div class="stat-pill"><div class="sp-dot" style="background:var(--purple)"></div><div class="sp-val purple" id="s-bmarks">0</div><div class="sp-lbl">Bookmarks</div></div>
-  </div>
+    <div class="hv2-top">
+      <div class="home-hero hv2-hero fade-up">
+        <div class="hero-copy">
+          <button type="button" class="hero-chip" id="hero-chip" onclick="document.getElementById('course-step-heading').scrollIntoView({behavior:'smooth',block:'center'})" aria-label="Change course">
+            <span id="hero-chip-code">Pick a course</span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+          </button>
+          <div class="hero-tag">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+            Study Portal
+          </div>
+          <div class="hero-title"><span id="home-greeting">Good morning,<br>let's study.</span> <span class="hero-rocket" aria-hidden="true">🚀</span></div>
+          <div class="hero-streak">
+            <svg viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg>
+            <span id="streak-txt">0 day streak</span>
+            <span id="streak-sub"></span>
+          </div>
+        </div>
+        <svg class="hero-art" viewBox="0 0 460 230" aria-hidden="true" focusable="false">
+  <defs>
+    <radialGradient id="hb-glow" cx="50%" cy="55%" r="55%"><stop offset="0" stop-color="#8FA8FF" stop-opacity=".55"/><stop offset="1" stop-color="#8FA8FF" stop-opacity="0"/></radialGradient>
+    <linearGradient id="hb-l" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6F8BFF"/><stop offset="1" stop-color="#3347D8"/></linearGradient>
+    <linearGradient id="hb-r" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9DB1FF"/><stop offset="1" stop-color="#5568F0"/></linearGradient>
+    <linearGradient id="hb-c" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1D2AA8"/><stop offset="1" stop-color="#2D3CD0"/></linearGradient>
+  </defs>
+  <ellipse cx="236" cy="130" rx="220" ry="100" fill="url(#hb-glow)"/>
+  <path d="M60 52c52-10 112 4 168 40v92C172 150 112 138 60 146z" fill="#1A2597" opacity=".55" transform="translate(-26 8)"/>
+  <path d="M52 150L232 206L424 150L424 172L232 228L52 172Z" fill="url(#hb-c)"/>
+  <path d="M60 78C120 58 190 70 232 104L232 206L60 152Z" fill="url(#hb-l)"/>
+  <path d="M232 104C282 52 368 38 420 60L420 150L232 206Z" fill="url(#hb-r)"/>
+  <path d="M232 104C290 30 374 10 436 40" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="3" stroke-linecap="round"/>
+  <path d="M232 112C292 44 372 28 430 54" fill="none" stroke="#fff" stroke-opacity=".38" stroke-width="3" stroke-linecap="round"/>
+  <path d="M232 120C294 58 370 46 424 68" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="3" stroke-linecap="round"/>
+  <g stroke="#fff" stroke-opacity=".34" stroke-width="2.4" stroke-linecap="round" fill="none">
+    <path d="M84 100C124 90 170 98 206 122"/><path d="M84 116C124 106 170 114 206 138"/><path d="M84 132C124 122 170 130 206 154"/>
+    <path d="M262 132C296 100 350 88 396 98"/><path d="M262 148C296 116 350 104 396 114"/><path d="M262 164C296 132 350 120 396 130"/>
+  </g>
+  <path d="M232 104L232 206" stroke="#1D2AA8" stroke-opacity=".5" stroke-width="3"/>
+  <circle cx="352" cy="26" r="2.6" fill="#fff" opacity=".8"/><circle cx="392" cy="14" r="1.8" fill="#fff" opacity=".6"/><circle cx="312" cy="12" r="1.6" fill="#fff" opacity=".5"/>
+</svg>
+      </div>
+
+      <div class="stats-row hv2-stats">
+        <div class="stat-pill"><div class="sp-ico sp-violet"><i class="fa-solid fa-circle-question" aria-hidden="true"></i></div><div class="sp-val" id="s-total">—</div><div class="sp-lbl">Questions</div></div>
+        <div class="stat-pill"><div class="sp-ico sp-green"><i class="fa-solid fa-trophy" aria-hidden="true"></i></div><div class="sp-val" id="s-best">—</div><div class="sp-lbl">Best Score</div></div>
+        <div class="stat-pill"><div class="sp-ico sp-blue"><i class="fa-solid fa-clipboard-check" aria-hidden="true"></i></div><div class="sp-val" id="s-quizzes">0</div><div class="sp-lbl">Quizzes</div></div>
+        <div class="stat-pill sp-extra"><div class="sp-ico sp-amber"><i class="fa-solid fa-bookmark" aria-hidden="true"></i></div><div class="sp-val" id="s-bmarks">0</div><div class="sp-lbl">Bookmarks</div></div>
+      </div>
+    </div>
 
   <div id="exam-banner-wrap" style="padding:0 18px;display:none;margin-bottom:2px;">
     <div class="exam-banner">
@@ -821,49 +863,60 @@ body .cg{gap:14px;}
     </div>
   </div>
 
-  <div id="goal-card-wrap" style="padding:12px 18px 0;">
-    <div class="goal-card">
-      <div class="gc-top"><div class="gc-title">Daily Goal</div><div class="gc-count" id="goal-count">0 / 20</div></div>
-      <div class="gc-bar"><div class="gc-fill" id="goal-fill" style="width:0%"></div></div>
-      <div class="gc-sub" id="goal-sub">Complete 20 questions today</div>
-    </div>
-  </div>
 
-  <div id="autopilot-wrap" style="padding:12px 18px 0;display:none;">
-    <div class="np-card">
-      <div class="np-row" style="justify-content:space-between;align-items:flex-start;">
-        <div style="min-width:0;"><div class="ap-k">TODAY'S <span id="ap-min">15</span> MINUTES</div><div class="ap-h" id="ap-headline"></div></div>
-        <div class="ap-count" id="ap-count"></div>
+    <div class="hv2-plan">
+      <div id="goal-card-wrap">
+        <div class="goal-card">
+          <div class="gc-ico" aria-hidden="true"><i class="fa-solid fa-bullseye"></i></div>
+          <div class="gc-main"><div class="gc-title">Daily Goal</div><div class="gc-sub" id="goal-sub">Complete 20 questions today</div></div>
+          <div class="gc-count" id="goal-count">0 / 20</div>
+          <div class="gc-bar"><div class="gc-fill" id="goal-fill" style="width:0%"></div></div>
+        </div>
       </div>
-      <div class="np-bar" style="margin:10px 0 4px;"><i id="ap-fill" style="width:0%"></i></div>
-      <div id="ap-list"></div>
-    </div>
-  </div>
 
-  <div id="voice-card" style="padding:12px 18px 0;display:none;">
-    <div class="np-card np-row" style="justify-content:space-between;gap:12px;">
-      <div style="min-width:0;"><div style="font-weight:700;font-size:14.5px;">🎧 Voice quiz</div>
-        <div style="font-size:12px;color:var(--t3);margin-top:2px;line-height:1.4;">Hands-free. Wreddi reads each question aloud and you answer out loud. Uses the course you selected below.</div></div>
-      <button class="np-btn" onclick="startVoiceQuiz({})">Start</button>
-    </div>
-  </div>
+      <div id="autopilot-wrap" style="display:none;">
+        <div class="np-card ap-head">
+          <div class="ap-ico" aria-hidden="true"><i class="fa-solid fa-stopwatch"></i></div>
+          <div class="ap-txt"><div class="ap-k">TODAY'S <span id="ap-min">15</span> MINUTES</div><div class="ap-h" id="ap-headline"></div></div>
+          <div class="ap-count" id="ap-count"></div>
+          <div class="np-bar"><i id="ap-fill" style="width:0%"></i></div>
+        </div>
+      </div>
 
-  <div class="sec-h guided-step-heading" id="course-step-heading" data-guided-step="1"><div class="sec-title">Choose your course</div><div class="sec-badge" id="sel-badge">1 selected</div><div class="guided-step-help">Pick one or more subjects to practice.</div></div>
+      <div class="hv2-drills" id="ap-list"></div>
+    </div>
+
+    <div class="hv2-body">
+      <div class="hv2-main">
+        <div id="voice-card" style="display:none;">
+          <div class="voice-banner">
+            <span class="vb-ico" aria-hidden="true"><i class="fa-solid fa-headphones"></i></span>
+            <div class="vb-t"><b>Voice quiz</b><span>Hands-free. Wreddi reads each question aloud and you answer out loud.</span></div>
+            <svg class="vb-wave" viewBox="0 0 300 60" preserveAspectRatio="none" aria-hidden="true" focusable="false"><g fill="currentColor"><rect x="2" y="27.0" width="3" height="6" rx="1.5"/><rect x="8" y="25.0" width="3" height="10" rx="1.5"/><rect x="14" y="23.0" width="3" height="14" rx="1.5"/><rect x="20" y="26.0" width="3" height="8" rx="1.5"/><rect x="26" y="21.0" width="3" height="18" rx="1.5"/><rect x="32" y="17.0" width="3" height="26" rx="1.5"/><rect x="38" y="22.0" width="3" height="16" rx="1.5"/><rect x="44" y="25.0" width="3" height="10" rx="1.5"/><rect x="50" y="19.0" width="3" height="22" rx="1.5"/><rect x="56" y="13.0" width="3" height="34" rx="1.5"/><rect x="62" y="8.0" width="3" height="44" rx="1.5"/><rect x="68" y="15.0" width="3" height="30" rx="1.5"/><rect x="74" y="20.0" width="3" height="20" rx="1.5"/><rect x="80" y="24.0" width="3" height="12" rx="1.5"/><rect x="86" y="26.0" width="3" height="8" rx="1.5"/><rect x="92" y="22.0" width="3" height="16" rx="1.5"/><rect x="98" y="16.0" width="3" height="28" rx="1.5"/><rect x="104" y="10.0" width="3" height="40" rx="1.5"/><rect x="110" y="4.0" width="3" height="52" rx="1.5"/><rect x="116" y="12.0" width="3" height="36" rx="1.5"/><rect x="122" y="18.0" width="3" height="24" rx="1.5"/><rect x="128" y="23.0" width="3" height="14" rx="1.5"/><rect x="134" y="25.0" width="3" height="10" rx="1.5"/><rect x="140" y="21.0" width="3" height="18" rx="1.5"/><rect x="146" y="15.0" width="3" height="30" rx="1.5"/><rect x="152" y="19.0" width="3" height="22" rx="1.5"/><rect x="158" y="24.0" width="3" height="12" rx="1.5"/><rect x="164" y="26.0" width="3" height="8" rx="1.5"/><rect x="170" y="23.0" width="3" height="14" rx="1.5"/><rect x="176" y="20.0" width="3" height="20" rx="1.5"/><rect x="182" y="14.0" width="3" height="32" rx="1.5"/><rect x="188" y="18.0" width="3" height="24" rx="1.5"/><rect x="194" y="23.0" width="3" height="14" rx="1.5"/><rect x="200" y="26.0" width="3" height="8" rx="1.5"/><rect x="206" y="27.0" width="3" height="6" rx="1.5"/><rect x="212" y="25.0" width="3" height="10" rx="1.5"/><rect x="218" y="22.0" width="3" height="16" rx="1.5"/><rect x="224" y="24.0" width="3" height="12" rx="1.5"/><rect x="230" y="26.0" width="3" height="8" rx="1.5"/><rect x="236" y="27.0" width="3" height="6" rx="1.5"/><rect x="242" y="25.0" width="3" height="10" rx="1.5"/><rect x="248" y="23.0" width="3" height="14" rx="1.5"/><rect x="254" y="26.0" width="3" height="8" rx="1.5"/><rect x="260" y="27.0" width="3" height="6" rx="1.5"/><rect x="266" y="27.5" width="3" height="5" rx="1.5"/><rect x="272" y="26.0" width="3" height="8" rx="1.5"/><rect x="278" y="27.0" width="3" height="6" rx="1.5"/><rect x="284" y="27.5" width="3" height="5" rx="1.5"/><rect x="290" y="28.0" width="3" height="4" rx="1.5"/><rect x="296" y="27.0" width="3" height="6" rx="1.5"/></g></svg>
+            <button type="button" class="vb-btn" onclick="startVoiceQuiz({})">Start <i class="fa-solid fa-play" aria-hidden="true"></i></button>
+          </div>
+        </div>
+
+        <div class="hv2-pick">
+          <section class="hv2-card hv2-course" aria-labelledby="course-step-heading">
+            <div class="sec-h guided-step-heading" id="course-step-heading" data-guided-step="1"><div class="sec-title">Choose your course</div><div class="sec-badge" id="sel-badge">1 selected</div><div class="guided-step-help">Pick one or more subjects to practice.</div></div>
   <div id="course-search-wrap" style="padding:0 18px 12px;">
     <div style="position:relative;">
       <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--t4);font-size:13px;z-index:1;"></i>
       <input id="course-search" placeholder="Search for a course..." oninput="filterCourseGrid(this.value)" style="width:100%;background:var(--fill);border:none;border-radius:999px;padding:13px 20px 13px 42px;color:var(--t1);font-size:13.5px;font-weight:600;outline:none;box-shadow:var(--sh-in);">
     </div>
   </div>
-  <div class="cg" id="course-grid"></div>
+            <div class="cg" id="course-grid"></div>
   <div class="cg-more" id="course-more" style="display:none;">
     <button type="button" id="course-more-btn" class="cg-more-btn" aria-expanded="false" aria-controls="course-grid" onclick="toggleCourseGrid()">
       <span id="course-more-label">Show all courses</span>
       <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
     </button>
   </div>
+          </section>
 
-  <div class="sec-h guided-step-heading" id="mode-step-heading" data-guided-step="2" style="padding-top:20px;"><div class="sec-title">Choose your session</div><div class="guided-step-help">Practice gives instant feedback; exam mode saves your score for the end.</div></div>
+          <section class="hv2-card hv2-session" aria-labelledby="mode-step-heading">
+            <div class="sec-h guided-step-heading" id="mode-step-heading" data-guided-step="2"><div class="sec-title">Choose your session</div><div class="guided-step-help">Practice gives instant feedback; exam mode saves your score for the end.</div></div>
   <div class="mode-row">
     <div class="mode-btn on" data-mode="practice" onclick="selMode(this)">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z"/></svg>
@@ -878,8 +931,7 @@ body .cg{gap:14px;}
       <div class="mode-lbl">Retry</div><div class="mode-sub">Wrong answers</div>
     </div>
   </div>
-
-  <div class="sec-h guided-step-heading" id="qty-step-heading" data-guided-step="3" style="padding-top:18px;"><div class="sec-title">Set your length</div><div class="guided-step-help">Choose a quick set or build a longer session.</div></div>
+            <div class="sec-h guided-step-heading" id="qty-step-heading" data-guided-step="3"><div class="sec-title">Set your length</div><div class="guided-step-help">Choose a quick set or build a longer session.</div></div>
   <div class="qty-wrap">
     <div class="qty-row">
       <div class="qp" data-qty="10" onclick="selQty(this)">10</div>
@@ -897,15 +949,123 @@ body .cg{gap:14px;}
       <button type="button" class="neu-inline-apply" onclick="applyCustomQty()">Set</button>
     </div>
   </div>
+            <div class="start-wrap">
+              <button class="btn-grad" id="start-btn" onclick="startQuiz()">
+                Start Quiz
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              </button>
+            </div>
+          </section>
+        </div>
 
-  <div id="written-launch-card" onclick="PhqShell.go('/written')" style="margin:20px 18px 0;padding:14px 16px;border-radius:var(--r16);background:var(--surf);box-shadow:var(--sh);display:flex;align-items:center;gap:12px;cursor:pointer;">
-    <div style="width:42px;height:42px;border-radius:14px;background:var(--grad);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-pen-to-square"></i></div>
-    <div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:14px;font-family:var(--ff-h);">Written Exam <span style="font-size:10px;font-weight:700;color:#fff;background:var(--purple);padding:2px 7px;border-radius:99px;vertical-align:middle;">NEW</span></div><div style="font-size:12px;color:var(--t3);margin-top:2px;">Theory questions you type, marked by AI against a marking scheme</div></div>
-    <i class="fa-solid fa-chevron-right" style="color:var(--t3);font-size:12px;"></i>
+        <section class="hv2-opts">
+          <div class="sec-h" data-guided-options-heading><div class="sec-title">Options</div></div>
+  <div id="guided-options-list" style="display:flex;flex-direction:column;gap:12px;padding-bottom:4px;">
+    <div class="opt-card timer-card">
+      <div class="oc-left">
+        <div class="oc-icon" style="color:var(--teal)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg></div>
+        <div>
+          <div class="oc-title">Session Timer</div>
+          <div class="oc-sub" id="timer-sub-lbl">Off</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:12px;font-weight:600;color:var(--brand);background:var(--surf);padding:6px 11px;border-radius:var(--r8);cursor:pointer;box-shadow:var(--sh-sm);" id="timer-min-btn" onclick="cycleTimer()">10 min</span>
+        <button type="button" class="timer-edit-btn" onclick="toggleCustomTimer()" aria-label="Set custom minutes">
+          <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+        </button>
+        <button class="toggle" id="timer-toggle" role="switch" aria-label="Enable session timer" onclick="toggleTimer()"></button>
+      </div>
+      <div class="neu-inline-panel" id="custom-timer-wrap">
+        <input type="number" class="neu-inline-input" id="custom-timer-input" min="1" max="180" placeholder="Minutes for the whole session (1–180)" inputmode="numeric">
+        <button type="button" class="neu-inline-apply" onclick="applyCustomTimer()">Set</button>
+      </div>
+    </div>
+    <div class="opt-card">
+      <div class="oc-left">
+        <div class="oc-icon" style="color:var(--purple)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 17v2h14v-2H5zm4.5-4.2h5l.9 2.2h2.1L12.75 4h-1.5L6.5 15h2.1l.9-2.2zM12 5.98L13.87 11h-3.74L12 5.98z"/></svg></div>
+        <div><div class="oc-title">Font Size</div><div class="oc-sub">Adjust question text size</div></div>
+      </div>
+      <div class="font-btns">
+        <div class="fb" data-sz="sm" onclick="setFontSize('sm')">A</div>
+        <div class="fb on" data-sz="md" onclick="setFontSize('md')">A</div>
+        <div class="fb" data-sz="lg" onclick="setFontSize('lg')" style="font-size:17px">A</div>
+      </div>
+    </div>
+    <div class="opt-card" style="cursor:pointer;" onclick="showScr('settings')">
+      <div class="oc-left">
+        <div class="oc-icon" style="color:var(--warn)"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"/><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"/><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div><div class="oc-title">Exam Date & Notifications</div><div class="oc-sub" id="notif-sub">Set countdown & reminders</div></div>
+      </div>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+    </div>
   </div>
+        </section>
+      </div>
 
-  <div class="sec-h" data-guided-tools-heading><div class="sec-title"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--purple);margin-right:6px;"></i>AI Quiz Generator</div></div>
-  <div id="ai-generator-card" style="background:var(--surf);border-radius:var(--r16);margin:0 18px 18px;padding:16px;box-shadow:var(--sh);">
+      <div class="hv2-rail">
+        <div class="hv2-tools">
+          <div class="sec-h hv2-tools-head" data-guided-tools-heading><i class="fa-solid fa-bolt" aria-hidden="true"></i><div class="sec-title">Quick Tools</div></div>
+
+          <div id="flashcards-card" class="tool">
+            <button type="button" class="tool-row" onclick="openFlashcards()">
+              <span class="tool-ico ti-violet"><i class="fa-solid fa-layer-group" aria-hidden="true"></i></span>
+              <span class="tool-t"><b>Flashcards</b><small id="fc-due-badge"></small></span>
+              <i class="fa-solid fa-chevron-right tool-go" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div id="missed-card" class="tool" style="display:none;">
+            <button type="button" class="tool-row" onclick="startMissedReview()">
+              <span class="tool-ico ti-red"><i class="fa-solid fa-xmark" aria-hidden="true"></i></span>
+              <span class="tool-t"><b>Questions you missed</b><small id="missed-sub"></small></span>
+              <i class="fa-solid fa-chevron-right tool-go" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div id="guess-card" class="tool" style="display:none;">
+            <button type="button" class="tool-row" onclick="startGuessReview()">
+              <span class="tool-ico ti-amber"><i class="fa-solid fa-dice" aria-hidden="true"></i></span>
+              <span class="tool-t"><b>Questions you guessed</b><small id="guess-sub"></small></span>
+              <i class="fa-solid fa-chevron-right tool-go" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div id="invite-card" class="tool" style="display:none;">
+            <div class="tool-row">
+              <span class="tool-ico ti-green"><i class="fa-solid fa-user-group" aria-hidden="true"></i></span>
+              <span class="tool-t"><b>Study with friends</b><small>Get bonus credits</small></span>
+              <span class="tool-acts">
+                <button type="button" class="tool-mini" onclick="inviteWhatsApp()" aria-label="Invite on WhatsApp"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i></button>
+                <button type="button" class="tool-mini" onclick="inviteCopy()" aria-label="Copy invite link"><i class="fa-solid fa-link" aria-hidden="true"></i></button>
+              </span>
+            </div>
+          </div>
+
+          <div id="weak-topics-card" class="tool" style="display:none;">
+            <button type="button" class="tool-row" onclick="startWeakTopicQuiz()">
+              <span class="tool-ico ti-amber"><i class="fa-solid fa-chart-column" aria-hidden="true"></i></span>
+              <span class="tool-t"><b>Practice Weak Topics</b><small id="weak-topics-sub"></small></span>
+              <i class="fa-solid fa-chevron-right tool-go" aria-hidden="true"></i>
+            </button>
+            <div id="weak-topics-list" class="tool-list"></div>
+          </div>
+
+          <div id="written-launch-card" class="tool">
+            <button type="button" class="tool-row" onclick="PhqShell.go('/written')">
+              <span class="tool-ico ti-blue"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i></span>
+              <span class="tool-t"><b>Written Exam <em class="tool-new">New</em></b><small>Theory questions, marked by AI</small></span>
+              <i class="fa-solid fa-chevron-right tool-go" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div id="ai-generator-card" class="tool tool-ai">
+            <button type="button" class="tool-row" id="ai-tool-toggle" aria-expanded="false" aria-controls="ai-body" onclick="toggleAiTool()">
+              <span class="tool-ico ti-slate"><i class="fa-solid fa-robot" aria-hidden="true"></i></span>
+              <span class="tool-t"><b>AI Quiz Generator</b><small><span id="ai-cost-sub">5</span> credits per quiz</small></span>
+              <i class="fa-solid fa-chevron-down tool-go" aria-hidden="true"></i>
+            </button>
+            <div class="ai-body" id="ai-body" hidden>
     <div style="font-size:12.5px;color:var(--t3);margin-bottom:12px;">Generate a fresh set of questions for any course with AI. Costs <b id="ai-quiz-cost">5</b> credits per quiz. Questions the AI writes for you may be reviewed by Wreddi and added to the practice bank (questions made from notes you paste are never shared).</div>
     <div style="display:flex;gap:8px;margin-bottom:10px;">
       <input id="ai-course-input" placeholder="Course code e.g. CHM142" style="flex:1;min-width:0;padding:12px;border-radius:12px;border:none;background:var(--fill);font-size:14px;font-weight:600;color:var(--t1);outline:none;box-shadow:var(--sh-in-sm);" autocapitalize="characters">
@@ -946,111 +1106,24 @@ body .cg{gap:14px;}
     <button class="btn-grad" id="ai-quiz-btn" style="width:100%;padding:13px;border-radius:12px;color:var(--purple);font-weight:700;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;" onclick="generateAIQuiz()">
       <i class="fa-solid fa-bolt"></i> Generate Quiz
     </button>
-  </div>
+            </div>
+          </div>
 
-  <div id="flashcards-card" style="margin:0 18px 16px;background:var(--surf);border-radius:var(--r16);padding:16px;box-shadow:var(--sh),0 0 0 2px var(--brand-lt);">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-      <i class="fa-solid fa-layer-group" style="color:var(--brand);"></i>
-      <div style="font-weight:700;font-size:14px;font-family:var(--ff-h);">Flashcards</div>
-      <span id="fc-due-badge" style="margin-left:auto;font-size:11px;font-weight:700;color:var(--brand);background:var(--surf);box-shadow:var(--sh-sm);padding:3px 9px;border-radius:var(--r8);"></span>
-    </div>
-    <div style="font-size:12.5px;color:var(--t3);margin-bottom:12px;">Spaced-repetition review of your registered courses — weak cards resurface sooner.</div>
-    <button class="btn-grad" style="width:100%;padding:12px;border-radius:11px;color:var(--brand);font-weight:600;font-size:13px;cursor:pointer;" onclick="openFlashcards()">Review Flashcards</button>
-  </div>
-
-  <div id="missed-card" style="display:none;margin:0 18px 16px;background:var(--surf);border-radius:var(--r16);padding:16px;box-shadow:var(--sh);box-shadow:var(--sh),0 0 0 2px var(--no-lt);">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-      <i class="fa-solid fa-rotate-left" style="color:var(--no);"></i>
-      <div style="font-weight:700;font-size:14px;font-family:var(--ff-h);">Questions you missed</div>
-    </div>
-    <div id="missed-sub" style="font-size:12.5px;color:var(--t3);margin-bottom:12px;"></div>
-    <button class="btn-grad" style="width:100%;padding:12px;border-radius:11px;color:var(--no);font-weight:600;font-size:13px;cursor:pointer;" onclick="startMissedReview()">Review them now</button>
-  </div>
-
-  <div id="guess-card" style="display:none;margin:0 18px 16px;background:var(--surf);border-radius:var(--r16);padding:16px;box-shadow:var(--sh),0 0 0 2px rgba(255,194,77,.55);">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-      <span style="font-size:16px;">🎲</span>
-      <div style="font-weight:700;font-size:14px;font-family:var(--ff-h);">Questions you guessed</div>
-    </div>
-    <div id="guess-sub" style="font-size:12.5px;color:var(--t3);margin-bottom:12px;"></div>
-    <button class="btn-grad" style="width:100%;padding:12px;border-radius:11px;font-weight:600;font-size:13px;cursor:pointer;" onclick="startGuessReview()">Learn them for real</button>
-  </div>
-
-  <div id="invite-card" style="display:none;margin:0 18px 16px;background:var(--surf);border-radius:var(--r16);padding:16px;box-shadow:var(--sh);">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-      <i class="fa-solid fa-user-plus" style="color:var(--brand);"></i>
-      <div style="font-weight:700;font-size:14px;font-family:var(--ff-h);">Study with friends</div>
-    </div>
-    <div style="font-size:12.5px;color:var(--t3);margin-bottom:12px;">Friends who join with your link earn you bonus credits.</div>
-    <div style="display:flex;gap:8px;">
-      <button class="btn-grad" style="flex:1;padding:11px;border-radius:11px;color:var(--ok);font-weight:600;font-size:13px;cursor:pointer;" onclick="inviteWhatsApp()"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
-      <button class="btn-grad" style="flex:1;padding:11px;border-radius:11px;color:var(--brand);font-weight:600;font-size:13px;cursor:pointer;" onclick="inviteCopy()"><i class="fa-solid fa-link"></i> Copy link</button>
-    </div>
-  </div>
-
-  <div id="weak-topics-card" style="display:none;margin:0 18px 16px;background:var(--surf);border-radius:var(--r16);padding:16px;box-shadow:var(--sh),0 0 0 2px var(--no-lt);">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-      <i class="fa-solid fa-crosshairs" style="color:var(--no);"></i>
-      <div style="font-weight:700;font-size:14px;font-family:var(--ff-h);">Practice Weak Topics</div>
-    </div>
-    <div id="weak-topics-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;"></div>
-    <button class="btn-grad" style="width:100%;padding:12px;border-radius:11px;color:var(--no);font-weight:600;font-size:13px;cursor:pointer;" onclick="startWeakTopicQuiz()">Start Focused Quiz</button>
-  </div>
-
-  <div class="sec-h" data-guided-options-heading><div class="sec-title">Options</div></div>
-  <div id="guided-options-list" style="display:flex;flex-direction:column;gap:12px;padding-bottom:4px;">
-    <div class="opt-card timer-card">
-      <div class="oc-left">
-        <div class="oc-icon" style="color:var(--teal)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg></div>
-        <div>
-          <div class="oc-title">Session Timer</div>
-          <div class="oc-sub" id="timer-sub-lbl">Off</div>
+          <button type="button" class="wrapped-promo" onclick="PhqShell.go('/wrapped')">
+            <span class="wp-t"><b>Wreddi Wrapped</b><small>Your semester recap</small><span class="wp-btn">View <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span></span>
+            <svg class="gift-art" viewBox="0 0 120 110" aria-hidden="true"><defs><linearGradient id="gf1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF9BD2"/><stop offset="1" stop-color="#C45CF0"/></linearGradient><linearGradient id="gf2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD66B"/><stop offset="1" stop-color="#F59E2B"/></linearGradient></defs><ellipse cx="60" cy="102" rx="44" ry="6" fill="#000" opacity=".18"/><rect x="18" y="46" width="84" height="54" rx="8" fill="url(#gf1)"/><rect x="12" y="34" width="96" height="20" rx="7" fill="#E27BF2"/><rect x="52" y="34" width="16" height="66" fill="url(#gf2)"/><path d="M60 34c-6-20-28-22-26-10 2 10 18 10 26 10zM60 34c6-20 28-22 26-10-2 10-18 10-26 10z" fill="url(#gf2)"/><circle cx="96" cy="22" r="3" fill="#fff" opacity=".8"/><circle cx="24" cy="18" r="2" fill="#fff" opacity=".6"/></svg>
+          </button>
         </div>
       </div>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <span style="font-size:12px;font-weight:600;color:var(--brand);background:var(--surf);padding:6px 11px;border-radius:var(--r8);cursor:pointer;box-shadow:var(--sh-sm);" id="timer-min-btn" onclick="cycleTimer()">10 min</span>
-        <button type="button" class="timer-edit-btn" onclick="toggleCustomTimer()" aria-label="Set custom minutes">
-          <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
-        </button>
-        <button class="toggle" id="timer-toggle" onclick="toggleTimer()"></button>
-      </div>
-      <div class="neu-inline-panel" id="custom-timer-wrap">
-        <input type="number" class="neu-inline-input" id="custom-timer-input" min="1" max="180" placeholder="Minutes for the whole session (1–180)" inputmode="numeric">
-        <button type="button" class="neu-inline-apply" onclick="applyCustomTimer()">Set</button>
-      </div>
     </div>
-    <div class="opt-card">
-      <div class="oc-left">
-        <div class="oc-icon" style="color:var(--purple)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 17v2h14v-2H5zm4.5-4.2h5l.9 2.2h2.1L12.75 4h-1.5L6.5 15h2.1l.9-2.2zM12 5.98L13.87 11h-3.74L12 5.98z"/></svg></div>
-        <div><div class="oc-title">Font Size</div><div class="oc-sub">Adjust question text size</div></div>
-      </div>
-      <div class="font-btns">
-        <div class="fb" data-sz="sm" onclick="setFontSize('sm')">A</div>
-        <div class="fb on" data-sz="md" onclick="setFontSize('md')">A</div>
-        <div class="fb" data-sz="lg" onclick="setFontSize('lg')" style="font-size:17px">A</div>
-      </div>
-    </div>
-    <div class="opt-card" style="cursor:pointer;" onclick="showScr('settings')">
-      <div class="oc-left">
-        <div class="oc-icon" style="color:var(--warn)"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"/><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"/><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/></svg></div>
-        <div><div class="oc-title">Exam Date & Notifications</div><div class="oc-sub" id="notif-sub">Set countdown & reminders</div></div>
-      </div>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-    </div>
-  </div>
-
-  <div class="start-wrap">
-    <button class="btn-grad" id="start-btn" onclick="startQuiz()">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-      Start Quiz
-    </button>
   </div>
 </div>
+
 
 <!-- ═══ HISTORY ══════════════════════════════════════════════ -->
 <div id="study" class="scr">
   <div class="sub-topbar">
-    <button class="back-btn" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+    <button class="back-btn" aria-label="Back to home" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
     <div class="scr-title">Study Plan</div>
   </div>
   <div id="study-body" style="flex:1;display:flex;flex-direction:column;overflow-y:auto;padding:4px 16px 110px;gap:12px;"></div>
@@ -1058,7 +1131,7 @@ body .cg{gap:14px;}
 
 <div id="exam-overview" class="scr">
   <div class="sub-topbar">
-    <button class="back-btn" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+    <button class="back-btn" aria-label="Back to home" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
     <div class="scr-title">Exam History &amp; Readiness</div>
   </div>
   <div id="exam-ov-body" style="flex:1;display:flex;flex-direction:column;overflow-y:auto;padding:4px 16px 110px;gap:12px;"></div>
@@ -1066,7 +1139,7 @@ body .cg{gap:14px;}
 
 <div id="course-notes" class="scr">
   <div class="sub-topbar">
-    <button class="back-btn" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+    <button class="back-btn" aria-label="Back to home" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
     <div class="scr-title">Course Notes</div>
   </div>
   <div id="cn-body" style="flex:1;display:flex;flex-direction:column;overflow-y:auto;padding:4px 16px 110px;gap:12px;"></div>
@@ -1074,7 +1147,7 @@ body .cg{gap:14px;}
 
 <div id="achievements" class="scr">
   <div class="sub-topbar">
-    <button class="back-btn" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+    <button class="back-btn" aria-label="Back to home" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
     <div class="scr-title">Achievements</div>
   </div>
   <div id="ach-body" style="flex:1;display:flex;flex-direction:column;overflow-y:auto;padding:4px 16px 110px;gap:12px;"></div>
@@ -1082,7 +1155,7 @@ body .cg{gap:14px;}
 
 <div id="history" class="scr">
   <div class="sub-topbar">
-    <button class="back-btn" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+    <button class="back-btn" aria-label="Back to home" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
     <div class="scr-title">Quiz History</div>
   </div>
   <div id="hist-body" style="flex:1;display:flex;flex-direction:column;"></div>
@@ -1091,7 +1164,7 @@ body .cg{gap:14px;}
 <!-- ═══ BOOKMARKS ════════════════════════════════════════════ -->
 <div id="bookmarks" class="scr">
   <div class="sub-topbar">
-    <button class="back-btn" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+    <button class="back-btn" aria-label="Back to home" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
     <div class="scr-title">Bookmarks</div>
   </div>
   <div id="bmarks-body" style="flex:1;display:flex;flex-direction:column;overflow-y:auto;"></div>
@@ -1100,7 +1173,7 @@ body .cg{gap:14px;}
 <!-- ═══ NOTES ════════════════════════════════════════════════ -->
 <div id="notes-screen" class="scr">
   <div class="sub-topbar">
-    <button class="back-btn" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+    <button class="back-btn" aria-label="Back to home" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
     <div class="scr-title">Study Notes</div>
   </div>
   <div id="notes-body" style="flex:1;display:flex;flex-direction:column;overflow-y:auto;"></div>
@@ -1110,7 +1183,7 @@ body .cg{gap:14px;}
 <!-- ═══ FLASHCARDS ══════════════════════════════════════════════ -->
 <div id="flashcards" class="scr">
   <div class="sub-topbar">
-    <button class="back-btn" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+    <button class="back-btn" aria-label="Back to home" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
     <div class="scr-title"><i class="fa-solid fa-layer-group" style="margin-right:6px;"></i>Flashcards</div>
     <button class="back-btn" style="margin-left:auto;color:var(--brand);" title="Generate flashcards for a course" onclick="openFlashcardGenerate()"><i class="fa-solid fa-wand-magic-sparkles" style="font-size:15px;"></i></button>
     <div class="qt-badge" id="fc-badge">0/0</div>
@@ -1132,7 +1205,7 @@ body .cg{gap:14px;}
 
 <div id="performance" class="scr">
   <div class="sub-topbar">
-    <button class="back-btn" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+    <button class="back-btn" aria-label="Back to home" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
     <div class="scr-title">Performance</div>
   </div>
   <div style="flex:1;overflow-y:auto;">
@@ -1146,7 +1219,7 @@ body .cg{gap:14px;}
 <!-- ═══ SETTINGS ═════════════════════════════════════════════ -->
 <div id="settings" class="scr">
   <div class="sub-topbar">
-    <button class="back-btn" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+    <button class="back-btn" aria-label="Back to home" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
     <div class="scr-title">Settings</div>
   </div>
   <div style="padding:16px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;">
@@ -1203,7 +1276,7 @@ body .cg{gap:14px;}
       <div id="settings-course-list" style="font-size:12.5px;color:var(--t1);line-height:1.7;margin-bottom:12px;">—</div>
       <div style="display:flex;align-items:center;justify-content:space-between;">
         <div style="font-size:14px;font-weight:600;color:var(--t1);">Show all courses instead</div>
-        <button class="toggle" id="show-all-courses-toggle" onclick="toggleShowAllCourses()"></button>
+        <button class="toggle" id="show-all-courses-toggle" role="switch" aria-label="Show all courses" onclick="toggleShowAllCourses()"></button>
       </div>
     </div>
     <div style="background:var(--surf);border-radius:var(--r16);padding:18px;box-shadow:var(--sh);">
@@ -1221,7 +1294,7 @@ body .cg{gap:14px;}
       <div style="font-size:13px;color:var(--t3);margin-bottom:14px;">Get a notification to remind you to study each day.</div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
         <div style="font-size:14px;font-weight:600;color:var(--t1);">Enable reminders</div>
-        <button class="toggle" id="notif-toggle" onclick="toggleNotif()"></button>
+        <button class="toggle" id="notif-toggle" role="switch" aria-label="Study reminders" onclick="toggleNotif()"></button>
       </div>
       <div class="f-group" style="margin-bottom:0;display:none;" id="notif-time-wrap">
         <div class="f-label">Reminder Time</div>
@@ -1250,7 +1323,7 @@ body .cg{gap:14px;}
 <!-- ═══ SAVED QUIZZES ═══════════════════════════════════════════ -->
 <div id="saved-quizzes" class="scr">
   <div class="sub-topbar">
-    <button class="back-btn" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+    <button class="back-btn" aria-label="Back to home" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
     <div class="scr-title"><i class="fa-solid fa-bookmark" style="margin-right:6px;"></i>Saved Quizzes</div>
   </div>
   <div id="saved-quizzes-list" style="padding-top:8px;"></div>
@@ -1259,7 +1332,7 @@ body .cg{gap:14px;}
 <!-- ═══ NOTIFICATIONS ═══════════════════════════════════════════ -->
 <div id="notifications" class="scr">
   <div class="sub-topbar">
-    <button class="back-btn" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+    <button class="back-btn" aria-label="Back to home" onclick="showScr('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
     <div class="scr-title"><i class="fa-solid fa-bell" style="margin-right:6px;"></i>Notifications</div>
   </div>
   <div id="notif-list" style="padding-top:8px;"></div>
@@ -1270,7 +1343,7 @@ body .cg{gap:14px;}
   <div class="quiz-topbar">
     <div class="qt-r1">
       <div class="qt-left">
-        <button class="back-btn" onclick="confirmBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+        <button class="back-btn" aria-label="Back" onclick="confirmBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
         <span class="qt-title" id="qt-title">Quiz</span>
       </div>
       <div class="qt-right">
@@ -1286,7 +1359,7 @@ body .cg{gap:14px;}
     <div class="quiz-btns">
       <button class="qbtn skip mini" id="qbtn-flag" onclick="toggleReview()" title="Flag for review (F)" aria-label="Flag for review"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg></button>
       <button class="qbtn skip mini" id="qbtn-grid" onclick="openGrid()" title="Question grid (G)" aria-label="Question grid"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 0h8v8h-8z"/></svg></button>
-      <button class="qbtn skip" id="qbtn-skip" onclick="skipQ()">
+      <button class="qbtn skip" id="qbtn-skip" aria-label="Skip question" onclick="skipQ()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zm8.5-6L23 18V6z"/></svg>
       </button>
       <button class="qbtn main" id="qbtn-main" disabled onclick="mainAct()">
@@ -1305,7 +1378,7 @@ body .cg{gap:14px;}
       <div style="font-size:12px;color:var(--t3);" id="res-sub">—</div>
       <div style="font-size:12px;font-weight:700;color:var(--brand);display:none;" id="r-time"></div>
     </div>
-    <button class="back-btn" onclick="goHome()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></button>
+    <button class="back-btn" aria-label="Home" onclick="goHome()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></button>
   </div>
   <div class="score-hero pop-in">
     <div class="sh-lbl">Your Score</div>
@@ -1543,7 +1616,6 @@ body .cg{gap:14px;}
       <button class="btn-grad" style="width:100%;" id="ps-submit-btn" onclick="profileSetupNext()">Continue</button>
     </div>
     <div id="ps-cancel-btn" style="display:none;text-align:center;margin-top:10px;font-size:13px;color:var(--t3);cursor:pointer;" onclick="document.getElementById('m-profile-setup').classList.remove('on')">Cancel</div>
-    <div id="ps-secondary-link" style="display:none;text-align:center;margin-top:12px;font-size:13px;font-weight:700;color:var(--brand);cursor:pointer;" onclick="goSecondaryFromSetup()">I'm in secondary school or writing JAMB, WAEC or NECO</div>
   </div>
 </div>
 
@@ -1854,12 +1926,13 @@ async function bootFromSession(){
     if(window.PhqShell) PhqShell.start(); // opens /contests, /profile, ... if that's the URL
     // v1.11: a student who set up Secondary lands there on login (only when they opened the plain home URL).
     if(window.PhqShell && data.track === 'secondary' && /^\/(dashboard)?\/?$/.test(location.pathname)) PhqShell.go('/secondary', { replace: true });
-    (function(){ const t = document.getElementById('sec-home-text'), c = document.getElementById('sec-home-cta');
-      if(data.track === 'secondary'){ t.textContent = 'Your Secondary prep (JAMB · WAEC · NECO)'; c.textContent = 'Open'; } })();
+    // v1.12: accounts belong to one app. Secondary accounts live in /secondary; university accounts never see it.
+    (function(){ const card = document.getElementById('sec-home-card'); if(card) card.style.display = data.track === 'secondary' ? 'flex' : 'none';
+      if(data.track !== 'secondary' && location.pathname === '/secondary' && window.PhqShell) PhqShell.go('/dashboard', { replace: true }); })();
     if(window.PhqBrainiac) PhqBrainiac.start(); // v1.8.3 floating companion
     populateWallet(data);
     loadPlanBanner();
-    loadNotifications();
+    loadNotifications(false);
     if(data.needsUsername) openUsernameModal();
     else if(data.needsProfileCompletion) openProfileSetupModal();
     else {
@@ -1973,15 +2046,9 @@ async function openProfileSetupModal(editMode=false){
   renderProfileSetupCourses();
   const cnt = document.getElementById('ps-course-count'); if(cnt) cnt.textContent = psSelectedCourses.length + ' selected';
   document.getElementById('ps-cancel-btn').style.display = 'none';
-  document.getElementById('ps-secondary-link').style.display = editMode ? 'none' : 'block';
   profileSetupStep = editMode ? 0 : (!curUser.university ? 0 : !curUser.department ? 1 : !(curUser.selectedCourses || []).length ? 2 : 3);
   renderProfileSetupStep();
   document.getElementById('m-profile-setup').classList.add('on');
-}
-function goSecondaryFromSetup(){
-  // Secondary students never fill university / department / courses. Their own setup (inside /secondary) clears this prompt.
-  document.getElementById('m-profile-setup').classList.remove('on');
-  PhqShell.go('/secondary');
 }
 function renderProfileSetupCourses(filterTerm=''){
   const list = document.getElementById('ps-course-list');
@@ -2214,13 +2281,21 @@ function copyReferralCode(){
   navigator.clipboard?.writeText(link);
 }
 
-async function loadNotifications(){
+// Unread count -> the bell in the top bar and the Notifications link in the desktop sidebar.
+function syncNotifBadges(n){
+  n = Number(n) || 0;
+  const txt = n > 99 ? '99+' : String(n);
+  ['tb-bell-n','nest-notif-n'].forEach(id => { const el = document.getElementById(id); if(!el) return; el.textContent = txt; el.hidden = n <= 0; });
+}
+// markRead=false at start-up: the list is fetched for the count, but nothing is marked read until the student opens Notifications.
+async function loadNotifications(markRead = true){
   try{
     const r = await PhqAuth.authFetch('/api/notifications', {}, 'student');
     if(!r.ok) return;
     const {notifications, unreadCount} = await r.json();
     const badge = document.getElementById('notif-badge');
     if(badge) badge.style.display = unreadCount > 0 ? 'block' : 'none';
+    syncNotifBadges(markRead === false ? unreadCount : 0);
     const list = document.getElementById('notif-list');
     if(!list) return;
     if(notifications.length === 0){
@@ -2233,7 +2308,7 @@ async function loadNotifications(){
         <div style="font-size:12.5px;color:var(--t3);margin-top:2px;">${escapeHtml(n.message||'')}</div>
         <div style="font-size:11px;color:var(--t4);margin-top:4px;">${new Date(n.createdAt).toLocaleString()}</div>
       </div>`).join('');
-    PhqAuth.authFetch('/api/notifications/read-all', {method:'POST'}, 'student').catch(()=>{});
+    if(markRead !== false) PhqAuth.authFetch('/api/notifications/read-all', {method:'POST'}, 'student').catch(()=>{});
   }catch(e){}
 }
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -2279,6 +2354,7 @@ async function loadWeakTopics(){
     const card = document.getElementById('weak-topics-card');
     if(!weakTopics.length){ card.style.display = 'none'; return; }
     card.style.display = 'block';
+    { const ws = document.getElementById('weak-topics-sub'); if(ws) ws.textContent = `${Math.min(...weakTopics.map(t => Number(t.accuracy) || 0))}% on ${weakTopics.length} topic${weakTopics.length === 1 ? '' : 's'}`; }
     document.getElementById('weak-topics-list').innerHTML = weakTopics.map(t => `
       <div style="display:flex;align-items:center;justify-content:space-between;font-size:12.5px;">
         <span style="color:var(--t2);font-weight:600;">${escapeHtml(t.courseCode || COURSES[t.course]?.code || t.course)} — ${escapeHtml(t.tag)}</span>
@@ -2355,7 +2431,7 @@ async function loadCourses(){
     if(Array.isArray(list) && list.length){
       const next = {};
       list.forEach(c=>{
-        next[c.key] = { name:c.courseTitle, color:c.color||'#3E5C8A', code:c.courseCode, icon:c.icon||'star' };
+        next[c.key] = { name:c.courseTitle, color:c.color||'#3A35D6', code:c.courseCode, icon:c.icon||'star' };
       });
       COURSES = next;
       ALL_COURSES = next;
@@ -2382,6 +2458,7 @@ async function loadPlanBanner(){
     const r = await PhqAuth.authFetch('/api/usage/limits', {}, 'student');
     if(!r.ok) return;
     const u = await r.json();
+    document.documentElement.dataset.tier = u.tier === 'free' ? 'free' : 'premium';   // desktop sidebar shows "Upgrade to Premium" on free only
     const icon = document.getElementById('plan-banner-icon');
     const text = document.getElementById('plan-banner-text');
     const cta = document.getElementById('plan-banner-cta');
@@ -2442,6 +2519,7 @@ async function updateStreakProgress(count){
 async function initHome(){
   const init=curUser.matric.replace(/[^A-Z]/g,'').slice(0,2)||'FU';
   document.getElementById('tb-avatar').textContent=init;
+  { const av = document.getElementById('tb-acct-av'); if(av) av.textContent = String(curUser.name || curUser.matric || 'S').trim().charAt(0).toUpperCase(); }
   document.getElementById('tb-name').textContent=curUser.matric;
   document.getElementById('menu-user-lbl').textContent=curUser.matric;
   document.getElementById('menu-matric').textContent=curUser.name||curUser.matric;
@@ -2519,6 +2597,7 @@ async function buildCourseGrid(){
   addTile.onclick=()=>openCourseEditor();
   grid.appendChild(addTile);
   applyCourseGridView();
+  syncHeroChip();
 
   const counts = await loadCourseCounts();
   Object.keys(COURSES).forEach(key => {
@@ -2599,6 +2678,23 @@ function toggleCourse(el,key){
     el.classList.remove('on');selCourses=selCourses.filter(c=>c!==key);
   } else {el.classList.add('on');selCourses.push(key);}
   document.getElementById('sel-badge').textContent=selCourses.length+' selected';
+  syncHeroChip();
+}
+
+// Course code on the hero banner follows the first selected course.
+function syncHeroChip(){
+  const el = document.getElementById('hero-chip-code'); if(!el) return;
+  const k = selCourses && selCourses[0];
+  const code = k && ((COURSES[k] && COURSES[k].code) || k);
+  el.textContent = code ? code + (selCourses.length > 1 ? ' +' + (selCourses.length - 1) : '') : 'Pick a course';
+}
+
+// Top-bar search drives the same filter as the search box inside the course card.
+function topbarSearch(v){
+  const inner = document.getElementById('course-search');
+  if(inner) inner.value = v;
+  filterCourseGrid(v);
+  if(v) document.getElementById('course-step-heading')?.scrollIntoView({ behavior:'smooth', block:'center' });
 }
 
 // ── Course grid: only the first few courses show until the arrow is tapped ──────────────────────────
@@ -2811,7 +2907,11 @@ async function loadMissedCard(force){
   const paint = n => {
     card.style.display = n ? '' : 'none';
     const due = HOME_MEMO.missedDue || 0;
-    if(n) document.getElementById('missed-sub').textContent = `${n}${n === 30 ? '+' : ''} question${n === 1 ? '' : 's'} you got wrong last time. ` + (due ? `${due} ${due === 1 ? 'is' : 'are'} due for review now (they come back after 1, 3 and 7 days).` : 'Get them right to clear them.');
+    if(n){
+      const sub = document.getElementById('missed-sub');
+      sub.textContent = `${n}${n === 30 ? '+' : ''} question${n === 1 ? '' : 's'}` + (due ? ` · ${due} due now` : '');
+      sub.title = 'Questions you got wrong last time. Get them right to clear them; they come back after 1, 3 and 7 days.';
+    }
   };
   if(!force && HOME_MEMO.missedN != null && Date.now() - HOME_MEMO.missedAt < 20000){ paint(HOME_MEMO.missedN); return; }
   const n = await singleFlight('missed', async () => {
@@ -2849,7 +2949,7 @@ async function submitGuessFlags(){
 async function loadGuessCard(force){
   const card = document.getElementById('guess-card'); if(!card) return;
   if(!curUser || !hasFeature('practiceQuestions')){ card.style.display = 'none'; return; }
-  const paint = n => { card.style.display = n ? '' : 'none'; if(n) document.getElementById('guess-sub').textContent = `${n}${n === 30 ? '+' : ''} question${n === 1 ? '' : 's'} you weren't sure about. Answer them without guessing to clear them.`; };
+  const paint = n => { card.style.display = n ? '' : 'none'; if(n){ const s = document.getElementById('guess-sub'); s.textContent = `${n}${n === 30 ? '+' : ''} question${n === 1 ? '' : 's'} you weren't sure about`; s.title = 'Answer them without guessing to clear them.'; } };
   if(!force && HOME_MEMO.guessN != null && Date.now() - HOME_MEMO.guessAt < 20000){ paint(HOME_MEMO.guessN); return; }
   let n = 0;
   try{ const r = await PhqAuth.authFetch('/api/guesses', {}, 'student'); const d = r.ok ? await r.json() : null; n = d && Number.isFinite(d.count) ? d.count : 0; }catch(e){}
@@ -3712,10 +3812,10 @@ async function shareResultCard(text){
     const W=1080,H=1350,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
     const css=getComputedStyle(document.documentElement), v=n=>css.getPropertyValue(n).trim();
     x.fillStyle=v('--bg')||'#e0e5ec';x.fillRect(0,0,W,H);
-    const g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,v('--brand')||'#3E5C8A');g.addColorStop(1,v('--purple')||'#5D7FB0');
+    const g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,v('--brand')||'#3A35D6');g.addColorStop(1,v('--purple')||'#6C63F0');
     x.fillStyle=g;x.beginPath();x.roundRect?x.roundRect(90,170,W-180,760,56):x.rect(90,170,W-180,760);x.fill();
     const F="'Bricolage Grotesque',system-ui,sans-serif";x.textAlign='center';
-    x.fillStyle=v('--brand')||'#3E5C8A';x.font=`800 48px ${F}`;x.fillText('Wreddi',W/2,120);
+    x.fillStyle=v('--brand')||'#3A35D6';x.font=`800 48px ${F}`;x.fillText('Wreddi',W/2,120);
     x.fillStyle='#fff';x.font=`700 34px ${F}`;x.globalAlpha=.85;x.fillText('MY RESULT',W/2,270);x.globalAlpha=1;
     x.font=`800 260px ${F}`;x.fillText(document.getElementById('r-pct').textContent,W/2,560);
     x.font=`700 54px ${F}`;x.fillText(document.getElementById('r-score').textContent+' '+document.getElementById('r-denom').textContent+' correct',W/2,660);
@@ -4054,6 +4154,7 @@ async function refreshFlashcardBadge(){
     if(!r.ok){ badge.textContent = ''; return; }
     const d = await r.json();
     badge.textContent = d.dueCount > 0 ? `${d.dueCount} due` : 'All caught up';
+    badge.classList.toggle('is-due', d.dueCount > 0);
   }catch(e){ badge.textContent = ''; }
 }
 
@@ -4275,7 +4376,7 @@ function renderBookmarks(){
     <div class="bcard" style="animation-delay:${i*.04}s">
       <div class="bcard-head">
         <div class="bcard-q"><span style="font-size:10px;font-weight:700;color:${cm_col(b.course)};margin-right:5px;">${cm_code(b.course)}</span>${b.q}</div>
-        <button class="bcard-rm" onclick="removeBmark(${i})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="18" height="18"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        <button class="bcard-rm" aria-label="Remove bookmark" onclick="removeBmark(${i})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="18" height="18"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
       </div>
       <div class="bcard-ans"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>${String.fromCharCode(65+b.ans)}. ${b.opts[b.ans]}</div>
       ${b.exp?`<div class="bcard-exp">${b.exp}</div>`:''}
@@ -4313,7 +4414,7 @@ function renderNotes(){
   }
   body.innerHTML=`<div class="notes-list">${entries.map(([id,note],i)=>`
     <div class="note-card" style="animation-delay:${i*.04}s">
-      <div class="nc-q"><button class="nc-del" onclick="deleteNote('${id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="16" height="16"><path d="M18 6L6 18M6 6l12 12"/></svg></button>${id.split('_').slice(1).join('_').slice(0,80)}...</div>
+      <div class="nc-q"><button class="nc-del" aria-label="Delete note" onclick="deleteNote('${id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="16" height="16"><path d="M18 6L6 18M6 6l12 12"/></svg></button>${id.split('_').slice(1).join('_').slice(0,80)}...</div>
       <div class="nc-note">${note}</div>
     </div>`).join('')}
   </div>`;
@@ -4554,8 +4655,15 @@ function studyAction(i){
   showScr('home');
   toast(it.type==='exam' ? 'Choose Exam mode, then start your mock exam' : 'Pick a mode and start practising');
 }
+function toggleAiTool(force){
+  const btn = document.getElementById('ai-tool-toggle'), body = document.getElementById('ai-body'); if(!btn || !body) return;
+  const open = typeof force === 'boolean' ? force : body.hidden;
+  body.hidden = !open;
+  btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
 function aiDrill(course, tag){
   showScr('home');
+  toggleAiTool(true);
   const c = document.getElementById('ai-course-input'), t = document.getElementById('ai-topic-input');
   if(c) c.value = (COURSES[course] && COURSES[course].code) || course.toUpperCase();
   if(t) t.value = tag;
@@ -4822,7 +4930,7 @@ function renderAutopilot(p){
   if(!p || !p.items || !p.items.length){ wrap.style.display = 'none'; return; }
   wrap.style.display = '';
   const canVoice = !!(window.PhqVoiceQuiz && PhqVoiceQuiz.supported());
-  const icon = { drill:'🎯', missed:'♻️', flashcards:'🗂️', practice:'📚' };
+  const icon = { drill:'<i class="fa-solid fa-bullseye"></i>', missed:'<i class="fa-solid fa-rotate-left"></i>', flashcards:'<i class="fa-solid fa-layer-group"></i>', practice:'<i class="fa-solid fa-book-open"></i>' };
   document.getElementById('ap-min').textContent = p.budgetMin || 15;
   document.getElementById('ap-headline').textContent = p.allDone ? 'All done for today 🎉' : p.headline;
   document.getElementById('ap-count').textContent = `${p.doneCount}/${p.total} done`;
@@ -4830,9 +4938,9 @@ function renderAutopilot(p){
   const voiceable = it => it.type === 'drill' || it.type === 'practice' || it.type === 'missed';
   document.getElementById('ap-list').innerHTML = p.items.map((it, i) => `
     <div class="ap-item ${it.done ? 'done' : ''}">
-      <div class="np-check ${it.done ? 'on' : ''}">${it.done ? '✓' : (icon[it.type] || '•')}</div>
+      <div class="np-check ${it.done ? 'on' : ''}">${it.done ? '<i class="fa-solid fa-check"></i>' : (icon[it.type] || '•')}</div>
       <div style="flex:1;min-width:0;"><div class="ap-t">${escapeHtml(it.title)}</div><div class="ap-d">${escapeHtml(it.detail || '')}</div></div>
-      <div class="ap-min">${it.minutes} min</div>
+      <div class="ap-min"><i class="fa-regular fa-clock" aria-hidden="true"></i> ${it.minutes} min</div>
       ${it.done ? '' : `${canVoice && voiceable(it) ? `<button class="ap-voice" title="Do this hands-free" aria-label="Do this by voice" onclick="autopilotVoice(${i})">🎧</button>` : ''}<button class="np-btn" onclick="autopilotAction(${i})">Start</button>`}
     </div>`).join('') + (p.allDone ? `<div class="ap-done">🔥 ${p.streak || 0}-day streak. See you tomorrow.</div>` : '');
 }
@@ -4970,5 +5078,6 @@ bootFromSession();
 <script src="/js/chem-speech.js" defer></script>
 <script src="/js/voice-quiz.js" defer></script>
 <script src="/js/listen.js" defer></script>
+<script src="/js/a11y.js" defer></script>
 </body>
 </html>

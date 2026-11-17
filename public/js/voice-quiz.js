@@ -226,23 +226,23 @@
   .vq-count{font-size:12.5px;font-weight:800;color:var(--t3,#7a8296);}
   .vq-x{border:none;background:var(--bg,#e0e5ec);box-shadow:var(--sh,4px 4px 10px #b8c0cc,-4px -4px 10px #fff);width:36px;height:36px;border-radius:50%;cursor:pointer;color:var(--t2,#4a5568);font-size:15px;}
   .vq-bar{height:6px;margin:0 18px;border-radius:99px;background:var(--surf3,#d1d9e6);overflow:hidden;}
-  .vq-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--brand,#3E5C8A),var(--purple,#5D7FB0));transition:width .3s;}
+  .vq-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--brand,#3A35D6),var(--purple,#6C63F0));transition:width .3s;}
   .vq-body{flex:1;overflow:auto;padding:16px 18px;max-width:640px;width:100%;margin:0 auto;}
   .vq-q{font-size:19px;font-weight:700;line-height:1.45;margin:6px 0 16px;}
   .vq-opt{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;border:none;background:var(--bg,#e0e5ec);box-shadow:var(--sh,4px 4px 10px #b8c0cc,-4px -4px 10px #fff);border-radius:14px;padding:13px 14px;margin-bottom:10px;font:inherit;font-size:15px;color:inherit;cursor:pointer;}
-  .vq-opt b{flex:0 0 26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12.5px;background:var(--brand-lt,rgba(62,92,138,.12));color:var(--brand,#3E5C8A);}
+  .vq-opt b{flex:0 0 26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12.5px;background:var(--brand-lt,rgba(62,92,138,.12));color:var(--brand,#3A35D6);}
   .vq-opt.ok{box-shadow:0 0 0 2px var(--ok,#2d9c6e);} .vq-opt.no{box-shadow:0 0 0 2px var(--no,#d14545);}
   .vq-opt:disabled{cursor:default;}
   .vq-fb{min-height:22px;font-size:14px;line-height:1.5;color:var(--t2,#4a5568);margin-top:4px;}
   .vq-bottom{padding:10px 18px 18px;text-align:center;}
-  .vq-orb{width:72px;height:72px;border-radius:50%;border:none;cursor:pointer;color:#fff;font-size:26px;background:linear-gradient(140deg,var(--brand,#3E5C8A),var(--purple,#5D7FB0));box-shadow:0 8px 22px var(--brand-glow,rgba(62,92,138,.3));}
+  .vq-orb{width:72px;height:72px;border-radius:50%;border:none;cursor:pointer;color:#fff;font-size:26px;background:linear-gradient(140deg,var(--brand,#3A35D6),var(--purple,#6C63F0));box-shadow:0 8px 22px var(--brand-glow,rgba(62,92,138,.3));}
   .vq-orb.live{animation:vq-pulse 1.1s ease-in-out infinite;} .vq-orb.say{opacity:.75;}
   @keyframes vq-pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.09);}}
   .vq-status{font-size:13.5px;font-weight:800;margin:10px 0 2px;min-height:19px;}
   .vq-hint{font-size:11.5px;color:var(--t3,#7a8296);line-height:1.5;}
   .vq-ctl{display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap;}
   .vq-ctl button{border:none;cursor:pointer;font:inherit;font-size:12.5px;font-weight:800;padding:9px 16px;border-radius:99px;background:var(--bg,#e0e5ec);color:var(--t2,#4a5568);box-shadow:var(--sh,4px 4px 10px #b8c0cc,-4px -4px 10px #fff);}
-  .vq-sum{text-align:center;padding:30px 10px;} .vq-sum .big{font-size:44px;font-weight:800;color:var(--brand,#3E5C8A);}
+  .vq-sum{text-align:center;padding:30px 10px;} .vq-sum .big{font-size:44px;font-weight:800;color:var(--brand,#3A35D6);}
   `;
 
   const S = { ov: null, qs: [], i: 0, results: [], run: 0, open: false, lang: 'en-NG', rec: null, deliver: null, sttOk: !!SR, paused: false,
@@ -270,7 +270,7 @@
     if (TTS) { const lv = () => { try { S.voices = TTS.getVoices() || []; } catch (e) { S.voices = []; } }; lv(); TTS.onvoiceschanged = lv; }
   }
   const $ = id => document.getElementById(id);
-  const status = (t, cls) => { const el = $('vq-status'); if (el) { el.textContent = t || ''; el.style.color = cls === 'err' ? 'var(--no,#d14545)' : cls === 'live' ? 'var(--brand,#3E5C8A)' : ''; } };
+  const status = (t, cls) => { const el = $('vq-status'); if (el) { el.textContent = t || ''; el.style.color = cls === 'err' ? 'var(--no,#d14545)' : cls === 'live' ? 'var(--brand,#3A35D6)' : ''; } };
   const alive = run => S.open && run === S.run;
   const deliver = r => { const d = S.deliver; if (d) { S.deliver = null; d(r); } };
   const sleep = ms => new Promise(r => setTimeout(r, ms));

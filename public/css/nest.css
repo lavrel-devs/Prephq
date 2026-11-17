@@ -1,0 +1,73 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Wreddi v1.12 — "workspace" layer (loaded after hybrid.css on the signed-in app)
+   Desktop: a full-height left sidebar (logo, labelled nav, account card), a calm off-white canvas and
+   white bordered cards, like a modern SaaS dashboard. Phones keep the floating tab bar unchanged.
+   Colours still come from tokens.css (--brand etc.), so a brand change is a one-token edit.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.nest-brand, .nest-user, .nest-sep, .nest-spacer, .nest-upgrade, .nest-links, .nest-wrapped { display: none; }
+
+@media (min-width: 1024px) {
+  :root { --page-w: 1120px; --side-w: 258px; }
+
+  html, body { background: var(--bg); }
+  body::before { content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(1200px 420px at 70% -160px, var(--brand-lt), transparent 70%); }
+
+  /* ── Sidebar ─────────────────────────────────────────── */
+  body.has-glass-nav { padding-left: var(--side-w); padding-bottom: 0; }
+  .glass-nav {
+    left: 0; top: 0; bottom: 0; transform: none;
+    width: var(--side-w); box-sizing: border-box;
+    flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 4px;
+    padding: 22px 14px 16px;
+    border-radius: 0;
+    background: var(--surf);
+    backdrop-filter: none; -webkit-backdrop-filter: none;
+    box-shadow: none; border-right: 1px solid var(--bd);
+    overflow-y: auto;
+  }
+  [data-theme=dark] .glass-nav { box-shadow: none; }
+
+  .nest-brand { display: flex; align-items: center; gap: 10px; padding: 2px 10px 20px; text-decoration: none; color: var(--t1); }
+  .nest-brand img { width: 34px; height: 34px; border-radius: 10px; }
+  .nest-brand b { font-family: var(--ff-h); font-size: 22px; font-weight: 700; letter-spacing: -.02em; }
+
+  .glass-nav-item {
+    flex: 0 0 auto; flex-direction: row; justify-content: flex-start; gap: 14px;
+    padding: 11px 14px; border-radius: 10px; color: var(--t3);
+  }
+  .glass-nav-item::before { border-radius: 10px; transform: none; transition: opacity .15s; }
+  .glass-nav-item:hover::before { opacity: 1; background: var(--fill); }
+  .glass-nav-item.on:hover::before, .glass-nav-item.on::before { background: var(--brand-lt); }
+  .glass-nav-item i, .glass-nav-item svg { width: 20px; height: 20px; flex: 0 0 20px; }
+  .glass-nav-item.on svg, .glass-nav-item.on i { transform: none; }
+  .glass-nav-item span { font-size: 14.5px; font-weight: 500; letter-spacing: 0; max-width: none; }
+  .glass-nav-item.on { color: var(--brand); }
+  .glass-nav-item.on span { font-weight: 600; }
+  .glass-nav-badge { top: 12px; left: 28px; }
+
+  .nest-user {
+    text-decoration: none;
+    display: flex; align-items: center; gap: 10px; margin-top: auto;
+    padding: 10px 12px; border: 1px solid var(--bd); border-radius: 12px; background: var(--surf);
+  }
+  .nest-user .av { width: 32px; height: 32px; border-radius: 50%; background: var(--brand-lt); color: var(--brand); display: grid; place-items: center; font-weight: 700; font-size: 13px; flex: 0 0 auto; }
+  .nest-user .nm { font-size: 13.5px; font-weight: 600; color: var(--t1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .nest-user .sb { font-size: 11.5px; color: var(--t4); }
+
+  /* ── Content canvas ──────────────────────────────────── */
+  body .scr { max-width: var(--page-w); margin: 0 auto; background: transparent; box-shadow: none; }
+  body .scr.on { padding-bottom: 40px; }
+  body .quiz-actions, body .sheet { max-width: var(--page-w); }
+  body .topbar { background: transparent; box-shadow: none; border-bottom: 0; backdrop-filter: none; -webkit-backdrop-filter: none; padding-top: 18px; padding-bottom: 10px; }
+
+  /* White bordered cards, 12px radius, no heavy shadows */
+  body [class*="card"], body .stat, body .st-card, body .cg > *, body .mode-row > * { border-radius: 12px; }
+  body .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; overflow: visible; }
+  body .stats-row > * { background: var(--surf); border: 1px solid var(--bd); border-radius: 12px; box-shadow: none; padding: 18px 20px; }
+  body .cg { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+  body .modal-bg .modal, body .sheet { border-radius: 14px; }
+  body .btn-grad, body .qbtn.main { border-radius: 10px; }
+}
+
+@media (min-width: 1500px) { :root { --page-w: 1240px; } }

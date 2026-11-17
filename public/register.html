@@ -3,7 +3,7 @@
 <head>
 <script src="/js/theme.js"></script>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f2f2f7">
 <title>Wreddi — Register</title>
 <link rel="stylesheet" href="/vendor/fonts.css">
@@ -254,7 +254,11 @@ body{
 }
 .pw-wrap{position:relative;display:flex;align-items:center;}
 .pw-wrap input{width:100%;padding-right:74px;box-sizing:border-box;}
-.pw-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:transparent;color:var(--brand,#3E5C8A);font-weight:700;font-size:12px;padding:8px 10px;cursor:pointer;border-radius:10px;font-family:inherit;}
+.pw-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:transparent;color:var(--brand,#3A35D6);font-weight:700;font-size:12px;padding:8px 10px;cursor:pointer;border-radius:10px;font-family:inherit;}
+.trk-opts{display:grid;gap:10px;margin-top:6px;}
+.trk-opt{text-align:left;border:1px solid var(--bd);background:var(--surf);border-radius:12px;padding:14px 16px;cursor:pointer;font-family:inherit;color:var(--t1);display:flex;flex-direction:column;gap:2px;}
+.trk-opt b{font-size:15px;} .trk-opt span{font-size:12.5px;color:var(--t3);}
+.trk-opt.on{border-color:var(--brand);background:var(--brand-lt);box-shadow:0 0 0 1px var(--brand);}
 </style>
 <link rel="stylesheet" href="/css/hybrid.css">
 <script src="/js/ripple.js" defer></script>
@@ -287,6 +291,15 @@ body{
       <span id="reg-err-msg">Error</span>
     </div>
 
+    <div class="fg" id="fg-track">
+      <label>I am a *</label>
+      <input id="r-track" type="hidden" value="">
+      <div class="trk-opts">
+        <button type="button" class="trk-opt" id="trk-university" onclick="pickTrack('university')"><b>University student</b><span>Courses, past questions, GPA tools</span></button>
+        <button type="button" class="trk-opt" id="trk-secondary" onclick="pickTrack('secondary')"><b>Secondary / JAMB</b><span>JAMB, WAEC, NECO and school exams</span></button>
+      </div>
+      <div class="hint">This can’t be changed later. A university account and a JAMB account are separate, each with its own login.</div>
+    </div>
     <div class="fg">
       <label>Your name *</label>
       <input id="r-name" type="text" placeholder="e.g. Ada Okafor" autocomplete="name" maxlength="80">
@@ -381,20 +394,37 @@ body{
   if(ref) document.getElementById('r-referral').value = ref.toUpperCase();
 })();
 
-const regFieldOrder = ['r-name','r-university','r-department','r-matric','r-username','r-phone','r-whatsapp','r-pass','r-pass2','r-referral'];
-const regPrompts = [
-  'What should we call you?', 'Which university or school do you attend?', 'What department are you in?',
-  'What is your matric number?', 'Choose a username for your account.', 'What phone number can we reach you on?',
-  'What is your WhatsApp number?', 'Create a password for your account.', 'Confirm your password.',
-  'Do you have a referral code? (Optional)'
-];
+const ALL_FIELDS = ['r-track','r-name','r-university','r-department','r-matric','r-username','r-phone','r-whatsapp','r-pass','r-pass2','r-referral'];
+const regPromptsById = {
+  'r-track': 'Which account do you need?', 'r-name': 'What should we call you?',
+  'r-university': 'Which university or school do you attend?', 'r-department': 'What department are you in?',
+  'r-matric': 'What is your matric number?', 'r-username': 'Choose a username for your account.',
+  'r-phone': 'What phone number can we reach you on?', 'r-whatsapp': 'What is your WhatsApp number?',
+  'r-pass': 'Create a password for your account.', 'r-pass2': 'Confirm your password.', 'r-referral': 'Do you have a referral code? (Optional)'
+};
+// v1.12: Secondary / JAMB accounts skip the department step; the track is chosen first and can't be changed afterwards.
+let regFieldOrder = ALL_FIELDS.slice();
+function rebuildOrder() {
+  const sec = document.getElementById('r-track').value === 'secondary';
+  regFieldOrder = ALL_FIELDS.filter(id => !(sec && id === 'r-department'));
+  const lab = (id, t) => { const l = document.getElementById(id).closest('.fg').querySelector('label'); if (l) l.textContent = t; };
+  lab('r-university', sec ? 'Your school *' : 'University or school *');
+  lab('r-matric', sec ? 'JAMB registration number or student ID *' : 'Matric Number *');
+  regPromptsById['r-university'] = sec ? 'Which school are you in?' : 'Which university or school do you attend?';
+  regPromptsById['r-matric'] = sec ? 'What is your JAMB registration number or student ID?' : 'What is your matric number?';
+}
+function pickTrack(t) {
+  document.getElementById('r-track').value = t;
+  ['university','secondary'].forEach(k => document.getElementById('trk-' + k).classList.toggle('on', k === t));
+  rebuildOrder(); showRegStep();
+}
 let regStep = 0;
 function showRegStep() {
-  regFieldOrder.forEach((id, i) => { document.getElementById(id).closest('.fg').style.display = i === regStep ? 'block' : 'none'; });
+  ALL_FIELDS.forEach(id => { document.getElementById(id).closest('.fg').style.display = id === regFieldOrder[regStep] ? 'block' : 'none'; });
   const last = regStep === regFieldOrder.length - 1;
   document.getElementById('reg-step-count').textContent = `Step ${regStep + 1} of ${regFieldOrder.length}`;
   document.getElementById('reg-progress-fill').style.width = `${((regStep + 1) / regFieldOrder.length) * 100}%`;
-  document.getElementById('reg-question').textContent = regPrompts[regStep];
+  document.getElementById('reg-question').textContent = regPromptsById[regFieldOrder[regStep]];
   document.getElementById('reg-back').hidden = regStep === 0;
   document.getElementById('reg-legal').style.display = last ? 'block' : 'none';
   document.getElementById('reg-btn').innerHTML = last ? 'Create my account' : 'Continue';
@@ -422,6 +452,7 @@ async function checkRegUsernameNow() {
 async function regNext() {
   const id = regFieldOrder[regStep], value = document.getElementById(id).value.trim();
   document.getElementById('reg-err').classList.remove('on');
+  if (id === 'r-track' && !value) { regError('Please choose which account you need.'); return; }
   if (id !== 'r-referral' && !value) { regError('Please fill this in so we can continue.'); document.getElementById(id).focus(); return; }
   if (id === 'r-name' && value.length < 2) { regError('Please enter a name with at least 2 characters.'); return; }
   if (id === 'r-username' && !(await checkRegUsernameNow())) return;
@@ -433,9 +464,10 @@ async function regNext() {
   document.getElementById(regFieldOrder[regStep]).focus();
 }
 function regBack() { if (regStep > 0) { regStep--; document.getElementById('reg-err').classList.remove('on'); showRegStep(); document.getElementById(regFieldOrder[regStep]).focus(); } }
-regFieldOrder.forEach(id => document.getElementById(id).addEventListener('keydown', event => {
+ALL_FIELDS.filter(id => id !== 'r-track').forEach(id => document.getElementById(id).addEventListener('keydown', event => {
   if (event.key === 'Enter') { event.preventDefault(); regNext(); }
 }));
+(function(){ const as = new URLSearchParams(location.search).get('as'); if (as === 'secondary' || as === 'university') { document.getElementById('r-track').value = as; document.getElementById('trk-' + as).classList.add('on'); rebuildOrder(); } })();
 showRegStep();
 
 // Real-time username availability check, debounced as the user types.
@@ -474,8 +506,9 @@ function checkRegUsername() {
 
 async function doRegister() {
   const name     = document.getElementById('r-name').value.trim();
+  const track = document.getElementById('r-track').value === 'secondary' ? 'secondary' : 'university';
   const university = document.getElementById('r-university').value.trim();
-  const department = document.getElementById('r-department').value.trim();
+  const department = track === 'secondary' ? '' : document.getElementById('r-department').value.trim();
   const matric   = document.getElementById('r-matric').value.trim().toUpperCase();
   const username = document.getElementById('r-username').value.trim().toLowerCase();
   const phone    = document.getElementById('r-phone').value.trim();
@@ -489,6 +522,7 @@ async function doRegister() {
 
   errEl.classList.remove('on');
 
+  if (!document.getElementById('r-track').value) { errMsg.textContent = 'Please choose which account you need.'; errEl.classList.add('on'); return; }
   if (!name || !matric || !username || !phone || !whatsapp) {
     errMsg.textContent = 'All fields are required.';
     errEl.classList.add('on'); return;
@@ -517,7 +551,7 @@ async function doRegister() {
     const r = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, university, department, matric, username, phone, whatsapp, password, referralCode: referralCode || undefined }),
+      body: JSON.stringify({ track, name, university, department, matric, username, phone, whatsapp, password, referralCode: referralCode || undefined }),
     });
     const d = await r.json();
 
@@ -531,7 +565,7 @@ async function doRegister() {
 
     // Show success
     document.getElementById('s-matric').textContent = d.matric;
-    document.getElementById('s-url').textContent    = window.location.origin;
+    document.getElementById('s-url').textContent    = window.location.origin + (track === 'secondary' ? '  (use the Secondary / JAMB tab)' : '');
     document.getElementById('reg-form').style.display = 'none';
     document.getElementById('success').style.display  = 'block';
 
@@ -562,5 +596,6 @@ function checkPwMatch() {
 function goLogin() { let pending = false; try { pending = !!localStorage.getItem('phq_next'); } catch (e) {} window.location.href = pending ? '/login.html' : '/'; }
 
 </script>
+<script src="/js/a11y.js" defer></script>
 </body>
 </html>

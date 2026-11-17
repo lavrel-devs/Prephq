@@ -71,7 +71,7 @@ assert.deepStrictEqual(secondaryMeta({ year: 1500 }), {}, 'implausible years are
 
 // ── the question filter: general questions (no exam / class) are always allowed; tagged ones only for their exam ──
 // stubs go in BEFORE the routes are loaded: the route file destructures these at require time
-const authMw = require(path.join(ROOT, 'src/middleware/auth.js')); authMw.requireStudent = (req, res, next) => { req.student = { sub: 'TEST001' }; next(); };
+const authMw = require(path.join(ROOT, 'src/middleware/auth.js')); authMw.requireStudent = (req, res, next) => { req.student = { sub: 'TEST001' }; next(); }; authMw.requireTrack = () => (req, res, next) => next();   // the real track gate is covered by tracklock.test.js
 const ent = require(path.join(ROOT, 'src/services/entitlements.service.js')); let locked = null; ent.requireFeature = key => (req, res, next) => locked === key ? res.status(403).json({ code: 'FEATURE_LOCKED', feature: key }) : next();
 const tier = require(path.join(ROOT, 'src/services/tier.service.js')); let capLeft = Infinity; tier.checkDailyLimit = async (st, kind, n) => { if (n > capLeft) { const e = new Error('Daily question limit reached'); e.code = 'LIMIT_REACHED'; e.limit = capLeft; e.used = 0; e.tier = 'free'; throw e; } return {}; };
 const routes = require(path.join(ROOT, 'src/routes/secondary.routes.js'));
@@ -101,7 +101,7 @@ Question.aggregate = pipe => {
   const src = JSON.stringify(m || {}, (k, v) => (v instanceof RegExp ? v.source : v)), course = Object.keys(pools).find(k => src.toLowerCase().includes('^(' + k));   // RegExp has no JSON form, so use its source
   return Promise.resolve(sample && course ? pools[course].slice(0, sample.$sample.size) : []);
 };
-let saved = null; const student = { matric: 'TEST001', track: 'university', secondary: undefined, save: async function () { saved = JSON.parse(JSON.stringify(this)); }, profileCompleted: false };
+let saved = null; const student = { matric: 'TEST001', track: 'secondary', secondary: undefined, save: async function () { saved = JSON.parse(JSON.stringify(this)); }, profileCompleted: false };
 Student.findOne = () => query(student);
 Score.find = () => query([]); QA.aggregate = () => Promise.resolve([]);
 
@@ -143,9 +143,8 @@ const srv = app.listen(0, async () => {
     student.secondary = { exam: 'waec', subjects: ['seceng'], toObject() { return { exam: 'waec', subjects: ['seceng'] }; } };
     r = await call('/paper?exam=jamb&kind=mock'); assert.strictEqual(r.status, 400); assert.strictEqual(r.body.code, 'NEEDS_SETUP');
 
-    // switching back to the university app re-opens its setup prompt when it was never done
-    r = await call('/track', 'PUT', { track: 'university' }); assert.strictEqual(r.body.needsProfileCompletion, true); assert.strictEqual(saved.track, 'university');
-    r = await call('/track', 'PUT', { track: 'moon' }); assert.strictEqual(r.status, 400);
+    // v1.12: nobody can switch apps themselves any more
+    r = await call('/track', 'PUT', { track: 'university' }); assert.strictEqual(r.status, 403); assert.strictEqual(r.body.code, 'TRACK_LOCKED');
     console.log('secondary: grading, JAMB 180Q/400 scoring, subject rules, filters, bulk metadata, setup and paper routes OK');
     srv.close(); process.exit(0);
   } catch (e) { console.error(e); srv.close(); process.exit(1); }

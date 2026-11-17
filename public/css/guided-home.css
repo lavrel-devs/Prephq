@@ -1,35 +1,46 @@
 /* Guided study flow — structure and spacing only; all color is inherited from existing theme tokens. */
+/* v1.13: everything below is for phones and tablets. From 1024px up the Home screen is laid out by css/dashboard-v2.css. */
+@media (max-width: 1023.98px) {
 #home {
   --guided-gutter: clamp(16px, 4vw, 28px);
   padding-bottom: calc(var(--nav-space) + 34px);
   gap: 0;
 }
 
-#home > * { order: 50; }
+/* v1.13: the Home screen is wrapped in layout containers (.hv2-*) for the desktop grid (css/dashboard-v2.css).
+   Below 1024px those wrappers are display:contents, so every card is again a direct flex item of #home and this
+   order list gives the same phone layout as before. */
+#home .hv2, #home .hv2-notices, #home .hv2-top, #home .hv2-plan, #home .hv2-body, #home .hv2-main,
+#home .hv2-pick, #home .hv2-course, #home .hv2-session, #home .hv2-opts, #home .hv2-rail, #home .hv2-tools,
+#home #goal-card-wrap, #home #voice-card { display: contents; }
+
+#home :is(.hv2-notices, .hv2-top, .hv2-plan, .hv2-main, .hv2-course, .hv2-session, .hv2-opts, .hv2-tools) > * { order: 50; }
 #home > .topbar { order: 0; }
-#home > #plan-banner { order: 1; }
-#home > .home-hero { order: 2; }
-#home > #onboard-card { order: 3; }
-#home > #course-step-heading { order: 4; }
-#home > #course-search-wrap { order: 5; }
-#home > #course-grid { order: 6; }
-#home > #course-more { order: 7; }
-#home > #mode-step-heading { order: 8; }
-#home > .mode-row { order: 9; }
-#home > #qty-step-heading { order: 10; }
-#home > .qty-wrap { order: 11; }
-#home > .start-wrap { order: 12; }
-#home > #exam-banner-wrap { order: 13; }
-#home > #goal-card-wrap { order: 14; }
-#home > #autopilot-wrap { order: 15; }
-#home > #voice-card { order: 16; }
-#home > .stats-row { order: 17; }
-#home > #flashcards-card { order: 18; }
-#home > #missed-card, #home > #guess-card, #home > #weak-topics-card { order: 19; }
-#home > #invite-card { order: 20; }
-#home > #written-launch-card { order: 21; }
-#home > [data-guided-tools-heading], #home > #ai-generator-card { order: 22; }
-#home > [data-guided-options-heading], #home > #guided-options-list { order: 23; }
+#home #plan-banner { order: 1; }
+#home .hv2-hero, #home .hero-copy { order: 2; }
+#home #onboard-card { order: 3; }
+#home #course-step-heading { order: 4; }
+#home #course-search-wrap { order: 5; }
+#home #course-grid { order: 6; }
+#home #course-more { order: 7; }
+#home #mode-step-heading { order: 8; }
+#home .mode-row { order: 9; }
+#home #qty-step-heading { order: 10; }
+#home .qty-wrap { order: 11; }
+#home .start-wrap { order: 12; }
+#home #exam-banner-wrap { order: 13; }
+#home .goal-card { order: 14; }
+#home #autopilot-wrap { order: 15; }
+#home .hv2-drills { order: 15; }
+#home .voice-banner { order: 16; }
+#home .stats-row { order: 17; }
+#home #flashcards-card { order: 18; }
+#home #missed-card, #home #guess-card, #home #weak-topics-card { order: 19; }
+#home #invite-card { order: 20; }
+#home #written-launch-card { order: 21; }
+#home .hv2-tools-head, #home #ai-generator-card { order: 22; }
+#home .hv2-opts > .sec-h, #home #guided-options-list { order: 23; }
+#home .wrapped-promo { order: 24; }
 
 #home .topbar {
   position: sticky;
@@ -184,7 +195,7 @@
 #home #invite-card,
 #home #ai-generator-card { margin-inline: var(--guided-gutter) !important; }
 
-@media (min-width: 700px) {
+@media (min-width: 700px) and (max-width: 1023.98px) {
   #home { max-width: 900px; margin-inline: auto; }
   #home .topbar { padding-inline: 30px; }
   #home .home-hero { padding-inline: 30px; }
@@ -208,4 +219,5 @@
 
 @media (prefers-reduced-motion: reduce) {
   #home .cc, #home .mode-btn, #home .start-wrap .btn-grad { transition: none; }
+}
 }

@@ -225,6 +225,12 @@ router.put('/students/:matric', async (req, res) => {
       if (typeof active !== 'boolean') return res.status(400).json({ error: 'active must be a boolean' });
       update.active = active;
     }
+    // v1.12: students can't switch apps themselves; an admin can move an account that was created in the wrong one.
+    if (req.body.track !== undefined) {
+      if (!['university', 'secondary'].includes(req.body.track)) return res.status(400).json({ error: 'track must be university or secondary' });
+      update.track = req.body.track;
+      if (req.body.track === 'secondary') update.profileCompleted = true;
+    }
 
     const matric = req.params.matric.toUpperCase();
     const r = await Student.updateOne({ matric }, update);
@@ -233,6 +239,7 @@ router.put('/students/:matric', async (req, res) => {
     // Suspending here must cut off live sessions too (the dedicated
     // /users/:matric/status endpoint already did; this one didn't).
     // A changed password also signs out existing devices.
+    if (update.track) forgetSubject('student', matric);
     if (update.active === false || update.passwordHash) {
       await Session.updateMany({ subjectId: matric, role: 'student', revoked: { $ne: true } }, { revoked: true, revokedAt: new Date() });
       forgetSubject('student', matric);

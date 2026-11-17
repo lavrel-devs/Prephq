@@ -62,9 +62,9 @@ async function isSessionAllowed(payload) {
   }
   if (ok) {
     if (payload.role === 'student') {
-      const st = await Student.findOne({ matric: payload.sub }).select('active mustChangePassword').lean();
+      const st = await Student.findOne({ matric: payload.sub }).select('active mustChangePassword track').lean();
       ok = !!st && st.active !== false;
-      if (ok) flags = { mustChange: st.mustChangePassword === true };
+      if (ok) flags = { mustChange: st.mustChangePassword === true, track: st.track === 'secondary' ? 'secondary' : 'university' };
     } else if (payload.role === 'admin') {
       const a = await Admin.findOne({ username: payload.sub }).select('active fullAccess permissions isOwner').lean();
       ok = !!a && a.active !== false;
@@ -136,6 +136,24 @@ async function requireStudent(req, res, next) {
   next();
 }
 
+// v1.12: a student account belongs to ONE app. A university account can't use the Secondary (JAMB / WAEC / NECO) app and a
+// Secondary account can't use the university one, even with a valid token. The track comes from the same 30s cache as the
+// session check, so this costs no extra database read.
+function requireTrack(track) {
+  return function (req, res, next) {
+    const p = req.student;
+    const hit = p && allowCache.get(`${p.role}:${p.sub}:${p.sid || ''}`);
+    const mine = (hit && hit.flags && hit.flags.track) || 'university';
+    if (mine === track) return next();
+    return res.status(403).json({
+      error: track === 'secondary'
+        ? 'This is a university account. The Secondary / JAMB app needs its own account.'
+        : 'This is a Secondary / JAMB account. It can only use the Secondary app.',
+      code: 'WRONG_TRACK', track: mine,
+    });
+  };
+}
+
 // Protects admin routes. Accepts EITHER:
 //   a) Authorization: Bearer <admin JWT>   (used by admin.html going forward)
 //   b) x-admin-key: <ADMIN_KEY from .env>  (legacy, kept alive for
@@ -189,4 +207,4 @@ function adminGate(req, res, next) {
   return res.status(403).json({ error: "You don't have permission to do that", code: 'FORBIDDEN_AREA' });
 }
 
-module.exports = { adminGate, requireStudent, requireAdmin, getBearerToken, isSessionAllowed, forgetSubject, safeEqual };
+module.exports = { adminGate, requireStudent, requireTrack, requireAdmin, getBearerToken, isSessionAllowed, forgetSubject, safeEqual };

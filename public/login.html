@@ -4,7 +4,7 @@
 <head>
 <script src="/js/theme.js"></script>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#f2f2f7">
 <link rel="manifest" href="/manifest.json">
@@ -227,7 +227,7 @@ body{
     </div>
     <button class="btn-grad" id="s-btn" onclick="studentLogin()"><i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In</button>
     <div style="font-size:11.5px;color:var(--t3);line-height:1.55;margin:12px 2px 0;text-align:center;">By signing in you agree to our <a href="/terms" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600;">Terms &amp; Conditions</a> and <a href="/privacy" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600;">Privacy Policy</a> (and our other <a href="/legal" target="_blank" rel="noopener" style="color:var(--brand);font-weight:600;">policies</a>), and you consent to how we use your information.</div>
-    <div class="foot">New student? <a href="/register.html">Create a free account</a></div>
+    <div class="foot">New here? <a href="/register.html" id="reg-link">Create a free account</a></div>
   </form>
 
   <!-- ADMIN FORM -->
@@ -274,6 +274,7 @@ function switchTab(which){
   params.set('as', which);
   history.replaceState(null, '', `${location.pathname}?${params.toString()}`);
   clearErr();
+  const rl = document.getElementById('reg-link'); if(rl) rl.href = which === 'secondary' ? '/register.html?as=secondary' : '/register.html';
 }
 const requestedMode = new URLSearchParams(location.search).get('as');
 switchTab(requestedMode === 'secondary' ? 'secondary' : requestedMode === 'admin' ? 'admin' : 'university');
@@ -295,17 +296,19 @@ async function studentLogin(){
     const deviceFingerprint = await PhqAuth.getDeviceFingerprint();
     const res = await fetch('/api/auth/login', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ matric, password, deviceFingerprint })
+      body: JSON.stringify({ matric, password, deviceFingerprint, audience: loginMode === 'secondary' ? 'secondary' : 'university' })
     });
     const data = await res.json();
     if(!res.ok){
       showErr(data.error || 'Invalid credentials');
+      // v1.12: right password, wrong app — send them to the tab that fits instead of letting them into the other one.
+      if(data.code === 'WRONG_TRACK'){ const other = data.track === 'secondary' ? 'secondary' : 'university'; document.getElementById('err-msg').insertAdjacentHTML('beforeend', ` <a href="#" onclick="switchTab('${other}');return false;" style="color:var(--brand);font-weight:700;white-space:nowrap;">Go to the ${other === 'secondary' ? 'Secondary / JAMB' : 'University'} tab</a>`); btn.disabled=false; return; }
       // A wrong sign-in is often just someone who never registered — point them at sign-up (not an account check).
       if(res.status === 401) document.getElementById('err-msg').insertAdjacentHTML('beforeend', ' <a href="/register.html" style="color:var(--brand);font-weight:700;white-space:nowrap;">New here? Create an account</a>');
       btn.disabled=false; return;
     }
     PhqAuth.setSession({
-      role:'student', matric:data.matric, name:data.name, credits:data.credits,
+      role:'student', matric:data.matric, name:data.name, credits:data.credits, track:data.track,
       accessToken:data.accessToken, refreshToken:data.refreshToken,
       expiresInMin:data.expiresInMin, issuedAt: Date.now(),
     });
@@ -314,8 +317,8 @@ async function studentLogin(){
     }
     // An admin-issued temporary password must be replaced before the app can be used.
     window.location.href = data.mustChangePassword
-      ? loginMode === 'secondary' ? '/change-password?next=secondary' : '/change-password'
-      : loginMode === 'secondary' ? '/secondary' : PhqAuth.postLoginPath();
+      ? data.track === 'secondary' ? '/change-password?next=secondary' : '/change-password'
+      : data.track === 'secondary' ? '/secondary' : PhqAuth.postLoginPath();
   }catch(e){
     showErr('Cannot connect to server.');
     btn.disabled = false;
@@ -355,9 +358,10 @@ document.getElementById('a-pass').addEventListener('keydown', e=>{ if(e.key==='E
 (function(){
   const s = PhqAuth.getSession();
   if(s && s.accessToken){
-    window.location.href = s.role==='admin' ? '/admin.html' : loginMode === 'secondary' ? '/secondary' : PhqAuth.postLoginPath();
+    window.location.href = s.role==='admin' ? '/admin.html' : s.track === 'secondary' ? '/secondary' : PhqAuth.postLoginPath();
   }
 })();
 </script>
+<script src="/js/a11y.js" defer></script>
 </body>
 </html>

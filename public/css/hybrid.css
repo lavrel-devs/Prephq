@@ -371,3 +371,17 @@ body .scr:not(.view) {
     radial-gradient(ellipse 58rem 34rem at 100% 0%, var(--brand-lt), transparent 72%),
     radial-gradient(ellipse 46rem 30rem at 0% 100%, var(--purple-lt), transparent 74%);
 }
+
+/* ── v1.12.1 accessibility layer ───────────────────────────────────────── */
+.skip-link{position:absolute;left:12px;top:-60px;z-index:1000;background:var(--brand);color:var(--on-brand);padding:10px 16px;border-radius:10px;font-weight:700;text-decoration:none;transition:top .15s}
+.skip-link:focus{top:12px}
+/* text fields: a clear, non-colour-only focus ring (the old 8%-opacity ring failed 1.4.11) */
+body :is(input,textarea,select):focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+body :is(div,span,li)[role=button]:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+/* icon buttons: reach the 44px touch target without changing the icon size */
+body .ib{width:44px;height:44px}
+body .back-btn,body .bcard-rm,body .nc-del{min-width:44px;min-height:44px}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important}
+  .ripple,.rpl{display:none !important}
+}

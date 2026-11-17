@@ -67,9 +67,9 @@ async function drawCard(){
   const W = 1080, H = 1350, c = window.document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d');
   const css = getComputedStyle(window.document.documentElement), v = n => css.getPropertyValue(n).trim(), F = "'Bricolage Grotesque',system-ui,sans-serif";
   x.fillStyle = v('--bg') || '#e0e5ec'; x.fillRect(0, 0, W, H);
-  const g = x.createLinearGradient(0, 0, W, H); g.addColorStop(0, v('--brand') || '#3E5C8A'); g.addColorStop(1, v('--purple') || '#5D7FB0');
+  const g = x.createLinearGradient(0, 0, W, H); g.addColorStop(0, v('--brand') || '#3A35D6'); g.addColorStop(1, v('--purple') || '#6C63F0');
   x.fillStyle = g; x.beginPath(); x.roundRect ? x.roundRect(70, 150, W - 140, 1010, 56) : x.rect(70, 150, W - 140, 1010); x.fill();
-  x.textAlign = 'center'; x.fillStyle = v('--brand') || '#3E5C8A'; x.font = `800 48px ${F}`; x.fillText('Wreddi Wrapped', W / 2, 100);
+  x.textAlign = 'center'; x.fillStyle = v('--brand') || '#3A35D6'; x.font = `800 48px ${F}`; x.fillText('Wreddi Wrapped', W / 2, 100);
   x.fillStyle = '#fff'; x.globalAlpha = .85; x.font = `700 34px ${F}`; x.fillText((data.name ? data.name.toUpperCase() + "'S SEMESTER" : 'MY SEMESTER'), W / 2, 250); x.globalAlpha = 1;
   x.font = `800 230px ${F}`; x.fillText(data.answered.toLocaleString(), W / 2, 470);
   x.font = `700 46px ${F}`; x.fillText(`questions answered · ${data.accuracy}% correct`, W / 2, 545);

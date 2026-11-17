@@ -16,58 +16,60 @@
 
 :root {
   /* Surfaces */
-  --bg: #F8FAFC;
+  --bg: #F3F4FC;
   --surf: #ffffff;
-  --surf2: #F8FAFC;
-  --surf3: #F1F5F9;
-  --fill: #F1F5F9;
-  --fill2: #E2E8F0;
+  --surf2: #F7F8FE;
+  --surf3: #EEF0FB;
+  --fill: #F1F2FB;
+  --fill2: #E3E5F6;
   --bar: rgba(255,255,255,.94);          /* translucent tab/top bar (needs backdrop blur) */
   --bar-solid: #ffffff;                  /* same bar where blur is off (low-power / unsupported) */
   --scrim: rgba(0,0,0,.40);
-  --inv-bg: rgba(15,23,42,.94);          /* toast / snackbar */
+  --inv-bg: rgba(16,22,58,.95);          /* toast / snackbar */
   --inv-fg: #ffffff;
   /* Shadow tints (kept for the few places that use them as hairlines / drops) */
-  --sd: rgba(15,23,42,.12);
+  --sd: rgba(30,36,110,.12);
   --sl: rgba(255,255,255,.80);
 
   /* Brand + semantic colour */
-  --brand: #3E5C8A;
-  --brand-dk: #2F4A72;
-  --brand-lt: rgba(62,92,138,.08);       /* tonal container */
-  --brand-glow: rgba(62,92,138,.24);
+  --brand: #3A35D6;
+  --brand-dk: #2B27B5;
+  --brand-lt: rgba(58,53,214,.09);       /* tonal container */
+  --brand-glow: rgba(58,53,214,.26);
+  --royal: #2433C2;                      /* deepest blue: hero banner, the main Start button */
+  --royal-2: #3A2FB8;
   --on-brand: #ffffff;
-  --grad: #3E5C8A;   /* primary-action fill (flat in the minimal theme); white text sits on it */
-  --ok: #2d9c6e;
-  --ok-lt: rgba(45,156,110,.12);
-  --ok-bd: rgba(45,156,110,.30);
-  --no: #d14545;
-  --no-lt: rgba(209,69,69,.12);
-  --no-bd: rgba(209,69,69,.30);
-  --warn: #c67a1e;
+  --grad: #3A35D6;   /* primary-action fill (flat in the minimal theme); white text sits on it */
+  --ok: #217A57;
+  --ok-lt: rgba(33,122,87,.12);
+  --ok-bd: rgba(33,122,87,.30);
+  --no: #C03A3A;
+  --no-lt: rgba(192,58,58,.12);
+  --no-bd: rgba(192,58,58,.30);
+  --warn: #9A5B0B;
   --warn-lt: rgba(198,122,30,.12);
-  --purple: #5D7FB0;
-  --purple-lt: rgba(93,127,176,.12);
-  --teal: #2d9cb8;
+  --purple: #5B47D6;
+  --purple-lt: rgba(91,71,214,.12);
+  --teal: #1F7790;
   --teal-lt: rgba(45,156,184,.12);
-  --gold: #c79a1e;
-  --silver: #8a90a4;
-  --bronze: #a86a3a;
+  --gold: #8A6A0B;
+  --silver: #656B7E;
+  --bronze: #8F5428;
 
   /* Text — Apple label hierarchy */
-  --t1: #0F172A;
-  --t2: #334155;
-  --t3: #475569;
-  --t4: #64748B;
-  --bd: #E2E8F0;                          /* crisp separators and card borders */
-  --bd2: #CBD5E1;
+  --t1: #10163A;
+  --t2: #2B3257;
+  --t3: #4C5478;
+  --t4: #626C8C;
+  --bd: #E6E8F6;                          /* crisp separators and card borders */
+  --bd2: #D3D7EE;
   --qfont: 16px;
 
   /* Elevation (Material layering, Apple softness) */
-  --sh:    0 0 0 1px rgba(15,23,42,.035);
-  --sh-sm: 0 0 0 1px rgba(15,23,42,.035);
-  --sh-md: 0 0 0 1px rgba(15,23,42,.04), 0 4px 14px rgba(15,23,42,.06);
-  --sh-lg: 0 0 0 1px rgba(15,23,42,.04), 0 12px 36px rgba(15,23,42,.12);   /* sheets, menus, the tab bar */
+  --sh:    0 0 0 1px rgba(40,46,130,.05), 0 6px 22px rgba(40,46,130,.06);
+  --sh-sm: 0 0 0 1px rgba(40,46,130,.05);
+  --sh-md: 0 0 0 1px rgba(40,46,130,.05), 0 6px 18px rgba(40,46,130,.09);
+  --sh-lg: 0 0 0 1px rgba(40,46,130,.05), 0 14px 40px rgba(30,36,110,.16);   /* sheets, menus, the tab bar */
   /* Wells are filled, not shadowed. These stay valid box-shadow values so that lists such as
      "var(--sh-in), 0 0 0 2px var(--brand-lt)" in existing rules keep working. */
   --sh-in:    inset 0 0 0 0 transparent;
@@ -80,6 +82,7 @@
   --r16: 16px;
   --r20: 20px;
   --r24: 24px;
+  --r28: 28px;
   --rpill: 999px;
 
   /* Self-hosted DM Sans for the clean, readable hierarchy in the supplied visual reference. */
@@ -99,26 +102,28 @@
 
 [data-theme=dark] {
   /* Surfaces — layered slate, separated by tonal steps and a clear hairline. */
-  --bg: #0B1220;
-  --surf: #111827;
-  --surf2: #1E293B;
-  --surf3: #334155;
-  --fill: #1E293B;
-  --fill2: #334155;
-  --bar: rgba(17,24,39,.94);
-  --bar-solid: #111827;
+  --bg: #0B0E26;
+  --surf: #141839;
+  --surf2: #1B2048;
+  --surf3: #272D5E;
+  --fill: #1B2048;
+  --fill2: #272D5E;
+  --bar: rgba(20,24,57,.94);
+  --bar-solid: #141839;
   --scrim: rgba(0,0,0,.60);
   --inv-bg: rgba(241,245,249,.96);
   --inv-fg: #0F172A;
   --sd: rgba(0,0,0,.42);
   --sl: rgba(255,255,255,.04);
 
-  --brand: #7ba0d8;
-  --brand-dk: #a9c3ec;
-  --brand-lt: rgba(123,160,216,.13);
-  --brand-glow: rgba(123,160,216,.30);
-  --on-brand: #0b1626;
-  --grad: #4a72ad;   /* deeper than --brand so white text keeps contrast in dark mode */
+  --brand: #9399FF;
+  --brand-dk: #B9BDFF;
+  --brand-lt: rgba(147,153,255,.15);
+  --brand-glow: rgba(147,153,255,.32);
+  --royal: #2D3CD0;
+  --royal-2: #4A3CC8;
+  --on-brand: #0b0e26;
+  --grad: #4B49E0;   /* deeper than --brand so white text keeps contrast in dark mode */
   --ok: #3dba86;
   --ok-lt: rgba(61,186,134,.16);
   --ok-bd: rgba(61,186,134,.32);
@@ -127,20 +132,20 @@
   --no-bd: rgba(255,107,102,.32);
   --warn: #e8a04a;
   --warn-lt: rgba(232,160,74,.16);
-  --purple: #8EA9D6;
-  --purple-lt: rgba(142,169,214,.16);
+  --purple: #A99CFF;
+  --purple-lt: rgba(169,156,255,.17);
   --teal: #4db8d4;
   --teal-lt: rgba(77,184,212,.16);
   --gold: #e8b93a;
   --silver: #a5abc2;
   --bronze: #c47e42;
 
-  --t1: #F8FAFC;
-  --t2: #E2E8F0;
-  --t3: #CBD5E1;
-  --t4: #94A3B8;
-  --bd: #334155;
-  --bd2: #475569;
+  --t1: #F4F5FF;
+  --t2: #E1E4FA;
+  --t3: #C4C9EA;
+  --t4: #9AA1CC;
+  --bd: #2A3066;
+  --bd2: #3B4281;
 
   /* Shadows barely read on black, so surfaces are separated by tone and a hairline */
   --sh:    0 0 0 1px rgba(255,255,255,.06);
