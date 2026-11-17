@@ -39,7 +39,7 @@
 #home #invite-card { order: 20; }
 #home #written-launch-card { order: 21; }
 #home .hv2-tools-head, #home #ai-generator-card { order: 22; }
-#home .hv2-opts > .sec-h, #home #guided-options-list { order: 23; }
+#home .hv2-opts > .disc-head, #home .hv2-opts > .disc-body { order: 23; }
 #home .wrapped-promo { order: 24; }
 
 #home .topbar {

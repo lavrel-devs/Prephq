@@ -40,6 +40,7 @@
     const extras = `
       <div class="nest-spacer"></div>
       <button type="button" class="nest-upgrade" data-nest="upgrade">
+        <img class="nu-art" src="/img/premium-art.svg" alt="" width="120" height="110">
         <span class="nu-h"><i class="fa-solid fa-crown" aria-hidden="true"></i>Upgrade to Premium</span>
         <p>Unlimited questions, AI quizzes &amp; more</p>
         <span class="nu-btn">Go Premium <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
@@ -48,8 +49,7 @@
         <button type="button" data-nest="notifications"><i class="fa-regular fa-bell" aria-hidden="true"></i>Notifications<span class="nest-n" id="nest-notif-n" hidden>0</span></button>
         <button type="button" data-nest="settings"><i class="fa-solid fa-gear" aria-hidden="true"></i>Settings</button>
         <button type="button" data-nest="signout"><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>Sign Out</button>
-      </div>
-      <button type="button" class="nest-wrapped" data-nest="wrapped"><span class="nw-ico"><i class="fa-solid fa-gift" aria-hidden="true"></i></span><span><b>Wreddi Wrapped</b><small>Your study recap is ready!</small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>`;
+      </div>`;
     nav.innerHTML = brand + TABS.map(t => `
       <a class="glass-nav-item ${path === t.href ? 'on' : ''}" href="${t.href}"${path === t.href ? ' aria-current="page"' : ''}>
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="${t.icon}"/></svg>
