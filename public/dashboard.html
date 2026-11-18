@@ -29,6 +29,17 @@
     window.location.replace(location.pathname === '/secondary' ? '/login?as=secondary' : '/login');
   }
 })();
+// v1.13.3: decide the account's app before anything paints. A Secondary / JAMB account is sent straight to /secondary and
+// never sees the university pages; the university home stays hidden (CSS below) until the account is known to be university.
+(function(){
+  try{
+    const s = PhqAuth.getSession(), t = s && s.track, de = document.documentElement;
+    if(t === 'secondary'){
+      de.classList.add('sec-acct');
+      if(/^\/(dashboard(\.html)?|index(\.html)?|contests|study-rooms|leaderboard|written|cheatsheet|focus|mistakes|wrapped|[qc]\/[A-Za-z0-9_-]+)?\/?$/.test(location.pathname)) location.replace('/secondary');
+    } else if(t === 'university') de.classList.add('uni-acct');
+  }catch(e){}
+})();
 </script>
 <link rel="stylesheet" href="/css/tokens.css">
 <style>
@@ -42,6 +53,8 @@ button,input,select,textarea{font-family:var(--ff-b);}
 
 .scr{display:none;flex-direction:column;min-height:100dvh;background:var(--bg);}
 .scr.on{display:flex;}
+/* v1.13.3: the university home is only ever painted for a confirmed university account (never flashes for Secondary). */
+html:not(.uni-acct) #home{display:none !important;}
 /* Views from js/shell.js: laid out like the standalone pages were (block flow, so a centred .wrap fills its
    max-width), see-through so each view's own soft backdrop shows, and NEVER visible unless active, whatever
    display a view's own CSS asks for. */
@@ -1898,6 +1911,8 @@ async function bootFromSession(){
     if(data.mustChangePassword){ window.location.replace('/change-password'); return; }
     curUser = data;
     window.curUser = data;
+    { const de = document.documentElement; de.classList.toggle('sec-acct', data.track === 'secondary'); de.classList.toggle('uni-acct', data.track !== 'secondary');   // v1.13.3
+      try{ const cur = PhqAuth.getSession(); if(cur && cur.track !== (data.track || 'university')) PhqAuth.setSession({ ...cur, track: data.track || 'university' }); }catch(e){} }
     await syncFromServer();
     await initHome();
     showScr('home');

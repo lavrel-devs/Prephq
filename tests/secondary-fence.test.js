@@ -43,4 +43,16 @@ assert.ok(shell.includes("const SECONDARY_VIEWS = " + JSON.stringify(SECONDARY_V
 assert.ok(/resolve\(path\)/.test(shell) && /p = resolve\(p\)/.test(shell), 'shell resolves every route through resolve()');
 assert.ok(/curUser\.track==='secondary'\)\{ loadSettings\(\); return; \}/.test(read('public/dashboard.html')), 'Secondary never loads university home data');
 assert.ok(/uni-only/.test(read('public/views/profile.html')) && /is-secondary/.test(read('public/views/profile.html')), 'profile hides university cards');
+
+// 6. First paint: the university home is hidden until the account is confirmed university, and Secondary sessions are sent
+//    to /secondary from <head> before anything renders (no flash of the university dashboard).
+const dash = read('public/dashboard.html');
+assert.ok(/html:not\(\.uni-acct\) #home\{display:none !important;\}/.test(dash), 'university home hidden until confirmed');
+assert.ok(dash.indexOf("de.classList.add('sec-acct')") > -1 && dash.indexOf("location.replace('/secondary')") > -1, 'head redirect for Secondary sessions');
+assert.ok(/classList\.toggle\('uni-acct', data\.track !== 'secondary'\)/.test(dash), 'boot confirms the account type');
+const m = dash.match(/\.test\(location\.pathname\)\) location\.replace\('\/secondary'\)/); assert.ok(m, 'redirect guard present');
+const re = new RegExp(dash.match(/if\((\/\^.*?\$\/)\.test\(location\.pathname\)\) location\.replace\('\/secondary'\)/)[1].slice(1, -1));
+['/', '/dashboard', '/dashboard.html', '/contests', '/study-rooms', '/leaderboard', '/written', '/cheatsheet', '/focus', '/mistakes', '/wrapped', '/q/abcdefgh1234', '/c/abcdefgh1234']
+  .forEach(p => assert.ok(re.test(p), 'Secondary is redirected from ' + p));
+['/secondary', '/profile', '/chat', '/login'].forEach(p => assert.ok(!re.test(p), 'Secondary stays on ' + p));
 console.log('secondary fence: all checks passed');
