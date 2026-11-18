@@ -6,8 +6,6 @@ const cors     = require('cors');
 const helmet   = require('helmet');
 const bcrypt   = require('bcryptjs');
 const path     = require('path');
-require('dns').setServers(['8.8.8.8', '1.1.1.1']);
-
 
 const { connectDB } = require('./src/config/db');
 const Admin = require('./src/models/Admin');
@@ -176,6 +174,8 @@ app.use('/api', require('./src/routes/invite.routes'));   // v1.7.5 public invit
 app.use('/api/admin', require('./src/routes/admin/admin.followups.routes'));
 app.use('/api/admin', require('./src/routes/admin/admin.notes.routes'));
 app.use('/api/admin', require('./src/routes/admin/admin.platform.routes'));   // v1.12 Secondary overview, security, search, health
+// v1.13.1: Secondary / JAMB accounts can only reach what utils/secondaryFence.js lists, on every student API below.
+app.use('/api', require('./src/middleware/auth').secondaryFence);
 app.use('/api/quiz', require('./src/routes/quiz.routes'));
 app.use('/api/written', require('./src/routes/written.routes'));   // v1.8.0 written (theory) exams
 app.use('/api/flashcards', require('./src/routes/flashcards.routes'));

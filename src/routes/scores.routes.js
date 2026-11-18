@@ -44,6 +44,8 @@ router.post('/:matric', requireStudent, async (req, res) => {
       return res.status(403).json({ error: 'Forbidden' });
     const { perQuestion } = req.body;
     const { pct } = req.body;
+    // v1.13.1: a Secondary account only ever saves Secondary papers (they always carry a `sec` block).
+    if (!req.body.sec) { const who = await Student.findOne({ matric: req.student.sub }).select('track').lean(); if (who && who.track === 'secondary') return res.status(403).json({ error: 'Secondary accounts can only save Secondary papers.', code: 'WRONG_TRACK' }); }
     if (typeof pct !== 'number' || !Number.isFinite(pct) || pct < 0 || pct > 100) return res.status(400).json({ error: 'Invalid' });
 
     // Clamp every numeric field: this data is client-posted, feeds the

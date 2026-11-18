@@ -370,6 +370,7 @@
 #view-profile .band-row .neu-input.min{flex:1 1 auto;min-width:0;}
 #view-profile .band-row .neu-input.point{flex:0 0 68px;padding:9px 8px;}
 
+#view-profile.is-secondary .uni-only{display:none !important;}
 /* GPA calc row — course name grows, units/score fixed */
 #view-profile .gpa-row{display:flex;gap:8px;align-items:center;width:100%;min-width:0;}
 #view-profile .gpa-row .neu-input.course{flex:1 1 auto;min-width:0;}
@@ -526,6 +527,8 @@
     </div>
   </div>
 
+  <!-- v1.13.1: university-only (hidden for Secondary accounts) -->
+  <div class="uni-only">
   <div class="v-sec-title">Sponsor Link</div>
   <div class="card">
     <div style="font-size:12.5px;color:var(--t3);line-height:1.5;margin-bottom:12px;">Let a parent or sponsor see your week: questions answered, accuracy, streak and your plan. They never see individual scores or notes, and you can turn it off any time.</div>
@@ -611,6 +614,8 @@
     <div id="tg-result" style="display:none;margin-top:14px;line-height:1.55;font-size:14px;"></div>
   </div>
 
+  </div>
+
   <div class="v-sec-title">Transfer History</div>
   <div class="card" id="transfer-list" style="padding:8px 20px;">
     <div class="empty">Loading…</div>
@@ -620,6 +625,8 @@
 <div id="p-toast"></div>
 <script>
 const document = PhqShell.scope(root); // every getElementById/querySelector in this view only sees this view
+const IS_SEC = !!(window.curUser && window.curUser.track === 'secondary');   // v1.13.1
+if (IS_SEC) root.classList.add('is-secondary');
 const API_BASE = '';
 let profileData = null;
 
@@ -668,9 +675,9 @@ function render(){
   const isPaid = !!d.entitlements?.features?.studyGuide;
   document.getElementById('sg-locked').style.display = isPaid ? 'none' : 'block';
   document.getElementById('sg-generate-btn').style.display = isPaid ? 'block' : 'none';
-  if(isPaid) loadLatestStudyGuide();
+  if(isPaid && !IS_SEC) loadLatestStudyGuide();
 
-  loadGradingSystem();
+  if(!IS_SEC) loadGradingSystem();
   loadPlanCard(d.tier);
 
   const list = document.getElementById('transfer-list');
@@ -1055,7 +1062,7 @@ loadProfile();
 paintLowPower();
 paintLite();
 paintData();
-spLoad();
+if(!IS_SEC) spLoad();
 setInterval(paintData, 4000);
 
 // inline onclick="…" handlers run in the global scope, so the functions they call are exposed

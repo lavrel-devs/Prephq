@@ -1,5 +1,5 @@
 const { verifyAccessToken } = require('../utils/jwt');
-const { isSessionAllowed } = require('../middleware/auth');
+const { isSessionAllowed, studentTrack } = require('../middleware/auth');
 const { logActivity } = require('../services/activity.service');
 const { canUse } = require('../services/entitlements.service');
 const Settings = require('../models/Settings');
@@ -40,6 +40,7 @@ function initStudyRoomSockets(io) {
       if (payload.role !== 'student') return next(new Error('Forbidden'));
       // Suspended / logged-out accounts can't open a socket either.
       if (!(await isSessionAllowed(payload))) return next(new Error('Session no longer valid'));
+      if ((await studentTrack(payload)) === 'secondary') return next(new Error('Study rooms are for university accounts'));   // v1.13.1
       socket.data.matric = payload.sub;
       next();
     } catch (e) {

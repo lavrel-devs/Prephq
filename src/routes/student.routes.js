@@ -274,7 +274,7 @@ router.get('/me', requireStudent, async (req, res) => {
       // (old or new) until university/department/selectedCourses are
       // all filled in. Checked server-side via profileCompleted so it
       // can't be bypassed by clearing local state.
-      needsProfileCompletion: !student.profileCompleted,
+      needsProfileCompletion: student.track === 'secondary' ? false : !student.profileCompleted,   // v1.13.1: Secondary has no university course setup
       university: student.university || '',
       department: student.department || '',
       currentGPA: student.currentGPA,

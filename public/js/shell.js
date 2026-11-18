@@ -33,6 +33,15 @@
     return (p === '' || p === '/' || p === '/index') ? HOME : p;
   };
   const isRoute = p => p === HOME || Object.prototype.hasOwnProperty.call(VIEWS, p);
+  // v1.13.1: a Secondary / JAMB account never sees the university app. Its home is /secondary and it may only open the pages
+  // listed here (keep in step with SECONDARY_VIEWS in src/utils/secondaryFence.js); a university account never opens /secondary.
+  const SECONDARY_VIEWS = ['/secondary', '/profile', '/chat'];
+  const isSecondary = () => !!(window.curUser && window.curUser.track === 'secondary');
+  function resolve(p) {
+    if (!window.curUser) return p;
+    if (isSecondary()) return SECONDARY_VIEWS.indexOf(p) >= 0 ? p : '/secondary';
+    return p === '/secondary' ? HOME : p;
+  }
   const say = msg => { try { if (typeof window.toast === 'function') window.toast(msg); } catch (e) { /* no toast available */ } };
 
   // A `document` look-alike that only searches inside one view. Everything else (createElement, body,
@@ -114,6 +123,8 @@
 
   async function show(path) {
     const seq = ++state.seq;
+    const wanted = path; path = resolve(path);
+    if (path !== wanted) history.replaceState({ phq: 1 }, '', path);
     if (path === HOME) { state.current = HOME; window.showScr('home'); announce(HOME); return; }
     const v = VIEWS[path];
     const known = state.mounted[path];
@@ -137,8 +148,9 @@
     opts = opts || {};
     let u;
     try { u = new URL(to, location.origin); } catch (e) { location.href = to; return Promise.resolve(); }
-    const p = norm(u.pathname);
+    let p = norm(u.pathname);
     if (u.origin !== location.origin || !isRoute(p)) { location.href = to; return Promise.resolve(); }
+    p = resolve(p);
     const full = p + u.search;
     if (opts.replace || full === location.pathname + location.search) history.replaceState({ phq: 1 }, '', full);
     else history.pushState({ phq: 1 }, '', full);
@@ -149,7 +161,8 @@
   function start() {
     const p = norm(location.pathname);
     history.replaceState({ phq: 1 }, '', location.pathname + location.search);
-    if (p !== HOME && VIEWS[p]) show(p); else announce(HOME);
+    if (resolve(p) !== p) show(p);   // show() swaps in the page this account may open
+    else if (p !== HOME && VIEWS[p]) show(p); else announce(HOME);
     prefetchLater();
   }
 

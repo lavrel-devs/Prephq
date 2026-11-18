@@ -32,9 +32,12 @@
     let who = { name: '' };
     try { who = (typeof PhqAuth !== 'undefined' && PhqAuth.getSession()) || who; } catch (e) {}
     const nm = String(who.name || who.matric || 'Student');
+    // v1.13.1: Secondary accounts get Home (the Secondary app), Assistant and Profile only.
+    const secTabs = who.track === 'secondary';
+    const tabs = secTabs ? TABS.filter(t => ['/dashboard', '/chat', '/profile'].indexOf(t.href) >= 0).map(t => t.href === '/dashboard' ? Object.assign({}, t, { href: '/secondary' }) : t) : TABS;
     const esc = x => String(x).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     // Desktop-only chrome (css/nest.css shows these at 1024px+; on phones they stay hidden)
-    const brand = '<a class="nest-brand" href="/dashboard"><img src="/icons/logo-mark.png" alt=""><b>Wreddi</b></a>';
+    const brand = '<a class="nest-brand" href="' + (((typeof PhqAuth !== 'undefined' && PhqAuth.getSession && (PhqAuth.getSession() || {}).track) === 'secondary') ? '/secondary' : '/dashboard') + '"><img src="/icons/logo-mark.png" alt=""><b>Wreddi</b></a>';
     const user = `<a class="nest-user" href="/profile"><div class="av">${esc(nm.trim().charAt(0).toUpperCase())}</div><div style="min-width:0"><div class="nm">${esc(nm)}</div><div class="sb">${who.track === 'secondary' ? 'Secondary / JAMB' : 'University'}</div></div><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></a>`;
     // v1.13 desktop extras: Premium card (free plans only, see html[data-tier]), account links, Wrapped
     const extras = `
@@ -50,7 +53,7 @@
         <button type="button" data-nest="settings"><i class="fa-solid fa-gear" aria-hidden="true"></i>Settings</button>
         <button type="button" data-nest="signout"><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>Sign Out</button>
       </div>`;
-    nav.innerHTML = brand + TABS.map(t => `
+    nav.innerHTML = brand + tabs.map(t => `
       <a class="glass-nav-item ${path === t.href ? 'on' : ''}" href="${t.href}"${path === t.href ? ' aria-current="page"' : ''}>
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="${t.icon}"/></svg>
         <span>${t.label}</span>

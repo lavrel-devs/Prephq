@@ -1902,11 +1902,13 @@ async function bootFromSession(){
     await initHome();
     showScr('home');
     if(window.PhqShell) PhqShell.start(); // opens /contests, /profile, ... if that's the URL
-    // v1.11: a student who set up Secondary lands there on login (only when they opened the plain home URL).
-    if(window.PhqShell && data.track === 'secondary' && /^\/(dashboard)?\/?$/.test(location.pathname)) PhqShell.go('/secondary', { replace: true });
+    // v1.13.1: Secondary accounts are routed to /secondary by PhqShell itself (start / go / showScr), never to this home.
     // v1.12: accounts belong to one app. Secondary accounts live in /secondary; university accounts never see it.
     (function(){ const card = document.getElementById('sec-home-card'); if(card) card.style.display = data.track === 'secondary' ? 'flex' : 'none';
       if(data.track !== 'secondary' && location.pathname === '/secondary' && window.PhqShell) PhqShell.go('/dashboard', { replace: true }); })();
+    if(data.track === 'secondary'){   // v1.13.1: older sessions may not carry the track, so tidy the bottom nav from the server's answer
+      document.querySelectorAll('#shared-glass-nav .glass-nav-item, #shared-glass-nav .nest-brand').forEach(a=>{ const h=a.getAttribute('href'); if(h==='/contests'||h==='/study-rooms') a.remove(); else if(h==='/dashboard') a.setAttribute('href','/secondary'); });
+    }
     if(window.PhqBrainiac) PhqBrainiac.start(); // v1.8.3 floating companion
     populateWallet(data);
     loadPlanBanner();
@@ -1917,7 +1919,8 @@ async function bootFromSession(){
       // A friend's shared quiz link (/q/<token>). Skipped while a blocking setup modal is showing; the
       // address bar still says /q/<token>, so reloading once setup is done opens the quiz.
       const m = location.pathname.match(/^\/([qc])\/([A-Za-z0-9_-]{8,32})$/);
-      if(m) (m[1] === 'c' ? openChallenge : openSharedQuiz)(m[2]);
+      if(data.track === 'secondary'){ if(m && window.PhqShell) PhqShell.go('/secondary', { replace:true }); }   // v1.13.1: shared university quizzes / challenges are not for Secondary accounts
+      else if(m) (m[1] === 'c' ? openChallenge : openSharedQuiz)(m[2]);
       else recoverInterruptedActivity();
     }
   }catch(e){
@@ -2517,6 +2520,9 @@ async function initHome(){
   const st=getStreak();
   document.getElementById('streak-txt').textContent=st.count+' day streak';
   updateStreakProgress(st.count);
+
+  // v1.13.1: Secondary accounts never load the university course grid, banks, stats or cards.
+  if(curUser.track==='secondary'){ loadSettings(); return; }
 
   document.getElementById('s-total').textContent='…';
 
@@ -4995,6 +5001,8 @@ function voiceQuizFinished(sum){
 }
 
 function showScr(id){
+  // v1.13.1: Secondary / JAMB accounts never land on the university home (e.g. Back from Settings or Notifications).
+  if(id==='home' && window.curUser && window.curUser.track==='secondary' && window.PhqShell && PhqShell.current() && PhqShell.current()!=='/secondary'){ PhqShell.go('/secondary', { replace:true }); return; }
   if(id!=='quiz') clearAutoAdvance();
   document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
   document.getElementById(id).classList.add('on');

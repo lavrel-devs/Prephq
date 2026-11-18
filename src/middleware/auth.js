@@ -154,6 +154,30 @@ function requireTrack(track) {
   };
 }
 
+// v1.13.1: the resolved track ('secondary' | 'university') of a verified student token, from the same 30s cache.
+async function studentTrack(payload) {
+  if (!(await isSessionAllowed(payload))) return null;
+  const hit = allowCache.get(`${payload.role}:${payload.sub}:${payload.sid || ''}`);
+  return (hit && hit.flags && hit.flags.track) || 'university';
+}
+
+// v1.13.1: global fence for Secondary accounts. Mounted once in front of every student API. A request with no / invalid /
+// non-student token passes straight through (the route's own auth answers it); a Secondary student's request only
+// continues if utils/secondaryFence.js lists it.
+const { secondaryAllows } = require('../utils/secondaryFence');
+const { verifyAccessToken: _verify } = require('../utils/jwt');
+async function secondaryFence(req, res, next) {
+  try {
+    const token = getBearerToken(req);
+    if (!token) return next();
+    let payload; try { payload = _verify(token); } catch (e) { return next(); }
+    if (!payload || payload.role !== 'student') return next();
+    const track = await studentTrack(payload);
+    if (track !== 'secondary' || secondaryAllows(req.method, req.path)) return next();
+    return res.status(403).json({ error: 'This feature is for university accounts. Secondary / JAMB accounts use the Secondary app.', code: 'WRONG_TRACK', track });
+  } catch (e) { return next(); }
+}
+
 // Protects admin routes. Accepts EITHER:
 //   a) Authorization: Bearer <admin JWT>   (used by admin.html going forward)
 //   b) x-admin-key: <ADMIN_KEY from .env>  (legacy, kept alive for
@@ -207,4 +231,4 @@ function adminGate(req, res, next) {
   return res.status(403).json({ error: "You don't have permission to do that", code: 'FORBIDDEN_AREA' });
 }
 
-module.exports = { adminGate, requireStudent, requireTrack, requireAdmin, getBearerToken, isSessionAllowed, forgetSubject, safeEqual };
+module.exports = { adminGate, requireStudent, requireTrack, secondaryFence, studentTrack, requireAdmin, getBearerToken, isSessionAllowed, forgetSubject, safeEqual };
