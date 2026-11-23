@@ -24,6 +24,7 @@ const RULES = [
   [/^\/chat\/(history|quota|message)$/,  ['GET', 'POST', 'DELETE']],
   [/^\/brainiac(\/.*)?$/,                ['GET', 'POST', 'PUT', 'DELETE']],
   [/^\/version$/,                        ['GET']],
+  [/^\/platform\/status$/,                ['GET']],   // v1.14 banner / maintenance notice
   [/^\/invite\//,                        ['GET']],
 ];
 

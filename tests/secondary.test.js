@@ -4,6 +4,7 @@ const assert = require('assert'), path = require('path'), fs = require('fs');
 const ROOT = path.join(__dirname, '..');
 process.env.JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'test';
 const S = require(path.join(ROOT, 'src/utils/secondary.js'));
+require(path.join(ROOT, 'src/services/platformConfig.service.js'))._prime({});   // v1.14: the routes read the admin's live settings; pin the defaults so this test never needs a database
 const { planBulk, secondaryMeta } = require(path.join(ROOT, 'src/services/questionBank.service.js'));
 const { mingo } = (() => { try { return { mingo: require('mingo') }; } catch (e) { return {}; } })();
 

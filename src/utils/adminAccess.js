@@ -19,6 +19,13 @@ const AREAS = [
   { key: 'announcements', label: 'Announcements',           desc: 'Broadcast notifications to students' },
   { key: 'settings',      label: 'Credit & plan settings',  desc: 'Daily refresh, referral, tier limits & pricing' },
   { key: 'cosmetics',     label: 'Shop items',              desc: 'Badges and frames in the cosmetics shop' },
+  { key: 'secondary',     label: 'Secondary control centre', desc: 'Secondary / JAMB subjects, question bank, students, papers and settings' },
+  { key: 'system',        label: 'System & controls',       desc: 'Live monitoring, maintenance mode, feature switches, banner, database tools and error log' },
+  // v1.15 Command centre
+  { key: 'bulk',          label: 'Segments & bulk actions', desc: 'Find groups of students and message them; suspend, grant Premium or credits to a whole group (those actions also need Students / Payments / Credits change access)' },
+  { key: 'crm',           label: 'Student notes & tags',    desc: 'Private admin notes and tags on students' },
+  { key: 'data',          label: 'Data & privacy',          desc: 'Export collections and one student\'s data (erasing a student needs full access)' },
+  { key: 'access',        label: 'Access control',          desc: 'Block network addresses, see and end student sessions' },
 ];
 const AREA_KEYS = AREAS.map(a => a.key);
 
@@ -60,9 +67,22 @@ const RULES = [
   [/^\/cosmetics(\/|$)/, ['cosmetics']],
 
   // v1.12
-  [/^\/platform\/secondary\/?$/, ['analytics', 'students']],
+  [/^\/platform\/secondary\/?$/, ['analytics', 'students', 'secondary']],
+  [/^\/secondary(\/|$)/, ['secondary']],   // v1.14 Secondary control centre
+  [/^\/platform\/(monitor|errors|controls|maintenance|db|sessions|audit)(\/|$)/, ['system']],   // v1.14 monitoring & controls
   [/^\/platform\/(security|search)(\/|$)/, ['students']],
   [/^\/platform\/health\/?$/, ['analytics']],
+
+  // v1.15 Command centre
+  [/^\/insights(\/|$)/, ['analytics']],
+  [/^\/bulk\/segment\.csv\/?$/, ['students']],            // contact list with phone numbers
+  [/^\/bulk(\/|$)/, ['bulk']],
+  [/^\/crm\/[^/]+\/profile\/?$/, ['students']],          // full profile shows scores, credits, payments
+  [/^\/crm(\/|$)/, ['crm']],
+  [/^\/data\/student\/[^/]+\/erase\/?$/, 'FULL'],          // erasing a student's personal data
+  [/^\/data(\/|$)/, ['data']],
+  [/^\/access\/admin-sessions(\/|$)/, 'OWNER'],           // who is signed in to the admin panel
+  [/^\/access(\/|$)/, ['access']],
 ];
 
 function isReadMethod(method) {

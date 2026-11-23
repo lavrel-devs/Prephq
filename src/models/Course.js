@@ -24,6 +24,10 @@ const CourseSchema = new mongoose.Schema({
   // v1.11: 'university' (every course that existed before) or 'secondary' (JAMB / WAEC / NECO / school subjects).
   // Courses saved before v1.11 have no value at all, so every university query uses { track: { $ne: 'secondary' } }.
   track:       { type: String, enum: ['university', 'secondary'], default: 'university' },
+  // v1.14 admin controls for Secondary subjects: hide a subject without deleting it, and override which exams examine it
+  // (empty list = use the built-in list in utils/secondary.js).
+  disabled:    { type: Boolean, default: false },
+  exams:       { type: [String], default: [] },
   createdAt:   { type: Date, default: Date.now },
 });
 

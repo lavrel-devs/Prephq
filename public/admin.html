@@ -515,13 +515,16 @@ tbody td{padding:14px 16px;}
       </div>
       <div class="nav-sec">Insights</div>
       <div class="nav-item" data-v="secondary" onclick="go('secondary',this)">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>Secondary / JAMB
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>Secondary control
       </div>
       <div class="nav-item" data-v="security" onclick="go('security',this)">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>Security
       </div>
       <div class="nav-item" data-v="system" onclick="go('system',this)">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 3H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zM6.5 9a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM20 15H4a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2z"/></svg>System health
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 3H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zM6.5 9a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM20 15H4a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2z"/></svg>System &amp; controls
+      </div>
+      <div class="nav-item" data-v="command" onclick="go('command',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h7v7H4V4zm9 0h7v7h-7V4zM4 13h7v7H4v-7zm9 3h3v-3h2v3h2v2h-2v3h-2v-3h-3v-2z"/></svg>Command centre
       </div>
       <div class="nav-sec" id="nav-sec-admin" style="display:none">Admin</div>
       <div class="nav-item" data-v="activity" id="nav-activity" style="display:none" onclick="go('activity',this)">
@@ -1048,12 +1051,8 @@ tbody td{padding:14px 16px;}
 
       <!-- ═══ SECONDARY / JAMB ════════════════════════════ -->
       <div id="v-secondary" class="view">
-        <div class="ph"><div><div class="ph-title">Secondary / JAMB</div><div class="ph-sub">Accounts, papers and question coverage for JAMB, WAEC, NECO and school exams</div></div></div>
-        <div class="sg" id="sx-sg"></div>
-        <div class="tw"><div class="th"><div class="th-title">Subjects and questions</div></div>
-          <div class="tbl-wrap"><table><thead><tr><th>Subject</th><th>Code</th><th>Questions</th></tr></thead><tbody id="sx-subjects"></tbody></table></div></div>
-        <div class="tw"><div class="th"><div class="th-title">Top JAMB mock results</div></div>
-          <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Student</th><th>Best UTME</th><th>Papers</th></tr></thead><tbody id="sx-top"></tbody></table></div></div>
+        <div class="ph"><div><div class="ph-title">Secondary control centre</div><div class="ph-sub">Run JAMB, WAEC, NECO and school exams end to end: subjects, questions, students, papers and live settings</div></div></div>
+        <div id="sxa-root"></div>
       </div>
 
       <!-- ═══ SECURITY ════════════════════════════════════ -->
@@ -1069,10 +1068,14 @@ tbody td{padding:14px 16px;}
 
       <!-- ═══ SYSTEM HEALTH ═══════════════════════════════ -->
       <div id="v-system" class="view">
-        <div class="ph"><div><div class="ph-title">System health</div><div class="ph-sub">Server, database and integrations</div></div><button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;" onclick="loadSystem()">Refresh</button></div>
-        <div class="sg" id="sys-sg"></div>
-        <div class="tw"><div class="th"><div class="th-title">Collections</div></div>
-          <div class="tbl-wrap"><table><tbody id="sys-counts"></tbody></table></div></div>
+        <div class="ph"><div><div class="ph-title">System &amp; controls</div><div class="ph-sub">Live monitoring, maintenance mode, feature switches, banner, database tools and the error log</div></div></div>
+        <div id="sys-root"></div>
+      </div>
+
+      <!-- ═══ COMMAND CENTRE ══════════════════════════════ -->
+      <div id="v-command" class="view">
+        <div class="ph"><div><div class="ph-title">Command centre</div><div class="ph-sub">Act on groups of students, keep private notes, export data and control who can get in</div></div></div>
+        <div id="cmd-root"></div>
       </div>
 
       <!-- ═══ SUPPORT INBOX ═════════════════════════════════ -->
@@ -1654,6 +1657,10 @@ tbody td{padding:14px 16px;}
 
 <script src="/js/auth-guard.js"></script>
 <script src="/vendor/chartjs/chart.umd.js"></script>
+<script src="/js/admin-ui.js"></script>
+<script src="/js/admin-secondary.js"></script>
+<script src="/js/admin-system.js"></script>
+<script src="/js/admin-command.js"></script>
 <script>
 const API = '';
 let allStudents = [], allPayments = [], allQuestions = [];
@@ -1878,8 +1885,10 @@ const VIEW_AREA = {
   dashboard:'analytics', analytics:'analytics', students:'students', payments:'payments',
   courses:'courses', questions:'questions', 'bulk-upload':'questions', 'ai-review':'questions', contests:'contests', recurring:'contests',
   transfers:'credits', announcements:'announcements', 'credit-settings':'settings', admins:'FULL', activity:'OWNER', support:'support', followups:'students', 'course-notes':'courses',
+  secondary:'secondary', security:'students', system:'system', command:'COMMAND',
 };
 function canView(area){
+  if(area==='COMMAND') return ['analytics','bulk','crm','data','access'].some(a => canView(a));   // v1.15 Command centre: any of its four tools
   if(myAccess.fullAccess && area!=='OWNER') return true;
   if(area==='OWNER') return !!myAccess.owner;
   if(area==='FULL') return false;
@@ -2621,16 +2630,6 @@ async function delNote(id){
 
 // ── v1.12: SECONDARY / SECURITY / SYSTEM / GLOBAL SEARCH ──────
 const statCard = (v, l) => `<div class="sc"><div class="sc-val">${escHtml(String(v))}</div><div class="sc-lbl">${escHtml(l)}</div></div>`;
-async function loadSecondaryAdmin(){
-  try{
-    const d = await (await adminFetch('/api/admin/platform/secondary', { headers: {} })).json();
-    if(d.error) throw new Error(d.error);
-    document.getElementById('sx-sg').innerHTML = statCard(d.students,'Secondary students') + statCard(d.newWeek,'New this week') + statCard(d.universityStudents,'University students') + statCard(d.papers,'Papers taken') + statCard(d.jamb.avg || '—','Avg JAMB mock (of 400)') + statCard(d.jamb.best || '—','Best JAMB mock') +
-      Object.entries(d.exams).map(([k,n]) => statCard(n, k === 'not set up' ? 'Not set up yet' : k.toUpperCase())).join('');
-    document.getElementById('sx-subjects').innerHTML = d.subjects.length ? d.subjects.map(c => `<tr><td style="font-weight:700">${escHtml(c.title)}</td><td>${escHtml(c.code)}</td><td><span class="badge ${c.questions?'b-ok':'b-no'}">${c.questions}</span></td></tr>`).join('') : '<tr class="empty-row"><td colspan="3">No secondary subjects yet. Add them in Course Management and pick the Secondary app.</td></tr>';
-    document.getElementById('sx-top').innerHTML = d.top.length ? d.top.map((t,i) => `<tr><td>${i+1}</td><td>${escHtml(t.name)} <span style="color:var(--t4);font-size:11px">${escHtml(t.matric)}</span></td><td><b>${t.best}</b>/400</td><td>${t.papers}</td></tr>`).join('') : '<tr class="empty-row"><td colspan="4">No JAMB mock papers yet</td></tr>';
-  }catch(e){ toast('Could not load Secondary overview'); }
-}
 async function loadSecurity(){
   try{
     const d = await (await adminFetch('/api/admin/platform/security', { headers: {} })).json();
@@ -2654,15 +2653,6 @@ async function forceSignOut(m){
   const d = await r.json().catch(()=>({}));
   toast(r.ok ? `Signed out ${d.signedOut} session${d.signedOut===1?'':'s'}` : (d.error || 'Could not sign out'));
   if(r.ok) loadSecurity();
-}
-async function loadSystem(){
-  try{
-    const d = await (await adminFetch('/api/admin/platform/health', { headers: {} })).json();
-    if(d.error) throw new Error(d.error);
-    const up = d.uptimeSec, upTxt = up > 86400 ? Math.floor(up/86400)+'d '+Math.floor(up%86400/3600)+'h' : up > 3600 ? Math.floor(up/3600)+'h '+Math.floor(up%3600/60)+'m' : Math.floor(up/60)+'m';
-    document.getElementById('sys-sg').innerHTML = statCard(d.db.state,'Database') + statCard(upTxt,'Uptime') + statCard(d.memoryMb.rss+' MB','Memory (RSS)') + statCard(d.node,'Node') + statCard(d.telegram?'On':'Off','Telegram bot') + statCard(d.counts.openSupport,'Open support');
-    document.getElementById('sys-counts').innerHTML = Object.entries(d.counts).map(([k,n]) => `<tr><td style="font-weight:700;text-transform:capitalize">${escHtml(k.replace(/([A-Z])/g,' $1'))}</td><td>${n}</td></tr>`).join('');
-  }catch(e){ toast('Could not load system health'); }
 }
 let gsTimer = null;
 function gsInput(q){
@@ -2713,9 +2703,11 @@ function go(v, el) {
   if(v==='admins') loadAdmins();
   if(v==='activity') loadActivity();
   if(v==='support') loadSupport();
-  if(v==='secondary') loadSecondaryAdmin();
+  if(window.AdminSystem && v!=='system') AdminSystem.stop();
+  if(v==='secondary') AdminSecondary.open();
   if(v==='security') loadSecurity();
-  if(v==='system') loadSystem();
+  if(v==='system') AdminSystem.open();
+  if(v==='command') AdminCommand.open();
   if(v==='followups') loadFollowups();
   if(v==='course-notes') loadJob();
   if(v==='course-notes') loadNotesAdmin();

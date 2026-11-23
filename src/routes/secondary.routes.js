@@ -11,6 +11,7 @@ const Student = require('../models/Student');
 const Score = require('../models/Score');
 const QuestionAttempt = require('../models/QuestionAttempt');
 const { requireStudent, requireTrack } = require('../middleware/auth');
+const cfgSvc = require('../services/platformConfig.service');   // v1.14 admin controls
 const { requireFeature } = require('../services/entitlements.service');
 const { checkDailyLimit } = require('../services/tier.service');
 const { escapeRegex } = require('../utils/validate');
@@ -20,10 +21,11 @@ const router = express.Router();
 router.use('/secondary', requireStudent, requireTrack('secondary'));   // v1.12: only Secondary accounts get in
 
 const subjectMeta = code => S.SUBJECTS.find(s => s.code === code) || null;
-async function secondaryCourses() { return Course.find({ track: 'secondary' }).sort({ courseTitle: 1 }).lean(); }
+// v1.14: subjects an admin switched off are invisible to students (setup, papers, overview) but keep their questions.
+async function secondaryCourses() { return Course.find({ track: 'secondary', disabled: { $ne: true } }).sort({ courseTitle: 1 }).lean(); }
 const publicCourse = c => {
   const m = subjectMeta(c.courseCode);
-  return { key: c.key, code: c.courseCode, title: c.courseTitle, color: c.color, icon: c.icon, topics: c.topics || [], exams: m ? m.exams : S.EXAM_KEYS, core: !!(m && m.core) };
+  return { key: c.key, code: c.courseCode, title: c.courseTitle, color: c.color, icon: c.icon, topics: c.topics || [], exams: (c.exams && c.exams.length) ? c.exams : (m ? m.exams : S.EXAM_KEYS), core: !!(m && m.core) };
 };
 
 // GET /api/secondary/config — everything the setup screen and the paper screens need, in one request.
@@ -31,8 +33,19 @@ router.get('/secondary/config', async (req, res) => {
   try {
     const courses = (await secondaryCourses()).map(publicCourse);
     const byCode = new Map(courses.map(c => [c.code, c.key]));
+    const cfg = await cfgSvc.get();
+    // v1.14: only the exams the admin has switched on, and the paper sizes the admin has set.
+    const exams = {}; for (const k of S.EXAM_KEYS) if (cfg.secondary.exams[k] !== false) exams[k] = S.EXAMS[k];
+    const papers = {};
+    for (const k of Object.keys(exams)) {
+      const f = cfgSvc.paperShape(cfg, k, false), m = cfgSvc.paperShape(cfg, k, true);
+      papers[k] = k === 'jamb'
+        ? { ...S.PAPERS.jamb, minutes: f.minutes, firstSubjectQs: f.first, otherSubjectQs: f.other, mini: { first: m.first, other: m.other, minutes: m.minutes } }
+        : { ...S.PAPERS[k], minutes: f.minutes, questions: f.questions, mini: { questions: m.questions, minutes: m.minutes } };
+    }
     res.json({
-      exams: S.EXAMS, papers: S.PAPERS, classLevels: S.CLASS_LEVELS, gradeBands: S.GRADE_BANDS,
+      motd: cfg.secondary.motd || '', maxPracticeCount: cfg.secondary.maxPracticeCount,
+      exams, papers, classLevels: S.CLASS_LEVELS, gradeBands: S.GRADE_BANDS,
       subjects: courses,
       combos: S.JAMB_COMBOS.map(c => ({ course: c.course, subjects: c.subjects.map(code => byCode.get(code)).filter(Boolean) })),
     });
@@ -132,8 +145,16 @@ async (req, res) => {
     if (!exam) return res.status(400).json({ error: 'Choose JAMB, WAEC, NECO or School.' });
     const kind = req.query.kind === 'practice' ? 'practice' : 'mock';
     const mini = req.query.mini === '1' || req.query.mini === 'true';
+    const cfgNow = await cfgSvc.get();
+    if (cfgNow.secondary.exams[exam] === false) return res.status(403).json({ error: `${S.EXAMS[exam].short} papers are switched off for now. Try another exam.`, code: 'EXAM_OFF' });
     const st = await Student.findOne({ matric: req.student.sub });
     if (!st) return res.status(404).json({ error: 'Student not found' });
+    // v1.14: optional cap on mock papers per day for Free-plan students (null = unlimited). Day runs on Nigerian time.
+    if (kind === 'mock' && Number.isInteger(cfgNow.secondary.freeDailyMocks) && require('../services/entitlements.service').resolvePlan(st) === 'free') {
+      const WAT = 3600000, start = new Date(Math.floor((Date.now() + WAT) / 86400000) * 86400000 - WAT);
+      const used = await Score.countDocuments({ matric: st.matric, 'sec.kind': 'mock', ts: { $gte: start } });
+      if (used >= cfgNow.secondary.freeDailyMocks) return res.status(403).json({ error: `Free accounts can take ${cfgNow.secondary.freeDailyMocks} mock paper${cfgNow.secondary.freeDailyMocks === 1 ? '' : 's'} a day. Upgrade for more, or practise by topic.`, code: 'LIMIT_REACHED', limit: cfgNow.secondary.freeDailyMocks, used });
+    }
     const prof = (st.secondary && st.secondary.toObject) ? st.secondary.toObject() : (st.secondary || {});
     const classLevel = exam === 'school' ? (S.CLASS_LEVELS.includes(req.query.classLevel) ? req.query.classLevel : (prof.classLevel || '')) : '';
     const year = Number.parseInt(req.query.year, 10) || null;
@@ -147,7 +168,8 @@ async (req, res) => {
     if (exam === 'jamb' && kind === 'mock') {
       const keys = (prof.subjects || []).filter(k => byKey.has(k));
       if (prof.exam !== 'jamb' || keys.length !== 4) return res.status(400).json({ error: 'Set up your four JAMB subjects first.', code: 'NEEDS_SETUP' });
-      const shape = S.jambShape(4, mini);
+      const ps = cfgSvc.paperShape(cfgNow, 'jamb', mini);
+      const shape = { counts: [ps.first, ps.other, ps.other, ps.other], minutes: ps.minutes };
       for (let i = 0; i < 4; i++) {
         const course = byKey.get(keys[i]);
         const qs = await pick(course, shape.counts[i], { exam: 'jamb', year, topic });
@@ -158,9 +180,11 @@ async (req, res) => {
       const course = byKey.get(String(req.query.subject || '').toLowerCase().replace(/[^a-z0-9]/g, ''));
       if (!course) return res.status(400).json({ error: 'Pick a subject.' });
       const cfg = S.PAPERS[exam];
+      const shapeNow = exam === 'jamb' ? null : cfgSvc.paperShape(cfgNow, exam, mini);
+      const jambOne = exam === 'jamb' ? cfgSvc.paperShape(cfgNow, 'jamb', mini) : null;
       let want;
-      if (kind === 'mock') { want = exam === 'jamb' ? (mini ? 10 : 40) : (mini ? cfg.mini.questions : cfg.questions); minutes = exam === 'jamb' ? (mini ? 10 : 40) : (mini ? cfg.mini.minutes : cfg.minutes); }
-      else { want = Math.max(5, Math.min(Number.parseInt(req.query.count, 10) || 20, 50)); minutes = null; }
+      if (kind === 'mock') { want = exam === 'jamb' ? jambOne.other : shapeNow.questions; minutes = exam === 'jamb' ? (mini ? 10 : 40) : shapeNow.minutes; }
+      else { want = Math.max(5, Math.min(Number.parseInt(req.query.count, 10) || 20, cfgNow.secondary.maxPracticeCount || 50)); minutes = null; }
       const qs = await pick(course, want, filt);
       sections.push({ course: course.key, title: course.courseTitle, wanted: want, questions: qs.map(q => wire(q, course)) });
       label = kind === 'mock' ? `${S.EXAMS[exam].short} ${course.courseTitle} paper` : `${course.courseTitle} practice`;

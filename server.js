@@ -6,6 +6,8 @@ const cors     = require('cors');
 const helmet   = require('helmet');
 const bcrypt   = require('bcryptjs');
 const path     = require('path');
+require('node:dns').setServers(['1.1.1.1', '8.8.8.8']);
+
 
 const { connectDB } = require('./src/config/db');
 const Admin = require('./src/models/Admin');
@@ -54,6 +56,14 @@ catch (e) { console.warn('compression not installed — run `npm install` to ena
 
 app.use(express.json({ limit: '1mb' }));
 app.use(activityMiddleware); // logs every API request + page view (see services/activity.service.js)
+// v1.14: live monitoring, then the admin's maintenance mode / feature switches / public status notice.
+const monitor = require('./src/services/monitor.service');
+app.use(monitor.middleware);
+app.get('/api/platform/status', async (req, res) => {
+  try { const cfgSvc = require('./src/services/platformConfig.service'); res.set('Cache-Control', 'no-store'); res.json(cfgSvc.publicStatus(await cfgSvc.get(), req.query.track)); }
+  catch (e) { res.json({ maintenance: null, banner: null, secondary: { enabled: true, signupsOpen: true, motd: '' }, signupsOpen: true }); }
+});
+app.use('/api', require('./src/middleware/platformGate').platformGate);
 
 // ══════════════════════════════════════════════════════════════
 //  DATABASE
@@ -65,6 +75,7 @@ connectDB().then(async () => {
   await bootstrapCourses();
   await require('./src/utils/secondarySeed').bootstrapSecondaryCourses(Course);   // v1.11
   require('./src/services/scheduler.service').startScheduler();
+  monitor.start();   // v1.14
   startTelegramBot();
   // Pick up a bulk note-writing job that was running when the server last restarted.
   require('./src/services/noteJob.service').resumeInterrupted().then(n => n && console.log(`Resumed ${n} interrupted note job(s).`)).catch(e => console.error('Note job resume failed:', e.message));
@@ -174,6 +185,8 @@ app.use('/api', require('./src/routes/invite.routes'));   // v1.7.5 public invit
 app.use('/api/admin', require('./src/routes/admin/admin.followups.routes'));
 app.use('/api/admin', require('./src/routes/admin/admin.notes.routes'));
 app.use('/api/admin', require('./src/routes/admin/admin.platform.routes'));   // v1.12 Secondary overview, security, search, health
+app.use('/api/admin', require('./src/routes/admin/admin.secondary.routes'));   // v1.14 Secondary control centre
+app.use('/api/admin', require('./src/routes/admin/admin.system.routes'));   // v1.14 monitoring, controls, database tools
 // v1.13.1: Secondary / JAMB accounts can only reach what utils/secondaryFence.js lists, on every student API below.
 app.use('/api', require('./src/middleware/auth').secondaryFence);
 app.use('/api/quiz', require('./src/routes/quiz.routes'));
@@ -294,6 +307,7 @@ app.use((err, req, res, next) => {
   if (err.type === 'entity.parse.failed') return res.status(400).json({ error: 'Malformed JSON body' });
   if (err.type === 'entity.too.large') return res.status(413).json({ error: 'Request body too large' });
   console.error('[error]', err);
+  monitor.recordError(err, req, res);
   res.status(500).json({ error: 'Server error' });
 });
 

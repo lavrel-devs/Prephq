@@ -2,6 +2,34 @@
 
 > Note: the changelog sections below are historical (last fully updated at v1.1.5) and don't yet cover v1.2–v1.4 (credit-tier economy, contests, study rooms, chat, GPA/grading tools, transfers, admin analytics). File structure and API route tables below are also out of date relative to `src/routes/`.
 
+## What's new in v1.17.0 — Insights
+
+Command centre → **Insights** (first tab, needs Analytics access): four big numbers, a "What this means" list of plain sentences with green / orange / red dots, and simple bar charts: signups (30 days), quizzes (14 days), study hours, weekly money, a drop-off funnel (signed up → picked courses → 1 quiz → 5+ quizzes → Premium), hardest / easiest / most-practised courses, and credits held / given / spent. Nigerian time throughout.
+
+---
+
+## What's new in v1.16.0 — Command centre, part 2
+
+- **Student profile** (Student notes → Full profile): account, plan, credits, recent quizzes, credit history, payments, sign-ins and open support requests on one screen (needs Students access).
+- **Saved groups**: name a segment and reload it with one tap.
+- **Win-back group**: "Premium ended in the last N days" filter and preset.
+- **Bulk history with undo**: every applied bulk action is logged for 180 days; suspend and reactivate can be undone (each student returns to their previous state).
+
+---
+
+## What's new in v1.15.0 — Command centre
+
+A new **Command centre** page in the admin panel (sidebar → Insights), with four tools. Each has its own permission area, so you can give a helper only the part they need (Admins → permissions).
+
+- **Segments & bulk actions** (`bulk`) — find a group (app, plan, active/suspended, course, inactive N days, joined in last N days, Premium ending soon, credits range, tag, name search; one-tap presets) and act on all of them: in-app message, suspend / reactivate, sign out everywhere, grant or remove Premium, add or deduct credits. Always a dry run first, then type APPLY. Max 2,000 students per action (500 for credits). Suspend/Premium/credits also need change access to Students / Payments / Credits, so Bulk alone cannot move money. A contact-list CSV (phone, WhatsApp) needs Students access.
+- **Student notes & tags** (`crm`) — private notes, pins and tags on a student. Tags feed the segment builder. Students never see them.
+- **Data & privacy** (`data`) — stream any of 8 collections as CSV or JSON (passwords, hashes, device fingerprints and tokens are never included); download everything held about one student; **erase a student's personal data** (full-access admins only, typed confirmation; keeps scores, credit and payment records without the name).
+- **Access control** (`access`) — block a network address (optional expiry; admin pages are never blocked and you cannot block your own address); see a student's sessions and end one; owner only: see who is signed in to the admin panel and end their session.
+
+Every change is written to the audit trail (System & controls → Audit trail) as `command.*`. New files: `src/routes/admin/admin.command.routes.js`, `src/services/segment.service.js`, `src/middleware/blockGate.js`, `src/utils/dataExport.js`, `src/models/AdminNote.js`, `src/models/Block.js`, `public/js/admin-command.js`, `tests/command.test.js`. Existing admins keep exactly the access they had; the four new areas are off until granted (full-access admins get them automatically).
+
+---
+
 ## What's new in v1.1.5
 
 - **Dynamic courses** — courses now live in a `Courses` MongoDB collection instead of being hardcoded in the frontend. Full admin CRUD (`Course Management` panel in `admin.html`); `GET /api/courses` is public and used by the dashboard's course grid, search bar, and AI quiz picker. Existing course keys/codes were preserved on first boot so nothing breaks.
