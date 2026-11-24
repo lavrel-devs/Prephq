@@ -25,6 +25,8 @@ const AREAS = [
   { key: 'bulk',          label: 'Segments & bulk actions', desc: 'Find groups of students and message them; suspend, grant Premium or credits to a whole group (those actions also need Students / Payments / Credits change access)' },
   { key: 'crm',           label: 'Student notes & tags',    desc: 'Private admin notes and tags on students' },
   { key: 'data',          label: 'Data & privacy',          desc: 'Export collections and one student\'s data (erasing a student needs full access)' },
+  // v1.18 Short links
+  { key: 'links',         label: 'Short links',             desc: 'Create, edit, switch off and delete short links, and see how many times each was opened' },
   { key: 'access',        label: 'Access control',          desc: 'Block network addresses, see and end student sessions' },
 ];
 const AREA_KEYS = AREAS.map(a => a.key);
@@ -81,6 +83,7 @@ const RULES = [
   [/^\/crm(\/|$)/, ['crm']],
   [/^\/data\/student\/[^/]+\/erase\/?$/, 'FULL'],          // erasing a student's personal data
   [/^\/data(\/|$)/, ['data']],
+  [/^\/links(\/|$)/, ['links']],                         // v1.18 Short links
   [/^\/access\/admin-sessions(\/|$)/, 'OWNER'],           // who is signed in to the admin panel
   [/^\/access(\/|$)/, ['access']],
 ];

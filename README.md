@@ -2,6 +2,16 @@
 
 > Note: the changelog sections below are historical (last fully updated at v1.1.5) and don't yet cover v1.2–v1.4 (credit-tier economy, contests, study rooms, chat, GPA/grading tools, transfers, admin analytics). File structure and API route tables below are also out of date relative to `src/routes/`.
 
+## What's new in v1.18.0 — Short links
+
+Admin sidebar → **Short links** (own permission area, `links`). Paste a long web address, get `yoursite.com/s/abc123`. Optional custom code (e.g. `/s/chm101`), title and expiry date. Each link shows how many times it was opened, when it was last opened, and a 30-day chart; edit the destination later without changing the short address, switch a link off, or delete it. Expired or switched-off links show a friendly page (HTTP 410). Only `http(s)` addresses are accepted, and a short link cannot point at another short link.
+
+- Public redirect: `GET /s/:code` (302). Mount it in `server.js`: `app.use('/s', require('./src/routes/shortlink.public'));`
+- Optional env var `SHORT_BASE_URL` (no trailing slash) if short links should display under a different domain than the admin panel.
+- New files: `src/models/ShortLink.js`, `src/models/ShortClick.js`, `src/services/shortlink.service.js`, `src/routes/admin/admin.links.routes.js` (mounted from `admin.command.routes.js`), `src/routes/shortlink.public.js`, `public/js/admin-links.js`, `tests/shortlink.test.js`. Existing admins keep exactly the access they had; full-access admins get Short links automatically.
+
+---
+
 ## What's new in v1.17.0 — Insights
 
 Command centre → **Insights** (first tab, needs Analytics access): four big numbers, a "What this means" list of plain sentences with green / orange / red dots, and simple bar charts: signups (30 days), quizzes (14 days), study hours, weekly money, a drop-off funnel (signed up → picked courses → 1 quiz → 5+ quizzes → Premium), hardest / easiest / most-practised courses, and credits held / given / spent. Nigerian time throughout.
