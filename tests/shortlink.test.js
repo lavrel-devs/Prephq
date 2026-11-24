@@ -15,7 +15,7 @@ assert.strictEqual(S.cleanUrl('example.com/a?b=1'), 'https://example.com/a?b=1')
 assert.strictEqual(S.cleanUrl(' http://example.com '), 'http://example.com/');
 ['javascript:alert(1)', 'data:text/html,hi', 'ftp://example.com/x', 'file:///etc/passwd', 'https://user:pw@example.com', 'https://nodots', '', 'http://'].forEach(x => assert.throws(() => S.cleanUrl(x), Error, x));
 assert.throws(() => S.cleanUrl('https://' + 'a'.repeat(2100) + '.com'), /too long/);
-assert.throws(() => S.cleanUrl('https://wreddi.com/s/abc123', ['wreddi.com']), /short link/);
+assert.throws(() => S.cleanUrl('https://wreddi.com/l/abc123', ['wreddi.com']), /short link/);
 assert.ok(S.cleanUrl('https://wreddi.com/dashboard', ['wreddi.com']));   // other pages on our own site are fine
 
 // expiry + status

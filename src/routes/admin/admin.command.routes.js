@@ -549,8 +549,5 @@ router.get('/access/admin-sessions', async (req, res) => {
 });
 router.post('/access/admin-sessions/:id/revoke', (req, res) => revokeSession(req, res, 'admin'));
 
-// v1.18 Short links (permission area "links")
-router.use(require('./admin.links.routes'));
-
 module.exports = router;
 module.exports.MAX_APPLY = MAX_APPLY;

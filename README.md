@@ -4,11 +4,11 @@
 
 ## What's new in v1.18.0 — Short links
 
-Admin sidebar → **Short links** (own permission area, `links`). Paste a long web address, get `yoursite.com/s/abc123`. Optional custom code (e.g. `/s/chm101`), title and expiry date. Each link shows how many times it was opened, when it was last opened, and a 30-day chart; edit the destination later without changing the short address, switch a link off, or delete it. Expired or switched-off links show a friendly page (HTTP 410). Only `http(s)` addresses are accepted, and a short link cannot point at another short link.
+Admin sidebar → **Short links** (own permission area, `links`). Paste a long web address, get `yoursite.com/l/abc123`. Optional custom code (e.g. `/l/chm101`), title and expiry date. Each link shows how many times it was opened, when it was last opened, and a 30-day chart; edit the destination later without changing the short address, switch a link off, or delete it. Expired or switched-off links show a friendly page (HTTP 410). Only `http(s)` addresses are accepted, and a short link cannot point at another short link.
 
-- Public redirect: `GET /s/:code` (302). Mount it in `server.js`: `app.use('/s', require('./src/routes/shortlink.public'));`
+- Public redirect: `GET /l/:code` (302). (`/s/` is already the sponsor page, so short links use `/l/`.) Mounted in `server.js` together with the admin routes (`/api/admin/links`).
 - Optional env var `SHORT_BASE_URL` (no trailing slash) if short links should display under a different domain than the admin panel.
-- New files: `src/models/ShortLink.js`, `src/models/ShortClick.js`, `src/services/shortlink.service.js`, `src/routes/admin/admin.links.routes.js` (mounted from `admin.command.routes.js`), `src/routes/shortlink.public.js`, `public/js/admin-links.js`, `tests/shortlink.test.js`. Existing admins keep exactly the access they had; full-access admins get Short links automatically.
+- New files: `src/models/ShortLink.js`, `src/models/ShortClick.js`, `src/services/shortlink.service.js`, `src/routes/admin/admin.links.routes.js`, `src/routes/shortlink.public.js`, `public/js/admin-links.js`, `tests/shortlink.test.js`. Existing admins keep exactly the access they had; full-access admins get Short links automatically.
 
 ---
 

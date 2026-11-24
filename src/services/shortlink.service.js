@@ -4,7 +4,7 @@ const crypto = require('crypto');
 
 const ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789';   // no 0/o/1/l/i — easy to read out or type from a flyer
 const CODE_RE = /^[a-z0-9][a-z0-9_-]{2,31}$/;           // 3–32 chars, lowercase
-const RESERVED = new Set(['admin', 'api', 'login', 'dashboard', 'profile', 'static', 'public', 'js', 'css', 'vendor', 'assets', 'health', 's']);
+const RESERVED = new Set(['admin', 'api', 'login', 'dashboard', 'profile', 'static', 'public', 'js', 'css', 'vendor', 'assets', 'health', 's', 'l']);
 const MAX_URL = 2048;
 
 function generateCode(len = 6) {
@@ -34,7 +34,7 @@ function cleanUrl(raw, ownHosts = []) {
   if (!/^https?:$/.test(u.protocol)) throw new Error('Only http:// and https:// addresses can be shortened.');
   if (!u.hostname || (!u.hostname.includes('.') && u.hostname !== 'localhost')) throw new Error('That does not look like a valid web address.');
   if (u.username || u.password) throw new Error('Addresses containing a username or password are not allowed.');
-  if (ownHosts.map(h => String(h).toLowerCase()).includes(u.hostname.toLowerCase()) && /^\/s\//i.test(u.pathname)) throw new Error('You cannot shorten a short link.');
+  if (ownHosts.map(h => String(h).toLowerCase()).includes(u.hostname.toLowerCase()) && /^\/l\//i.test(u.pathname)) throw new Error('You cannot shorten a short link.');
   return u.toString();
 }
 

@@ -1,6 +1,6 @@
 'use strict';
-// v1.18 — Public redirect for short links. Mount in server.js:   app.use('/s', require('./src/routes/shortlink.public'));
-// GET /s/<code> → 302 to the saved address. 302 (not 301) so editing a link's destination takes effect straight away.
+// v1.18 — Public redirect for short links. Mount in server.js:   app.use('/l', require('./src/routes/shortlink.public'));
+// GET /l/<code>  (/s/ is already the sponsor page) → 302 to the saved address. 302 (not 301) so editing a link's destination takes effect straight away.
 const express = require('express');
 const ShortLink = require('../models/ShortLink');
 const ShortClick = require('../models/ShortClick');

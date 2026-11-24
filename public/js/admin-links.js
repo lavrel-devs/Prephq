@@ -34,7 +34,7 @@
   function form() {
     var f = $('lnk-form'); if (!f) return;
     var e = editing;
-    f.innerHTML = '<h3>' + (e ? 'Edit link <span class="xmut">/s/' + E(e.code) + '</span>' : 'New short link') + '</h3>' +
+    f.innerHTML = '<h3>' + (e ? 'Edit link <span class="xmut">/l/' + E(e.code) + '</span>' : 'New short link') + '</h3>' +
       '<div class="xs">' + (e ? 'The short address stays the same, so anything already printed or shared keeps working.' : 'Paste any web address. Leave the code empty and we make one for you.') + '</div>' +
       '<div class="xgrid">' +
         field('Web address to shorten', '<input class="f-input" id="lk-url" placeholder="https://example.com/very/long/page" value="' + E(e ? e.url : '') + '">', 'grid-column:1/-1') +
@@ -56,7 +56,7 @@
     list.className = '';
     list.innerHTML = '<div class="tbl-wrap"><table><thead><tr><th>Short link</th><th>Goes to</th><th>Opens</th><th>Last opened</th><th>Status</th><th></th></tr></thead><tbody>' +
       (d.items.length ? d.items.map(function (l) {
-        return '<tr><td><b>/s/' + E(l.code) + '</b>' + (l.title ? '<div class="xmut" style="font-size:12px">' + E(short(l.title, 40)) + '</div>' : '') + '<div style="margin-top:4px">' + btn('Copy', 'AdminLinks.copy(\'' + l._id + '\')', 'ab ab-gray', 'padding:3px 10px') + '</div></td>' +
+        return '<tr><td><b>/l/' + E(l.code) + '</b>' + (l.title ? '<div class="xmut" style="font-size:12px">' + E(short(l.title, 40)) + '</div>' : '') + '<div style="margin-top:4px">' + btn('Copy', 'AdminLinks.copy(\'' + l._id + '\')', 'ab ab-gray', 'padding:3px 10px') + '</div></td>' +
           '<td style="max-width:260px;word-break:break-all"><a href="' + E(l.url) + '" target="_blank" rel="noopener noreferrer">' + E(short(l.url, 70)) + '</a>' + (l.expiresAt ? '<div class="xmut" style="font-size:12px">Ends ' + fmtDate(l.expiresAt) + '</div>' : '') + '</td>' +
           '<td><b>' + nf(l.clicks) + '</b></td><td>' + (l.lastClickAt ? ago(l.lastClickAt) : '<span class="xmut">never</span>') + '</td><td>' + pill(l.status) + '</td>' +
           '<td style="white-space:nowrap">' + btn('Stats', 'AdminLinks.stats(\'' + l._id + '\')') + (ch ? ' ' + btn('Edit', 'AdminLinks.edit(\'' + l._id + '\')') + ' ' + btn(l.active ? 'Turn off' : 'Turn on', 'AdminLinks.toggle(\'' + l._id + '\')') + ' ' + btn('Delete', 'AdminLinks.del(\'' + l._id + '\')', 'ab ab-del') : '') + '</td></tr>';
@@ -88,7 +88,7 @@
   async function toggle(id) { var l = cache[id]; if (!l) return; var r = await api('PUT', '/api/admin/links/' + id, { active: !l.active }); if (!r.ok) return fail(r); toast(l.active ? 'Link switched off' : 'Link switched on'); load(); }
   async function del(id) {
     var l = cache[id]; if (!l) return;
-    if (!confirm('Delete /s/' + l.code + '? Anyone opening it afterwards will see a "Link not found" page. This cannot be undone.')) return;
+    if (!confirm('Delete /l/' + l.code + '? Anyone opening it afterwards will see a "Link not found" page. This cannot be undone.')) return;
     var r = await api('DELETE', '/api/admin/links/' + id); if (!r.ok) return fail(r); toast('Link deleted'); if (editing && editing._id === id) { editing = null; form(); } $('lnk-stats').innerHTML = ''; load();
   }
 
@@ -103,7 +103,7 @@
     var out = $('lnk-stats'); out.innerHTML = '<div class="xmut" style="padding:12px">Loading…</div>';
     var r = await api('GET', '/api/admin/links/' + id + '/stats'); if (!r.ok) { out.innerHTML = ''; return fail(r); }
     var s = r.data.series, max = Math.max.apply(null, s.map(function (x) { return x.value; }).concat([1])), sd = function (d) { var p = d.split('-'); return Number(p[2]) + '/' + Number(p[1]); };
-    out.innerHTML = '<div style="border-top:1px solid var(--bd);margin-top:14px;padding-top:12px"><h3 style="margin-bottom:2px">/s/' + E(r.data.link.code) + ' · last 30 days</h3>' +
+    out.innerHTML = '<div style="border-top:1px solid var(--bd);margin-top:14px;padding-top:12px"><h3 style="margin-bottom:2px">/l/' + E(r.data.link.code) + ' · last 30 days</h3>' +
       '<div class="xs"><b>' + nf(r.data.last30) + '</b> opens in the last 30 days · <b>' + nf(r.data.link.clicks) + '</b> in total · Nigerian dates</div>' +
       '<div style="display:flex;align-items:flex-end;gap:3px;height:130px;padding-top:16px">' + s.map(function (x, i) {
         return '<div title="' + E(x.day + ': ' + x.value + ' opens') + '" style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%">' +

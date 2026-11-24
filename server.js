@@ -187,6 +187,7 @@ app.use('/api/admin', require('./src/routes/admin/admin.notes.routes'));
 app.use('/api/admin', require('./src/routes/admin/admin.platform.routes'));   // v1.12 Secondary overview, security, search, health
 app.use('/api/admin', require('./src/routes/admin/admin.secondary.routes'));   // v1.14 Secondary control centre
 app.use('/api/admin', require('./src/routes/admin/admin.system.routes'));   // v1.14 monitoring, controls, database tools
+app.use('/api/admin', require('./src/routes/admin/admin.links.routes'));   // v1.18 short links (admin)
 // v1.13.1: Secondary / JAMB accounts can only reach what utils/secondaryFence.js lists, on every student API below.
 app.use('/api', require('./src/middleware/auth').secondaryFence);
 app.use('/api/quiz', require('./src/routes/quiz.routes'));
@@ -218,6 +219,9 @@ app.get('/api/version', (req, res) => res.json({ version: require('./package.jso
 
 // Unknown /api paths must answer JSON, not the HTML login page.
 app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));
+
+// v1.18 short links: GET /l/<code> redirects (public, no login). Kept above the clean routes / static / catch-all.
+app.use('/l', require('./src/routes/shortlink.public'));
 
 // ══════════════════════════════════════════════════════════════
 //  CLEAN ROUTES (v1.2)

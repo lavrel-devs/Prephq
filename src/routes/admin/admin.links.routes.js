@@ -19,7 +19,7 @@ const MAX_LINKS = 20000;
 
 const ownHosts = req => [req.hostname].concat((process.env.SHORT_BASE_URL || '').trim() ? [new URL(process.env.SHORT_BASE_URL).hostname] : []);
 const row = (l, req) => ({
-  _id: l._id, code: l.code, shortUrl: S.baseUrl(req) + '/s/' + l.code, url: l.url, title: l.title || '',
+  _id: l._id, code: l.code, shortUrl: S.baseUrl(req) + '/l/' + l.code, url: l.url, title: l.title || '',
   clicks: l.clicks || 0, lastClickAt: l.lastClickAt, expiresAt: l.expiresAt, active: l.active !== false,
   status: S.statusOf(l), createdBy: l.createdBy, createdAt: l.createdAt,
 });
