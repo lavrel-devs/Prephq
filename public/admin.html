@@ -55,6 +55,44 @@ button,input,select,textarea{font-family:var(--ff-b);}
 .btn-main:active{transform:scale(.97);}
 .btn-main:disabled{background:var(--surf3);box-shadow:none;color:var(--t4);cursor:default;transform:none;}
 
+/* ── LOADING STATES & ANIMATIONS ─────────────────────────────── */
+.btn-loading{position:relative;color:transparent!important;pointer-events:none;}
+.btn-loading::after{content:'';position:absolute;inset:50%;width:18px;height:18px;margin:-9px;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;}
+
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.6;transform:scale(1.05);}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+@keyframes errorFlash{0%,100%{border-color:var(--no-bd);}50%{border-color:var(--no);box-shadow:0 0 0 4px var(--no-lt);}}
+
+/* Loading overlay / screen */
+#load-screen{position:fixed;inset:0;z-index:9999;background:linear-gradient(140deg,var(--brand),var(--purple));display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:var(--ff-h);transition:opacity .4s;}
+#load-screen.hidden{opacity:0;pointer-events:none;}
+.load-dot{width:10px;height:10px;border-radius:50%;background:#fff;margin:0 4px;animation:pulse 1.2s ease-in-out infinite;}
+.load-dot:nth-child(2){animation-delay:.2s;}
+.load-dot:nth-child(3){animation-delay:.4s;}
+.load-msg{margin-top:18px;font-size:15px;font-weight:700;letter-spacing:.2px;opacity:.95;animation:fadeIn .6s ease both;}
+
+/* Toast enhancements */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:14px 24px;border-radius:var(--r16);background:var(--t1);color:#fff;font-size:14px;font-weight:700;box-shadow:var(--sh-md);border:1px solid var(--bd);opacity:0;pointer-events:none;transition:all .3s cubic-bezier(.2,0,0,1);z-index:1000;display:flex;align-items:center;gap:10px;}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0);animation:slideUp .4s cubic-bezier(.2,0,0,1) both;}
+#toast.warn{background:var(--warn);color:#000;}
+#toast.err{background:var(--no);}
+
+/* Error modal (indepth) */
+#m-error{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:rgba(13,15,26,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:fadeIn .25s;}
+#m-error .err-card{background:var(--surf);border-radius:var(--r16);padding:26px;width:100%;max-width:460px;border:1px solid var(--bd2);box-shadow:var(--sh-md);animation:slideUp .35s cubic-bezier(.2,0,0,1) both;}
+#m-error .err-title{font-family:var(--ff-h);font-size:18px;font-weight:800;color:var(--no);margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+#m-error .err-code{font-size:11px;font-weight:700;background:var(--no-lt);color:var(--no);padding:3px 8px;border-radius:6px;border:1px solid var(--no-bd);text-transform:uppercase;letter-spacing:.08em;}
+#m-error .err-msg{font-size:15px;color:var(--t1);font-weight:600;margin-top:10px;line-height:1.5;}
+#m-error .err-detail{font-size:13px;color:var(--t3);margin-top:8px;line-height:1.5;white-space:pre-wrap;font-family:var(--ff-b);}
+#m-error .err-actions{margin-top:20px;display:flex;gap:10px;}
+#m-error .err-btn{flex:1;padding:12px;border-radius:var(--r12);border:none;font-size:14px;font-weight:800;cursor:pointer;transition:all .15s;font-family:var(--ff-h);}
+#m-error .err-btn.ok{background:linear-gradient(140deg,var(--brand),var(--purple));color:#fff;}
+#m-error .err-btn.copy{background:var(--surf2);color:var(--t1);border:1px solid var(--bd2);}
+
+
 /* ── APP SHELL ──────────────────────────────────────────── */
 #app{display:none;min-height:100dvh;}
 #app.on{display:flex;flex-direction:column;}
@@ -413,6 +451,14 @@ tbody td{padding:14px 16px;}
 
 <div id="toast"></div>
 
+<!-- LOADING SCREEN -->
+<div id="load-screen">
+  <div style="display:flex;gap:4px;">
+    <div class="load-dot"></div><div class="load-dot"></div><div class="load-dot"></div>
+  </div>
+  <div class="load-msg" id="load-msg">Loading admin panel</div>
+</div>
+
 <!-- LOGIN -->
 <div id="login-screen">
   <div class="lc fade-up">
@@ -626,10 +672,26 @@ tbody td{padding:14px 16px;}
         </div>
       </div>
 
+      <!-- DEBIT TRANSACTION -->
+      <div class="modal-bg" id="m-student-debit" onclick="closeMBg(event,'m-student-debit')">
+        <div class="modal" style="max-width:440px;">
+          <div class="modal-title">Debit Credits</div>
+          <div class="modal-sub">Takes credits from the student's balance and logs the transaction.</div>
+          <div class="f-group"><div class="f-label">Matric</div><div id="db-matric" style="font-family:var(--ff-h);font-size:13px;">—</div></div>
+          <div class="f-group"><div class="f-label">Amount (credits)</div><input type="number" class="f-input" id="db-amount" min="1" style="width:100%;"></div>
+          <div class="f-group"><div class="f-label">Note (optional)</div><input class="f-input" id="db-note" style="width:100%;"></div>
+          <div class="mfooter">
+            <button class="btn-cancel" onclick="closeM('m-student-debit')">Cancel</button>
+            <button class="btn-confirm" id="db-submit-btn" onclick="submitDebit()">Debit</button>
+          </div>
+        </div>
+      </div>
+
       <div id="v-payments" class="view">
         <div class="ph">
           <div><div class="ph-title">Payments</div><div class="ph-sub" id="pay-total-lbl">—</div></div>
           <button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;" onclick="openAddPayment()">+ Record Payment</button>
+          <button class="btn-main" style="width:auto;padding:9px 18px;font-size:13px;background:var(--no);color:#fff;" onclick="openAddDebit()">− Record Debit</button>
         </div>
         <div class="tw">
           <div class="th">
@@ -1508,6 +1570,43 @@ tbody td{padding:14px 16px;}
   </div>
 </div>
 
+<!-- RECORD DEBIT TRANSACTION -->
+<div class="modal-bg" id="m-add-debit" onclick="closeMBg(event,'m-add-debit')">
+  <div class="modal">
+    <div class="modal-title">Record Debit Transaction</div>
+    <div class="modal-sub">Record money charged to or taken from a student.</div>
+    <div class="err" id="m-debit-err"></div>
+    <div class="field"><label>Student Name</label><input id="debit-name" placeholder="e.g. John Doe"></div>
+    <div class="field"><label>Matric (if registered)</label><input id="debit-matric" placeholder="e.g. PSC25CHM102" autocapitalize="characters"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="field"><label>Amount (₦) *</label><input id="debit-amount" type="number" placeholder="e.g. 2000"></div>
+      <div class="field"><label>Method</label><select id="debit-method"><option value="cash">Cash</option><option value="bank_transfer">Bank Transfer</option><option value="opay">OPay</option><option value="palmpay">PalmPay</option><option value="other">Other</option></select></div>
+    </div>
+    <div class="field"><label>Reference / Receipt No.</label><input id="debit-ref" placeholder="Transfer ref, receipt..."></div>
+    <div class="field"><label>Note</label><textarea id="debit-note" rows="2" placeholder="Why was this debited?"></textarea></div>
+    <div class="mfooter">
+      <button class="btn-cancel" onclick="closeM('m-add-debit')">Cancel</button>
+      <button class="btn-confirm" onclick="saveDebit()">Record Debit</button>
+    </div>
+  </div>
+</div>
+
+<!-- INDEPTH ERROR MODAL -->
+<div class="modal-bg" id="m-error" onclick="closeM('m-error')">
+  <div class="err-card">
+    <div class="err-title">
+      <span id="err-code">ERROR</span>
+      <span id="err-title-text">Something went wrong</span>
+    </div>
+    <div class="err-msg" id="err-msg">An unexpected error occurred.</div>
+    <div class="err-detail" id="err-detail"></div>
+    <div class="err-actions">
+      <button class="err-btn ok" onclick="closeM('m-error')">OK</button>
+      <button class="err-btn copy" onclick="copyErrorDetail()">Copy Details</button>
+    </div>
+  </div>
+</div>
+
 <!-- ADD QUESTION -->
 <div class="modal-bg" id="m-add-q" onclick="closeMBg(event,'m-add-q')">
   <div class="modal">
@@ -1691,11 +1790,27 @@ let generatedCodes = [];
 // ── AUTH ──────────────────────────────────────────────────────
 // adminFetch: attaches the admin JWT and silently refreshes on
 // expiry, via the shared PhqAuth module (same one dashboard.html uses).
+let _loadingCount = 0;
 function adminFetch(url, opts = {}) {
-  return PhqAuth.authFetch(url, opts, 'admin').then(r => {
+  _loadingCount++;
+  const ls = document.getElementById('load-screen');
+  if (ls) ls.classList.remove('hidden');
+  return PhqAuth.authFetch(url, opts, 'admin').then(async r => {
+    _loadingCount = Math.max(0, _loadingCount - 1);
+    if (_loadingCount === 0 && ls) ls.classList.add('hidden');
     // Server-side permission check said no — tell the admin instead of failing silently.
-    if (r.status === 403) r.clone().json().then(d => { if (d && d.code === 'FORBIDDEN_AREA') toast("You don't have permission to do that"); }).catch(() => {});
+    if (r.status === 403) {
+      try {
+        const d = await r.clone().json();
+        if (d && d.code === 'FORBIDDEN_AREA') toast("You don't have permission to do that", 'warn');
+      } catch (e) {}
+    }
     return r;
+  }).catch(e => {
+    _loadingCount = Math.max(0, _loadingCount - 1);
+    if (_loadingCount === 0 && ls) ls.classList.add('hidden');
+    showErrorDetail(e);
+    throw e;
   });
 }
 
@@ -1938,6 +2053,8 @@ async function bootAdmin(){
     if(first) go(first, document.querySelector(`.nav-item[data-v="${first}"]`));
   }
   if(canView('courses') || canView('questions') || canView('contests')) loadCourses();
+  // hide loading screen once booted
+  setTimeout(() => { const ls = document.getElementById('load-screen'); if (ls) ls.classList.add('hidden'); }, 400);
 }
 
 async function loadAdmins(){
@@ -2846,6 +2963,7 @@ function renderStudents(list) {
         <button class="ab" onclick="openStudentDetail('${jsq(s.matric)}')">Detail</button>
         <button class="ab ab-copy" onclick="revealLogin('${jsq(s.matric)}','${jsq(s.password||s.matric)}')">Login</button>
         <button class="ab ab-edit" onclick="creditStudent('${jsq(s.matric)}', ${s.credits||0})"><i class="fa-solid fa-coins"></i> Credit</button>
+        <button class="ab ab-edit" onclick="openDebit('${jsq(s.matric)}')"><i class="fa-solid fa-minus"></i> Debit</button>
         <button class="ab ab-edit" onclick="editStudent('${jsq(s.matric)}')">Edit</button>
         <button class="ab" title="Move this account to the other app" onclick="moveTrack('${jsq(s.matric)}','${s.track==='secondary'?'secondary':'university'}')">Move app</button>
         <button class="ab ${s.active?'ab-warn':'ab-ok'}" onclick="toggleActive('${jsq(s.matric)}',${!s.active})">${s.active?'Suspend':'Activate'}</button>
@@ -2979,6 +3097,34 @@ async function creditStudent(matric, currentBalance) {
     toast(`${matric} balance is now ${data.balance} credits`);
     loadStudents();
   } catch(e) { toast('Cannot connect to server.'); }
+}
+
+let debitMatric = null;
+function openDebit(matric){
+  debitMatric = matric;
+  document.getElementById('db-matric').textContent = matric;
+  document.getElementById('db-amount').value = '';
+  document.getElementById('db-note').value = '';
+  document.getElementById('m-student-debit').classList.add('on');
+}
+async function submitDebit(){
+  const amount = parseInt(document.getElementById('db-amount').value, 10);
+  const note = document.getElementById('db-note').value.trim();
+  if(!amount || amount <= 0){ toast('Enter a positive whole number'); return; }
+  const btn = document.getElementById('db-submit-btn');
+  btn.disabled = true; btn.textContent = 'Debiting...';
+  try{
+    const r = await adminFetch(`/api/admin/students/${encodeURIComponent(debitMatric)}/debit`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ amount, note })
+    });
+    const d = await r.json();
+    if(!r.ok){ toast(d.error || 'Could not debit'); return; }
+    toast(`${debitMatric} debited ${amount} credits — balance ${d.balance}`);
+    closeM('m-student-debit');
+    loadStudents();
+  }catch(e){ toast('Cannot connect to server.'); }
+  btn.disabled = false; btn.textContent = 'Debit';
 }
 
 function filterSt(q) {
@@ -3189,7 +3335,7 @@ function renderPayments(list) {
     <tr>
       <td style="font-weight:700">${escHtml(p.name)||'—'}</td>
       <td style="color:var(--t3)">${escHtml(p.matric)||'—'}</td>
-      <td style="font-weight:800;color:var(--ok)">₦${(p.amount||0).toLocaleString()}</td>
+      <td style="font-weight:800;color:${(p.amount||0) < 0 ? 'var(--no)' : 'var(--ok)'}">₦${Math.abs(p.amount||0).toLocaleString()}${ (p.amount||0) < 0 ? ' · debit' : ''}</td>
       <td><span class="badge b-brand" style="text-transform:capitalize">${(p.method||'').replace('_',' ')}</span></td>
       <td style="font-size:12px;color:var(--t3)">${escHtml(p.reference)||'—'}</td>
       <td style="font-size:12px;color:var(--t3)">${escHtml(p.note)||'—'}</td>
@@ -3218,6 +3364,8 @@ async function savePayment() {
   const errEl  = document.getElementById('m-pay-err');
   errEl.classList.remove('on');
   if (!amount) { errEl.textContent = 'Amount is required.'; errEl.classList.add('on'); return; }
+  const btn = document.querySelector('#m-add-payment .btn-confirm');
+  btn.classList.add('btn-loading');
   try {
     const r = await adminFetch('/api/admin/payments', {
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -3230,11 +3378,46 @@ async function savePayment() {
         note:      document.getElementById('pay-note').value,
       })
     });
-    if (!r.ok) { const d=await r.json(); errEl.textContent=d.error; errEl.classList.add('on'); return; }
+    btn.classList.remove('btn-loading');
+    if (!r.ok) { const d=await r.json(); errEl.textContent=d.error||'Validation failed'; errEl.classList.add('on'); return; }
     closeM('m-add-payment');
-    toast('Payment recorded');
+    toast('Payment recorded', 'info');
     loadPayments();
-  } catch(e) { errEl.textContent='Network error.'; errEl.classList.add('on'); }
+  } catch(e) { btn.classList.remove('btn-loading'); errEl.textContent='Network error.'; errEl.classList.add('on'); }
+}
+
+function openAddDebit() {
+  document.getElementById('m-debit-err').classList.remove('on');
+  ['debit-name','debit-matric','debit-amount','debit-ref','debit-note'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('debit-method').value = 'cash';
+  document.getElementById('m-add-debit').classList.add('on');
+}
+
+async function saveDebit() {
+  const amount = document.getElementById('debit-amount').value;
+  const errEl  = document.getElementById('m-debit-err');
+  errEl.classList.remove('on');
+  if (!amount) { errEl.textContent = 'Amount is required.'; errEl.classList.add('on'); return; }
+  const btn = document.querySelector('#m-add-debit .btn-confirm');
+  btn.classList.add('btn-loading');
+  try {
+    const r = await adminFetch('/api/admin/payments/debit', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        name:      document.getElementById('debit-name').value,
+        matric:    document.getElementById('debit-matric').value,
+        amount:    parseFloat(amount),
+        method:    document.getElementById('debit-method').value,
+        reference: document.getElementById('debit-ref').value,
+        note:      document.getElementById('debit-note').value,
+      })
+    });
+    btn.classList.remove('btn-loading');
+    if (!r.ok) { const d=await r.json(); errEl.textContent=d.error||'Validation failed'; errEl.classList.add('on'); return; }
+    closeM('m-add-debit');
+    toast('Debit recorded', 'info');
+    loadPayments();
+  } catch(e) { btn.classList.remove('btn-loading'); errEl.textContent='Network error.'; errEl.classList.add('on'); }
 }
 
 function delPayment(id) {
@@ -4051,11 +4234,49 @@ function toggleTheme() {
 
 // ── UTILS ─────────────────────────────────────────────────────
 let tTimer;
-function toast(msg) {
+function toast(msg, type = 'info') {
   const el = document.getElementById('toast');
-  el.textContent = msg; el.classList.add('on');
-  clearTimeout(tTimer); tTimer = setTimeout(() => el.classList.remove('on'), 2500);
+  el.textContent = msg;
+  el.className = '';
+  el.classList.add('on');
+  if (type === 'warn') el.classList.add('warn');
+  if (type === 'err') el.classList.add('err');
+  clearTimeout(tTimer); tTimer = setTimeout(() => el.classList.remove('on'), 3000);
 }
+
+function showErrorDetail(e) {
+  let code = 'UNKNOWN_ERROR';
+  let title = 'Request failed';
+  let msg = 'An unexpected error occurred.';
+  let detail = '';
+
+  if (e && e.response) {
+    code = e.response.code || 'SERVER_ERROR';
+    title = e.response.error || 'Request failed';
+    msg = e.response.error || 'An unexpected error occurred.';
+    detail = e.response.detail || '';
+    if (e.response.errors && Array.isArray(e.response.errors)) {
+      detail += '\n\nField issues:\n' + e.response.errors.map(err => `• ${err.field}: ${err.message} (${err.code})`).join('\n');
+    }
+  } else if (e && e.message) {
+    msg = e.message;
+    detail = e.stack || '';
+  }
+
+  document.getElementById('err-code').textContent = code;
+  document.getElementById('err-title-text').textContent = title;
+  document.getElementById('err-msg').textContent = msg;
+  document.getElementById('err-detail').textContent = detail;
+  document.getElementById('m-error').classList.add('on');
+  toast(msg, 'err');
+}
+
+function copyErrorDetail() {
+  const detail = document.getElementById('err-detail').textContent;
+  if (!detail) return;
+  navigator.clipboard.writeText(detail).then(() => toast('Error details copied to clipboard'));
+}
+
 function fmtDate(d) {
   if (!d) return '—';
   return new Date(d).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });

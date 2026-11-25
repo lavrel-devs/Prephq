@@ -299,6 +299,32 @@ router.post('/students/:matric/credits', async (req, res) => {
   }
 });
 
+// POST /api/admin/students/:matric/debit  { amount, note }
+// Records a debit (money taken out) against a student's credit balance.
+// amount is a positive whole number; the balance must cover it.
+router.post('/students/:matric/debit', async (req, res) => {
+  try {
+    if (!canChange(req.admin.access, 'credits')) return res.status(403).json({ error: 'This needs change access to "credits"', code: 'FORBIDDEN_AREA' });
+    const amount = parseInt(req.body.amount, 10);
+    if (!Number.isInteger(amount) || amount <= 0 || amount > 1000000) return res.status(400).json({ error: 'Amount must be a positive whole number (up to 1,000,000)' });
+
+    const result = await applyCreditDelta({
+      matric: req.params.matric,
+      delta: -amount,
+      reason: 'admin_debit',
+      note: String(req.body.note || '').slice(0, 300),
+      actor: req.admin.sub,
+      allowNegative: false,
+    });
+
+    res.json({ success: true, matric: req.params.matric.toUpperCase(), balance: result.balance, debited: amount });
+  } catch (e) {
+    if (e.message === 'Student not found') return res.status(404).json({ error: e.message });
+    if (e.code === 'INSUFFICIENT_CREDITS') return res.status(400).json({ error: 'That would take the student below 0 credits' });
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // GET /api/admin/students/:matric/credits/history
 router.get('/students/:matric/credits/history', async (req, res) => {
   try {
@@ -339,6 +365,28 @@ router.put('/students/:matric/username', async (req, res) => {
 // ══════════════════════════════════════════════════════════════
 //  PAYMENTS
 // ══════════════════════════════════════════════════════════════
+// Detailed validation helper: returns { ok, errors } or { ok: true, data }
+function validatePaymentInput(b) {
+  const errors = [];
+  const name = String(b.name || '').trim();
+  const matric = String(b.matric || '').trim().toUpperCase();
+  const amt = parseFloat(b.amount);
+  const method = b.method || 'cash';
+  const VALID_METHODS = ['cash', 'bank_transfer', 'opay', 'palmpay', 'other'];
+
+  if (!name) errors.push({ field: 'name', message: 'Student name is required', code: 'MISSING_NAME', detail: 'Enter the student\'s full name so the payment can be attributed.' });
+  if (name && name.length > 120) errors.push({ field: 'name', message: 'Name too long', code: 'NAME_TOO_LONG', detail: 'Name must be 120 characters or fewer.' });
+  if (matric && matric.length > 30) errors.push({ field: 'matric', message: 'Matric too long', code: 'MATRIC_TOO_LONG', detail: 'Matric number must be 30 characters or fewer.' });
+  if (!(amt > 0) || !Number.isFinite(amt)) errors.push({ field: 'amount', message: 'A positive amount is required', code: 'INVALID_AMOUNT', detail: 'Enter a numeric amount greater than 0 (e.g. 2000).' });
+  if (amt > 10000000) errors.push({ field: 'amount', message: 'Amount too large', code: 'AMOUNT_TOO_LARGE', detail: 'Single payment cannot exceed ₦10,000,000. Split it into multiple records instead.' });
+  if (!VALID_METHODS.includes(method)) errors.push({ field: 'method', message: 'Invalid payment method', code: 'INVALID_METHOD', detail: 'Choose from: cash, bank_transfer, opay, palmPay, other.' });
+  if (b.reference && String(b.reference).length > 100) errors.push({ field: 'reference', message: 'Reference too long', code: 'REFERENCE_TOO_LONG', detail: 'Reference must be 100 characters or fewer.' });
+  if (b.note && String(b.note).length > 500) errors.push({ field: 'note', message: 'Note too long', code: 'NOTE_TOO_LONG', detail: 'Note must be 500 characters or fewer.' });
+
+  if (errors.length) return { ok: false, errors };
+  return { ok: true, data: { matric, name, amount: amt, method, reference: String(b.reference || ''), note: String(b.note || '') } };
+}
+
 router.get('/payments', async (req, res) => {
   try {
     const payments = await Payment.find().sort({ createdAt: -1 }).lean();
@@ -348,26 +396,65 @@ router.get('/payments', async (req, res) => {
 
 router.post('/payments', async (req, res) => {
   try {
-    const { matric, name, amount, method, reference, note } = req.body;
-    const amt = parseFloat(amount);
-    if (!(amt > 0)) return res.status(400).json({ error: 'A positive amount is required' });
+    const check = validatePaymentInput(req.body);
+    if (!check.ok) return res.status(400).json({ error: 'Validation failed', code: 'VALIDATION_ERROR', errors: check.errors });
+    const { matric, name, amount, method, reference, note } = check.data;
+    const payment = await Payment.create({ matric, name, amount, method, reference, note });
+    res.status(201).json({ ...payment.toObject(), _kind: 'credit' });
+  } catch (e) { res.status(500).json({ error: 'Could not record payment', code: 'SERVER_ERROR', detail: e.message }); }
+});
+
+// POST /api/admin/payments/debit — record a debit (money charged to / taken from a student)
+router.post('/payments/debit', async (req, res) => {
+  try {
+    const check = validatePaymentInput(req.body);
+    if (!check.ok) return res.status(400).json({ error: 'Validation failed', code: 'VALIDATION_ERROR', errors: check.errors });
+    const { matric, name, amount, method, reference, note } = check.data;
     const payment = await Payment.create({
-      matric: typeof matric === 'string' ? matric.toUpperCase().trim() : '',
-      name: String(name || ''),
-      amount: amt,
-      method: method || 'cash',
-      reference: String(reference || ''),
-      note: String(note || ''),
+      matric, name, amount: -Math.abs(amount),
+      method, reference,
+      note: note ? `DEBIT — ${note}` : 'DEBIT',
     });
-    res.status(201).json(payment);
-  } catch (e) { res.status(500).json({ error: e.message }); }
+    res.status(201).json({ ...payment.toObject(), _kind: 'debit' });
+  } catch (e) { res.status(500).json({ error: 'Could not record debit', code: 'SERVER_ERROR', detail: e.message }); }
+});
+
+// POST /api/admin/payments/bulk-debit — record multiple debits at once
+router.post('/payments/bulk-debit', async (req, res) => {
+  try {
+    const { items } = req.body;
+    if (!Array.isArray(items) || items.length === 0) return res.status(400).json({ error: 'items must be a non-empty array', code: 'INVALID_ITEMS', detail: 'Provide an array of debit records under the "items" key.' });
+    if (items.length > 100) return res.status(400).json({ error: 'Too many items', code: 'TOO_MANY_ITEMS', detail: 'Maximum 100 debits per bulk request. Split into smaller batches.' });
+
+    const results = [];
+    for (const [i, item] of items.entries()) {
+      const check = validatePaymentInput(item);
+      if (!check.ok) {
+        results.push({ index: i, success: false, errors: check.errors });
+        continue;
+      }
+      try {
+        const { matric, name, amount, method, reference, note } = check.data;
+        const payment = await Payment.create({
+          matric, name, amount: -Math.abs(amount),
+          method, reference,
+          note: note ? `BULK DEBIT — ${note}` : 'BULK DEBIT',
+        });
+        results.push({ index: i, success: true, payment: { ...payment.toObject(), _kind: 'debit' } });
+      } catch (e) {
+        results.push({ index: i, success: false, error: e.message, code: 'SERVER_ERROR', detail: e.message });
+      }
+    }
+    const failed = results.filter(r => !r.success).length;
+    res.json({ success: failed === 0, total: items.length, succeeded: items.length - failed, failed, results });
+  } catch (e) { res.status(500).json({ error: 'Bulk debit failed', code: 'SERVER_ERROR', detail: e.message }); }
 });
 
 router.delete('/payments/:id', async (req, res) => {
   try {
     await Payment.deleteOne({ _id: req.params.id });
     res.json({ success: true });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { res.status(500).json({ error: 'Could not delete payment', code: 'SERVER_ERROR', detail: e.message }); }
 });
 
 // ══════════════════════════════════════════════════════════════
