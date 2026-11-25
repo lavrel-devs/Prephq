@@ -15,7 +15,7 @@ function generateCode(len = 6) {
 
 // Returns the cleaned code, or throws Error with a message an admin can read.
 function cleanCode(raw) {
-  const c = String(raw || '').trim().toLowerCase();
+  const c = String(raw || '').trim().toLowerCase().replace(/\s+/g, '-');   // "100lvl tutorial" → "100lvl-tutorial"
   if (!CODE_RE.test(c)) throw new Error('Short code must be 3–32 characters: letters, numbers, dash or underscore.');
   if (RESERVED.has(c)) throw new Error('That short code is reserved. Pick another.');
   return c;

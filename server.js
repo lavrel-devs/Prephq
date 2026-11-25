@@ -55,6 +55,7 @@ try { app.use(require('compression')()); }
 catch (e) { console.warn('compression not installed — run `npm install` to enable gzip (' + e.code + ')'); }
 
 app.use(express.json({ limit: '1mb' }));
+app.use(require('./src/middleware/blockGate'));   // v1.15 blocked IP addresses (admin pages are never blocked)
 app.use(activityMiddleware); // logs every API request + page view (see services/activity.service.js)
 // v1.14: live monitoring, then the admin's maintenance mode / feature switches / public status notice.
 const monitor = require('./src/services/monitor.service');
@@ -187,7 +188,9 @@ app.use('/api/admin', require('./src/routes/admin/admin.notes.routes'));
 app.use('/api/admin', require('./src/routes/admin/admin.platform.routes'));   // v1.12 Secondary overview, security, search, health
 app.use('/api/admin', require('./src/routes/admin/admin.secondary.routes'));   // v1.14 Secondary control centre
 app.use('/api/admin', require('./src/routes/admin/admin.system.routes'));   // v1.14 monitoring, controls, database tools
+app.use('/api/admin', require('./src/routes/admin/admin.command.routes'));   // v1.15-v1.17 Command centre: insights, bulk, notes, data, access
 app.use('/api/admin', require('./src/routes/admin/admin.links.routes'));   // v1.18 short links (admin)
+app.use('/api/admin', require('./src/routes/admin/admin.sites.routes'));   // v1.19 web pages (admin)
 // v1.13.1: Secondary / JAMB accounts can only reach what utils/secondaryFence.js lists, on every student API below.
 app.use('/api', require('./src/middleware/auth').secondaryFence);
 app.use('/api/quiz', require('./src/routes/quiz.routes'));
@@ -222,6 +225,7 @@ app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));
 
 // v1.18 short links: GET /l/<code> redirects (public, no login). Kept above the clean routes / static / catch-all.
 app.use('/l', require('./src/routes/shortlink.public'));
+app.use('/w', require('./src/routes/embed.public'));   // v1.19 web pages: GET /w/<name> shows another site under our domain
 
 // ══════════════════════════════════════════════════════════════
 //  CLEAN ROUTES (v1.2)

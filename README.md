@@ -2,6 +2,22 @@
 
 > Note: the changelog sections below are historical (last fully updated at v1.1.5) and don't yet cover v1.2–v1.4 (credit-tier economy, contests, study rooms, chat, GPA/grading tools, transfers, admin analytics). File structure and API route tables below are also out of date relative to `src/routes/`.
 
+## What's new in v1.19.0 — Web pages, and the Command centre repair
+
+**Web pages** (admin sidebar → *Web pages*, permission area `sites`). Give it any website address and it makes a page on your own domain, `yoursite.com/w/<name>`, that shows that website inside a frame under a slim bar naming the real site (with an *Open original* link). Pick the name yourself or let it generate one; the title is read from the site if you leave it empty.
+
+- **Not every site can be framed.** Many sites (Google, WhatsApp links, banks, big brands) send `X-Frame-Options` / `frame-ancestors` and browsers then refuse to show them inside other pages. On create (and with *Check site* / *Re-check*) the server reads those headers and reports *Can be shown*, *Blocks framing* or *Not sure*. For a site that blocks framing the page defaults to **Send them to the site** (a redirect); if you force *embed* anyway, visitors see a friendly "open it directly" card instead of a blank frame.
+- This is a frame, not a copy or a proxy: the content, cookies and logins stay on the original site, and a site that logs people in may not work inside a frame. Plain `http://` sites cannot be framed inside an `https://` page.
+- Safety: only public `http(s)` addresses on normal web ports are accepted; the check runs server-side with SSRF protection (private, loopback, link-local and cloud-metadata addresses are refused, re-checked on every redirect, at connection time). The framed site is sandboxed, pages are `noindex`, and the bar always shows the real host so nobody can mistake it for your own content.
+- Public route `GET /w/<name>`; admin API `/api/admin/sites` (list, check, create, edit, re-check, delete); all changes appear in the audit trail as `sites.*`.
+- New files: `src/models/EmbedSite.js`, `src/services/embed.service.js`, `src/routes/admin/admin.sites.routes.js`, `src/routes/embed.public.js`, `public/js/admin-sites.js`, `tests/embed.test.js`.
+
+**Command centre repair.** The v1.15–v1.17 Command centre (Insights, student groups, bulk actions, notes & tags, data export, blocked IPs) was not working because `server.js` never mounted its routes and several files it needs were missing from the project. Fixed: `admin.command.routes` is now mounted, and these were (re)created to match the existing routes and UI: `src/middleware/blockGate.js` (blocked IPs; admin pages are never blocked), `src/services/segment.service.js`, `src/utils/dataExport.js`, and the models `AdminNote`, `Block`, `SavedSegment`, `BulkRun`. Test: `tests/command-support.test.js`.
+
+**Short links** moved to `/l/<code>` because `/s/` is the sponsor page, and are now mounted directly in `server.js`.
+
+---
+
 ## What's new in v1.18.0 — Short links
 
 Admin sidebar → **Short links** (own permission area, `links`). Paste a long web address, get `yoursite.com/l/abc123`. Optional custom code (e.g. `/l/chm101`), title and expiry date. Each link shows how many times it was opened, when it was last opened, and a 30-day chart; edit the destination later without changing the short address, switch a link off, or delete it. Expired or switched-off links show a friendly page (HTTP 410). Only `http(s)` addresses are accepted, and a short link cannot point at another short link.

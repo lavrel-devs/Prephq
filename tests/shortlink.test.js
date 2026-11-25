@@ -7,7 +7,8 @@ const A = require('../src/utils/adminAccess');
 const c = S.generateCode(); assert.ok(/^[a-z2-9]{6}$/.test(c) && !/[01oli]/.test(c));
 assert.strictEqual(new Set(Array.from({ length: 200 }, () => S.generateCode())).size, 200);
 assert.strictEqual(S.cleanCode('  CHM-101 '), 'chm-101');
-['ab', 'has space', '-lead', 'a'.repeat(33), 'bad/slash', ''].forEach(x => assert.throws(() => S.cleanCode(x), /Short code/));
+assert.strictEqual(S.cleanCode('100lvl tutorial'), '100lvl-tutorial');
+['ab', '-lead', 'a'.repeat(33), 'bad/slash', ''].forEach(x => assert.throws(() => S.cleanCode(x), /Short code/));
 assert.throws(() => S.cleanCode('Admin'), /reserved/);
 
 // urls

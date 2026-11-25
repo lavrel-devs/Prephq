@@ -27,6 +27,8 @@ const AREAS = [
   { key: 'data',          label: 'Data & privacy',          desc: 'Export collections and one student\'s data (erasing a student needs full access)' },
   // v1.18 Short links
   { key: 'links',         label: 'Short links',             desc: 'Create, edit, switch off and delete short links, and see how many times each was opened' },
+  // v1.19 Web pages
+  { key: 'sites',         label: 'Web pages',               desc: 'Create, edit, switch off and delete web pages that show another website under our domain' },
   { key: 'access',        label: 'Access control',          desc: 'Block network addresses, see and end student sessions' },
 ];
 const AREA_KEYS = AREAS.map(a => a.key);
@@ -83,7 +85,8 @@ const RULES = [
   [/^\/crm(\/|$)/, ['crm']],
   [/^\/data\/student\/[^/]+\/erase\/?$/, 'FULL'],          // erasing a student's personal data
   [/^\/data(\/|$)/, ['data']],
-  [/^\/links(\/|$)/, ['links']],                         // v1.18 Short links
+  [/^\/links(\/|$)/, ['links']],
+  [/^\/sites(\/|$)/, ['sites']],                         // v1.19 Web pages                         // v1.18 Short links
   [/^\/access\/admin-sessions(\/|$)/, 'OWNER'],           // who is signed in to the admin panel
   [/^\/access(\/|$)/, ['access']],
 ];
